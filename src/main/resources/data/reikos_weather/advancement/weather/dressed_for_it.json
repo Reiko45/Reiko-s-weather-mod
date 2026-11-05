@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/whiteout",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:winter_coat"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.dressed_for_it"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.dressed_for_it.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

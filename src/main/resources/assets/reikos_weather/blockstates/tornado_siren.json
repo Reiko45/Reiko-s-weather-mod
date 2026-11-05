@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "reikos_weather:block/tornado_siren"
+    },
+    "powered=true": {
+      "model": "reikos_weather:block/tornado_siren_on"
+    }
+  }
+}

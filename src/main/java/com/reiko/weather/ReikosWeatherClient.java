@@ -19,12 +19,15 @@ public class ReikosWeatherClient {
 
         modBus.addListener(ClientEvents::registerParticles);
         modBus.addListener(ClientEvents::registerRenderers);
+        modBus.addListener(ClientEvents::registerBlockColors);
+        modBus.addListener(ClientEvents::registerGuiLayers);
 
         NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderFog);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onFogColor);
         NeoForge.EVENT_BUS.addListener(SkyEffectsRenderer::onRenderStage);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderStage);
 
         TornadoEntity.clientTicker = TornadoClient::tick;
     }

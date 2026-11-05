@@ -1,0 +1,124 @@
+package com.reiko.weather.weather;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.Mth;
+
+/**
+ * A regional storm: a circle of weather that drifts across the map with the wind, on top of the
+ * dimension-wide background weather.
+ */
+public final class StormCell {
+    private static final int FADE_TICKS = 900;
+
+    public final int id;
+    public WeatherType type;
+    public double x;
+    public double z;
+    public float radius;
+    public double vx;
+    public double vz;
+    public int age;
+    public int maxAge;
+
+    public StormCell(int id, WeatherType type, double x, double z, float radius, double vx, double vz, int maxAge) {
+        this.id = id;
+        this.type = type;
+        this.x = x;
+        this.z = z;
+        this.radius = radius;
+        this.vx = vx;
+        this.vz = vz;
+        this.maxAge = maxAge;
+    }
+
+    /** An independent copy (payloads aren't serialized in singleplayer, so never share live cells). */
+    public StormCell copy() {
+        StormCell c = new StormCell(id, type, x, z, radius, vx, vz, maxAge);
+        c.age = age;
+        return c;
+    }
+
+    public void tick() {
+        x += vx;
+        z += vz;
+        age++;
+    }
+
+    public boolean expired() {
+        return age >= maxAge;
+    }
+
+    /** 0 to 1: the storm builds up after forming and dies down before it ends. */
+    public float strength() {
+        float grow = Mth.clamp(age / (float) FADE_TICKS, 0.0F, 1.0F);
+        float fade = Mth.clamp((maxAge - age) / (float) FADE_TICKS, 0.0F, 1.0F);
+        return Math.min(grow, fade);
+    }
+
+    public double distanceTo(double px, double pz) {
+        double dx = px - x, dz = pz - z;
+        return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    /** How strongly this cell's weather applies at a position: 1 in the core, fading out over the edge. */
+    public float weightAt(double px, double pz) {
+        double d = distanceTo(px, pz);
+        if (d >= radius) {
+            return 0.0F;
+        }
+        float t = Mth.clamp((float) ((radius - d) / (radius * 0.3)), 0.0F, 1.0F);
+        return t * t * (3.0F - 2.0F * t) * strength();
+    }
+
+    /** Whether the cell is moving toward a point (used for "approaching" reports). */
+    public boolean approaching(double px, double pz) {
+        return (px - x) * vx + (pz - z) * vz > 0;
+    }
+
+    public CompoundTag save() {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("id", id);
+        tag.putString("type", type.id());
+        tag.putDouble("x", x);
+        tag.putDouble("z", z);
+        tag.putFloat("radius", radius);
+        tag.putDouble("vx", vx);
+        tag.putDouble("vz", vz);
+        tag.putInt("age", age);
+        tag.putInt("maxAge", maxAge);
+        return tag;
+    }
+
+    public static StormCell load(CompoundTag tag) {
+        WeatherType type = WeatherType.byId(tag.getString("type"));
+        StormCell cell = new StormCell(tag.getInt("id"), type == null ? WeatherType.RAIN : type, tag.getDouble("x"), tag.getDouble("z"),
+                tag.getFloat("radius"), tag.getDouble("vx"), tag.getDouble("vz"), tag.getInt("maxAge"));
+        cell.age = tag.getInt("age");
+        return cell;
+    }
+
+    public void write(FriendlyByteBuf buf) {
+        buf.writeVarInt(id);
+        buf.writeVarInt(type.ordinal());
+        buf.writeDouble(x);
+        buf.writeDouble(z);
+        buf.writeFloat(radius);
+        buf.writeFloat((float) vx);
+        buf.writeFloat((float) vz);
+        buf.writeVarInt(age);
+        buf.writeVarInt(maxAge);
+    }
+
+    public static StormCell read(FriendlyByteBuf buf) {
+        int id = buf.readVarInt();
+        WeatherType type = WeatherType.byOrdinal(buf.readVarInt());
+        double x = buf.readDouble(), z = buf.readDouble();
+        float radius = buf.readFloat();
+        double vx = buf.readFloat(), vz = buf.readFloat();
+        int age = buf.readVarInt(), maxAge = buf.readVarInt();
+        StormCell cell = new StormCell(id, type, x, z, radius, vx, vz, maxAge);
+        cell.age = age;
+        return cell;
+    }
+}

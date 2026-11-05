@@ -37,6 +37,10 @@ public class BarometerItem extends Item {
                 serverPlayer.sendSystemMessage(WeatherReport.current(serverLevel, state, player.blockPosition()));
                 serverPlayer.sendSystemMessage(WeatherReport.wind(serverLevel, state, player.blockPosition()));
                 serverPlayer.sendSystemMessage(WeatherReport.forecast(state));
+                Component season = WeatherReport.season();
+                if (season != null) serverPlayer.sendSystemMessage(season);
+                Component storm = WeatherReport.approachingStorm(state, player.blockPosition());
+                if (storm != null) serverPlayer.sendSystemMessage(storm);
             }
             level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.COPPER_BULB_TURN_ON, SoundSource.PLAYERS, 0.6F, 1.4F);
         }

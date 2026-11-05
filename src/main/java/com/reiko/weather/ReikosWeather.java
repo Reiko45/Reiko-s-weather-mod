@@ -4,7 +4,11 @@ import com.mojang.logging.LogUtils;
 import com.reiko.weather.command.WeatherCommand;
 import com.reiko.weather.config.ClientConfig;
 import com.reiko.weather.config.WeatherConfig;
+import com.reiko.weather.item.GearEvents;
+import com.reiko.weather.mob.WeatherMobs;
 import com.reiko.weather.network.ModNetwork;
+import com.reiko.weather.registry.ModArmorMaterials;
+import com.reiko.weather.registry.ModBlocks;
 import com.reiko.weather.registry.ModEntities;
 import com.reiko.weather.registry.ModItems;
 import com.reiko.weather.registry.ModParticles;
@@ -35,6 +39,8 @@ public class ReikosWeather {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public ReikosWeather(IEventBus modBus, ModContainer container) {
+        ModBlocks.REGISTER.register(modBus);
+        ModArmorMaterials.REGISTER.register(modBus);
         ModParticles.REGISTER.register(modBus);
         ModSounds.REGISTER.register(modBus);
         ModEntities.REGISTER.register(modBus);
@@ -55,6 +61,9 @@ public class ReikosWeather {
         NeoForge.EVENT_BUS.addListener(WeatherHazards::onEntityTick);
         NeoForge.EVENT_BUS.addListener(WeatherHazards::onCropGrow);
         NeoForge.EVENT_BUS.addListener(WeatherCommand::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(GearEvents::onPlayerTick);
+        NeoForge.EVENT_BUS.addListener(WeatherMobs::onFinalizeSpawn);
+        NeoForge.EVENT_BUS.addListener(WeatherMobs::onEntityJoin);
     }
 
     public static ResourceLocation id(String path) {
@@ -64,6 +73,17 @@ public class ReikosWeather {
     private static void addCreativeTabContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModItems.BAROMETER.get());
+            event.accept(ModItems.UMBRELLA.get());
+        } else if (event.getTabKey() == CreativeModeTabs.COMBAT) {
+            event.accept(ModItems.WINTER_COAT.get());
+            event.accept(ModItems.GOGGLES.get());
+        } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(ModItems.WEATHER_STATION.get());
+            event.accept(ModItems.TORNADO_SIREN.get());
+        } else if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(ModItems.WEATHER_STATION.get());
+            event.accept(ModItems.TORNADO_SIREN.get());
+            event.accept(ModItems.RAIN_BARREL.get());
         }
     }
 }

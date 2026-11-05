@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "B": {
+      "item": "reikos_weather:barometer"
+    }
+  },
+  "pattern": [
+    "CGC",
+    "RBR",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "reikos_weather:weather_station"
+  }
+}

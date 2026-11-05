@@ -26,6 +26,7 @@ public enum WeatherType {
     HURRICANE   (true, true, 1, 3600, 6000, 0.1F, 1.0F, 0.2F),
     HAIL        (true, false, 3, 1800, 3600, 0.5F, 1.0F, 0.3F),
     SLEET       (true, false, 3, 2400, 6000, 1.0F, 0.6F, 0.0F),
+    ICE_STORM   (true, false, 2, 2400, 6000, 0.8F, 0.6F, 0.0F),
     SNOW        (true, false, 6, 4800, 12000, 2.0F, 0.3F, 0.0F),
     BLIZZARD    (true, false, 3, 3600, 7200, 1.5F, 0.1F, 0.0F),
     WINDY       (false, false, 8, 3600, 8400, 1.0F, 1.0F, 1.0F),
@@ -69,7 +70,28 @@ public enum WeatherType {
     }
 
     public boolean isSevere() {
-        return this == SUPERCELL || this == HURRICANE || this == BLIZZARD || this == SANDSTORM;
+        return this == SUPERCELL || this == HURRICANE || this == BLIZZARD || this == SANDSTORM || this == ICE_STORM;
+    }
+
+    /** Weathers that can also arrive as a regional storm cell drifting across the map. */
+    public boolean isStorm() {
+        return switch (this) {
+            case RAIN, HEAVY_RAIN, THUNDERSTORM, SUPERCELL, HURRICANE, HAIL, SLEET, ICE_STORM, SNOW, BLIZZARD, SANDSTORM -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Fixed 0-15 redstone code for the weather station (ice storm shares sleet's code, since there
+     * are 17 weathers and only 16 signal strengths).
+     */
+    public int signalCode() {
+        return switch (this) {
+            case CLEAR -> 0; case OVERCAST -> 1; case FOG -> 2; case DRIZZLE -> 3; case RAIN -> 4;
+            case HEAVY_RAIN -> 5; case THUNDERSTORM -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
+            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY -> 13; case SANDSTORM -> 14;
+            case HEATWAVE -> 15;
+        };
     }
 
     public int randomDuration(RandomSource random) {

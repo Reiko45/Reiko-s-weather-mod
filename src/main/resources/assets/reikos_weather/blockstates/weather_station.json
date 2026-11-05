@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "mode=precipitation": {
+      "model": "reikos_weather:block/weather_station_precipitation"
+    },
+    "mode=storm": {
+      "model": "reikos_weather:block/weather_station_storm"
+    },
+    "mode=wind": {
+      "model": "reikos_weather:block/weather_station_wind"
+    },
+    "mode=weather": {
+      "model": "reikos_weather:block/weather_station_weather"
+    },
+    "mode=season": {
+      "model": "reikos_weather:block/weather_station_season"
+    }
+  }
+}

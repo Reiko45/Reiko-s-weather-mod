@@ -12,6 +12,13 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue RAINBOWS;
     public static final ModConfigSpec.BooleanValue AURORAS;
     public static final ModConfigSpec.BooleanValue SOUNDS;
+    public static final ModConfigSpec.BooleanValue STORM_CLOUDS;
+    public static final ModConfigSpec.BooleanValue WET_GROUND;
+    public static final ModConfigSpec.BooleanValue MIST;
+    public static final ModConfigSpec.BooleanValue HEAT_LIGHTNING;
+    public static final ModConfigSpec.EnumValue<HudMode> HUD;
+
+    public enum HudMode { BAROMETER, ALWAYS, NEVER }
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
@@ -27,6 +34,16 @@ public final class ClientConfig {
                 .define("auroras", true);
         SOUNDS = b.comment("Play wind, hail and tornado sounds.")
                 .define("sounds", true);
+        STORM_CLOUDS = b.comment("Draw a low, dark cloud deck under storms (including distant storm cells on the horizon).")
+                .define("stormClouds", true);
+        WET_GROUND = b.comment("Ground looks darker and wet in the rain, and raindrops ripple on water.")
+                .define("wetGround", true);
+        MIST = b.comment("Morning mist over rivers, swamps and beaches.")
+                .define("mist", true);
+        HEAT_LIGHTNING = b.comment("Silent heat-lightning flashes on hot nights and from distant storms.")
+                .define("heatLightning", true);
+        HUD = b.comment("When to show the forecast panel: while holding a barometer, always, or never.")
+                .defineEnum("forecastHud", HudMode.BAROMETER);
         SPEC = b.build();
     }
 

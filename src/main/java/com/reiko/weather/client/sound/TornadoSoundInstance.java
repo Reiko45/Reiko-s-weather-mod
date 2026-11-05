@@ -30,8 +30,12 @@ public class TornadoSoundInstance extends AbstractTickableSoundInstance {
         this.x = tornado.getX();
         this.y = tornado.getY() + 4;
         this.z = tornado.getZ();
-        this.volume = 0.2F + 2.8F * tornado.strength();
-        this.pitch = 0.8F + 0.2F * tornado.strength();
+        float strength = tornado.strength();
+        switch (tornado.kind()) {
+            case TORNADO -> { this.volume = 0.2F + 2.8F * strength; this.pitch = 0.8F + 0.2F * strength; }
+            case WATERSPOUT -> { this.volume = 0.2F + 1.6F * strength; this.pitch = 1.0F + 0.15F * strength; }
+            case DUST_DEVIL -> { this.volume = 0.1F + 0.35F * strength; this.pitch = 1.7F; }
+        }
     }
 
     @Override

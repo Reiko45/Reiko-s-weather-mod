@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "reikos_weather:block/weather_station_side_weather",
+    "north": "reikos_weather:block/weather_station_side_weather",
+    "south": "reikos_weather:block/weather_station_side_weather",
+    "east": "reikos_weather:block/weather_station_side_weather",
+    "west": "reikos_weather:block/weather_station_side_weather",
+    "up": "reikos_weather:block/weather_station_top",
+    "down": "reikos_weather:block/weather_station_bottom"
+  }
+}

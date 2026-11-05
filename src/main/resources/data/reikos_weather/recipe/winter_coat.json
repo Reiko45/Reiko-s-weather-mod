@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "pattern": [
+    "W W",
+    "LWL",
+    "WWW"
+  ],
+  "result": {
+    "count": 1,
+    "id": "reikos_weather:winter_coat"
+  }
+}

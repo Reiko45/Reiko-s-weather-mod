@@ -21,7 +21,9 @@ public class WindBlownParticle extends TextureSheetParticle {
         /** Big soft dust or sand clouds. */
         DUST(0.7, 0.0, 0.18F),
         /** Tumbling leaves. */
-        LEAF(0.6, 0.04, 1.0F);
+        LEAF(0.6, 0.04, 1.0F),
+        /** Soft morning mist drifting low over water. */
+        MIST(0.12, 0.0, 0.2F);
 
         final double windFactor;
         final double fallSpeed;
@@ -59,9 +61,10 @@ public class WindBlownParticle extends TextureSheetParticle {
             case SAND -> { quadSize = 0.03F + random.nextFloat() * 0.05F; lifetime = 40 + random.nextInt(30); setSize(0.05F, 0.05F); }
             case DUST -> { quadSize = 1.2F + random.nextFloat() * 2.0F; lifetime = 70 + random.nextInt(50); hasPhysics = false; }
             case LEAF -> { quadSize = 0.11F + random.nextFloat() * 0.06F; lifetime = 100 + random.nextInt(60); }
+            case MIST -> { quadSize = 2.0F + random.nextFloat() * 2.5F; lifetime = 120 + random.nextInt(80); hasPhysics = false; }
         }
-        this.targetAlpha = kind.maxAlpha * (kind == Kind.DUST ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
-        if (kind != Kind.DUST) {
+        this.targetAlpha = kind.maxAlpha * (kind == Kind.DUST || kind == Kind.MIST ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
+        if (kind != Kind.DUST && kind != Kind.MIST) {
             this.setSize(0.08F, 0.08F);
         }
     }
@@ -92,7 +95,7 @@ public class WindBlownParticle extends TextureSheetParticle {
                 + (kind == Kind.SAND || kind == Kind.DUST ? sway * 0.01 : 0.0);
         this.yd += (targetY - this.yd) * 0.1;
         this.roll += spin;
-        if (kind == Kind.DUST) {
+        if (kind == Kind.DUST || kind == Kind.MIST) {
             this.quadSize *= 1.004F;
         }
         this.move(this.xd, this.yd, this.zd);

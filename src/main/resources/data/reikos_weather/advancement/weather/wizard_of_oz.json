@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/storm_chaser",
+  "display": {
+    "icon": {
+      "id": "minecraft:feather"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.wizard_of_oz"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.wizard_of_oz.desc"
+    },
+    "frame": "challenge",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

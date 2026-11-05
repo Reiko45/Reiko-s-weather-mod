@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "reikos_weather:barometer"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.root"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.root.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "background": "minecraft:textures/block/light_blue_concrete_powder.png",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "tick": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

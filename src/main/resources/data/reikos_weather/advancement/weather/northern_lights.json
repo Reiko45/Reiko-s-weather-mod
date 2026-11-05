@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:light_blue_stained_glass"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.northern_lights"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.northern_lights.desc"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

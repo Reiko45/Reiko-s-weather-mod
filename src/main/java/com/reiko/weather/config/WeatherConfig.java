@@ -26,6 +26,27 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue HEAT_SLOWS_CROPS;
     public static final ModConfigSpec.BooleanValue EXTRA_LIGHTNING;
 
+    public static final ModConfigSpec.BooleanValue ICE_GLAZE;
+    public static final ModConfigSpec.BooleanValue PUDDLES;
+    public static final ModConfigSpec.BooleanValue FLASH_FLOODS;
+    public static final ModConfigSpec.IntValue MAX_FLOOD_BLOCKS;
+    public static final ModConfigSpec.BooleanValue SNOW_MELT;
+
+    public static final ModConfigSpec.BooleanValue SEASONS_ENABLED;
+    public static final ModConfigSpec.IntValue DAYS_PER_SEASON;
+    public static final ModConfigSpec.BooleanValue SEASONAL_TEMPERATURE;
+    public static final ModConfigSpec.DoubleValue WINTER_TEMPERATURE_DROP;
+    public static final ModConfigSpec.BooleanValue SEASONAL_CROPS;
+
+    public static final ModConfigSpec.BooleanValue REGIONAL_STORMS;
+    public static final ModConfigSpec.DoubleValue STORM_MINUTES;
+    public static final ModConfigSpec.IntValue MAX_STORM_CELLS;
+
+    public static final ModConfigSpec.BooleanValue WATERSPOUTS;
+    public static final ModConfigSpec.BooleanValue DUST_DEVILS;
+    public static final ModConfigSpec.BooleanValue WEATHER_MOBS;
+    public static final ModConfigSpec.BooleanValue ANIMALS_SEEK_SHELTER;
+
     public static final ModConfigSpec.BooleanValue TORNADOES;
     public static final ModConfigSpec.DoubleValue TORNADO_CHANCE;
     public static final ModConfigSpec.IntValue MAX_TORNADOES;
@@ -72,6 +93,51 @@ public final class WeatherConfig {
                 .define("heatSlowsCrops", true);
         EXTRA_LIGHTNING = b.comment("Supercells and hurricanes produce frequent extra lightning near players.")
                 .define("extraLightning", true);
+        ICE_GLAZE = b.comment("Ice storms coat exposed ground and treetops in slippery ice glaze that melts afterwards.")
+                .define("iceGlaze", true);
+        PUDDLES = b.comment("Puddles form on flat ground in the rain and dry up afterwards.")
+                .define("puddles", true);
+        FLASH_FLOODS = b.comment("Heavy rain raises rivers and lakes so they spill over their banks. The water recedes",
+                        "after the storm, but flowing water can wash away crops and torches. Off by default.")
+                .define("flashFloods", false);
+        MAX_FLOOD_BLOCKS = b.comment("Maximum flood water sources that can exist at once.")
+                .defineInRange("maxFloodBlocks", 400, 0, 10000);
+        SNOW_MELT = b.comment("Snow layers and frozen lake surfaces melt in places that are no longer cold (e.g. in spring).")
+                .define("snowMelt", true);
+        b.pop();
+
+        b.comment("Seasons (uses Serene Seasons instead when it is installed)").push("seasons");
+        SEASONS_ENABLED = b.comment("Enable seasons, which change which weather is likely.")
+                .define("enabled", true);
+        DAYS_PER_SEASON = b.comment("Length of each season in Minecraft days.")
+                .defineInRange("daysPerSeason", 7, 1, 365);
+        SEASONAL_TEMPERATURE = b.comment("Seasons shift biome temperatures, so temperate biomes get snow in winter.")
+                .define("seasonalTemperature", true);
+        WINTER_TEMPERATURE_DROP = b.comment("How much colder biomes get in winter (plains are 0.8; snow falls below 0.15).")
+                .defineInRange("winterTemperatureDrop", 0.7, 0.0, 2.0);
+        SEASONAL_CROPS = b.comment("Crops open to the sky grow slower in winter.")
+                .define("seasonalCrops", true);
+        b.pop();
+
+        b.comment("Regional storm cells that drift across the map with the wind").push("storms");
+        REGIONAL_STORMS = b.comment("Spawn storm cells that roll in from the horizon, so players far apart can have different weather.")
+                .define("enabled", true);
+        STORM_MINUTES = b.comment("Average minutes between new storm cells forming near players.")
+                .defineInRange("averageMinutesBetween", 10.0, 0.5, 240.0);
+        MAX_STORM_CELLS = b.comment("Maximum storm cells at once.")
+                .defineInRange("maxCells", 3, 0, 16);
+        b.pop();
+
+        b.comment("Smaller weather phenomena").push("phenomena");
+        WATERSPOUTS = b.comment("Thunderstorms, supercells and hurricanes can form waterspouts over open water.")
+                .define("waterspouts", true);
+        DUST_DEVILS = b.comment("Small, mostly harmless whirlwinds form in arid biomes on hot, clear days.")
+                .define("dustDevils", true);
+        WEATHER_MOBS = b.comment("Weather changes which monsters spawn: strays in blizzards, husks in sandstorms,",
+                        "drowned in heavy rain near water.")
+                .define("weatherMobs", true);
+        ANIMALS_SEEK_SHELTER = b.comment("Animals look for shelter under trees and roofs during storms.")
+                .define("animalsSeekShelter", true);
         b.pop();
 
         b.comment("Tornadoes spawned by supercell storms").push("tornadoes");

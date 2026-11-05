@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/cauldron",
+  "textures": {
+    "particle": "reikos_weather:block/rain_barrel_side",
+    "side": "reikos_weather:block/rain_barrel_side",
+    "top": "reikos_weather:block/rain_barrel_top",
+    "bottom": "reikos_weather:block/rain_barrel_bottom",
+    "inside": "reikos_weather:block/rain_barrel_inner"
+  }
+}

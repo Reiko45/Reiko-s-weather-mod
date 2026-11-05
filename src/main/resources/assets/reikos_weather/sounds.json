@@ -25,5 +25,14 @@
         "attenuation_distance": 64
       }
     ]
+  },
+  "block.tornado_siren": {
+    "subtitle": "subtitles.reikos_weather.block.tornado_siren",
+    "sounds": [
+      {
+        "name": "reikos_weather:block/tornado_siren",
+        "attenuation_distance": 96
+      }
+    ]
   }
 }

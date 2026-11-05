@@ -1,6 +1,7 @@
 package com.reiko.weather.entity;
 
 import com.reiko.weather.config.WeatherConfig;
+import com.reiko.weather.mixin.ServerGamePacketListenerImplAccessor;
 import com.reiko.weather.registry.ModDamageTypes;
 import com.reiko.weather.registry.ModTags;
 import com.reiko.weather.weather.WeatherManager;
@@ -11,6 +12,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -35,15 +37,50 @@ public class TornadoEntity extends Entity {
     private static final EntityDataAccessor<Float> DATA_WIDTH = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DATA_LIFETIME = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_AGE = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> DATA_KIND = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Float> DATA_HEIGHT = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
 
-    public static final float HEIGHT = 70.0F;
     private static final int GROW_TICKS = 200;
-    private static final double SPEED = 0.11;
+
+    /** The different kinds of rotating column. */
+    public enum Kind {
+        TORNADO(0.11, 0.08F, 1.0, true, true),
+        /** Forms over open water and dies when it reaches land. */
+        WATERSPOUT(0.09, 0.06F, 0.6, false, true),
+        /** A small, mostly harmless whirlwind of sand on hot, clear days. */
+        DUST_DEVIL(0.17, 0.35F, 0.25, false, false);
+
+        public final double speed;
+        public final float wander;
+        public final double suction;
+        public final boolean liftsBlocks;
+        public final boolean hurts;
+
+        Kind(double speed, float wander, double suction, boolean liftsBlocks, boolean hurts) {
+            this.speed = speed;
+            this.wander = wander;
+            this.suction = suction;
+            this.liftsBlocks = liftsBlocks;
+            this.hurts = hurts;
+        }
+
+        public String id() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+
+        public static Kind byId(String id) {
+            for (Kind k : values()) {
+                if (k.id().equalsIgnoreCase(id)) return k;
+            }
+            return null;
+        }
+    }
 
     /** Set by the client setup; spawns the funnel particles and moves the local player. */
     public static Consumer<TornadoEntity> clientTicker = tornado -> {};
 
     private float heading;
+    private int ticksOnLand;
 
     public TornadoEntity(EntityType<? extends TornadoEntity> type, Level level) {
         super(type, level);
@@ -51,10 +88,21 @@ public class TornadoEntity extends Entity {
         this.setNoGravity(true);
     }
 
-    public void configure(float heading, int lifetime, float width) {
+    public void configure(Kind kind, float heading, int lifetime, float width, float height) {
         this.heading = heading;
+        this.entityData.set(DATA_KIND, (byte) kind.ordinal());
         this.entityData.set(DATA_LIFETIME, lifetime);
         this.entityData.set(DATA_WIDTH, width);
+        this.entityData.set(DATA_HEIGHT, height);
+    }
+
+    public Kind kind() {
+        return Kind.values()[Math.floorMod(this.entityData.get(DATA_KIND), Kind.values().length)];
+    }
+
+    /** Funnel height in blocks. */
+    public float height() {
+        return this.entityData.get(DATA_HEIGHT);
     }
 
     @Override
@@ -62,6 +110,8 @@ public class TornadoEntity extends Entity {
         builder.define(DATA_WIDTH, 6.0F);
         builder.define(DATA_LIFETIME, 1800);
         builder.define(DATA_AGE, 0);
+        builder.define(DATA_KIND, (byte) 0);
+        builder.define(DATA_HEIGHT, 70.0F);
     }
 
     public float width() {
@@ -83,14 +133,14 @@ public class TornadoEntity extends Entity {
 
     /** Funnel radius at a height above the base. */
     public float radiusAt(float height) {
-        float t = Mth.clamp(height / HEIGHT, 0.0F, 1.0F);
+        float t = Mth.clamp(height / height(), 0.0F, 1.0F);
         float base = width() * 0.25F;
         return (base + t * t * width() * 2.2F) * (0.35F + 0.65F * strength());
     }
 
     /** Radius within which entities are pulled in. */
     public double influenceRadius() {
-        return width() * 3.5 * strength() + 2.0;
+        return width() * 3.5 * strength() + (kind() == Kind.DUST_DEVIL ? 1.0 : 2.0);
     }
 
     @Override
@@ -108,24 +158,49 @@ public class TornadoEntity extends Entity {
             return;
         }
 
+        Kind kind = kind();
         // wander, nudged along by the wind
         WeatherState weather = WeatherManager.activeState(level);
         float windAngle = weather != null ? weather.windAngle : heading;
-        heading += (random.nextFloat() - 0.5F) * 0.08F + Mth.wrapDegrees((windAngle - heading) * Mth.RAD_TO_DEG) * Mth.DEG_TO_RAD * 0.002F;
-        double nx = getX() + Mth.cos(heading) * SPEED;
-        double nz = getZ() + Mth.sin(heading) * SPEED;
+        heading += (random.nextFloat() - 0.5F) * kind.wander + Mth.wrapDegrees((windAngle - heading) * Mth.RAD_TO_DEG) * Mth.DEG_TO_RAD * 0.002F;
+        // stays nearly in place while it forms (and as it dies), then travels at full speed
+        float st = strength();
+        double speed = kind.speed * st * st * st;
+        double nx = getX() + Mth.cos(heading) * speed;
+        double nz = getZ() + Mth.sin(heading) * speed;
         BlockPos column = BlockPos.containing(nx, 0, nz);
         if (!level.isLoaded(column)) {
             discard();
             return;
         }
-        int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column.getX(), column.getZ());
+        // follow the median height of the surrounding ground, so a lone tree, ravine or pit doesn't throw it off
+        int[] heights = new int[5];
+        int[][] offsets = {{0, 0}, {4, 0}, {-4, 0}, {0, 4}, {0, -4}};
+        for (int i = 0; i < offsets.length; i++) {
+            BlockPos sample = column.offset(offsets[i][0], 0, offsets[i][1]);
+            heights[i] = level.isLoaded(sample)
+                    ? level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, sample.getX(), sample.getZ())
+                    : level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column.getX(), column.getZ());
+        }
+        java.util.Arrays.sort(heights);
+        int ground = heights[2];
         setPos(nx, Mth.lerp(0.1, getY(), ground), nz);
+
+        if (kind == Kind.WATERSPOUT) {
+            boolean overWater = !level.getFluidState(BlockPos.containing(nx, ground - 1, nz)).isEmpty();
+            ticksOnLand = overWater ? 0 : ticksOnLand + 1;
+            int lifetime = this.entityData.get(DATA_LIFETIME);
+            if (ticksOnLand > 60 && lifetime - age > GROW_TICKS) {
+                // collapses once it comes ashore
+                this.entityData.set(DATA_LIFETIME, age + GROW_TICKS);
+            }
+        }
 
         float strength = strength();
         if (strength > 0.05F) {
             pullEntities(level, strength);
-            if (WeatherConfig.TORNADO_LIFTS_BLOCKS.get() && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            excusePlayers(level);
+            if (kind.liftsBlocks && WeatherConfig.TORNADO_LIFTS_BLOCKS.get() && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                 liftBlocks(level, strength);
             }
         }
@@ -133,17 +208,31 @@ public class TornadoEntity extends Entity {
 
     private void pullEntities(ServerLevel level, float strength) {
         double influence = influenceRadius();
-        AABB box = new AABB(getX() - influence, getY() - 3, getZ() - influence, getX() + influence, getY() + HEIGHT * 0.6, getZ() + influence);
+        AABB box = new AABB(getX() - influence, getY() - 3, getZ() - influence, getX() + influence, getY() + height() * 0.6, getZ() + influence);
         DamageSource damage = level.damageSources().source(ModDamageTypes.TORNADO, this);
         for (Entity entity : level.getEntities(this, box, e -> !(e instanceof TornadoEntity) && !(e instanceof Player) && !e.isSpectator())) {
             Vec3 velocity = suction(this, entity, strength);
             if (velocity != null) {
                 entity.setDeltaMovement(velocity);
                 entity.hurtMarked = true;
-                if (entity instanceof LivingEntity living && tickCount % 20 == 0
+                if (kind().hurts && entity instanceof LivingEntity living && tickCount % 20 == 0
                         && horizontalDistance(entity) < radiusAt((float) (entity.getY() - getY())) * 1.5) {
                     living.hurt(damage, 1.0F);
                 }
+            }
+        }
+    }
+
+    /**
+     * Players are moved client-side, and a tornado can keep them airborne for longer than vanilla's
+     * anti-fly check allows, so reset that check for everyone within reach.
+     */
+    private void excusePlayers(ServerLevel level) {
+        double influence = influenceRadius() + 4;
+        for (ServerPlayer player : level.players()) {
+            double dx = player.getX() - getX(), dz = player.getZ() - getZ();
+            if (dx * dx + dz * dz < influence * influence && player.getY() > getY() - 4 && player.getY() < getY() + height()) {
+                ((ServerGamePacketListenerImplAccessor) player.connection).reikos_weather$setAboveGroundTickCount(0);
             }
         }
     }
@@ -158,17 +247,26 @@ public class TornadoEntity extends Entity {
         double distance = Math.sqrt(dx * dx + dz * dz);
         double influence = tornado.influenceRadius();
         double above = entity.getY() - tornado.getY();
-        if (distance > influence || above > HEIGHT * 0.6 || above < -4) {
+        float height = tornado.height();
+        if (distance > influence || above > height * 0.6 || above < -6) {
             return null;
         }
+        strength *= (float) tornado.kind().suction;
         double falloff = 1.0 - distance / influence;
         double nx = distance > 0.01 ? dx / distance : 0.0;
         double nz = distance > 0.01 ? dz / distance : 0.0;
-        double core = tornado.radiusAt((float) Math.max(0, above)) * 1.3;
-        double inward = 0.05 * falloff * strength;
-        double spin = 0.16 * falloff * strength;
-        double lift = distance < core ? 0.13 * strength : 0.025 * falloff * strength;
-        if (above > HEIGHT * 0.35) {
+        double core = tornado.radiusAt((float) Math.max(0, above)) * 1.5 + 1.0;
+        double inward = 0.09 * Math.sqrt(falloff) * strength;
+        double spin = 0.14 * falloff * strength;
+        double lift;
+        if (distance < core) {
+            lift = 0.21 * strength;
+        } else if (distance < core * 2.0) {
+            lift = 0.11 * strength * (2.0 - distance / core); // tapering updraft around the funnel
+        } else {
+            lift = 0.02 * falloff * strength;
+        }
+        if (above > height * 0.35) {
             // spat out near the top
             inward = -0.12 * strength;
             lift = 0.0;
@@ -244,6 +342,9 @@ public class TornadoEntity extends Entity {
         this.entityData.set(DATA_WIDTH, tag.getFloat("Width"));
         this.entityData.set(DATA_LIFETIME, tag.getInt("Lifetime"));
         this.entityData.set(DATA_AGE, tag.getInt("Age"));
+        Kind kind = Kind.byId(tag.getString("Kind"));
+        this.entityData.set(DATA_KIND, (byte) (kind == null ? 0 : kind.ordinal()));
+        this.entityData.set(DATA_HEIGHT, tag.contains("Height") ? tag.getFloat("Height") : 70.0F);
     }
 
     @Override
@@ -252,5 +353,7 @@ public class TornadoEntity extends Entity {
         tag.putFloat("Width", width());
         tag.putInt("Lifetime", this.entityData.get(DATA_LIFETIME));
         tag.putInt("Age", age());
+        tag.putString("Kind", kind().id());
+        tag.putFloat("Height", height());
     }
 }

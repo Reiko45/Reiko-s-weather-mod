@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "level=0": {
+      "model": "reikos_weather:block/rain_barrel"
+    },
+    "level=1": {
+      "model": "reikos_weather:block/rain_barrel_level1"
+    },
+    "level=2": {
+      "model": "reikos_weather:block/rain_barrel_level2"
+    },
+    "level=3": {
+      "model": "reikos_weather:block/rain_barrel_level3"
+    }
+  }
+}

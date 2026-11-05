@@ -1,0 +1,30 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:weather_station"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.weather_station"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.weather_station.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "reikos_weather:weather_station"
+          }
+        ]
+      }
+    }
+  }
+}

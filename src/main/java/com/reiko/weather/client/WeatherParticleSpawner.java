@@ -9,6 +9,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.client.ParticleStatus;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -46,6 +48,42 @@ public final class WeatherParticleSpawner {
             if (precip == Precip.HAIL && ClientConfig.SOUNDS.get() && RANDOM.nextFloat() < rate * 0.35F) {
                 playHailSound(level, camera, rate);
             }
+        }
+        spawnRipples(level, camera, density);
+        spawnMist(level, camera, density);
+    }
+
+    /** Raindrops ringing out on nearby water. */
+    private static void spawnRipples(ClientLevel level, Vec3 camera, float density) {
+        float rain = ClientWeather.rain();
+        if (rain < 0.2F || !ClientConfig.WET_GROUND.get()) {
+            return;
+        }
+        float wanted = rain * 10.0F * density;
+        for (int i = 0; i < wanted; i++) {
+            int x = (int) Math.floor(camera.x + (RANDOM.nextDouble() * 2 - 1) * 14);
+            int z = (int) Math.floor(camera.z + (RANDOM.nextDouble() * 2 - 1) * 14);
+            BlockPos water = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - 1, z);
+            FluidState fluid = level.getFluidState(water);
+            if (fluid.is(FluidTags.WATER) && Math.abs(water.getY() - camera.y) < 16
+                    && level.getBiome(water).value().getPrecipitationAt(water) == Biome.Precipitation.RAIN) {
+                double y = water.getY() + fluid.getHeight(level, water) + 0.01;
+                level.addParticle(ModParticles.RIPPLE.get(), x + RANDOM.nextDouble(), y, z + RANDOM.nextDouble(), 0, 0, 0);
+            }
+        }
+    }
+
+    /** Low banks of morning mist. */
+    private static void spawnMist(ClientLevel level, Vec3 camera, float density) {
+        float mist = ClientWeather.mist();
+        if (mist < 0.15F || RANDOM.nextFloat() > mist * density * 0.6F) {
+            return;
+        }
+        double x = camera.x + (RANDOM.nextDouble() * 2 - 1) * 18;
+        double z = camera.z + (RANDOM.nextDouble() * 2 - 1) * 18;
+        int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) Math.floor(x), (int) Math.floor(z));
+        if (Math.abs(top - camera.y) < 12) {
+            level.addParticle(ModParticles.MIST.get(), x, top + 0.2 + RANDOM.nextDouble() * 1.2, z, 0, 0, 0);
         }
     }
 

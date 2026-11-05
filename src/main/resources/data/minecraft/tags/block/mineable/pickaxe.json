@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "reikos_weather:weather_station",
+    "reikos_weather:tornado_siren"
+  ]
+}

@@ -4,6 +4,7 @@ import com.reiko.weather.client.particle.FunnelParticle;
 import com.reiko.weather.client.sound.TornadoSoundInstance;
 import com.reiko.weather.config.ClientConfig;
 import com.reiko.weather.entity.TornadoEntity;
+import com.reiko.weather.registry.ModParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -31,10 +32,11 @@ public final class TornadoClient {
         float strength = tornado.strength();
         if (FunnelParticle.sprites != null) {
             float density = (float) Math.max(0.35, ClientConfig.PARTICLE_DENSITY.get());
-            int count = Mth.ceil(26 * density * (0.3F + 0.7F * strength));
+            int base = switch (tornado.kind()) { case TORNADO -> 26; case WATERSPOUT -> 20; case DUST_DEVIL -> 9; };
+            int count = Mth.ceil(base * density * (0.3F + 0.7F * strength));
             for (int i = 0; i < count; i++) {
                 float t = level.random.nextFloat();
-                float height = t * t * TornadoEntity.HEIGHT * 0.9F;
+                float height = t * t * tornado.height() * 0.9F;
                 float angle = level.random.nextFloat() * Mth.TWO_PI;
                 mc.particleEngine.add(new FunnelParticle(level, tornado, angle, height, FunnelParticle.sprites));
             }
@@ -65,6 +67,14 @@ public final class TornadoClient {
             int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(x), Mth.floor(z));
             BlockState ground = level.getBlockState(BlockPos.containing(x, top - 1, z));
             double tx = -Math.sin(angle) * 0.6, tz = Math.cos(angle) * 0.6;
+            if (tornado.kind() == TornadoEntity.Kind.WATERSPOUT) {
+                level.addParticle(level.random.nextBoolean() ? ParticleTypes.SPLASH : ParticleTypes.CLOUD, x, top + 0.2, z, tx * 0.6, 0.3, tz * 0.6);
+                continue;
+            }
+            if (tornado.kind() == TornadoEntity.Kind.DUST_DEVIL) {
+                level.addParticle(ModParticles.SAND.get(), x, top + 0.2 + level.random.nextDouble(), z, tx * 0.5, 0.15, tz * 0.5);
+                continue;
+            }
             if (!ground.isAir() && level.random.nextBoolean()) {
                 level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, ground), x, top + 0.2, z, tx, 0.5 + level.random.nextDouble() * 0.5, tz);
             } else {

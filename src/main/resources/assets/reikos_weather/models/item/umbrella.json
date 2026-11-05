@@ -1,0 +1,17 @@
+{
+  "loader": "neoforge:separate_transforms",
+  "base": {
+    "parent": "reikos_weather:item/umbrella_open"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "reikos_weather:item/umbrella_icon"
+    },
+    "fixed": {
+      "parent": "reikos_weather:item/umbrella_icon"
+    },
+    "ground": {
+      "parent": "reikos_weather:item/umbrella_icon"
+    }
+  }
+}

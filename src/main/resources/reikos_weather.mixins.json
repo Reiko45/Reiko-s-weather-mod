@@ -3,6 +3,12 @@
   "minVersion": "0.8",
   "package": "com.reiko.weather.mixin",
   "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BiomeMixin",
+    "LevelMixin",
+    "ServerLevelMixin",
+    "ServerGamePacketListenerImplAccessor"
+  ],
   "client": [
     "ClientLevelMixin",
     "LevelRendererMixin"

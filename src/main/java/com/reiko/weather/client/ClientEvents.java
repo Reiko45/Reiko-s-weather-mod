@@ -3,11 +3,13 @@ package com.reiko.weather.client;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.reiko.weather.client.particle.FunnelParticle;
 import com.reiko.weather.client.particle.HailParticle;
+import com.reiko.weather.client.particle.RippleParticle;
 import com.reiko.weather.client.particle.StreakParticle;
 import com.reiko.weather.client.particle.WindBlownParticle;
 import com.reiko.weather.client.sound.WindSoundInstance;
 import com.reiko.weather.config.WeatherConfig;
 import com.reiko.weather.network.SyncedWeather;
+import com.reiko.weather.registry.ModBlocks;
 import com.reiko.weather.registry.ModEntities;
 import com.reiko.weather.registry.ModParticles;
 import com.reiko.weather.weather.Wind;
@@ -25,7 +27,12 @@ import net.minecraft.world.level.material.FogType;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
 public final class ClientEvents {
@@ -76,6 +83,14 @@ public final class ClientEvents {
                     p.setColor(Math.min(1, (color >> 16 & 255) / 255.0F * shade), Math.min(1, (color >> 8 & 255) / 255.0F * shade), Math.min(1, (color & 255) / 255.0F * shade));
                     return p;
                 });
+        event.registerSpriteSet(ModParticles.MIST.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.MIST);
+                    p.setColor(0.94F, 0.95F, 0.97F);
+                    return p;
+                });
+        event.registerSpriteSet(ModParticles.RIPPLE.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new RippleParticle(level, x, y, z, sprites));
         event.registerSpriteSet(ModParticles.FUNNEL.get(), sprites -> {
             FunnelParticle.sprites = sprites;
             return (type, level, x, y, z, xd, yd, zd) -> null;
@@ -84,6 +99,24 @@ public final class ClientEvents {
 
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.TORNADO.get(), NoopRenderer::new);
+    }
+
+    public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+        event.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 0x3F76E4,
+                ModBlocks.PUDDLE.get(), ModBlocks.RAIN_BARREL.get());
+    }
+
+    public static void registerGuiLayers(RegisterGuiLayersEvent event) {
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ForecastHud.ID, ForecastHud::render);
+    }
+
+    public static void onRenderStage(RenderLevelStageEvent event) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+            Vec3 cam = event.getCamera().getPosition();
+            float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+            WetGroundRenderer.render(cam);
+            CloudDeckRenderer.render(cam, partialTick);
+        }
     }
 
     // ------------------------------------------------------------------ game bus
@@ -159,7 +192,11 @@ public final class ClientEvents {
         float r = event.getRed(), g = event.getGreen(), b = event.getBlue();
         float tr, tg, tb;
         float daylight = (float) Math.sqrt(mc.level.getSkyDarken((float) event.getPartialTick()));
-        if (ClientWeather.fogAutoGray()) {
+        if (ClientWeather.mistDominates()) {
+            tr = 0.9F * daylight;
+            tg = 0.91F * daylight;
+            tb = 0.93F * daylight;
+        } else if (ClientWeather.fogAutoGray()) {
             float lum = r * 0.3F + g * 0.59F + b * 0.11F;
             tr = tg = lum;
             tb = lum * 1.04F;

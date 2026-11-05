@@ -39,19 +39,19 @@ public final class WeatherProfiles {
 
         put(WeatherType.HEAVY_RAIN,
                 builder().rain(1.0F).overcast(0.6F).fog(0.6F).wind(0.4F).precip(Precip.SNOW, 1.0F).snowLayers(2).build(),
-                builder().rain(1.0F).overcast(0.6F).fog(0.55F).wind(0.45F).precip(Precip.DOWNPOUR, 1.0F).cropBoost().build(),
+                builder().rain(1.0F).overcast(0.6F).fog(0.55F).wind(0.45F).precip(Precip.DOWNPOUR, 1.0F).cropBoost().floods().build(),
                 builder().rain(1.0F).overcast(0.6F).wind(0.4F).precip(Precip.DUST, 0.5F).build());
 
         put(WeatherType.THUNDERSTORM,
                 builder().rain(1.0F).thunder(1.0F).overcast(0.5F).fog(0.4F).wind(0.5F).precip(Precip.SNOW, 0.5F).build(),
-                builder().rain(1.0F).thunder(1.0F).overcast(0.5F).fog(0.35F).wind(0.55F).precip(Precip.DOWNPOUR, 0.4F).cropBoost().build(),
+                builder().rain(1.0F).thunder(1.0F).overcast(0.5F).fog(0.35F).wind(0.55F).precip(Precip.DOWNPOUR, 0.4F).cropBoost().floods().waterspouts().build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.5F).wind(0.6F).precip(Precip.DUST, 0.6F).build());
 
         put(WeatherType.SUPERCELL,
                 builder().rain(1.0F).thunder(1.0F).overcast(0.85F).fog(0.5F).wind(0.7F)
                         .precip(Precip.SNOW, 1.0F).precip(Precip.HAIL, 0.4F).hail().lightning(4.0F).build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.9F).tint(STORM_GREEN, 0.35F).fog(0.4F).wind(0.7F)
-                        .precip(Precip.HAIL, 0.6F).precip(Precip.DOWNPOUR, 0.5F).hail().lightning(6.0F).tornadoes().build(),
+                        .precip(Precip.HAIL, 0.6F).precip(Precip.DOWNPOUR, 0.5F).hail().lightning(6.0F).tornadoes().waterspouts().floods().build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.85F).tint(STORM_GREEN, 0.3F).fog(0.35F).wind(0.75F)
                         .precip(Precip.DUST, 1.0F).lightning(4.0F).tornadoes().build());
 
@@ -59,7 +59,7 @@ public final class WeatherProfiles {
                 builder().rain(1.0F).thunder(1.0F).overcast(0.85F).tint(SNOW_WHITE, 0.4F).fog(0.85F, SNOW_WHITE).wind(1.0F)
                         .precip(Precip.BLIZZARD, 1.2F).freeze(0.6F).snowLayers(3).lightning(2.0F).build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.9F).fog(0.65F).wind(1.0F)
-                        .precip(Precip.DOWNPOUR, 1.2F).precip(Precip.LEAVES, 0.6F).lightning(3.0F).build(),
+                        .precip(Precip.DOWNPOUR, 1.2F).precip(Precip.LEAVES, 0.6F).lightning(3.0F).floods().waterspouts().build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.8F).tint(SAND, 0.5F).fog(0.78F, SAND_FOG).wind(1.0F)
                         .precip(Precip.SAND, 1.2F).lightning(2.0F).build());
 
@@ -71,6 +71,13 @@ public final class WeatherProfiles {
         put(WeatherType.SLEET,
                 builder().rain(0.6F).overcast(0.6F).fog(0.35F).wind(0.35F).precip(Precip.SLEET, 1.0F).freeze(0.35F).glazeWater().build(),
                 builder().rain(0.6F).overcast(0.6F).fog(0.3F).wind(0.35F).precip(Precip.SLEET, 1.0F).freeze(0.35F).glazeWater().build(),
+                builder().rain(0.4F).overcast(0.5F).wind(0.3F).build());
+
+        put(WeatherType.ICE_STORM,
+                builder().rain(0.8F).overcast(0.7F).tint(0xC8D4E0, 0.2F).fog(0.35F, 0xC8D2DC).wind(0.25F)
+                        .precip(Precip.SLEET, 0.8F).freeze(0.3F).glazeWater().glazeGround().build(),
+                builder().rain(0.8F).overcast(0.7F).tint(0xC8D4E0, 0.2F).fog(0.3F, 0xC8D2DC).wind(0.25F)
+                        .precip(Precip.DOWNPOUR, 0.5F).precip(Precip.SLEET, 0.5F).freeze(0.3F).glazeWater().glazeGround().build(),
                 builder().rain(0.4F).overcast(0.5F).wind(0.3F).build());
 
         put(WeatherType.SNOW,
@@ -93,7 +100,7 @@ public final class WeatherProfiles {
         put(WeatherType.SANDSTORM,
                 builder().overcast(0.2F).wind(0.7F).precip(Precip.BLIZZARD, 0.3F).build(),
                 builder().overcast(0.25F).fog(0.2F, 0xBFAE8E).wind(0.75F).precip(Precip.DUST, 0.8F).precip(Precip.LEAVES, 0.4F).build(),
-                builder().overcast(0.5F).tint(SAND, 0.75F).fog(0.82F, SAND_FOG).wind(0.9F).precip(Precip.SAND, 2.0F).precip(Precip.DUST, 1.0F).build());
+                builder().overcast(0.5F).tint(SAND, 0.75F).fog(0.82F, SAND_FOG).wind(0.9F).clouds(0.0F).precip(Precip.SAND, 2.0F).precip(Precip.DUST, 1.0F).build());
 
         put(WeatherType.HEATWAVE,
                 WeatherProfile.NONE,
