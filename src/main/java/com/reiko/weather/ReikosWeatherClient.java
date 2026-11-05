@@ -1,0 +1,31 @@
+package com.reiko.weather;
+
+import com.reiko.weather.client.ClientEvents;
+import com.reiko.weather.client.SkyEffectsRenderer;
+import com.reiko.weather.client.TornadoClient;
+import com.reiko.weather.entity.TornadoEntity;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.NeoForge;
+
+@Mod(value = ReikosWeather.MOD_ID, dist = Dist.CLIENT)
+public class ReikosWeatherClient {
+    public ReikosWeatherClient(IEventBus modBus, ModContainer container) {
+        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+
+        modBus.addListener(ClientEvents::registerParticles);
+        modBus.addListener(ClientEvents::registerRenderers);
+
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onLoggingOut);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderFog);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onFogColor);
+        NeoForge.EVENT_BUS.addListener(SkyEffectsRenderer::onRenderStage);
+
+        TornadoEntity.clientTicker = TornadoClient::tick;
+    }
+}

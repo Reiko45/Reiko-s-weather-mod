@@ -1,0 +1,186 @@
+package com.reiko.weather.client;
+
+import com.mojang.blaze3d.shaders.FogShape;
+import com.reiko.weather.client.particle.FunnelParticle;
+import com.reiko.weather.client.particle.HailParticle;
+import com.reiko.weather.client.particle.StreakParticle;
+import com.reiko.weather.client.particle.WindBlownParticle;
+import com.reiko.weather.client.sound.WindSoundInstance;
+import com.reiko.weather.config.WeatherConfig;
+import com.reiko.weather.network.SyncedWeather;
+import com.reiko.weather.registry.ModEntities;
+import com.reiko.weather.registry.ModParticles;
+import com.reiko.weather.weather.Wind;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.material.FogType;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+
+public final class ClientEvents {
+    private static final float MIN_FOG_DISTANCE = 10.0F;
+    private static WindSoundInstance windSound;
+
+    // ------------------------------------------------------------------ mod bus
+
+    public static void registerParticles(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticles.HAIL.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new HailParticle(level, x, y, z, xd, yd, zd, sprites));
+        event.registerSpriteSet(ModParticles.SLEET.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    StreakParticle p = new StreakParticle(level, x, y, z, xd, yd, zd, sprites, 0.45F, 0.025F, false);
+                    p.setColor(0.85F, 0.92F, 1.0F);
+                    return p;
+                });
+        event.registerSpriteSet(ModParticles.DOWNPOUR.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    StreakParticle p = new StreakParticle(level, x, y, z, xd, yd, zd, sprites, 1.1F, 0.02F, true);
+                    p.setColor(0.62F, 0.7F, 0.85F);
+                    return p;
+                });
+        event.registerSpriteSet(ModParticles.SNOWFLAKE.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.SNOW));
+        event.registerSpriteSet(ModParticles.BLIZZARD.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.BLIZZARD));
+        event.registerSpriteSet(ModParticles.SAND.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.SAND);
+                    float shade = 0.85F + level.random.nextFloat() * 0.15F;
+                    p.setColor(0.86F * shade, 0.72F * shade, 0.5F * shade);
+                    return p;
+                });
+        event.registerSpriteSet(ModParticles.DUST.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.DUST);
+                    int color = ClientWeather.fogAutoGray() ? 0xB8A890 : rgb(ClientWeather.fogR(), ClientWeather.fogG(), ClientWeather.fogB());
+                    float shade = 0.85F + level.random.nextFloat() * 0.15F;
+                    p.setColor((color >> 16 & 255) / 255.0F * shade, (color >> 8 & 255) / 255.0F * shade, (color & 255) / 255.0F * shade);
+                    return p;
+                });
+        event.registerSpriteSet(ModParticles.LEAF.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.LEAF);
+                    int color = BiomeColors.getAverageFoliageColor(level, BlockPos.containing(x, y, z));
+                    float shade = 0.75F + level.random.nextFloat() * 0.35F;
+                    p.setColor(Math.min(1, (color >> 16 & 255) / 255.0F * shade), Math.min(1, (color >> 8 & 255) / 255.0F * shade), Math.min(1, (color & 255) / 255.0F * shade));
+                    return p;
+                });
+        event.registerSpriteSet(ModParticles.FUNNEL.get(), sprites -> {
+            FunnelParticle.sprites = sprites;
+            return (type, level, x, y, z, xd, yd, zd) -> null;
+        });
+    }
+
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.TORNADO.get(), NoopRenderer::new);
+    }
+
+    // ------------------------------------------------------------------ game bus
+
+    public static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.isPaused()) {
+            return;
+        }
+        ClientWeather.tick(mc);
+        WeatherParticleSpawner.tick(mc);
+        pushLocalPlayer(mc);
+        updateWindSound(mc);
+    }
+
+    private static void pushLocalPlayer(Minecraft mc) {
+        LocalPlayer player = mc.player;
+        if (player == null || mc.level == null || !ClientWeather.active() || player.isSpectator()
+                || !WeatherConfig.SPEC.isLoaded() || !WeatherConfig.WIND_PUSHES_ENTITIES.get()) {
+            return;
+        }
+        if (Wind.isExposed(mc.level, BlockPos.containing(player.getEyePosition()))) {
+            Wind.push(player, ClientWeather.windAngle(), ClientWeather.wind(), mc.level.getGameTime());
+        }
+    }
+
+    private static void updateWindSound(Minecraft mc) {
+        if (mc.level == null) {
+            windSound = null;
+            return;
+        }
+        if (WindSoundInstance.targetVolume() > 0.02F && (windSound == null || windSound.isStopped()
+                || !mc.getSoundManager().isActive(windSound))) {
+            windSound = new WindSoundInstance();
+            mc.getSoundManager().play(windSound);
+        }
+    }
+
+    public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        SyncedWeather.reset();
+        ClientWeather.reset();
+        windSound = null;
+    }
+
+    public static void onRenderFog(ViewportEvent.RenderFog event) {
+        float density = ClientWeather.fogDensity();
+        if (density <= 0.01F || event.getType() != FogType.NONE || blinded(event.getCamera().getEntity())) {
+            return;
+        }
+        float far = event.getFarPlaneDistance();
+        // visibility in blocks: ~160 in rain, ~55 in a downpour, ~24 in fog, ~14 in a whiteout
+        float visibility = Math.max(MIN_FOG_DISTANCE, 400.0F * (float) Math.exp(-3.6F * density));
+        float newFar = Math.min(far * (1.0F - 0.5F * density), visibility);
+        if (newFar >= far) {
+            return;
+        }
+        float newNear = event.getMode() == FogRenderer.FogMode.FOG_SKY ? 0.0F : newFar * (0.12F + 0.7F * (1.0F - density));
+        event.setFarPlaneDistance(newFar);
+        event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), newNear));
+        if (density > 0.4F) {
+            event.setFogShape(FogShape.SPHERE);
+        }
+        event.setCanceled(true);
+    }
+
+    public static void onFogColor(ViewportEvent.ComputeFogColor event) {
+        float weight = ClientWeather.fogColorWeight();
+        Minecraft mc = Minecraft.getInstance();
+        if (weight <= 0.01F || mc.level == null || event.getCamera().getFluidInCamera() != FogType.NONE
+                || blinded(event.getCamera().getEntity())) {
+            return;
+        }
+        float r = event.getRed(), g = event.getGreen(), b = event.getBlue();
+        float tr, tg, tb;
+        float daylight = (float) Math.sqrt(mc.level.getSkyDarken((float) event.getPartialTick()));
+        if (ClientWeather.fogAutoGray()) {
+            float lum = r * 0.3F + g * 0.59F + b * 0.11F;
+            tr = tg = lum;
+            tb = lum * 1.04F;
+        } else {
+            tr = ClientWeather.fogR() * daylight;
+            tg = ClientWeather.fogG() * daylight;
+            tb = ClientWeather.fogB() * daylight;
+        }
+        event.setRed(Mth.lerp(weight, r, tr));
+        event.setGreen(Mth.lerp(weight, g, tg));
+        event.setBlue(Mth.lerp(weight, b, Math.min(1.0F, tb)));
+    }
+
+    private static boolean blinded(Entity entity) {
+        return entity instanceof LivingEntity living
+                && (living.hasEffect(MobEffects.BLINDNESS) || living.hasEffect(MobEffects.DARKNESS));
+    }
+
+    private static int rgb(float r, float g, float b) {
+        return ((int) (r * 255) & 255) << 16 | ((int) (g * 255) & 255) << 8 | ((int) (b * 255) & 255);
+    }
+
+    private ClientEvents() {}
+}

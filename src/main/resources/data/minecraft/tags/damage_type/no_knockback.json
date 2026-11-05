@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "reikos_weather:hail",
+    "reikos_weather:tornado"
+  ]
+}

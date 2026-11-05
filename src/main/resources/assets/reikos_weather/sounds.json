@@ -1,0 +1,29 @@
+{
+  "weather.wind": {
+    "subtitle": "subtitles.reikos_weather.weather.wind",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/wind_loop",
+        "stream": true
+      }
+    ]
+  },
+  "weather.hail": {
+    "subtitle": "subtitles.reikos_weather.weather.hail",
+    "sounds": [
+      "reikos_weather:weather/hail1",
+      "reikos_weather:weather/hail2",
+      "reikos_weather:weather/hail3"
+    ]
+  },
+  "weather.tornado": {
+    "subtitle": "subtitles.reikos_weather.weather.tornado",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/tornado_loop",
+        "stream": true,
+        "attenuation_distance": 64
+      }
+    ]
+  }
+}
