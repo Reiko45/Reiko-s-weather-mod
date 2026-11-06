@@ -2,6 +2,9 @@ package com.reiko.weather.registry;
 
 import com.reiko.weather.ReikosWeather;
 import com.reiko.weather.item.BarometerItem;
+import com.reiko.weather.item.CloudSeedingRocketItem;
+import com.reiko.weather.item.HandheldRadarItem;
+import com.reiko.weather.item.ThermometerItem;
 import com.reiko.weather.item.UmbrellaItem;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BlockItem;
@@ -29,6 +32,18 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> WEATHER_STATION = REGISTER.registerSimpleBlockItem(ModBlocks.WEATHER_STATION);
     public static final DeferredItem<BlockItem> TORNADO_SIREN = REGISTER.registerSimpleBlockItem(ModBlocks.TORNADO_SIREN);
     public static final DeferredItem<BlockItem> RAIN_BARREL = REGISTER.registerSimpleBlockItem(ModBlocks.RAIN_BARREL);
+
+    public static final DeferredItem<ThermometerItem> THERMOMETER = REGISTER.register("thermometer",
+            () -> new ThermometerItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<HandheldRadarItem> HANDHELD_RADAR = REGISTER.register("handheld_radar",
+            () -> new HandheldRadarItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<CloudSeedingRocketItem> CLOUD_SEEDING_ROCKET = REGISTER.register("cloud_seeding_rocket",
+            () -> new CloudSeedingRocketItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<BlockItem> WEATHER_ALTAR = REGISTER.registerSimpleBlockItem(ModBlocks.WEATHER_ALTAR,
+            new Item.Properties().rarity(net.minecraft.world.item.Rarity.EPIC));
+    public static final DeferredItem<BlockItem> WEATHER_RADAR = REGISTER.registerSimpleBlockItem(ModBlocks.WEATHER_RADAR);
+    public static final DeferredItem<BlockItem> WEATHER_VANE = REGISTER.registerSimpleBlockItem(ModBlocks.WEATHER_VANE);
+    public static final DeferredItem<BlockItem> WINDMILL = REGISTER.registerSimpleBlockItem(ModBlocks.WINDMILL);
 
     private ModItems() {}
 }

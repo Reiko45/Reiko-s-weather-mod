@@ -7,11 +7,13 @@
     "BiomeMixin",
     "LevelMixin",
     "ServerLevelMixin",
-    "ServerGamePacketListenerImplAccessor"
+    "ServerGamePacketListenerImplAccessor",
+    "LightningBoltAccessor"
   ],
   "client": [
     "ClientLevelMixin",
-    "LevelRendererMixin"
+    "LevelRendererMixin",
+    "BiomeColorsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

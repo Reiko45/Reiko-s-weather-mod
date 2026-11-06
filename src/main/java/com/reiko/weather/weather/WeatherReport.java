@@ -13,19 +13,25 @@ import java.util.Locale;
 public final class WeatherReport {
     public static Component current(ServerLevel level, WeatherState state, BlockPos pos) {
         Climate climate = Climate.at(level, pos);
-        LocalWeather local = LocalWeather.resolve(state.type, state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5);
+        LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5);
         Component climateName = Component.translatable("climate.reikos_weather." + climate.name().toLowerCase(Locale.ROOT));
         if (local.cell() != null && local.cellWeight() >= 0.5F) {
             return Component.translatable("report.reikos_weather.current_cell",
                     local.type().displayName().withStyle(ChatFormatting.AQUA), climateName);
         }
         return Component.translatable("report.reikos_weather.current",
-                state.type.displayName().withStyle(ChatFormatting.AQUA), climateName,
+                backgroundName(state).withStyle(ChatFormatting.AQUA), climateName,
                 duration(state.remaining).withStyle(ChatFormatting.GRAY));
     }
 
+    /** The background weather's name, using a datapack weather's own name when one is active. */
+    public static MutableComponent backgroundName(WeatherState state) {
+        CustomWeather custom = CustomWeathers.of(state);
+        return custom != null ? custom.displayName() : state.type.displayName();
+    }
+
     public static Component wind(ServerLevel level, WeatherState state, BlockPos pos) {
-        LocalWeather local = LocalWeather.resolve(state.type, state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
+        LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
         float strength = local.profile().wind * local.intensity();
         return Component.translatable("report.reikos_weather.wind",
                 Component.literal(String.valueOf(Wind.kmh(strength))).withStyle(ChatFormatting.WHITE),
@@ -37,7 +43,8 @@ public final class WeatherReport {
         boolean first = true;
         for (WeatherState.Forecast f : state.forecast) {
             line.append(first ? Component.literal(" ") : Component.literal(" → ").withStyle(ChatFormatting.DARK_GRAY));
-            line.append(f.type().displayName().withStyle(ChatFormatting.YELLOW));
+            CustomWeather custom = CustomWeathers.get(f.custom());
+            line.append((custom != null ? custom.displayName() : f.type().displayName()).withStyle(ChatFormatting.YELLOW));
             first = false;
         }
         return line;

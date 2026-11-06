@@ -28,8 +28,15 @@ public final class ForecastHud {
     private static final ResourceLocation ICONS = ReikosWeather.id("textures/gui/weather_icons.png");
     private static final int ICON = 16;
     private static final int ICON_COUNT = WeatherType.values().length;
+    /** Bottom edge of the panel drawn this frame (0 when hidden), so other panels can stack under it. */
+    private static int bottom;
+
+    public static int bottom() {
+        return bottom;
+    }
 
     public static void render(GuiGraphics graphics, DeltaTracker delta) {
+        bottom = 0;
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null || mc.level == null || mc.level.dimension() != Level.OVERWORLD
                 || !SyncedWeather.managed() || mc.getDebugOverlay().showDebugScreen()) {
@@ -44,7 +51,8 @@ public final class ForecastHud {
         WeatherType local = ClientWeather.type();
         WeatherType background = SyncedWeather.type();
         List<Component> lines = new ArrayList<>();
-        lines.add(local.displayName().withStyle(ChatFormatting.WHITE));
+        com.reiko.weather.weather.CustomWeather custom = com.reiko.weather.weather.CustomWeathers.client(SyncedWeather.custom());
+        lines.add((local == background && custom != null ? custom.displayName() : local.displayName()).withStyle(ChatFormatting.WHITE));
         lines.add(local == background
                 ? WeatherReport.duration(SyncedWeather.remaining()).withStyle(ChatFormatting.GRAY)
                 : Component.translatable("hud.reikos_weather.storm_overhead").withStyle(ChatFormatting.GOLD));
@@ -84,6 +92,7 @@ public final class ForecastHud {
         int y = 4;
         graphics.fill(x, y, x + width, y + height, 0x90000000);
         graphics.renderOutline(x, y, width, height, 0x40FFFFFF);
+        bottom = y + height;
 
         icon(graphics, local, x + 4, y + 5);
         int ty = y + 5;

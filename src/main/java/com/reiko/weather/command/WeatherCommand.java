@@ -27,7 +27,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
+import com.reiko.weather.otherworld.OtherworldType;
+import com.reiko.weather.otherworld.OtherworldWeather;
+import com.reiko.weather.weather.CustomWeather;
+import com.reiko.weather.weather.CustomWeathers;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * /rweather query | forecast | set &lt;type&gt; [seconds] | next | tornado [pos] [kind]
@@ -52,9 +61,8 @@ public final class WeatherCommand {
                 .then(Commands.literal("query").executes(WeatherCommand::query))
                 .then(Commands.literal("forecast").executes(WeatherCommand::forecast))
                 .then(Commands.literal("set").requires(s -> s.hasPermission(2))
-                        .then(Commands.argument("type", StringArgumentType.word())
-                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
-                                        Arrays.stream(WeatherType.values()).map(WeatherType::id), builder))
+                        .then(Commands.argument("type", ResourceLocationArgument.id())
+                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(setSuggestions(ctx.getSource()), builder))
                                 .executes(ctx -> set(ctx, -1))
                                 .then(Commands.argument("seconds", IntegerArgumentType.integer(1, 1_000_000))
                                         .executes(ctx -> set(ctx, IntegerArgumentType.getInteger(ctx, "seconds"))))))
@@ -96,6 +104,13 @@ public final class WeatherCommand {
 
     private static int query(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         CommandSourceStack source = ctx.getSource();
+        OtherworldType other = OtherworldWeather.active(source.getLevel());
+        if (other != null) {
+            OtherworldWeather.State s = OtherworldWeather.state(source.getLevel());
+            source.sendSuccess(() -> Component.translatable("report.reikos_weather.otherworld",
+                    other.displayName().withStyle(net.minecraft.ChatFormatting.AQUA), WeatherReport.duration(s.remaining)), false);
+            return other.ordinal();
+        }
         WeatherState state = requireState(source);
         ServerLevel overworld = source.getServer().overworld();
         BlockPos pos = source.getLevel() == overworld ? BlockPos.containing(source.getPosition()) : overworld.getSharedSpawnPos();
@@ -114,18 +129,55 @@ public final class WeatherCommand {
         return state.forecast.size();
     }
 
+    /** Built-in ids, datapack ids, or Nether/End weathers when run from there. */
+    private static List<String> setSuggestions(CommandSourceStack source) {
+        List<String> ids = new ArrayList<>();
+        if (OtherworldWeather.handles(source.getLevel())) {
+            for (OtherworldType t : OtherworldType.values()) {
+                if (t.validIn(source.getLevel())) ids.add(t.id());
+            }
+            return ids;
+        }
+        for (WeatherType t : WeatherType.values()) ids.add(t.id());
+        for (CustomWeather c : CustomWeathers.all()) ids.add(c.id().toString());
+        return ids;
+    }
+
     private static int set(CommandContext<CommandSourceStack> ctx, int seconds) throws CommandSyntaxException {
-        String id = StringArgumentType.getString(ctx, "type");
-        WeatherType type = WeatherType.byId(id);
+        ResourceLocation rl = ResourceLocationArgument.getId(ctx, "type");
+        String id = rl.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE) ? rl.getPath() : rl.toString();
+        CommandSourceStack source = ctx.getSource();
+        if (OtherworldWeather.handles(source.getLevel())) {
+            return setOtherworld(source, id, seconds);
+        }
+        CustomWeather custom = CustomWeathers.get(rl.toString());
+        WeatherType type = custom != null ? custom.base() : WeatherType.byId(id);
         if (type == null) {
             throw UNKNOWN_TYPE.create(id);
         }
-        CommandSourceStack source = ctx.getSource();
         WeatherState state = requireState(source);
         ServerLevel overworld = source.getServer().overworld();
-        int duration = seconds > 0 ? seconds * 20 : type.randomDuration(overworld.random);
-        WeatherManager.setWeather(overworld, state, type, duration);
-        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.set", type.displayName(), WeatherReport.duration(duration)), true);
+        int duration = seconds > 0 ? seconds * 20 : custom != null ? custom.randomDuration(overworld.random) : type.randomDuration(overworld.random);
+        WeatherManager.setWeather(overworld, state, type, duration, custom != null ? custom.id().toString() : null);
+        Component name = custom != null ? custom.displayName() : type.displayName();
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.set", name, WeatherReport.duration(duration)), true);
+        return 1;
+    }
+
+    private static int setOtherworld(CommandSourceStack source, String id, int seconds) throws CommandSyntaxException {
+        OtherworldType type = OtherworldType.byId(id);
+        ServerLevel level = source.getLevel();
+        if (type == null || !type.validIn(level)) {
+            throw UNKNOWN_TYPE.create(id);
+        }
+        if (OtherworldWeather.active(level) == null) {
+            throw DISABLED.create();
+        }
+        int duration = seconds > 0 ? seconds * 20 : -1;
+        OtherworldWeather.State state = OtherworldWeather.state(level);
+        OtherworldWeather.set(level, state, type, duration);
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.set", type.displayName(),
+                WeatherReport.duration(state.remaining)), true);
         return 1;
     }
 
@@ -133,7 +185,7 @@ public final class WeatherCommand {
         CommandSourceStack source = ctx.getSource();
         WeatherState state = requireState(source);
         WeatherManager.skip(source.getServer().overworld());
-        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.next", state.type.displayName()), true);
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.next", WeatherReport.backgroundName(state)), true);
         return 1;
     }
 
@@ -219,8 +271,7 @@ public final class WeatherCommand {
         }
         ServerLevel overworld = source.getServer().overworld();
         Seasons.setSeason(overworld, state, season);
-        Seasons.compute(overworld, state);
-        WeatherManager.sync(overworld, state);
+        WeatherManager.refreshSeason(overworld, state);
         source.sendSuccess(() -> Component.translatable("commands.reikos_weather.season.set", season.displayName()), true);
         return season.ordinal() + 1;
     }

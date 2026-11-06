@@ -2,6 +2,11 @@ package com.reiko.weather.registry;
 
 import com.reiko.weather.ReikosWeather;
 import com.reiko.weather.block.IceGlazeBlock;
+import com.reiko.weather.block.IcicleBlock;
+import com.reiko.weather.block.WeatherAltarBlock;
+import com.reiko.weather.block.WeatherRadarBlock;
+import com.reiko.weather.block.WeatherVaneBlock;
+import com.reiko.weather.block.WindmillBlock;
 import com.reiko.weather.block.PuddleBlock;
 import com.reiko.weather.block.RainBarrelBlock;
 import com.reiko.weather.block.TornadoSirenBlock;
@@ -32,6 +37,23 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL)));
 
     public static final DeferredBlock<RainBarrelBlock> RAIN_BARREL = REGISTER.register("rain_barrel", () -> new RainBarrelBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F).sound(SoundType.WOOD).noOcclusion()));
+
+    public static final DeferredBlock<IcicleBlock> ICICLE = REGISTER.register("icicle", () -> new IcicleBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.2F).sound(SoundType.GLASS).noCollission()
+                    .noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY).noLootTable().dynamicShape()));
+
+    public static final DeferredBlock<WeatherAltarBlock> WEATHER_ALTAR = REGISTER.register("weather_altar", () -> new WeatherAltarBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(50.0F, 1200.0F).sound(SoundType.AMETHYST)
+                    .lightLevel(s -> 10).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<WeatherRadarBlock> WEATHER_RADAR = REGISTER.register("weather_radar", () -> new WeatherRadarBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).lightLevel(s -> 4)));
+
+    public static final DeferredBlock<WeatherVaneBlock> WEATHER_VANE = REGISTER.register("weather_vane", () -> new WeatherVaneBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(2.0F).sound(SoundType.COPPER).noOcclusion()));
+
+    public static final DeferredBlock<WindmillBlock> WINDMILL = REGISTER.register("windmill", () -> new WindmillBlock(
             BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F).sound(SoundType.WOOD).noOcclusion()));
 
     private ModBlocks() {}

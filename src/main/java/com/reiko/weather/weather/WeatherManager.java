@@ -76,11 +76,17 @@ public final class WeatherManager {
         if (state == null) {
             return null;
         }
-        return LocalWeather.resolve(state.type, state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
+        return LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
     }
 
     public static Seasons.Info seasonInfo() {
         return seasonInfo;
+    }
+
+    /** Recomputes the season straight away (after /rweather season or /time) and tells the clients. */
+    public static void refreshSeason(ServerLevel level, WeatherState state) {
+        seasonInfo = Seasons.compute(level, state);
+        sync(level, state);
     }
 
     // ------------------------------------------------------------------ events
@@ -210,7 +216,7 @@ public final class WeatherManager {
 
     private static void advance(ServerLevel level, WeatherState state) {
         WeatherState.Forecast next = state.forecast.isEmpty() ? pick(level, state.type) : state.forecast.remove(0);
-        setWeather(level, state, next.type(), next.duration());
+        setWeather(level, state, next.type(), next.duration(), CustomWeathers.get(next.custom()) != null ? next.custom() : null);
         refillForecast(level, state);
     }
 
@@ -220,8 +226,14 @@ public final class WeatherManager {
     }
 
     public static void setWeather(ServerLevel level, WeatherState state, WeatherType type, int duration) {
+        setWeather(level, state, type, duration, null);
+    }
+
+    /** Sets the background weather; {@code custom} names a datapack weather built on {@code type}. */
+    public static void setWeather(ServerLevel level, WeatherState state, WeatherType type, int duration, @Nullable String custom) {
         WeatherType previous = state.type;
         state.type = type;
+        state.custom = custom;
         state.remaining = Math.max(1, duration);
         state.elapsed = 0;
         if (type.vanillaRain) {
@@ -288,6 +300,28 @@ public final class WeatherManager {
             if (after == WeatherType.OVERCAST && t.vanillaRain) w *= 1.5F;
             weights[i] = w;
             total += w;
+        }
+        // datapack weathers join the same draw
+        List<CustomWeather> customs = new ArrayList<>(CustomWeathers.all());
+        float[] customWeights = new float[customs.size()];
+        float customTotal = 0.0F;
+        for (int i = 0; i < customs.size(); i++) {
+            CustomWeather c = customs.get(i);
+            float w = c.weightFor(seasonInfo.season(), mix);
+            if (c.base() == after) w *= 0.15F;
+            customWeights[i] = w;
+            customTotal += w;
+        }
+        if (customTotal > 0.0F && level.random.nextFloat() * (total + customTotal) < customTotal) {
+            float roll = level.random.nextFloat() * customTotal;
+            for (int i = 0; i < customs.size(); i++) {
+                roll -= customWeights[i];
+                if (roll <= 0.0F && customWeights[i] > 0.0F) {
+                    CustomWeather c = customs.get(i);
+                    int duration = Math.max(200, Math.round(c.randomDuration(level.random) * WeatherConfig.DURATION_MULTIPLIER.get().floatValue()));
+                    return new WeatherState.Forecast(c.base(), duration, c.id().toString());
+                }
+            }
         }
         WeatherType chosen = weightedPick(types, weights, total, level.random, WeatherType.CLEAR);
         return new WeatherState.Forecast(chosen, scaledDuration(chosen, level.random));
@@ -446,7 +480,7 @@ public final class WeatherManager {
         Seasons.Info season = seasonInfo;
         return new WeatherSyncPayload(state.type.ordinal(), state.elapsed, state.remaining, state.windAngle, state.rainbowTicks,
                 season.season() == null ? -1 : season.season().ordinal(), season.dayOfSeason(), season.daysPerSeason(),
-                season.temperatureShift(), forecast, cells);
+                season.temperatureShift(), forecast, cells, state.custom != null && CustomWeathers.of(state) != null ? state.custom : "");
     }
 
     public static void sync(ServerLevel level, WeatherState state) {

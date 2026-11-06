@@ -8,7 +8,10 @@ import com.reiko.weather.item.GearEvents;
 import com.reiko.weather.mob.WeatherMobs;
 import com.reiko.weather.network.ModNetwork;
 import com.reiko.weather.registry.ModArmorMaterials;
+import com.reiko.weather.registry.ModBlockEntities;
 import com.reiko.weather.registry.ModBlocks;
+import com.reiko.weather.otherworld.OtherworldWeather;
+import com.reiko.weather.weather.LightningEvents;
 import com.reiko.weather.registry.ModEntities;
 import com.reiko.weather.registry.ModItems;
 import com.reiko.weather.registry.ModParticles;
@@ -40,6 +43,7 @@ public class ReikosWeather {
 
     public ReikosWeather(IEventBus modBus, ModContainer container) {
         ModBlocks.REGISTER.register(modBus);
+        ModBlockEntities.REGISTER.register(modBus);
         ModArmorMaterials.REGISTER.register(modBus);
         ModParticles.REGISTER.register(modBus);
         ModSounds.REGISTER.register(modBus);
@@ -64,6 +68,13 @@ public class ReikosWeather {
         NeoForge.EVENT_BUS.addListener(GearEvents::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(WeatherMobs::onFinalizeSpawn);
         NeoForge.EVENT_BUS.addListener(WeatherMobs::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(LightningEvents::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(OtherworldWeather::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(OtherworldWeather::onEntityTick);
+        NeoForge.EVENT_BUS.addListener(OtherworldWeather::onPlayerChangedDimension);
+        NeoForge.EVENT_BUS.addListener(OtherworldWeather::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.weather.CustomWeathers::onAddReloadListeners);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.weather.CustomWeathers::onDatapackSync);
     }
 
     public static ResourceLocation id(String path) {
@@ -73,14 +84,24 @@ public class ReikosWeather {
     private static void addCreativeTabContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModItems.BAROMETER.get());
+            event.accept(ModItems.THERMOMETER.get());
+            event.accept(ModItems.HANDHELD_RADAR.get());
             event.accept(ModItems.UMBRELLA.get());
+            event.accept(ModItems.CLOUD_SEEDING_ROCKET.get());
         } else if (event.getTabKey() == CreativeModeTabs.COMBAT) {
             event.accept(ModItems.WINTER_COAT.get());
             event.accept(ModItems.GOGGLES.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(ModItems.WEATHER_RADAR.get());
+            event.accept(ModItems.WEATHER_VANE.get());
+            event.accept(ModItems.WINDMILL.get());
             event.accept(ModItems.WEATHER_STATION.get());
             event.accept(ModItems.TORNADO_SIREN.get());
         } else if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(ModItems.WEATHER_RADAR.get());
+            event.accept(ModItems.WEATHER_VANE.get());
+            event.accept(ModItems.WINDMILL.get());
+            event.accept(ModItems.WEATHER_ALTAR.get());
             event.accept(ModItems.WEATHER_STATION.get());
             event.accept(ModItems.TORNADO_SIREN.get());
             event.accept(ModItems.RAIN_BARREL.get());

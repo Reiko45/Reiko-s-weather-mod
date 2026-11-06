@@ -34,5 +34,41 @@
         "attenuation_distance": 96
       }
     ]
+  },
+  "weather.rain_roof": {
+    "subtitle": "subtitles.reikos_weather.weather.rain_roof",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/rain_roof",
+        "stream": true
+      }
+    ]
+  },
+  "weather.wind_whistle": {
+    "subtitle": "subtitles.reikos_weather.weather.wind_whistle",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/wind_whistle",
+        "stream": true
+      }
+    ]
+  },
+  "entity.ball_lightning": {
+    "subtitle": "subtitles.reikos_weather.entity.ball_lightning",
+    "sounds": [
+      {
+        "name": "reikos_weather:entity/ball_lightning",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "weather.avalanche": {
+    "subtitle": "subtitles.reikos_weather.weather.avalanche",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/avalanche",
+        "attenuation_distance": 64
+      }
+    ]
   }
 }

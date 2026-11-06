@@ -4,6 +4,7 @@ import com.reiko.weather.config.ClientConfig;
 import com.reiko.weather.network.SyncedWeather;
 import com.reiko.weather.registry.ModItems;
 import com.reiko.weather.weather.Climate;
+import com.reiko.weather.weather.CustomWeathers;
 import com.reiko.weather.weather.LocalWeather;
 import com.reiko.weather.weather.Precip;
 import com.reiko.weather.weather.SkyPhenomena;
@@ -43,6 +44,7 @@ public final class ClientWeather {
     private static boolean fogAutoGray = true;
     private static final float[] precipRates = new float[Precip.values().length];
     private static float windAngle;
+    private static LocalWeather local;
     private static float rainbow, aurora, mist, wetness, backgroundClouds;
     private static int localRainbowTicks;
 
@@ -62,8 +64,8 @@ public final class ClientWeather {
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
         BlockPos camPos = BlockPos.containing(cam);
         climate = Climate.at(level, camPos);
-        LocalWeather local = managed
-                ? LocalWeather.resolve(SyncedWeather.type(), 1.0F, SyncedWeather.cells(), climate, cam.x, cam.z)
+        local = managed
+                ? LocalWeather.resolve(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), 1.0F, SyncedWeather.cells(), climate, cam.x, cam.z)
                 : null;
         previousType = type;
         type = local != null ? local.type() : WeatherType.CLEAR;
@@ -76,7 +78,7 @@ public final class ClientWeather {
         wind = approach(wind, target.wind, 0.005F);
         float skyLight = level.getBrightness(LightLayer.SKY, camPos) / 15.0F;
         exposure = approach(exposure, skyLight, 0.02F);
-        float bgClouds = managed ? WeatherProfiles.get(SyncedWeather.type(), climate).clouds : 0.0F;
+        float bgClouds = managed ? CustomWeathers.backgroundProfile(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), climate).clouds : 0.0F;
         backgroundClouds = approach(backgroundClouds, bgClouds, 0.003F);
 
         float tr = (target.tint >> 16 & 255) / 255.0F, tg = (target.tint >> 8 & 255) / 255.0F, tb = (target.tint & 255) / 255.0F;
@@ -126,9 +128,13 @@ public final class ClientWeather {
 
         if (managed && ClientConfig.HEAT_LIGHTNING.get() && sun < -0.1F && level.getSkyFlashTime() <= 0) {
             boolean hotNight = target.heatLightning;
-            boolean distantStorm = distantThunderCell(cam.x, cam.z);
+            double stormDistance = distantThunderCell(cam.x, cam.z);
+            boolean distantStorm = stormDistance >= 0;
             if ((hotNight || distantStorm) && RANDOM.nextInt(hotNight ? 160 : 260) == 0) {
                 level.setSkyFlashTime(2);
+                if (!hotNight) {
+                    com.reiko.weather.client.sound.AmbientSounds.distantRumble(stormDistance);
+                }
             }
         }
 
@@ -176,18 +182,21 @@ public final class ClientWeather {
         return wet >= 4;
     }
 
-    private static boolean distantThunderCell(double x, double z) {
+    /** Distance to the edge of the nearest thunderstorm cell within 1500 blocks, or -1. */
+    private static double distantThunderCell(double x, double z) {
+        double best = -1;
         for (StormCell cell : SyncedWeather.cells()) {
             double edge = cell.distanceTo(x, z) - cell.radius;
-            if (cell.type.vanillaThunder && edge > 0 && edge < 1500) {
-                return true;
+            if (cell.type.vanillaThunder && edge > 0 && edge < 1500 && (best < 0 || edge < best)) {
+                best = edge;
             }
         }
-        return false;
+        return best;
     }
 
     public static void reset() {
         active = false;
+        local = null;
         type = previousType = WeatherType.CLEAR;
         rain = thunder = overcast = fog = wind = tintStrength = fogColorWeight = rainbow = aurora = mist = wetness = backgroundClouds = 0.0F;
         localRainbowTicks = 0;
@@ -205,6 +214,8 @@ public final class ClientWeather {
     // ------------------------------------------------------------------ accessors
 
     public static boolean active() { return active; }
+    /** The weather resolved at the camera this tick (null outside the managed Overworld). */
+    @javax.annotation.Nullable public static LocalWeather local() { return local; }
     public static WeatherType type() { return type; }
     public static Climate climate() { return climate; }
     public static float wind() { return wind; }

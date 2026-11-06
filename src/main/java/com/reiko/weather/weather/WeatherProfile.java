@@ -131,10 +131,23 @@ public final class WeatherProfile {
     }
 
     public static final class Builder {
-        private float rain, thunder, overcast, tintStrength, fog, wind, freeze, lightning, clouds = -1;
-        private int tint = 0xFFFFFF, fogColor = -1, snowLayers;
-        private final float[] precip = new float[Precip.values().length];
-        private boolean hail, heat, cropBoost, glazeWater, glazeGround, puddles, floods, heatLightning, tornadoes, waterspouts;
+        // package-private so datapack weathers (CustomWeather) can override any field
+        float rain, thunder, overcast, tintStrength, fog, wind, freeze, lightning, clouds = -1;
+        int tint = 0xFFFFFF, fogColor = -1, snowLayers;
+        final float[] precip = new float[Precip.values().length];
+        boolean hail, heat, cropBoost, glazeWater, glazeGround, puddles, floods, heatLightning, tornadoes, waterspouts;
+
+        /** A builder pre-filled with an existing profile's values. */
+        public static Builder from(WeatherProfile p) {
+            Builder b = new Builder();
+            b.rain = p.rain; b.thunder = p.thunder; b.overcast = p.overcast; b.tint = p.tint; b.tintStrength = p.tintStrength;
+            b.fog = p.fog; b.fogColor = p.fogColor; b.wind = p.wind; b.clouds = p.clouds;
+            System.arraycopy(p.precip, 0, b.precip, 0, b.precip.length);
+            b.hail = p.hail; b.freeze = p.freeze; b.heat = p.heat; b.snowLayers = p.snowLayers; b.cropBoost = p.cropBoost;
+            b.glazeWater = p.glazeWater; b.glazeGround = p.glazeGround; b.puddles = p.puddles; b.floods = p.floods;
+            b.heatLightning = p.heatLightning; b.lightning = p.lightning; b.tornadoes = p.tornadoes; b.waterspouts = p.waterspouts;
+            return b;
+        }
 
         public Builder rain(float v) { rain = v; return this; }
         public Builder thunder(float v) { thunder = v; return this; }

@@ -1,7 +1,16 @@
 package com.reiko.weather.client;
 
 import com.mojang.blaze3d.shaders.FogShape;
+import com.reiko.weather.client.particle.EmberParticle;
 import com.reiko.weather.client.particle.FunnelParticle;
+import com.reiko.weather.client.render.BallLightningRenderer;
+import com.reiko.weather.client.render.WeatherVaneRenderer;
+import com.reiko.weather.client.render.WindmillRenderer;
+import com.reiko.weather.client.sound.AmbientSounds;
+import com.reiko.weather.network.OtherworldPayload;
+import com.reiko.weather.registry.ModBlockEntities;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import com.reiko.weather.client.particle.HailParticle;
 import com.reiko.weather.client.particle.RippleParticle;
 import com.reiko.weather.client.particle.StreakParticle;
@@ -91,6 +100,8 @@ public final class ClientEvents {
                 });
         event.registerSpriteSet(ModParticles.RIPPLE.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new RippleParticle(level, x, y, z, sprites));
+        event.registerSpriteSet(ModParticles.EMBER.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new EmberParticle(level, x, y, z, xd, yd, zd, sprites));
         event.registerSpriteSet(ModParticles.FUNNEL.get(), sprites -> {
             FunnelParticle.sprites = sprites;
             return (type, level, x, y, z, xd, yd, zd) -> null;
@@ -99,6 +110,16 @@ public final class ClientEvents {
 
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.TORNADO.get(), NoopRenderer::new);
+        event.registerEntityRenderer(ModEntities.BALL_LIGHTNING.get(), BallLightningRenderer::new);
+        event.registerEntityRenderer(ModEntities.CLOUD_SEEDING_ROCKET.get(), ThrownItemRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.WEATHER_VANE.get(), WeatherVaneRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.WINDMILL.get(), WindmillRenderer::new);
+    }
+
+    public static void registerModels(ModelEvent.RegisterAdditional event) {
+        event.register(WeatherVaneRenderer.ARROW);
+        event.register(WindmillRenderer.HEAD);
+        event.register(WindmillRenderer.BLADES);
     }
 
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
@@ -108,6 +129,7 @@ public final class ClientEvents {
 
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ForecastHud.ID, ForecastHud::render);
+        event.registerAbove(ForecastHud.ID, TemperatureHud.ID, TemperatureHud::render);
     }
 
     public static void onRenderStage(RenderLevelStageEvent event) {
@@ -128,6 +150,10 @@ public final class ClientEvents {
         }
         ClientWeather.tick(mc);
         WeatherParticleSpawner.tick(mc);
+        SeasonalColors.tick(mc);
+        OtherworldClient.tick(mc);
+        AmbientSounds.tick(mc);
+        TemperatureHud.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
     }
@@ -158,10 +184,16 @@ public final class ClientEvents {
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         SyncedWeather.reset();
         ClientWeather.reset();
+        AmbientSounds.reset();
+        com.reiko.weather.weather.CustomWeathers.resetClient();
+        OtherworldPayload.clientWeather = 0;
         windSound = null;
     }
 
     public static void onRenderFog(ViewportEvent.RenderFog event) {
+        if (event.getType() == FogType.NONE && !blinded(event.getCamera().getEntity()) && OtherworldClient.applyFog(event)) {
+            return;
+        }
         float density = ClientWeather.fogDensity();
         if (density <= 0.01F || event.getType() != FogType.NONE || blinded(event.getCamera().getEntity())) {
             return;
@@ -183,6 +215,10 @@ public final class ClientEvents {
     }
 
     public static void onFogColor(ViewportEvent.ComputeFogColor event) {
+        if (event.getCamera().getFluidInCamera() == FogType.NONE && !blinded(event.getCamera().getEntity())
+                && OtherworldClient.applyFogColor(event)) {
+            return;
+        }
         float weight = ClientWeather.fogColorWeight();
         Minecraft mc = Minecraft.getInstance();
         if (weight <= 0.01F || mc.level == null || event.getCamera().getFluidInCamera() != FogType.NONE

@@ -26,20 +26,24 @@ public class WindSoundInstance extends AbstractTickableSoundInstance {
     }
 
     public static float targetVolume() {
-        if (!ClientConfig.SOUNDS.get() || !ClientWeather.active()) {
+        if (!ClientConfig.SOUNDS.get()) {
             return 0.0F;
+        }
+        float otherworld = com.reiko.weather.client.OtherworldClient.windVolume();
+        if (!ClientWeather.active()) {
+            return otherworld;
         }
         float strength = Mth.clamp((ClientWeather.wind() - 0.3F) / 0.7F, 0.0F, 1.0F);
         Minecraft mc = Minecraft.getInstance();
         float gust = mc.level != null ? Wind.gust(mc.level.getGameTime(), 0.0F) : 1.0F;
-        return strength * (0.25F + 0.75F * ClientWeather.exposure()) * gust * 0.9F;
+        return Math.max(otherworld, strength * (0.25F + 0.75F * ClientWeather.exposure()) * gust * 0.9F);
     }
 
     @Override
     public void tick() {
         float target = targetVolume();
         this.volume = Mth.lerp(0.05F, this.volume, Math.max(0.001F, target));
-        this.pitch = 0.75F + ClientWeather.wind() * 0.45F;
+        this.pitch = 0.75F + Math.max(ClientWeather.wind(), com.reiko.weather.client.OtherworldClient.windVolume()) * 0.45F;
         if (target < 0.01F) {
             if (++silentTicks > 60) {
                 this.stop();

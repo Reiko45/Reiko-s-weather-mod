@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "N": {
+      "item": "minecraft:nether_star"
+    },
+    "G": {
+      "item": "minecraft:gold_block"
+    },
+    "B": {
+      "item": "reikos_weather:barometer"
+    },
+    "O": {
+      "item": "minecraft:crying_obsidian"
+    }
+  },
+  "pattern": [
+    "DND",
+    "GBG",
+    "OOO"
+  ],
+  "result": {
+    "count": 1,
+    "id": "reikos_weather:weather_altar"
+  }
+}

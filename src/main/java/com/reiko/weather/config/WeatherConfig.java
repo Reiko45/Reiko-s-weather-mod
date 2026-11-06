@@ -47,6 +47,21 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue WEATHER_MOBS;
     public static final ModConfigSpec.BooleanValue ANIMALS_SEEK_SHELTER;
 
+    public static final ModConfigSpec.BooleanValue TEMPERATURE;
+    public static final ModConfigSpec.BooleanValue WILDFIRES;
+    public static final ModConfigSpec.BooleanValue CROP_WILTING;
+    public static final ModConfigSpec.BooleanValue CAULDRON_EVAPORATION;
+    public static final ModConfigSpec.BooleanValue FREEZE_RIVERS;
+    public static final ModConfigSpec.BooleanValue ICICLES;
+    public static final ModConfigSpec.BooleanValue AVALANCHES;
+    public static final ModConfigSpec.BooleanValue FULGURITE;
+    public static final ModConfigSpec.BooleanValue BALL_LIGHTNING;
+    public static final ModConfigSpec.IntValue ALTAR_COOLDOWN;
+    public static final ModConfigSpec.BooleanValue OTHERWORLD_WEATHER;
+    public static final ModConfigSpec.BooleanValue FIRE_RAIN_IGNITES;
+    public static final ModConfigSpec.BooleanValue VOID_STORM_GUSTS;
+    public static final ModConfigSpec.BooleanValue CUSTOM_WEATHERS;
+
     public static final ModConfigSpec.BooleanValue TORNADOES;
     public static final ModConfigSpec.DoubleValue TORNADO_CHANCE;
     public static final ModConfigSpec.IntValue MAX_TORNADOES;
@@ -138,6 +153,50 @@ public final class WeatherConfig {
                 .define("weatherMobs", true);
         ANIMALS_SEEK_SHELTER = b.comment("Animals look for shelter under trees and roofs during storms.")
                 .define("animalsSeekShelter", true);
+        b.pop();
+
+        b.comment("Body temperature: cold and heat affect players depending on biome, season, time, weather,",
+                "clothing and nearby heat sources (campfires, fires, lava, furnaces...)").push("temperature");
+        TEMPERATURE = b.comment("Players freeze when it is too cold and get exhausted (and eventually heatstroke) when it is too hot.")
+                .define("enabled", true);
+        b.pop();
+
+        b.comment("Extreme weather").push("extremes");
+        WILDFIRES = b.comment("Heatwaves can start wildfires in dry grass in arid biomes (needs doFireTick and mobGriefing).")
+                .define("wildfires", true);
+        CROP_WILTING = b.comment("Heatwaves wilt crops on dry (unwatered) farmland.")
+                .define("cropWilting", true);
+        CAULDRON_EVAPORATION = b.comment("Heatwaves slowly dry out water cauldrons left in the sun.")
+                .define("cauldronEvaporation", true);
+        FREEZE_RIVERS = b.comment("Rivers and lakes freeze over solidly in winter and cold places (and thaw again later).")
+                .define("freezeRivers", true);
+        ICICLES = b.comment("Icicles grow under roof edges in the cold and can fall on players below.")
+                .define("icicles", true);
+        AVALANCHES = b.comment("Blizzards can set off small avalanches on snowy slopes (needs mobGriefing).")
+                .define("avalanches", true);
+        FULGURITE = b.comment("Lightning fuses sand into glass where it strikes.")
+                .define("fulgurite", true);
+        BALL_LIGHTNING = b.comment("Rare ball lightning drifts around during thunderstorms.")
+                .define("ballLightning", true);
+        b.pop();
+
+        b.comment("The Weather Altar (end-game weather control)").push("altar");
+        ALTAR_COOLDOWN = b.comment("Seconds between uses of a weather altar.")
+                .defineInRange("cooldownSeconds", 180, 0, 86400);
+        b.pop();
+
+        b.comment("Weather in the Nether and the End").push("otherworld");
+        OTHERWORLD_WEATHER = b.comment("Ash storms, ember falls and fire rain in the Nether; void storms in the End.")
+                .define("enabled", true);
+        FIRE_RAIN_IGNITES = b.comment("Fire rain can set exposed flammable blocks alight (needs doFireTick and mobGriefing).")
+                .define("fireRainIgnites", true);
+        VOID_STORM_GUSTS = b.comment("Void storm gusts push players and mobs toward the edge of End islands.")
+                .define("voidStormGusts", true);
+        b.pop();
+
+        b.comment("Data-driven weather").push("datapacks");
+        CUSTOM_WEATHERS = b.comment("Load extra weather types from datapacks (data/<namespace>/reikos_weather/weather/*.json).")
+                .define("customWeathers", true);
         b.pop();
 
         b.comment("Tornadoes spawned by supercell storms").push("tornadoes");

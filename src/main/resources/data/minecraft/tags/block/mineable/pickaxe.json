@@ -2,6 +2,9 @@
   "replace": false,
   "values": [
     "reikos_weather:weather_station",
-    "reikos_weather:tornado_siren"
+    "reikos_weather:tornado_siren",
+    "reikos_weather:weather_altar",
+    "reikos_weather:weather_radar",
+    "reikos_weather:weather_vane"
   ]
 }

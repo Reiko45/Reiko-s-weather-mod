@@ -17,6 +17,13 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue MIST;
     public static final ModConfigSpec.BooleanValue HEAT_LIGHTNING;
     public static final ModConfigSpec.EnumValue<HudMode> HUD;
+    public static final ModConfigSpec.BooleanValue SEASONAL_COLORS;
+    public static final ModConfigSpec.BooleanValue FALLING_LEAVES;
+    public static final ModConfigSpec.BooleanValue THUNDER_DELAY;
+    public static final ModConfigSpec.BooleanValue MUFFLE_INDOORS;
+    public static final ModConfigSpec.BooleanValue AMBIENT_LOOPS;
+    public static final ModConfigSpec.BooleanValue FAHRENHEIT;
+    public static final ModConfigSpec.IntValue STORM_CLOUD_RANGE;
 
     public enum HudMode { BAROMETER, ALWAYS, NEVER }
 
@@ -44,6 +51,21 @@ public final class ClientConfig {
                 .define("heatLightning", true);
         HUD = b.comment("When to show the forecast panel: while holding a barometer, always, or never.")
                 .defineEnum("forecastHud", HudMode.BAROMETER);
+        SEASONAL_COLORS = b.comment("Grass and leaves change colour with the seasons (skipped when Serene Seasons is installed).")
+                .define("seasonalColors", true);
+        FALLING_LEAVES = b.comment("Leaves drift down from trees in autumn.")
+                .define("fallingLeaves", true);
+        THUNDER_DELAY = b.comment("Thunder arrives after the flash, later the further away the strike is.")
+                .define("thunderDelay", true);
+        MUFFLE_INDOORS = b.comment("Weather sounds are muffled when you're indoors.")
+                .define("muffleIndoors", true);
+        AMBIENT_LOOPS = b.comment("Rain drumming on the roof indoors, and wind whistling around buildings.")
+                .define("ambientLoops", true);
+        FAHRENHEIT = b.comment("Show temperatures in Fahrenheit instead of Celsius.")
+                .define("fahrenheit", false);
+        STORM_CLOUD_RANGE = b.comment("How far out the storm cloud deck is drawn, in blocks. 0 = automatic",
+                        "(about 960, or matched to Distant Horizons' render distance when it is installed).")
+                .defineInRange("stormCloudRange", 0, 0, 16384);
         SPEC = b.build();
     }
 

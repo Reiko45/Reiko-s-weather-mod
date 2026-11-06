@@ -1,0 +1,29 @@
+{
+  "translate": "weather.reikos_weather.ashfall",
+  "base": "overcast",
+  "weight": 0,
+  "duration": [
+    300,
+    900
+  ],
+  "profile": {
+    "overcast": 0.95,
+    "fog": 0.45,
+    "fog_color": "#6E6A66",
+    "tint": "#8A8178",
+    "tint_strength": 0.45,
+    "wind": 0.2,
+    "clouds": 0.8,
+    "precipitation": {
+      "dust": 0.8
+    }
+  },
+  "climate_profiles": {
+    "cold": {
+      "precipitation": {
+        "dust": 0.5,
+        "snow": 0.3
+      }
+    }
+  }
+}

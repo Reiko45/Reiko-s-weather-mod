@@ -1,0 +1,234 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "minecraft:block/white_wool",
+    "spar": "minecraft:block/stripped_spruce_log",
+    "sail": "minecraft:block/white_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        1,
+        1.25
+      ],
+      "to": [
+        8.5,
+        25,
+        2.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spar"
+        },
+        "south": {
+          "texture": "#spar"
+        },
+        "east": {
+          "texture": "#spar"
+        },
+        "west": {
+          "texture": "#spar"
+        },
+        "up": {
+          "texture": "#spar"
+        },
+        "down": {
+          "texture": "#spar"
+        }
+      }
+    },
+    {
+      "from": [
+        -4,
+        12.5,
+        1.25
+      ],
+      "to": [
+        20,
+        13.5,
+        2.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spar"
+        },
+        "south": {
+          "texture": "#spar"
+        },
+        "east": {
+          "texture": "#spar"
+        },
+        "west": {
+          "texture": "#spar"
+        },
+        "up": {
+          "texture": "#spar"
+        },
+        "down": {
+          "texture": "#spar"
+        }
+      }
+    },
+    {
+      "from": [
+        8.5,
+        15,
+        1.5
+      ],
+      "to": [
+        11,
+        25,
+        2.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#sail"
+        },
+        "south": {
+          "texture": "#sail"
+        },
+        "east": {
+          "texture": "#sail"
+        },
+        "west": {
+          "texture": "#sail"
+        },
+        "up": {
+          "texture": "#sail"
+        },
+        "down": {
+          "texture": "#sail"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        1,
+        1.5
+      ],
+      "to": [
+        7.5,
+        11,
+        2.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#sail"
+        },
+        "south": {
+          "texture": "#sail"
+        },
+        "east": {
+          "texture": "#sail"
+        },
+        "west": {
+          "texture": "#sail"
+        },
+        "up": {
+          "texture": "#sail"
+        },
+        "down": {
+          "texture": "#sail"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        13.5,
+        1.5
+      ],
+      "to": [
+        20,
+        16,
+        2.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#sail"
+        },
+        "south": {
+          "texture": "#sail"
+        },
+        "east": {
+          "texture": "#sail"
+        },
+        "west": {
+          "texture": "#sail"
+        },
+        "up": {
+          "texture": "#sail"
+        },
+        "down": {
+          "texture": "#sail"
+        }
+      }
+    },
+    {
+      "from": [
+        -4,
+        10,
+        1.5
+      ],
+      "to": [
+        6,
+        12.5,
+        2.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#sail"
+        },
+        "south": {
+          "texture": "#sail"
+        },
+        "east": {
+          "texture": "#sail"
+        },
+        "west": {
+          "texture": "#sail"
+        },
+        "up": {
+          "texture": "#sail"
+        },
+        "down": {
+          "texture": "#sail"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        12,
+        0.75
+      ],
+      "to": [
+        9,
+        14,
+        1.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#spar"
+        },
+        "south": {
+          "texture": "#spar"
+        },
+        "east": {
+          "texture": "#spar"
+        },
+        "west": {
+          "texture": "#spar"
+        },
+        "up": {
+          "texture": "#spar"
+        },
+        "down": {
+          "texture": "#spar"
+        }
+      }
+    }
+  ]
+}

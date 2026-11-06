@@ -27,6 +27,8 @@ public final class SyncedWeather {
     private static int daysPerSeason = -1;
     private static WeatherType[] forecast = new WeatherType[0];
     private static List<StormCell> cells = List.of();
+    @Nullable
+    private static String custom;
 
     public static void accept(WeatherSyncPayload payload) {
         managed = payload.weather() >= 0;
@@ -43,6 +45,7 @@ public final class SyncedWeather {
             forecast[i] = WeatherType.byOrdinal(payload.forecast()[i]);
         }
         cells = new ArrayList<>(payload.cells());
+        custom = payload.custom().isEmpty() ? null : payload.custom();
         Seasons.setTemperatureShift(managed ? payload.temperatureShift() : 0.0F);
     }
 
@@ -65,10 +68,13 @@ public final class SyncedWeather {
         dayOfSeason = daysPerSeason = -1;
         forecast = new WeatherType[0];
         cells = List.of();
+        custom = null;
         Seasons.setTemperatureShift(0.0F);
     }
 
     public static boolean managed() { return managed; }
+    /** Id of the active datapack weather (built on {@link #type()}), or null. */
+    @Nullable public static String custom() { return custom; }
     public static WeatherType type() { return type; }
     public static int elapsed() { return elapsed; }
     public static int remaining() { return remaining; }

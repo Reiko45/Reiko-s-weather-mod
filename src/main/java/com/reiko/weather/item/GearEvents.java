@@ -28,6 +28,7 @@ public final class GearEvents {
         Player player = event.getEntity();
         if (player instanceof ServerPlayer serverPlayer) {
             serverTick(serverPlayer);
+            com.reiko.weather.temperature.TemperatureEffects.tick(serverPlayer);
         } else if (player.level().isClientSide && canHoldOpen(player) && player.getDeltaMovement().y < -0.08) {
             Vec3 motion = player.getDeltaMovement();
             if (motion.y < MAX_FALL_SPEED) {

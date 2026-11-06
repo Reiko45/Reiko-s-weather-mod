@@ -15,8 +15,8 @@ import java.util.List;
  */
 public record LocalWeather(WeatherType type, WeatherProfile profile, float intensity, @Nullable StormCell cell, float cellWeight) {
 
-    public static LocalWeather resolve(WeatherType background, float backgroundIntensity, List<StormCell> cells,
-                                       Climate climate, double x, double z) {
+    public static LocalWeather resolve(WeatherType background, @Nullable CustomWeather custom, float backgroundIntensity,
+                                       List<StormCell> cells, Climate climate, double x, double z) {
         StormCell best = null;
         float bestWeight = 0.0F;
         for (StormCell cell : cells) {
@@ -26,7 +26,7 @@ public record LocalWeather(WeatherType type, WeatherProfile profile, float inten
                 bestWeight = w;
             }
         }
-        WeatherProfile backgroundProfile = WeatherProfiles.get(background, climate);
+        WeatherProfile backgroundProfile = CustomWeathers.backgroundProfile(background, custom, climate);
         if (best == null) {
             return new LocalWeather(background, backgroundProfile, backgroundIntensity, null, 0.0F);
         }

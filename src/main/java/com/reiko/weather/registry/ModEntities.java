@@ -1,6 +1,8 @@
 package com.reiko.weather.registry;
 
 import com.reiko.weather.ReikosWeather;
+import com.reiko.weather.entity.BallLightningEntity;
+import com.reiko.weather.entity.CloudSeedingRocketEntity;
 import com.reiko.weather.entity.TornadoEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -19,6 +21,16 @@ public final class ModEntities {
                     .clientTrackingRange(16)
                     .updateInterval(2)
                     .build(ReikosWeather.id("tornado").toString()));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<BallLightningEntity>> BALL_LIGHTNING = REGISTER.register("ball_lightning",
+            () -> EntityType.Builder.<BallLightningEntity>of(BallLightningEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 0.6F).fireImmune().clientTrackingRange(8).updateInterval(2)
+                    .build(ReikosWeather.id("ball_lightning").toString()));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<CloudSeedingRocketEntity>> CLOUD_SEEDING_ROCKET = REGISTER.register("cloud_seeding_rocket",
+            () -> EntityType.Builder.<CloudSeedingRocketEntity>of(CloudSeedingRocketEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F).clientTrackingRange(8).updateInterval(1)
+                    .build(ReikosWeather.id("cloud_seeding_rocket").toString()));
 
     private ModEntities() {}
 }

@@ -23,16 +23,17 @@ import java.util.List;
  * @param temperatureShift biome temperature shift for the season
  * @param forecast         upcoming background weathers
  * @param cells            regional storm cells
+ * @param custom           id of the active datapack weather, or "" for none
  */
 public record WeatherSyncPayload(int weather, int elapsed, int remaining, float windAngle, int rainbow,
                                  int season, int dayOfSeason, int daysPerSeason, float temperatureShift,
-                                 int[] forecast, List<StormCell> cells) implements CustomPacketPayload {
+                                 int[] forecast, List<StormCell> cells, String custom) implements CustomPacketPayload {
     public static final Type<WeatherSyncPayload> TYPE = new Type<>(ReikosWeather.id("weather_sync"));
     public static final StreamCodec<FriendlyByteBuf, WeatherSyncPayload> STREAM_CODEC =
             StreamCodec.ofMember(WeatherSyncPayload::write, WeatherSyncPayload::read);
 
     public static WeatherSyncPayload unmanaged() {
-        return new WeatherSyncPayload(-1, 0, 0, 0.0F, 0, -1, -1, -1, 0.0F, new int[0], List.of());
+        return new WeatherSyncPayload(-1, 0, 0, 0.0F, 0, -1, -1, -1, 0.0F, new int[0], List.of(), "");
     }
 
     private void write(FriendlyByteBuf buf) {
@@ -50,6 +51,7 @@ public record WeatherSyncPayload(int weather, int elapsed, int remaining, float 
         for (StormCell cell : cells) {
             cell.write(buf);
         }
+        buf.writeUtf(custom);
     }
 
     private static WeatherSyncPayload read(FriendlyByteBuf buf) {
@@ -68,7 +70,8 @@ public record WeatherSyncPayload(int weather, int elapsed, int remaining, float 
         for (int i = 0; i < count; i++) {
             cells.add(StormCell.read(buf));
         }
-        return new WeatherSyncPayload(weather, elapsed, remaining, windAngle, rainbow, season, dayOfSeason, daysPerSeason, shift, forecast, cells);
+        String custom = buf.readUtf();
+        return new WeatherSyncPayload(weather, elapsed, remaining, windAngle, rainbow, season, dayOfSeason, daysPerSeason, shift, forecast, cells, custom);
     }
 
     @Override

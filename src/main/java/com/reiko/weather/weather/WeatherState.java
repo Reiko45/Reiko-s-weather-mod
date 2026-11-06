@@ -19,7 +19,12 @@ public class WeatherState extends SavedData {
 
     public static final Factory<WeatherState> FACTORY = new Factory<>(WeatherState::new, WeatherState::load);
 
-    public record Forecast(WeatherType type, int duration) {}
+    /** @param custom id of a datapack weather built on {@code type}, or null */
+    public record Forecast(WeatherType type, int duration, @javax.annotation.Nullable String custom) {
+        public Forecast(WeatherType type, int duration) {
+            this(type, duration, null);
+        }
+    }
 
     public boolean initialized;
     public WeatherType type = WeatherType.CLEAR;
@@ -36,6 +41,11 @@ public class WeatherState extends SavedData {
     public int cellCooldown = 6000;
     /** Shifts our own season calendar (set with /rweather season). */
     public int seasonOffsetDays;
+    /** Game time when the weather altar can be used again. */
+    public long altarReadyAt;
+    /** Id of the datapack-defined weather that is active, or null for a built-in one. */
+    @javax.annotation.Nullable
+    public String custom;
     /** Water sources placed by flash floods, removed again once the rain stops. */
     public final LongArrayList floodBlocks = new LongArrayList();
 
@@ -58,6 +68,7 @@ public class WeatherState extends SavedData {
             CompoundTag entry = new CompoundTag();
             entry.putString("type", f.type().id());
             entry.putInt("duration", f.duration());
+            if (f.custom() != null) entry.putString("custom", f.custom());
             list.add(entry);
         }
         tag.put("forecast", list);
@@ -70,6 +81,8 @@ public class WeatherState extends SavedData {
         tag.putInt("cellCooldown", cellCooldown);
         tag.putInt("seasonOffsetDays", seasonOffsetDays);
         tag.put("floodBlocks", new LongArrayTag(floodBlocks.toLongArray()));
+        tag.putLong("altarReadyAt", altarReadyAt);
+        if (custom != null) tag.putString("custom", custom);
         return tag;
     }
 
@@ -88,7 +101,7 @@ public class WeatherState extends SavedData {
             CompoundTag entry = list.getCompound(i);
             WeatherType ft = WeatherType.byId(entry.getString("type"));
             if (ft != null) {
-                state.forecast.add(new Forecast(ft, entry.getInt("duration")));
+                state.forecast.add(new Forecast(ft, entry.getInt("duration"), entry.contains("custom") ? entry.getString("custom") : null));
             }
         }
         ListTag cellList = tag.getList("cells", Tag.TAG_COMPOUND);
@@ -98,6 +111,8 @@ public class WeatherState extends SavedData {
         state.nextCellId = Math.max(1, tag.getInt("nextCellId"));
         state.cellCooldown = tag.contains("cellCooldown") ? tag.getInt("cellCooldown") : 6000;
         state.seasonOffsetDays = tag.getInt("seasonOffsetDays");
+        state.altarReadyAt = tag.getLong("altarReadyAt");
+        state.custom = tag.contains("custom") ? tag.getString("custom") : null;
         for (long pos : tag.getLongArray("floodBlocks")) {
             state.floodBlocks.add(pos);
         }

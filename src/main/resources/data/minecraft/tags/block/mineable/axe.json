@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:rain_barrel"
+    "reikos_weather:rain_barrel",
+    "reikos_weather:windmill"
   ]
 }

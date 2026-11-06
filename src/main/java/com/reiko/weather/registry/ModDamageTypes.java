@@ -9,6 +9,9 @@ import net.minecraft.world.damagesource.DamageType;
 public final class ModDamageTypes {
     public static final ResourceKey<DamageType> HAIL = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("hail"));
     public static final ResourceKey<DamageType> TORNADO = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("tornado"));
+    public static final ResourceKey<DamageType> ICICLE = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("icicle"));
+    public static final ResourceKey<DamageType> HEATSTROKE = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("heatstroke"));
+    public static final ResourceKey<DamageType> BALL_LIGHTNING = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("ball_lightning"));
 
     private ModDamageTypes() {}
 }

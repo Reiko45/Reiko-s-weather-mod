@@ -14,6 +14,18 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    // optional integrations (JEI, Serene Seasons, Distant Horizons) come from Modrinth's Maven
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 base {
@@ -72,6 +84,17 @@ configurations {
 }
 
 dependencies {
+    // compiled against so the JEI info pages work; never bundled
+    compileOnly "maven.modrinth:jei:${jei_version}"
+
+    // run the dev client/server with the integrations installed: ./gradlew runClient -PwithCompat
+    if (project.hasProperty('withCompat')) {
+        localRuntime "maven.modrinth:jei:${jei_version}"
+        localRuntime "maven.modrinth:mezzconfig:${mezzconfig_version}"
+        localRuntime "maven.modrinth:serene-seasons:${serene_seasons_version}"
+        localRuntime "maven.modrinth:glitchcore:${glitchcore_version}"
+        localRuntime "maven.modrinth:distanthorizons:${distant_horizons_version}"
+    }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

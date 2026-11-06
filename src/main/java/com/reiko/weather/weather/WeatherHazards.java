@@ -6,6 +6,7 @@ import com.reiko.weather.registry.ModBlocks;
 import com.reiko.weather.registry.ModDamageTypes;
 import com.reiko.weather.registry.ModEntities;
 import com.reiko.weather.registry.ModItems;
+import com.reiko.weather.temperature.TemperatureEffects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -57,7 +58,7 @@ public final class WeatherHazards {
                 continue;
             }
             Climate climate = Climate.at(level, player.blockPosition());
-            LocalWeather local = LocalWeather.resolve(state.type, state.intensity(), state.cells, climate, player.getX(), player.getZ());
+            LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, player.getX(), player.getZ());
             WeatherProfile profile = local.profile();
             float intensity = local.intensity();
 
@@ -100,6 +101,8 @@ public final class WeatherHazards {
                 trySpawnWhirlwinds(level, player, local, climate);
                 WeatherAdvancements.check(level, state, player, local, climate);
             }
+            LightningEvents.maybeSpawnBallLightning(level, player, local);
+            ExtremeWeather.tick(level, player, local, climate);
         }
         recedeFloods(level, state);
     }
@@ -379,7 +382,7 @@ public final class WeatherHazards {
         if (!Wind.isExposed(level, eyes)) {
             return;
         }
-        LocalWeather local = LocalWeather.resolve(state.type, state.intensity(), state.cells, Climate.at(level, eyes), entity.getX(), entity.getZ());
+        LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, eyes), entity.getX(), entity.getZ());
         WeatherProfile profile = local.profile();
         float intensity = local.intensity();
 
@@ -393,10 +396,11 @@ public final class WeatherHazards {
         if (profile.hail && (entity.tickCount + entity.getId()) % 20 == 0 && level.random.nextFloat() < 0.25F * intensity) {
             hailHit(living);
         }
-        if (profile.freeze > 0.0F && WeatherConfig.FREEZING.get()) {
+        boolean temperatureRules = living instanceof Player && TemperatureEffects.enabled();
+        if (profile.freeze > 0.0F && WeatherConfig.FREEZING.get() && !temperatureRules) {
             chill(living, profile.freeze * intensity, eyes);
         }
-        if (profile.heat && living instanceof Player player && level.isDay() && entity.tickCount % 20 == 0
+        if (profile.heat && !temperatureRules && living instanceof Player player && level.isDay() && entity.tickCount % 20 == 0
                 && !player.getAbilities().invulnerable && !player.hasEffect(MobEffects.FIRE_RESISTANCE) && !player.isInWaterOrRain()) {
             float exhaustion = (float) (WeatherConfig.HEAT_EXHAUSTION.get() * intensity);
             if (player.getItemBySlot(EquipmentSlot.CHEST).is(ModItems.WINTER_COAT.get())) {

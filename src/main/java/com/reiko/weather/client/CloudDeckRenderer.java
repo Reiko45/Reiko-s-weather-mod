@@ -27,10 +27,20 @@ import net.minecraft.world.phys.Vec3;
 public final class CloudDeckRenderer {
     private static final ResourceLocation TEXTURE = ReikosWeather.id("textures/environment/storm_clouds.png");
     private static final int GRID = 48;
-    private static final float CELL = 40.0F;
-    private static final float FADE_START = 560.0F;
-    private static final float FADE_END = GRID * CELL / 2.0F - CELL;
+    private static final float DEFAULT_RANGE = 960.0F;
     private static final float[][] LAYERS = {{0.0F, 256.0F, 1.0F}, {7.0F, 176.0F, 0.75F}};
+    /** Per-frame: deck radius in blocks, grid cell size, and the distance vertices are pulled in to. */
+    private static float range = DEFAULT_RANGE, cellSize = 40.0F, maxDistance = 1000.0F;
+
+    /** How far out the deck reaches: the config value, Distant Horizons' LOD distance, or about 960 blocks. */
+    public static float range() {
+        int configured = ClientConfig.STORM_CLOUD_RANGE.get();
+        if (configured > 0) {
+            return Math.max(256, configured);
+        }
+        int dh = com.reiko.weather.compat.DistantHorizonsCompat.renderDistanceBlocks();
+        return dh > 0 ? Mth.clamp(dh, DEFAULT_RANGE, 8192.0F) : DEFAULT_RANGE;
+    }
 
     public static void render(Vec3 cam, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
@@ -43,6 +53,13 @@ public final class CloudDeckRenderer {
             return;
         }
         float baseY = level.getSeaLevel() + 88.0F;
+        range = range();
+        final float CELL = cellSize = Math.max(40.0F, range * 2.0F / GRID);
+        final float FADE_END = GRID * CELL / 2.0F - CELL;
+        final float FADE_START = FADE_END * 0.6F;
+        // anything past the far clip plane is slid toward the camera along its view ray: it lands on the
+        // same pixel, so storms stay visible over Distant Horizons terrain beyond vanilla's view distance
+        maxDistance = mc.gameRenderer.getDepthFar() * 0.92F;
         double gx0 = Math.floor(cam.x / CELL) * CELL - GRID / 2.0 * CELL;
         double gz0 = Math.floor(cam.z / CELL) * CELL - GRID / 2.0 * CELL;
         float[] alpha = new float[(GRID + 1) * (GRID + 1)];
@@ -90,7 +107,7 @@ public final class CloudDeckRenderer {
                     if (a00 + a10 + a11 + a01 < 0.02F) {
                         continue;
                     }
-                    double x0 = gx0 + i * CELL, z0 = gz0 + j * CELL, x1 = x0 + CELL, z1 = z0 + CELL;
+                    double x0 = gx0 + i * cellSize, z0 = gz0 + j * cellSize, x1 = x0 + cellSize, z1 = z0 + cellSize;
                     vertex(buffer, x0, y, z0, cam, offX, offZ, scale, layerShade, a00 * layer[2]);
                     vertex(buffer, x1, y, z0, cam, offX, offZ, scale, layerShade, a10 * layer[2]);
                     vertex(buffer, x1, y, z1, cam, offX, offZ, scale, layerShade, a11 * layer[2]);
@@ -122,14 +139,15 @@ public final class CloudDeckRenderer {
             }
             double dx = cell.x - cam.x, dz = cell.z - cam.z;
             double distance = Math.sqrt(dx * dx + dz * dz);
-            if (distance - cell.radius < 40 || distance > 2200) {
+            float reach = Math.max(2200.0F, range + 1000.0F);
+            if (distance - cell.radius < 40 || distance > reach) {
                 continue;
             }
             double nx = dx / distance, nz = dz / distance;
-            double shown = Math.min(distance, 900.0);
+            double shown = Math.min(distance, Math.min(900.0, maxDistance * 0.9));
             double scale = shown / distance;
             float half = (float) (cell.radius * 0.75 * scale);
-            float alpha = 0.45F * cell.strength() * fogFade * (float) Mth.clamp((2200 - distance) / 600, 0, 1);
+            float alpha = 0.45F * cell.strength() * fogFade * (float) Mth.clamp((reach - distance) / 600, 0, 1);
             float cx = (float) (nx * shown), cz = (float) (nz * shown);
             float px = (float) -nz * half, pz = (float) nx * half;
             float top = (float) ((deckY - cam.y) * scale), bottom = (float) ((ground - cam.y) * scale);
@@ -158,7 +176,15 @@ public final class CloudDeckRenderer {
 
     private static void vertex(BufferBuilder buffer, double wx, float y, double wz, Vec3 cam, double offX, double offZ,
                                float scale, float shade, float alpha) {
-        buffer.addVertex((float) (wx - cam.x), y, (float) (wz - cam.z))
+        float rx = (float) (wx - cam.x), rz = (float) (wz - cam.z), ry = y;
+        float distance = Mth.sqrt(rx * rx + ry * ry + rz * rz);
+        if (distance > maxDistance) {
+            float k = maxDistance / distance;
+            rx *= k;
+            ry *= k;
+            rz *= k;
+        }
+        buffer.addVertex(rx, ry, rz)
                 .setUv((float) ((wx - offX) / scale), (float) ((wz - offZ) / scale))
                 .setColor(shade, shade, shade * 1.04F, Math.min(1.0F, alpha * 0.95F));
     }

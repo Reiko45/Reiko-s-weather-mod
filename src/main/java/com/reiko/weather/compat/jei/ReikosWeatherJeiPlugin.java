@@ -1,0 +1,37 @@
+package com.reiko.weather.compat.jei;
+
+import com.reiko.weather.ReikosWeather;
+import com.reiko.weather.registry.ModItems;
+import mezz.jei.api.IModPlugin;
+import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.registries.DeferredItem;
+
+import java.util.List;
+
+/** JEI information pages for every Reiko's Weather item. Only loaded when JEI is installed. */
+@JeiPlugin
+public class ReikosWeatherJeiPlugin implements IModPlugin {
+    private static final ResourceLocation UID = ReikosWeather.id("jei_plugin");
+
+    @Override
+    public ResourceLocation getPluginUid() {
+        return UID;
+    }
+
+    @Override
+    public void registerRecipes(IRecipeRegistration registration) {
+        List<DeferredItem<? extends Item>> items = List.of(ModItems.BAROMETER, ModItems.UMBRELLA, ModItems.WINTER_COAT, ModItems.GOGGLES,
+                ModItems.THERMOMETER, ModItems.HANDHELD_RADAR, ModItems.CLOUD_SEEDING_ROCKET, ModItems.WEATHER_STATION,
+                ModItems.TORNADO_SIREN, ModItems.RAIN_BARREL, ModItems.WEATHER_RADAR, ModItems.WEATHER_VANE, ModItems.WINDMILL,
+                ModItems.WEATHER_ALTAR);
+        for (DeferredItem<? extends Item> item : items) {
+            String key = "jei.reikos_weather." + BuiltInRegistries.ITEM.getKey(item.get()).getPath();
+            registration.addIngredientInfo(item.get(), Component.translatable(key));
+        }
+    }
+}

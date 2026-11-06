@@ -1,0 +1,25 @@
+{
+  "translate": "weather.reikos_weather.pollen_haze",
+  "base": "clear",
+  "weight": 3,
+  "duration": [
+    240,
+    600
+  ],
+  "seasons": [
+    "spring"
+  ],
+  "climates": [
+    "temperate"
+  ],
+  "profile": {
+    "fog": 0.18,
+    "fog_color": "#E8DC9A",
+    "tint": "#F2E6A0",
+    "tint_strength": 0.18,
+    "wind": 0.15,
+    "precipitation": {
+      "dust": 0.35
+    }
+  }
+}

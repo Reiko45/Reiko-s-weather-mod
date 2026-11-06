@@ -32,6 +32,8 @@ public final class Seasons {
     private static Method sereneGetState;
     @Nullable
     private static Method sereneGetSeason;
+    @Nullable
+    private static Method sereneCycleTicks, sereneSeasonDuration, sereneDayDuration;
 
     public record Info(@Nullable Season season, int dayOfSeason, int daysPerSeason, float temperatureShift) {
         public static final Info NONE = new Info(null, 0, 0, 0.0F);
@@ -74,9 +76,9 @@ public final class Seasons {
             return Info.NONE;
         }
         if (usingSereneSeasons()) {
-            Season season = sereneSeason(overworld);
             // Serene Seasons already adjusts biome temperatures itself
-            return season == null ? Info.NONE : new Info(season, -1, -1, 0.0F);
+            Info info = sereneSeason(overworld);
+            return info == null ? Info.NONE : info;
         }
         int daysPerSeason = WeatherConfig.DAYS_PER_SEASON.get();
         long day = overworld.getDayTime() / 24000L + state.seasonOffsetDays;
@@ -95,21 +97,44 @@ public final class Seasons {
         return new Info(season, dayOfSeason, daysPerSeason, shift);
     }
 
+    /** The season (and, when available, the day within it) from Serene Seasons' calendar. */
     @Nullable
-    private static Season sereneSeason(Level level) {
+    private static Info sereneSeason(Level level) {
         try {
             if (!sereneChecked) {
                 sereneChecked = true;
                 Class<?> helper = Class.forName("sereneseasons.api.season.SeasonHelper");
                 sereneGetState = helper.getMethod("getSeasonState", Level.class);
-                sereneGetSeason = sereneGetState.getReturnType().getMethod("getSeason");
+                Class<?> stateType = sereneGetState.getReturnType();
+                sereneGetSeason = stateType.getMethod("getSeason");
+                try {
+                    sereneCycleTicks = stateType.getMethod("getSeasonCycleTicks");
+                    sereneSeasonDuration = stateType.getMethod("getSeasonDuration");
+                    sereneDayDuration = stateType.getMethod("getDayDuration");
+                } catch (NoSuchMethodException e) {
+                    sereneCycleTicks = null; // older API: season only
+                }
             }
             if (sereneGetState == null || sereneGetSeason == null) {
                 return null;
             }
             Object state = sereneGetState.invoke(null, level);
-            Object season = state == null ? null : sereneGetSeason.invoke(state);
-            return season instanceof Enum<?> e ? Season.byId(e.name()) : null;
+            Object seasonObj = state == null ? null : sereneGetSeason.invoke(state);
+            Season season = seasonObj instanceof Enum<?> e ? Season.byId(e.name()) : null;
+            if (season == null) {
+                return null;
+            }
+            int dayOfSeason = -1, daysPerSeason = -1;
+            if (sereneCycleTicks != null && sereneSeasonDuration != null && sereneDayDuration != null) {
+                int ticks = (Integer) sereneCycleTicks.invoke(state);
+                int seasonTicks = (Integer) sereneSeasonDuration.invoke(state);
+                int dayTicks = (Integer) sereneDayDuration.invoke(state);
+                if (seasonTicks > 0 && dayTicks > 0) {
+                    daysPerSeason = Math.max(1, seasonTicks / dayTicks);
+                    dayOfSeason = Math.min(daysPerSeason - 1, Math.floorMod(ticks, seasonTicks) / dayTicks);
+                }
+            }
+            return new Info(season, dayOfSeason, daysPerSeason, 0.0F);
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             if (sereneGetState != null || !sereneChecked) {
                 ReikosWeather.LOGGER.warn("Could not read the season from Serene Seasons; using no seasons", e);
