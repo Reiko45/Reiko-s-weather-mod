@@ -1,0 +1,72 @@
+{
+  "textures": {
+    "particle": "reikos_weather:block/leaf_pile",
+    "pile": "reikos_weather:block/leaf_pile"
+  },
+  "render_type": "minecraft:cutout",
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        6,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            10,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            10,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            10,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "uv": [
+            0,
+            10,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#pile",
+          "tintindex": 0
+        },
+        "down": {
+          "texture": "#pile",
+          "tintindex": 0,
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

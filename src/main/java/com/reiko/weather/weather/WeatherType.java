@@ -31,7 +31,8 @@ public enum WeatherType {
     BLIZZARD    (true, false, 3, 3600, 7200, 1.5F, 0.1F, 0.0F),
     WINDY       (false, false, 8, 3600, 8400, 1.0F, 1.0F, 1.0F),
     SANDSTORM   (false, false, 4, 2400, 6000, 0.0F, 0.1F, 3.0F),
-    HEATWAVE    (false, false, 4, 6000, 12000, 0.0F, 0.6F, 2.0F);
+    HEATWAVE    (false, false, 4, 6000, 12000, 0.0F, 0.6F, 2.0F),
+    DERECHO     (true, true, 1, 2400, 4800, 0.2F, 1.0F, 0.3F);
 
     private static final WeatherType[] VALUES = values();
 
@@ -70,26 +71,26 @@ public enum WeatherType {
     }
 
     public boolean isSevere() {
-        return this == SUPERCELL || this == HURRICANE || this == BLIZZARD || this == SANDSTORM || this == ICE_STORM;
+        return this == SUPERCELL || this == HURRICANE || this == BLIZZARD || this == SANDSTORM || this == ICE_STORM || this == DERECHO;
     }
 
     /** Weathers that can also arrive as a regional storm cell drifting across the map. */
     public boolean isStorm() {
         return switch (this) {
-            case RAIN, HEAVY_RAIN, THUNDERSTORM, SUPERCELL, HURRICANE, HAIL, SLEET, ICE_STORM, SNOW, BLIZZARD, SANDSTORM -> true;
+            case RAIN, HEAVY_RAIN, THUNDERSTORM, SUPERCELL, HURRICANE, HAIL, SLEET, ICE_STORM, SNOW, BLIZZARD, SANDSTORM, DERECHO -> true;
             default -> false;
         };
     }
 
     /**
-     * Fixed 0-15 redstone code for the weather station (ice storm shares sleet's code, since there
-     * are 17 weathers and only 16 signal strengths).
+     * Fixed 0-15 redstone code for the weather station (ice storm shares sleet's code and a derecho
+     * shares the gale's, since there are 18 weathers and only 16 signal strengths).
      */
     public int signalCode() {
         return switch (this) {
             case CLEAR -> 0; case OVERCAST -> 1; case FOG -> 2; case DRIZZLE -> 3; case RAIN -> 4;
             case HEAVY_RAIN -> 5; case THUNDERSTORM -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
-            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY -> 13; case SANDSTORM -> 14;
+            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM -> 14;
             case HEATWAVE -> 15;
         };
     }

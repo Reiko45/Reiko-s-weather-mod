@@ -20,6 +20,14 @@ public abstract class ClientLevelMixin {
         return ClientWeather.modifyCloudColor(original);
     }
 
+    /** "Reduce flashing": no sky flashes from lightning at all. */
+    @org.spongepowered.asm.mixin.injection.Inject(method = "setSkyFlashTime", at = @At("HEAD"), cancellable = true)
+    private void reikos_weather$skyFlash(int time, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if (time > 0 && com.reiko.weather.config.ClientConfig.SPEC.isLoaded() && com.reiko.weather.config.ClientConfig.REDUCE_FLASHING.get()) {
+            ci.cancel();
+        }
+    }
+
     @ModifyReturnValue(method = "getSkyDarken", at = @At("RETURN"))
     private float reikos_weather$skyDarken(float original) {
         return ClientWeather.modifySkyDarken(original);

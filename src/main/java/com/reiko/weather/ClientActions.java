@@ -8,6 +8,9 @@ public interface ClientActions {
 
     void openRadar(Vec3 center, boolean followPlayer);
 
+    /** Opens the Weather Almanac (the guidebook). */
+    default void openGuide() {}
+
     final class Holder {
         public static ClientActions instance = NOOP;
 

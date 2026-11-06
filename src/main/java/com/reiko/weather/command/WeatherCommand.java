@@ -16,6 +16,7 @@ import com.reiko.weather.weather.WeatherManager;
 import com.reiko.weather.weather.WeatherReport;
 import com.reiko.weather.weather.WeatherState;
 import com.reiko.weather.weather.WeatherType;
+import com.reiko.weather.weather.Wind;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -86,6 +87,10 @@ public final class WeatherCommand {
                         .executes(ctx -> meteor(ctx.getSource(), ctx.getSource().getPosition()))
                         .then(Commands.argument("pos", Vec3Argument.vec3())
                                 .executes(ctx -> meteor(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos")))))
+                .then(Commands.literal("wind").requires(s -> s.hasPermission(2))
+                        .then(Commands.argument("from", StringArgumentType.word())
+                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(WIND_FROM, builder))
+                                .executes(WeatherCommand::setWind)))
                 .then(Commands.literal("storms").executes(WeatherCommand::listStorms)
                         .then(Commands.literal("clear").requires(s -> s.hasPermission(2)).executes(WeatherCommand::clearStorms)))
                 .then(Commands.literal("season").executes(WeatherCommand::querySeason)
@@ -126,6 +131,8 @@ public final class WeatherCommand {
         if (storm != null) source.sendSuccess(() -> storm, false);
         Component terrain = WeatherReport.microclimate(overworld, state, pos);
         if (terrain != null) source.sendSuccess(() -> terrain, false);
+        Component tide = WeatherReport.tide(overworld, pos);
+        if (tide != null) source.sendSuccess(() -> tide, false);
         return state.type.ordinal();
     }
 
@@ -271,6 +278,25 @@ public final class WeatherCommand {
         Component season = WeatherReport.season();
         ctx.getSource().sendSuccess(() -> season != null ? season : Component.translatable("commands.reikos_weather.season.off"), false);
         return WeatherManager.seasonInfo().season() == null ? 0 : WeatherManager.seasonInfo().season().ordinal() + 1;
+    }
+
+    /** Compass points the wind can blow from, in the order of their angle (the wind blowing east is angle 0). */
+    private static final java.util.List<String> WIND_FROM = java.util.List.of("w", "nw", "n", "ne", "e", "se", "s", "sw");
+
+    private static int setWind(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        String from = StringArgumentType.getString(ctx, "from").toLowerCase(java.util.Locale.ROOT);
+        int index = WIND_FROM.indexOf(from);
+        if (index < 0) {
+            throw UNKNOWN_TYPE.create(from);
+        }
+        CommandSourceStack source = ctx.getSource();
+        WeatherState state = requireState(source);
+        state.windAngle = index * net.minecraft.util.Mth.TWO_PI / 8.0F;
+        state.setDirty();
+        WeatherManager.sync(source.getServer().overworld(), state);
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.wind.set",
+                Component.translatable("direction.reikos_weather." + Wind.compassFrom(state.windAngle))), true);
+        return index;
     }
 
     private static int setSeason(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

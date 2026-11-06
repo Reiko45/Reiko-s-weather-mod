@@ -80,5 +80,26 @@ public final class ModBlocks {
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(5.0F, 9.0F).sound(SoundType.ANCIENT_DEBRIS)
                     .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<com.reiko.weather.block.FallenBranchBlock> FALLEN_BRANCH = REGISTER.register("fallen_branch",
+            () -> new com.reiko.weather.block.FallenBranchBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5F)
+                    .sound(SoundType.WOOD).noOcclusion().randomTicks().ignitedByLava().pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredBlock<com.reiko.weather.block.LeafPileBlock> LEAF_PILE = REGISTER.register("leaf_pile",
+            () -> new com.reiko.weather.block.LeafPileBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.1F)
+                    .sound(SoundType.AZALEA_LEAVES).noOcclusion().replaceable().ignitedByLava().pushReaction(PushReaction.DESTROY)
+                    .isViewBlocking((s, l, p) -> false).isSuffocating((s, l, p) -> false)));
+
+    public static final DeferredBlock<com.reiko.weather.block.RiceCropBlock> RICE = REGISTER.register("rice",
+            () -> new com.reiko.weather.block.RiceCropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission()
+                    .randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredBlock<com.reiko.weather.block.KaleCropBlock> KALE = REGISTER.register("kale",
+            () -> new com.reiko.weather.block.KaleCropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission()
+                    .randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredBlock<com.reiko.weather.block.IceboxBlock> ICEBOX = REGISTER.register("icebox",
+            () -> new com.reiko.weather.block.IceboxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(2.5F)
+                    .sound(SoundType.WOOD).ignitedByLava()));
+
     private ModBlocks() {}
 }

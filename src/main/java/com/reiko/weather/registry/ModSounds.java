@@ -20,6 +20,8 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> BIRDSONG = register("ambient.birdsong");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRICKETS = register("ambient.crickets");
     public static final DeferredHolder<SoundEvent, SoundEvent> METEOR = register("entity.meteor");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_ALERT = register("item.weather_radio.alert");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEESE = register("ambient.geese");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(ReikosWeather.id(name)));

@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/make_a_wish",
+  "display": {
+    "icon": {
+      "id": "minecraft:red_dye"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.blood_moon"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.blood_moon.desc"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -18,7 +18,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-/** Draws rainbows and auroras onto the sky dome, right after vanilla's sky. */
+/** Draws rainbows, auroras, halos, sun dogs, sunbeams and the blood moon onto the sky dome, right after vanilla's sky. */
 public final class SkyEffectsRenderer {
     private static final float DOME = 100.0F;
 
@@ -45,7 +45,9 @@ public final class SkyEffectsRenderer {
         }
         float rainbow = ClientWeather.rainbow();
         float aurora = ClientWeather.aurora();
-        if (rainbow <= 0.005F && aurora <= 0.005F && !ShootingStars.any()) {
+        float halo = ClientWeather.halo();
+        float blood = ClientWeather.bloodMoon();
+        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && !ShootingStars.any()) {
             return;
         }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
@@ -80,6 +82,24 @@ public final class SkyEffectsRenderer {
 
         float night = Mth.clamp((-sun.y - 0.1F) * 4.0F, 0.0F, 1.0F);
         ShootingStars.render(pose, partialTick, night * clearSky);
+
+        if (halo > 0.005F) {
+            // around the sun by day, the (fainter) moon by night
+            Vector3f moon = new Vector3f(sun).negate();
+            if (sun.y > -0.05F) {
+                drawHalo(pose, sun, halo * 0.22F * Mth.clamp((sun.y + 0.05F) * 6.0F, 0.0F, 1.0F));
+                if (sun.y < 0.6F) {
+                    float dogs = halo * Mth.clamp((0.6F - sun.y) * 4.0F, 0.0F, 1.0F) * Mth.clamp((sun.y + 0.05F) * 8.0F, 0.0F, 1.0F);
+                    drawSunDogs(pose, sun, dogs);
+                }
+            }
+            if (moon.y > -0.05F) {
+                drawHalo(pose, moon, halo * 0.12F * Mth.clamp((moon.y + 0.05F) * 6.0F, 0.0F, 1.0F) * night);
+            }
+        }
+        if (blood > 0.005F) {
+            drawBloodMoon(pose, new Vector3f(sun).negate(), blood);
+        }
 
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
@@ -142,6 +162,176 @@ public final class SkyEffectsRenderer {
                 .add(new Vector3f(u).mul(Mth.cos(phi) * s))
                 .add(new Vector3f(v).mul(Mth.sin(phi) * s))
                 .mul(DOME);
+    }
+
+    /** A 22-degree ring of light around the sun or moon, faintly red on the inside. */
+    private static void drawHalo(Matrix4f pose, Vector3f center, float alpha) {
+        if (alpha <= 0.003F) {
+            return;
+        }
+        Vector3f[] basis = basis(center);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[][] bands = {{20.6F, 0.0F}, {21.6F, 1.0F}, {22.6F, 0.7F}, {24.5F, 0.0F}};
+        float[][] colors = {{1.0F, 0.6F, 0.45F}, {1.0F, 0.85F, 0.75F}, {0.9F, 0.93F, 1.0F}, {0.85F, 0.9F, 1.0F}};
+        int segments = 96;
+        for (int i = 0; i < segments; i++) {
+            float phi0 = i / (float) segments * Mth.TWO_PI, phi1 = (i + 1) / (float) segments * Mth.TWO_PI;
+            for (int b = 0; b < bands.length - 1; b++) {
+                float rho0 = bands[b][0] * Mth.DEG_TO_RAD, rho1 = bands[b + 1][0] * Mth.DEG_TO_RAD;
+                Vector3f p00 = ringPoint(center, basis[0], basis[1], phi0, rho0), p10 = ringPoint(center, basis[0], basis[1], phi1, rho0);
+                Vector3f p11 = ringPoint(center, basis[0], basis[1], phi1, rho1), p01 = ringPoint(center, basis[0], basis[1], phi0, rho1);
+                if (p00.y < -3.0F && p10.y < -3.0F && p11.y < -3.0F) {
+                    continue;
+                }
+                float a0 = alpha * bands[b][1], a1 = alpha * bands[b + 1][1];
+                vertex(buffer, pose, p00, colors[b], a0 * horizonFade(p00));
+                vertex(buffer, pose, p10, colors[b], a0 * horizonFade(p10));
+                vertex(buffer, pose, p11, colors[b + 1], a1 * horizonFade(p11));
+                vertex(buffer, pose, p01, colors[b + 1], a1 * horizonFade(p01));
+            }
+        }
+        draw(buffer);
+    }
+
+    /** Two bright, rainbow-edged spots level with a low sun, one on each side of it. */
+    private static void drawSunDogs(Matrix4f pose, Vector3f sun, float strength) {
+        if (strength <= 0.005F) {
+            return;
+        }
+        float elevation = (float) Math.asin(Mth.clamp(sun.y, -1.0F, 1.0F));
+        float cosE = Mth.cos(elevation);
+        // keep the dogs 22 degrees from the sun: they swing outward as the sun climbs
+        float cosD = (Mth.cos(22.0F * Mth.DEG_TO_RAD) - sun.y * sun.y) / Math.max(0.05F, cosE * cosE);
+        float delta = (float) Math.acos(Mth.clamp(cosD, -1.0F, 1.0F));
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        for (int side = -1; side <= 1; side += 2) {
+            Vector3f dog = new Vector3f(sun).rotateY(side * delta).normalize();
+            // the horizontal axis that points away from the sun
+            Vector3f out = new Vector3f(dog).sub(sun);
+            out.sub(new Vector3f(dog).mul(out.dot(dog))).normalize();
+            Vector3f up = new Vector3f(dog).cross(out).normalize();
+            if (up.y < 0) up.negate();
+            float w = 2.0F * Mth.DEG_TO_RAD, h = 2.8F * Mth.DEG_TO_RAD, tail = 9.0F * Mth.DEG_TO_RAD;
+            float a = strength * 0.8F;
+            // red inner edge, white core, bluish outer edge, then a faint tail away from the sun
+            spot(buffer, pose, dog, out, up, -w, 0.0F, h, 1.0F, 0.45F, 0.3F, 0.0F, a);
+            spot(buffer, pose, dog, out, up, 0.0F, w, h, 1.0F, 0.95F, 0.85F, a, a * 0.6F);
+            spot(buffer, pose, dog, out, up, w, tail, h * 0.4F, 0.85F, 0.9F, 1.0F, a * 0.6F, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    private static void spot(BufferBuilder buffer, Matrix4f pose, Vector3f center, Vector3f out, Vector3f up,
+                             float from, float to, float halfHeight, float r, float g, float b, float alphaFrom, float alphaTo) {
+        Vector3f c0 = new Vector3f(center).add(new Vector3f(out).mul(from)).normalize().mul(DOME);
+        Vector3f c1 = new Vector3f(center).add(new Vector3f(out).mul(to)).normalize().mul(DOME);
+        Vector3f dy = new Vector3f(up).mul(halfHeight * DOME);
+        float[] color = {r, g, b};
+        vertex(buffer, pose, new Vector3f(c0).sub(dy), color, 0.0F);
+        vertex(buffer, pose, new Vector3f(c1).sub(dy), color, 0.0F);
+        vertex(buffer, pose, c1, color, alphaTo);
+        vertex(buffer, pose, c0, color, alphaFrom);
+        vertex(buffer, pose, c0, color, alphaFrom);
+        vertex(buffer, pose, c1, color, alphaTo);
+        vertex(buffer, pose, new Vector3f(c1).add(dy), color, 0.0F);
+        vertex(buffer, pose, new Vector3f(c0).add(dy), color, 0.0F);
+    }
+
+    /**
+     * Sunbeams hang in the air below the clouds, so they're drawn after the storm cloud deck (from the
+     * particle stage), still on a dome around the camera so nearby terrain hides them.
+     */
+    public static void renderSunbeams(RenderLevelStageEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        float beams = ClientWeather.sunbeams();
+        if (level == null || beams <= 0.005F || level.effects().skyType() != DimensionSpecialEffects.SkyType.NORMAL
+                || event.getCamera().getFluidInCamera() != FogType.NONE) {
+            return;
+        }
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
+        Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
+        if (sun.y <= 0.0F) {
+            return;
+        }
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        drawSunbeams(new Matrix4f(), sun, level.getGameTime() + partialTick, beams * Mth.clamp(sun.y * 5.0F, 0.0F, 1.0F));
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+    }
+
+    /** Crepuscular rays fanning out from the sun through gaps in the cloud. */
+    private static void drawSunbeams(Matrix4f pose, Vector3f sun, float time, float strength) {
+        Vector3f[] basis = basis(sun);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        float[] warm = {1.0F, 0.94F, 0.78F};
+        int rays = 14;
+        for (int i = 0; i < rays; i++) {
+            float seed = i * 12.9898F;
+            float phi = (i + 0.5F * Mth.sin(seed)) / rays * Mth.TWO_PI + 0.05F * Mth.sin(time * 0.0007F + seed);
+            float width = (1.2F + 1.4F * (0.5F + 0.5F * Mth.sin(seed * 3.1F))) * Mth.DEG_TO_RAD;
+            float length = (45.0F + 30.0F * (0.5F + 0.5F * Mth.sin(seed * 1.7F))) * Mth.DEG_TO_RAD;
+            // each ray brightens and fades as clouds drift across the sun
+            float flicker = Mth.clamp(0.5F + 0.6F * Mth.sin(time * 0.004F + seed * 2.3F), 0.0F, 1.0F);
+            float a = strength * 0.4F * flicker;
+            if (a <= 0.002F) continue;
+            Vector3f start = ringPoint(sun, basis[0], basis[1], phi, 3.0F * Mth.DEG_TO_RAD);
+            Vector3f left = ringPoint(sun, basis[0], basis[1], phi - width / Mth.sin(length), length);
+            Vector3f right = ringPoint(sun, basis[0], basis[1], phi + width / Mth.sin(length), length);
+            vertex(buffer, pose, start, warm, a * horizonFade(start));
+            vertex(buffer, pose, left, warm, 0.0F);
+            vertex(buffer, pose, right, warm, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    /** A blood moon: the moon dyed deep red, with a red glow around it. */
+    private static void drawBloodMoon(Matrix4f pose, Vector3f moon, float strength) {
+        if (moon.y < -0.1F) {
+            return;
+        }
+        Vector3f[] basis = basis(moon);
+        // multiply the moon (and the dark sky right behind it) toward red
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.DST_COLOR, GlStateManager.DestFactor.ZERO);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        // just the moon's disc (vanilla's moon quad is mostly empty texture around it)
+        float half = 3.4F * Mth.DEG_TO_RAD;
+        float[] tint = {1.0F, Mth.lerp(strength, 1.0F, 0.32F), Mth.lerp(strength, 1.0F, 0.22F)};
+        for (int k = 0; k < 4; k++) {
+            float phi = (k * 90 + 45) * Mth.DEG_TO_RAD;
+            vertex(buffer, pose, ringPoint(moon, basis[0], basis[1], phi, half * Mth.SQRT_OF_TWO), tint, 1.0F);
+        }
+        draw(buffer);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        float[] red = {0.9F, 0.12F, 0.08F};
+        int segments = 32;
+        Vector3f c = new Vector3f(moon).normalize().mul(DOME);
+        for (int i = 0; i < segments; i++) {
+            float phi0 = i / (float) segments * Mth.TWO_PI, phi1 = (i + 1) / (float) segments * Mth.TWO_PI;
+            vertex(buffer, pose, c, red, 0.35F * strength);
+            vertex(buffer, pose, ringPoint(moon, basis[0], basis[1], phi0, 26.0F * Mth.DEG_TO_RAD), red, 0.0F);
+            vertex(buffer, pose, ringPoint(moon, basis[0], basis[1], phi1, 26.0F * Mth.DEG_TO_RAD), red, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    /** Two unit vectors perpendicular to a direction (and to each other). */
+    private static Vector3f[] basis(Vector3f dir) {
+        Vector3f d = new Vector3f(dir).normalize();
+        Vector3f ref = Math.abs(d.y) < 0.95F ? new Vector3f(0.0F, 1.0F, 0.0F) : new Vector3f(1.0F, 0.0F, 0.0F);
+        Vector3f u = new Vector3f(ref).sub(new Vector3f(d).mul(d.dot(ref))).normalize();
+        Vector3f v = new Vector3f(d).cross(u).normalize();
+        return new Vector3f[]{u, v};
     }
 
     /** Three shimmering curtains hanging over the northern sky. */

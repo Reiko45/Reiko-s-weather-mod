@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "age=0": {
+      "model": "reikos_weather:block/rice_stage0"
+    },
+    "age=1": {
+      "model": "reikos_weather:block/rice_stage0"
+    },
+    "age=2": {
+      "model": "reikos_weather:block/rice_stage1"
+    },
+    "age=3": {
+      "model": "reikos_weather:block/rice_stage1"
+    },
+    "age=4": {
+      "model": "reikos_weather:block/rice_stage2"
+    },
+    "age=5": {
+      "model": "reikos_weather:block/rice_stage2"
+    },
+    "age=6": {
+      "model": "reikos_weather:block/rice_stage2"
+    },
+    "age=7": {
+      "model": "reikos_weather:block/rice_stage3"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "values": {
+    "reikos_weather:leaf_pile": {
+      "chance": 0.3
+    },
+    "reikos_weather:rice": {
+      "chance": 0.3
+    },
+    "reikos_weather:kale": {
+      "chance": 0.5
+    }
+  }
+}

@@ -104,6 +104,14 @@ public final class ClientEvents {
                 (type, level, x, y, z, xd, yd, zd) -> new EmberParticle(level, x, y, z, xd, yd, zd, sprites));
         event.registerSpriteSet(ModParticles.BREATH.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.BreathParticle(level, x, y, z, xd, yd, zd, sprites));
+        event.registerSpriteSet(ModParticles.FIREFLY.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.FireflyParticle(level, x, y, z, sprites));
+        event.registerSpriteSet(ModParticles.WORM.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    var p = new com.reiko.weather.client.particle.WormParticle(level, x, y, z, sprites);
+                    p.setColor(0.86F, 0.55F, 0.55F);
+                    return p;
+                });
         event.registerSpriteSet(ModParticles.FUNNEL.get(), sprites -> {
             FunnelParticle.sprites = sprites;
             return (type, level, x, y, z, xd, yd, zd) -> null;
@@ -129,6 +137,20 @@ public final class ClientEvents {
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
         event.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 0x3F76E4,
                 ModBlocks.PUDDLE.get(), ModBlocks.RAIN_BARREL.get());
+        event.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageFoliageColor(level, pos)
+                : net.minecraft.world.level.FoliageColor.getDefaultColor(), ModBlocks.FALLEN_BRANCH.get());
+        event.register((state, level, pos, tintIndex) -> leafPileColor(pos), ModBlocks.LEAF_PILE.get());
+    }
+
+    private static final int[] LEAF_PILE_COLORS = {0xD9772A, 0xB8432A, 0xD8B23A, 0xA8652E, 0x9C5A2E, 0xC98A30};
+
+    /** Fallen leaves in a patchwork of autumn colours. */
+    private static int leafPileColor(BlockPos pos) {
+        if (pos == null) {
+            return LEAF_PILE_COLORS[0];
+        }
+        int hash = Mth.murmurHash3Mixer(pos.getX() * 73856093 ^ pos.getZ() * 19349663);
+        return LEAF_PILE_COLORS[Math.floorMod(hash, LEAF_PILE_COLORS.length)];
     }
 
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
@@ -144,6 +166,8 @@ public final class ClientEvents {
             WetGroundRenderer.render(cam);
             Footprints.render(cam, partialTick);
             CloudDeckRenderer.render(cam, partialTick);
+            SkyEffectsRenderer.renderSunbeams(event);
+            NatureEffects.renderFlocks(event.getCamera(), partialTick);
         }
     }
 
@@ -166,6 +190,10 @@ public final class ClientEvents {
         ScreenRaindrops.tick(mc);
         HeatShimmer.tick(mc);
         com.reiko.weather.client.sound.WildlifeSounds.tick(mc);
+        RoughSeas.tick(mc);
+        NatureEffects.tick(mc);
+        ParagliderClient.tick(mc);
+        ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
     }
@@ -207,6 +235,8 @@ public final class ClientEvents {
         ScreenRaindrops.reset();
         HeatShimmer.reset();
         com.reiko.weather.client.sound.WildlifeSounds.reset();
+        RoughSeas.reset();
+        NatureEffects.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();
@@ -242,6 +272,13 @@ public final class ClientEvents {
         if (event.getCamera().getFluidInCamera() == FogType.NONE && !blinded(event.getCamera().getEntity())
                 && OtherworldClient.applyFogColor(event)) {
             return;
+        }
+        float blood = ClientWeather.bloodMoon();
+        if (blood > 0.01F && event.getCamera().getFluidInCamera() == FogType.NONE) {
+            // a blood moon stains the night air red
+            event.setRed(Mth.lerp(blood * 0.5F, event.getRed(), Math.max(event.getRed(), 0.12F)));
+            event.setGreen(event.getGreen() * (1.0F - 0.45F * blood));
+            event.setBlue(event.getBlue() * (1.0F - 0.45F * blood));
         }
         float weight = ClientWeather.fogColorWeight();
         Minecraft mc = Minecraft.getInstance();

@@ -192,4 +192,100 @@ public class WeatherGameTests {
         helper.assertTrue("e".equals(Wind.compassFrom(Mth.PI)), "wind blowing west comes from the east");
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void derechoCellsAreLongBands(GameTestHelper helper) {
+        // moving east (+x): the band stretches north-south
+        StormCell cell = new StormCell(1, WeatherType.DERECHO, 0, 0, 100, 0.4, 0.0, 10000);
+        cell.age = 5000;
+        helper.assertTrue(cell.weightAt(0, 300) > 0.0F, "a derecho reaches far across its path");
+        helper.assertTrue(cell.weightAt(150, 0) == 0.0F, "but it is narrow along it");
+        helper.assertTrue(WeatherType.DERECHO.isStorm() && WeatherType.DERECHO.isSevere(), "derechos are severe storm cells");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void bloodMoonsOnlyOnLaterFullMoons(GameTestHelper helper) {
+        int found = 0;
+        for (long day = 0; day < 400; day++) {
+            boolean blood = com.reiko.weather.weather.SkyPhenomena.isBloodMoonNight(day * 24000L + 18000L);
+            if (blood) {
+                found++;
+                helper.assertTrue(day % 8 == 0 && day >= 8, "blood moon on day " + day + " isn't a full moon after the first week");
+            }
+        }
+        helper.assertTrue(found > 5 && found < 40, "some full moons are blood moons (" + found + ")");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void tidesPeakAtNoonAndMidnight(GameTestHelper helper) {
+        helper.assertTrue(com.reiko.weather.weather.Tides.cycle(6000L) > 0.99F, "high tide at noon");
+        helper.assertTrue(com.reiko.weather.weather.Tides.cycle(18000L) > 0.99F, "high tide at midnight");
+        helper.assertTrue(com.reiko.weather.weather.Tides.cycle(0L) < -0.99F, "low tide at sunrise");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void thinIceNeedsWaterUnderIt(GameTestHelper helper) {
+        helper.setBlock(1, 1, 1, Blocks.WATER);
+        helper.setBlock(1, 2, 1, Blocks.ICE);
+        helper.setBlock(3, 2, 3, Blocks.ICE);
+        BlockPos overWater = helper.absolutePos(new BlockPos(1, 2, 1)), overStone = helper.absolutePos(new BlockPos(3, 2, 3));
+        helper.assertTrue(com.reiko.weather.weather.ThinIce.isThin(helper.getLevel(), overWater, false), "ice over water is thin");
+        helper.assertFalse(com.reiko.weather.weather.ThinIce.isThin(helper.getLevel(), overWater, true), "unless it's bitterly cold");
+        helper.assertFalse(com.reiko.weather.weather.ThinIce.isThin(helper.getLevel(), overStone, false), "ice on stone is solid");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void leafPilesSoftenFalls(GameTestHelper helper) {
+        BlockState pile = ModBlocks.LEAF_PILE.get().defaultBlockState();
+        helper.assertTrue(com.reiko.weather.block.LeafPileBlock.cushion(pile) > 0.19F, "one layer softens a little");
+        helper.assertTrue(com.reiko.weather.block.LeafPileBlock.cushion(pile.setValue(com.reiko.weather.block.LeafPileBlock.LAYERS, 4)) > 0.79F,
+                "a deep pile takes off most of the damage");
+        helper.setBlock(2, 2, 2, pile);
+        helper.assertTrue(com.reiko.weather.block.LeafPileBlock.addLayer(helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 2)),
+                ModBlocks.LEAF_PILE.get(), 4), "leaves pile up");
+        helper.assertBlockProperty(new BlockPos(2, 2, 2), com.reiko.weather.block.LeafPileBlock.LAYERS, 2);
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void foodSpoilsInTheHeatButNotOnIce(GameTestHelper helper) {
+        java.util.List<ItemStack> stacks = java.util.List.of(new ItemStack(net.minecraft.world.item.Items.BEEF, 64), new ItemStack(net.minecraft.world.item.Items.BREAD, 64));
+        int spoiled = 0;
+        net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(1);
+        for (int i = 0; i < 40; i++) {
+            spoiled += com.reiko.weather.farming.Spoilage.spoil(stacks, random, 40.0F, rotten -> {});
+        }
+        helper.assertTrue(spoiled > 0 && stacks.get(0).getCount() == 64 - spoiled, "raw beef goes off in the heat");
+        helper.assertTrue(stacks.get(1).getCount() == 64, "bread doesn't");
+        helper.setBlock(2, 2, 2, Blocks.CHEST);
+        helper.assertFalse(com.reiko.weather.farming.Spoilage.iceNextTo(helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 2))), "no ice yet");
+        helper.setBlock(3, 2, 2, Blocks.PACKED_ICE);
+        helper.assertTrue(com.reiko.weather.farming.Spoilage.iceNextTo(helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 2))), "an ice house");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void lightningChargesTools(GameTestHelper helper) {
+        ItemStack pick = new ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE);
+        long now = helper.getLevel().getGameTime();
+        helper.assertFalse(com.reiko.weather.item.ChargedTools.isCharged(pick, helper.getLevel()), "not charged yet");
+        com.reiko.weather.item.ChargedTools.charge(pick, now);
+        helper.assertTrue(com.reiko.weather.item.ChargedTools.isCharged(pick, helper.getLevel()), "charged");
+        helper.assertTrue(com.reiko.weather.item.ChargedTools.remaining(pick, helper.getLevel()) > 5900, "for about five minutes");
+        com.reiko.weather.item.ChargedTools.charge(pick, now - 7000);
+        helper.assertFalse(com.reiko.weather.item.ChargedTools.isCharged(pick, helper.getLevel()), "and then it runs out");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void iceboxHoldsAChestfulOfFood(GameTestHelper helper) {
+        helper.setBlock(2, 2, 2, ModBlocks.ICEBOX.get());
+        var box = helper.getBlockEntity(new BlockPos(2, 2, 2));
+        helper.assertTrue(box instanceof com.reiko.weather.block.IceboxBlockEntity icebox && icebox.getContainerSize() == 27, "27 slots");
+        helper.succeed();
+    }
 }

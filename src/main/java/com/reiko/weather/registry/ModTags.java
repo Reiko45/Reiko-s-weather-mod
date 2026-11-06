@@ -9,5 +9,10 @@ public final class ModTags {
     /** Blocks a tornado may rip out of the ground and fling around. */
     public static final TagKey<Block> TORNADO_LIFTABLE = TagKey.create(Registries.BLOCK, ReikosWeather.id("tornado_liftable"));
 
+    /** Blocks that carry a lightning strike into a tool lying on them. */
+    public static final TagKey<Block> CONDUCTS_CHARGE = TagKey.create(Registries.BLOCK, ReikosWeather.id("conducts_charge"));
+    /** Food that spoils in hot weather unless it's kept cool. */
+    public static final TagKey<net.minecraft.world.item.Item> PERISHABLE = TagKey.create(Registries.ITEM, ReikosWeather.id("perishable"));
+
     private ModTags() {}
 }

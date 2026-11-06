@@ -1,0 +1,178 @@
+{
+  "textures": {
+    "particle": "minecraft:block/oak_log",
+    "bark": "minecraft:block/oak_log",
+    "end": "minecraft:block/oak_log_top",
+    "leaves": "minecraft:block/oak_leaves"
+  },
+  "render_type": "minecraft:cutout",
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        5.5
+      ],
+      "to": [
+        16,
+        4,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ]
+        },
+        "south": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            6,
+            16,
+            10
+          ]
+        },
+        "up": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            5.5,
+            16,
+            10.5
+          ],
+          "rotation": 90
+        },
+        "down": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            5.5,
+            16,
+            10.5
+          ],
+          "rotation": 90
+        },
+        "east": {
+          "texture": "#end",
+          "uv": [
+            5.5,
+            6,
+            10.5,
+            10
+          ]
+        },
+        "west": {
+          "texture": "#end",
+          "uv": [
+            5.5,
+            6,
+            10.5,
+            10
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        3,
+        7.5
+      ],
+      "to": [
+        11.5,
+        7,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ]
+        },
+        "south": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ]
+        },
+        "east": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ]
+        },
+        "west": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ]
+        },
+        "up": {
+          "texture": "#bark",
+          "uv": [
+            0,
+            0,
+            1.5,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        6,
+        6
+      ],
+      "to": [
+        13,
+        9,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#leaves",
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#leaves",
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#leaves",
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#leaves",
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#leaves",
+          "tintindex": 0
+        },
+        "down": {
+          "texture": "#leaves",
+          "tintindex": 0
+        }
+      }
+    }
+  ]
+}

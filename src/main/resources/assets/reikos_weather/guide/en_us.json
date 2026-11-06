@@ -1,0 +1,690 @@
+{
+ "title": "Weather Almanac",
+ "intro": "A field guide to the weather: what's coming, what it does, and how to make the most of it. Keep it handy.",
+ "chapters": [
+  {
+   "title": "Reading the Weather",
+   "icon": "reikos_weather:barometer",
+   "entries": [
+    {
+     "title": "Welcome",
+     "icon": "reikos_weather:weather_almanac",
+     "pages": [
+      "The weather in this world changes all the time: rain and storms, fog and heatwaves, blizzards and sandstorms. It's different in cold, temperate and arid places, and it changes with the seasons.\n\nThis almanac explains all of it. Pick a chapter from the contents; scroll or use the arrows to turn pages."
+     ]
+    },
+    {
+     "title": "The Barometer",
+     "icon": "reikos_weather:barometer",
+     "pages": [
+      {
+       "text": "Use a barometer for a weather report: the weather here, the wind, the season, the local climate, the tide on the coast, the forecast and any storm on its way. While you hold it, a forecast panel shows in the corner of the screen.",
+       "recipe": "reikos_weather:barometer"
+      }
+     ]
+    },
+    {
+     "title": "The Thermometer",
+     "icon": "reikos_weather:thermometer",
+     "pages": [
+      {
+       "text": "Hold a thermometer to see the air temperature and how warm you feel. Use it for a full reading.",
+       "recipe": "reikos_weather:thermometer"
+      }
+     ]
+    },
+    {
+     "title": "The Weather Radio",
+     "icon": "reikos_weather:weather_radio",
+     "pages": [
+      {
+       "text": "Keep a weather radio in your inventory and it warns you when severe storms are closing in, when a tornado is near, when dangerous weather is coming up, in extreme cold or heat, and about blood moons, meteor showers and geomagnetic storms.",
+       "recipe": "reikos_weather:weather_radio"
+      },
+      "Use it to switch it on or off. Sneak and use it for a bulletin: the weather, the forecast and the nearest storm."
+     ]
+    },
+    {
+     "title": "Radars",
+     "icon": "reikos_weather:handheld_radar",
+     "pages": [
+      {
+       "text": "The handheld radar and the weather radar block open a radar scope. It shows storm cells colour-coded by type, which way they're heading, when they'll reach you, and any tornadoes. Scroll to zoom out to 3,200 blocks.",
+       "recipe": "reikos_weather:handheld_radar"
+      },
+      {
+       "text": "The weather radar block also gives off a comparator signal: the closer the nearest storm, the stronger it is.",
+       "recipe": "reikos_weather:weather_radar"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Kinds of Weather",
+   "icon": "minecraft:water_bucket",
+   "entries": [
+    {
+     "title": "Climates",
+     "icon": "minecraft:grass_block",
+     "pages": [
+      "Every weather plays out differently in cold, temperate and arid climates. A thunderstorm is a dry dust storm in the desert; a hurricane is a whiteout in the tundra.\n\nThe forecast leans toward weather that suits where players actually are, so deserts get more sandstorms and the north more snow."
+     ]
+    },
+    {
+     "title": "Clear, Overcast and Fog",
+     "icon": "minecraft:sunflower",
+     "pages": [
+      "Clear: blue skies. After rain a rainbow appears opposite the sun, and some clear nights in the cold bring auroras.\n\nOvercast: grey skies hide the sun and stars, and the world gets a little darker.\n\nFog: about 24 blocks of visibility; a dusty haze in deserts. In freezing air, fog leaves everything white with hoarfrost."
+     ]
+    },
+    {
+     "title": "Rain",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "Drizzle is light and gentle. Rain makes crops open to the sky grow faster and leaves puddles on flat ground. Heavy rain is a downpour with misty visibility and wind (heavy snow in the cold).\n\nAfter rain, leaves keep dripping for a while, frogs start croaking and worms come up."
+     ]
+    },
+    {
+     "title": "Thunderstorms",
+     "icon": "minecraft:lightning_rod",
+     "pages": [
+      "Rain, thunder and lightning with gusty wind. Thunder arrives after the flash: the further away the strike, the longer the wait. Thunderstorms can spawn waterspouts over open water."
+     ]
+    },
+    {
+     "title": "Supercells",
+     "icon": "minecraft:ghast_tear",
+     "pages": [
+      "A severe storm under a green-tinted sky: hail, constant lightning and tornadoes. Get underground."
+     ]
+    },
+    {
+     "title": "Hurricanes",
+     "icon": "minecraft:heart_of_the_sea",
+     "pages": [
+      "Hurricane-force wind that shoves players, mobs and items around, with torrential rain and flying leaves. The sea surges up onto low coasts, and branches come down. A thundersnow whiteout in the cold; a sandstorm in deserts."
+     ]
+    },
+    {
+     "title": "Derechos",
+     "icon": "minecraft:breeze_rod",
+     "pages": [
+      "A derecho is a long line of violent thunderstorms racing across the land, several times faster than any other storm. On the radar it shows as a long orange band. The wind is ferocious and breaks branches off trees, so expect clearing up to do afterwards. They come in summer."
+     ]
+    },
+    {
+     "title": "Hail, Sleet and Ice",
+     "icon": "minecraft:ice",
+     "pages": [
+      "Hail hurts anything caught outside (a helmet or umbrella protects you) and can knock crops back.\n\nSleet is icy, slanting rain that chills and slows you, and glazes still water with thin ice.\n\nAn ice storm coats the ground and treetops in slippery glaze that melts once it's over."
+     ]
+    },
+    {
+     "title": "Snow and Blizzards",
+     "icon": "minecraft:snowball",
+     "pages": [
+      "Snow falls in cold places (cold rain elsewhere). A blizzard is a whiteout with driving snow and drifts up to 4 layers deep. Out in a blizzard you freeze; dress warmly or find a fire."
+     ]
+    },
+    {
+     "title": "Gales, Sand and Heat",
+     "icon": "minecraft:feather",
+     "pages": [
+      "A gale blows leaves around, pushes everything and makes arrows drift.\n\nA sandstorm is a wall of sand under an orange sky (storm goggles let you see through it).\n\nA heatwave brings a hazy amber sky; standing in the sun costs extra hunger and crops grow slower. Hot nights flicker with silent heat lightning."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Seasons and Storms",
+   "icon": "minecraft:oak_sapling",
+   "entries": [
+    {
+     "title": "Seasons",
+     "icon": "minecraft:oak_leaves",
+     "pages": [
+      "Spring, summer, autumn and winter each last 7 days by default, and each reshapes the forecast: spring storms, summer heatwaves, hurricanes and derechos, autumn fog and gales, winter blizzards and ice storms.\n\nTemperate plains get snow in winter, and it melts again in spring.",
+      "Leaves turn gold, orange and red through autumn and drift down, piling up under the trees. Winter dulls the grass; spring greens it up again, with blossom petals drifting from the trees.\n\nIf Serene Seasons is installed, its calendar is used instead."
+     ]
+    },
+    {
+     "title": "Storm Cells",
+     "icon": "minecraft:gray_dye",
+     "pages": [
+      "Besides the world-wide weather, storm cells form on the horizon and drift across the map with the wind, so players far apart can have different weather. Watch for the low, dark cloud deck with shafts of rain hanging under it."
+     ]
+    },
+    {
+     "title": "Local Climates",
+     "icon": "minecraft:stone",
+     "pages": [
+      "The land shapes the weather. Valleys are calmer and fill with fog at dawn. Peaks are windier. Land downwind of a mountain range lies in its rain shadow and gets less rain. In the cold, big lakes bring lake-effect snow to the land downwind, even on calm days.\n\nThe barometer and the F3 screen tell you the local climate."
+     ]
+    },
+    {
+     "title": "The Monsoon",
+     "icon": "minecraft:jungle_sapling",
+     "pages": [
+      "Summer is the rainy season in jungles and savannas. Savannas, which normally never see rain, get it then. Rice loves it."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Water and Ice",
+   "icon": "minecraft:water_bucket",
+   "entries": [
+    {
+     "title": "Floods and Storm Surges",
+     "icon": "reikos_weather:sandbag",
+     "pages": [
+      "In heavy storms low water can spill over its banks (flash floods are off by default). Hurricanes push the sea up onto low beaches. In the first days of spring, melting snow swells the rivers. The water always goes down again afterwards.",
+      {
+       "text": "Sandbags hold the water back: no flood water appears within 2 blocks of one.",
+       "recipe": "reikos_weather:sandbag"
+      }
+     ]
+    },
+    {
+     "title": "Tides",
+     "icon": "minecraft:nautilus_shell",
+     "pages": [
+      "The sea rises and falls twice a day, highest around noon and midnight. Tides are strongest around full and new moons (spring tides) and weakest at the half moons. The highest spring tides wash over low beaches for a while. The barometer tells you the tide when you're near the coast."
+     ]
+    },
+    {
+     "title": "Rough Seas",
+     "icon": "minecraft:oak_boat",
+     "pages": [
+      "Storms make open water rough: whitecaps and spray, and boats get shoved by the wind and tossed by the swell. Keep a firm hand on the oars."
+     ]
+    },
+    {
+     "title": "Frozen Rivers and Thin Ice",
+     "icon": "minecraft:ice",
+     "pages": [
+      "In winter and in the cold, ponds and rivers freeze over from the banks.\n\nIce over open water is thin unless it's bitterly cold. It cracks under you if you sprint across it or stand around on it, and eventually gives way. Crouch to spread your weight."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Sky Watching",
+   "icon": "minecraft:spyglass",
+   "entries": [
+    {
+     "title": "Rainbows and Auroras",
+     "icon": "minecraft:prismarine_crystals",
+     "pages": [
+      "A rainbow appears opposite the sun when rain clears up during the day. On some clear nights, auroras shimmer over the northern sky in cold places."
+     ]
+    },
+    {
+     "title": "Halos, Sun Dogs and Sunbeams",
+     "icon": "minecraft:glowstone_dust",
+     "pages": [
+      "On icy days and under thin, high cloud, a ring of light circles the sun (or the moon) at a fixed distance. When the sun is low, two bright spots called sun dogs sit level with it, one on each side.\n\nWhen the sun shines through broken cloud or morning mist, sunbeams fan out across the sky."
+     ]
+    },
+    {
+     "title": "Shooting Stars and Meteors",
+     "icon": "reikos_weather:meteorite",
+     "pages": [
+      "Shooting stars streak across clear night skies. About one night in seven brings a meteor shower with dozens of them, and now and then a meteor comes down, leaving a meteorite. Mine it for raw iron, gold nuggets and sometimes a diamond (silk touch keeps the block)."
+     ]
+    },
+    {
+     "title": "Geomagnetic Storms",
+     "icon": "minecraft:compass",
+     "pages": [
+      "On some aurora nights a geomagnetic storm hits: auroras reach south into temperate lands, compasses spin and radar screens fill with static."
+     ]
+    },
+    {
+     "title": "Blood Moons",
+     "icon": "minecraft:red_dye",
+     "pages": [
+      "Some full moons rise blood red. Monsters swarm in the dark under them, and nobody can sleep the night away. Light up your base, shut the door, and wait for dawn."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Temperature",
+   "icon": "reikos_weather:thermometer",
+   "entries": [
+    {
+     "title": "Air and Body Temperature",
+     "icon": "reikos_weather:thermometer",
+     "pages": [
+      "Every spot has an air temperature: the biome, the season, the height, the time of day and the weather all play a part. How warm you feel also depends on your clothes, on being in water, and on heat nearby: campfires, fires, lava, lit furnaces, even torches. Buildings and caves even things out.\n\nYour body temperature follows slowly: you cool down over half a minute or so out in the cold, and warm up quickly by a fire.",
+      "Below 0 °C frost creeps in. In deadly cold you start to freeze and slowly take damage.\n\nAbove 32 °C the heat makes you hungry; above 48 °C you get heatstroke unless you cool off in water or rain."
+     ]
+    },
+    {
+     "title": "Staying Warm",
+     "icon": "reikos_weather:winter_coat",
+     "pages": [
+      {
+       "text": "A winter coat (or leather armour) keeps you warm. A tent is a warm, sheltered place to sleep.",
+       "recipe": "reikos_weather:winter_coat"
+      },
+      {
+       "text": "Hot cocoa gives Warmth for 3 minutes, and a winter stew for a minute and a half.",
+       "recipe": "reikos_weather:hot_cocoa"
+      },
+      {
+       "text": "",
+       "recipe": "reikos_weather:winter_stew"
+      },
+      {
+       "text": "A tent is a portable shelter: milder inside, safe from the weather. Sleeping in it skips the night but never sets your spawn point.",
+       "recipe": "reikos_weather:tent"
+      }
+     ]
+    },
+    {
+     "title": "Staying Cool",
+     "icon": "reikos_weather:sun_hat",
+     "pages": [
+      {
+       "text": "A sun hat shades you from the midday sun.",
+       "recipe": "reikos_weather:sun_hat"
+      },
+      {
+       "text": "A melon cooler (or cooked icefish) gives Refreshed, cooling you down. Shade, water and rain help too, and a winter coat in a heatwave is a bad idea.",
+       "recipe": "reikos_weather:melon_cooler"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Farming and Food",
+   "icon": "minecraft:wheat",
+   "entries": [
+    {
+     "title": "Rain and Crops",
+     "icon": "minecraft:wheat_seeds",
+     "pages": [
+      "Crops open to the sky grow faster in the rain, slower in heatwaves and in winter. Hail can knock them back. In a drought, crops on dry farmland wilt."
+     ]
+    },
+    {
+     "title": "Frost and Greenhouses",
+     "icon": "minecraft:glass",
+     "pages": [
+      "On freezing nights, frost damages crops out in the open and knocks them back a few stages; seedlings can die.\n\nA crop with glass or glass panes above it is in a greenhouse: safe from frost and hail, and still growing in winter (though it misses out on the rain)."
+     ]
+    },
+    {
+     "title": "Rice",
+     "icon": "reikos_weather:rice",
+     "pages": [
+      {
+       "text": "Rice turns up in the grass of jungles, savannas and swamps. Plant it on farmland. It races ahead in the rain and the monsoon, keeps going next to water, and stalls in dry weather.",
+       "items": [
+        "reikos_weather:rice"
+       ]
+      },
+      {
+       "text": "Three handfuls make a filling bowl of rice.",
+       "recipe": "reikos_weather:rice_bowl"
+      }
+     ]
+    },
+    {
+     "title": "Kale",
+     "icon": "reikos_weather:kale",
+     "pages": [
+      {
+       "text": "Kale turns up in the grass of cold places. It's a hardy winter green: frost doesn't hurt it, it keeps growing through the winter and it even likes the cold, but it slows right down in the heat. Eat it raw, or in a winter stew.",
+       "items": [
+        "reikos_weather:kale",
+        "reikos_weather:winter_stew"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Fallen Leaves",
+     "icon": "reikos_weather:leaf_pile",
+     "pages": [
+      {
+       "text": "In autumn, leaves pile up under the trees, and storms bring more down. You can wade through them, and a deep pile softens a fall. They rot away over the winter.",
+       "items": [
+        "reikos_weather:leaf_pile"
+       ]
+      },
+      {
+       "text": "A rake gathers up the leaf piles (and fallen branches) in a 5x5 area. Compost the leaves, or put them back where you like.",
+       "recipe": "reikos_weather:rake"
+      }
+     ]
+    },
+    {
+     "title": "Food in the Heat",
+     "icon": "reikos_weather:icebox",
+     "pages": [
+      "Raw meat and fish go off in hot weather, a piece at a time, in your inventory and in chests. Carrying ice keeps your own food fresh.",
+      {
+       "text": "An icebox never lets food spoil. Neither does a chest or barrel with ice, packed ice, blue ice or snow next to it: build an ice house.",
+       "recipe": "reikos_weather:icebox"
+      },
+      {
+       "text": "The ice saw cuts whole blocks of ice out of frozen lakes, ready to pack around your food.",
+       "recipe": "reikos_weather:ice_saw"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Fishing",
+   "icon": "minecraft:fishing_rod",
+   "entries": [
+    {
+     "title": "Fishing in the Weather",
+     "icon": "minecraft:cod",
+     "pages": [
+      "Fish bite better in the rain: you sometimes pull up a second one."
+     ]
+    },
+    {
+     "title": "Stormfish",
+     "icon": "reikos_weather:stormfish",
+     "pages": [
+      {
+       "text": "Fish out in the open during a thunderstorm, supercell, hurricane or derecho and you might catch a stormfish. Cooked, it gives a burst of Haste.",
+       "items": [
+        "reikos_weather:stormfish",
+        "reikos_weather:cooked_stormfish"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Icefish",
+     "icon": "reikos_weather:icefish",
+     "pages": [
+      {
+       "text": "Fish through a hole in the ice, in winter or in the cold, to catch icefish. Cooked, they cool you down.",
+       "items": [
+        "reikos_weather:icefish",
+        "reikos_weather:cooked_icefish"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Earthworms",
+     "icon": "reikos_weather:earthworm",
+     "pages": [
+      {
+       "text": "Worms come up onto the grass after rain. Dig grass or dirt while it's wet for a good chance of finding some. Hold them in your off hand when you cast: a baited hook gets bites sooner, and better ones.",
+       "items": [
+        "reikos_weather:earthworm"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Extreme Weather",
+   "icon": "minecraft:flint_and_steel",
+   "entries": [
+    {
+     "title": "Droughts and Wildfires",
+     "icon": "minecraft:dead_bush",
+     "pages": [
+      "During heatwaves, dry grass in deserts and savannas can catch fire, crops on unwatered farmland wilt and cauldrons in the sun dry up (sometimes leaving salt behind)."
+     ]
+    },
+    {
+     "title": "Winter Hazards",
+     "icon": "reikos_weather:salt",
+     "pages": [
+      {
+       "text": "Icicles grow under roof edges and can fall on whoever is below. Blizzards set off avalanches on steep slopes. Salt melts ice, snow and icicles around where you use it.",
+       "recipe": "reikos_weather:salt"
+      }
+     ]
+    },
+    {
+     "title": "Lightning",
+     "icon": "minecraft:lightning_rod",
+     "pages": [
+      "Lightning fuses sand into glass. Big storms sometimes bring ball lightning, which drifts around and zaps anything that gets too close. Lightning that strikes where it isn't raining can start fires, and summer heatwaves bring the odd dry strike."
+     ]
+    },
+    {
+     "title": "Charging Tools",
+     "icon": "minecraft:anvil",
+     "pages": [
+      "Leave a tool or weapon lying on an anvil or a copper block in a thunderstorm (a lightning rod nearby helps). If lightning strikes it, it's charged for five minutes: it mines faster and hits harder, with a crackle of sparks."
+     ]
+    },
+    {
+     "title": "Storm Debris",
+     "icon": "reikos_weather:fallen_branch",
+     "pages": [
+      "Derechos, hurricanes and supercells break branches off trees and strip their leaves. Clear the branches for sticks, or leave them to rot away after a few days."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Gear",
+   "icon": "reikos_weather:umbrella",
+   "entries": [
+    {
+     "title": "Umbrella",
+     "icon": "reikos_weather:umbrella",
+     "pages": [
+      {
+       "text": "Blocks hail. Hold it while falling to drift down slowly with no fall damage.",
+       "recipe": "reikos_weather:umbrella"
+      }
+     ]
+    },
+    {
+     "title": "Storm Goggles",
+     "icon": "reikos_weather:goggles",
+     "pages": [
+      {
+       "text": "See much further in sandstorms and blizzards.",
+       "recipe": "reikos_weather:goggles"
+      }
+     ]
+    },
+    {
+     "title": "Paraglider",
+     "icon": "reikos_weather:paraglider",
+     "pages": [
+      {
+       "text": "Hold use while falling to open it. Glide where you look: look down to dive, up to slow down.",
+       "recipe": "reikos_weather:paraglider"
+      },
+      "The wind carries you along. Warm air rising off lava, fires, campfires, sun-baked sand on hot days and windy ridges lifts you up, so you can ride thermals for miles. No fall damage while you glide, but it wears out over time."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Weather Blocks",
+   "icon": "reikos_weather:weather_station",
+   "entries": [
+    {
+     "title": "Weather Station",
+     "icon": "reikos_weather:weather_station",
+     "pages": [
+      {
+       "text": "Gives off a redstone signal. Use it to switch between precipitation, storm danger, wind, a weather code and the season. A villager who claims one becomes a meteorologist.",
+       "recipe": "reikos_weather:weather_station"
+      }
+     ]
+    },
+    {
+     "title": "Tornado Siren",
+     "icon": "reikos_weather:tornado_siren",
+     "pages": [
+      {
+       "text": "Wails and powers redstone while a tornado or waterspout is within 160 blocks.",
+       "recipe": "reikos_weather:tornado_siren"
+      }
+     ]
+    },
+    {
+     "title": "Rain Barrel",
+     "icon": "reikos_weather:rain_barrel",
+     "pages": [
+      {
+       "text": "Fills with rainwater. Empty it with a bucket when it's full, or with bottles.",
+       "recipe": "reikos_weather:rain_barrel"
+      }
+     ]
+    },
+    {
+     "title": "Weather Vane and Windmill",
+     "icon": "reikos_weather:weather_vane",
+     "pages": [
+      {
+       "text": "The weather vane points into the wind; comparators read the direction.",
+       "recipe": "reikos_weather:weather_vane"
+      },
+      {
+       "text": "The windmill turns into the wind and gives off redstone as strong as the wind. It works best high up in the open.",
+       "recipe": "reikos_weather:windmill"
+      }
+     ]
+    },
+    {
+     "title": "Forecast Board",
+     "icon": "reikos_weather:forecast_board",
+     "pages": [
+      {
+       "text": "A wall board that shows the current weather, the season and the next three weathers.",
+       "recipe": "reikos_weather:forecast_board"
+      }
+     ]
+    },
+    {
+     "title": "Lightning Battery",
+     "icon": "reikos_weather:lightning_battery",
+     "pages": [
+      {
+       "text": "Put it under a lightning rod to store up to 4 strikes. A redstone pulse from the side, back or bottom lets one out as a strong pulse from the front. Comparators read the charge.",
+       "recipe": "reikos_weather:lightning_battery"
+      }
+     ]
+    },
+    {
+     "title": "Storm Probe",
+     "icon": "reikos_weather:storm_probe",
+     "pages": [
+      {
+       "text": "Leave it in a tornado's path. Probes near a tornado record readings and drop storm data when broken (more from close to the funnel). Meteorologists buy storm data.",
+       "recipe": "reikos_weather:storm_probe"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Controlling the Weather",
+   "icon": "reikos_weather:weather_altar",
+   "entries": [
+    {
+     "title": "Cloud Seeding",
+     "icon": "reikos_weather:cloud_seeding_rocket",
+     "pages": [
+      {
+       "text": "Fire a cloud seeding rocket straight up and it seeds a rain cloud (sometimes a thunderstorm) overhead.",
+       "recipe": "reikos_weather:cloud_seeding_rocket"
+      }
+     ]
+    },
+    {
+     "title": "The Weather Altar",
+     "icon": "reikos_weather:weather_altar",
+     "pages": [
+      {
+       "text": "End-game weather control. Offer it an item to call up a weather; it needs a few minutes to recover between uses.",
+       "recipe": "reikos_weather:weather_altar"
+      },
+      "Sunflower: clear. Water bucket: rain. Lightning rod: thunderstorm. Snow block: snow. Packed ice: blizzard. Ice: ice storm. Blaze powder: heatwave. Feather: gale. Sand: sandstorm. Cobweb: fog. Ghast tear: supercell. Heart of the sea: hurricane. Breeze rod: derecho."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Creatures and Villagers",
+   "icon": "minecraft:emerald",
+   "entries": [
+    {
+     "title": "Weather and Mobs",
+     "icon": "minecraft:zombie_head",
+     "pages": [
+      "Strays come out in blizzards and snow, husks in desert sandstorms and heatwaves, and drowned near water in heavy rain and hurricanes. Polar bears wander in out of blizzards.\n\nAnimals look for shelter in rough weather, sheep grow a thicker coat in winter (more wool), and villagers go indoors during storms."
+     ]
+    },
+    {
+     "title": "The Meteorologist",
+     "icon": "reikos_weather:storm_data",
+     "pages": [
+      "A villager who claims a weather station becomes a meteorologist. They buy paper, copper and storm data, and sell weather gear, from thermometers and umbrellas up to lightning batteries and weather radars."
+     ]
+    },
+    {
+     "title": "Wildlife",
+     "icon": "minecraft:feather",
+     "pages": [
+      "Birds sing on spring and summer days, crickets chirp on summer nights and frogs croak after rain. Fireflies glow over the grass on warm summer evenings, and in spring and autumn flocks of geese fly over in a V."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "The Nether and the End",
+   "icon": "minecraft:netherrack",
+   "entries": [
+    {
+     "title": "Nether Weather",
+     "icon": "minecraft:blaze_powder",
+     "pages": [
+      "Choking ash storms, harmless glowing ember falls, and fire rain that sets exposed creatures and flammable blocks alight."
+     ]
+    },
+    {
+     "title": "End Weather",
+     "icon": "minecraft:ender_pearl",
+     "pages": [
+      "Violet void storms, with gusts every few seconds that push you toward the edge of the island."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Settings and Commands",
+   "icon": "minecraft:comparator",
+   "entries": [
+    {
+     "title": "Settings",
+     "icon": "minecraft:redstone",
+     "pages": [
+      "Open the settings from the Mods screen. The first page has one-click presets for the visual effects (Performance, Default, Cinematic) and a button for every setting.\n\nUnder Accessibility you can tone down lightning flashes and turn down screen effects like raindrops on the screen, heat shimmer and the roll of a boat at sea."
+     ]
+    },
+    {
+     "title": "Commands",
+     "icon": "minecraft:command_block",
+     "pages": [
+      "/rweather query: the weather where you stand.\n/rweather forecast: the next three weathers.\n/rweather storms: storm cells.\n/rweather season: the season.\n\nFor operators: /rweather set, storm, next, tornado and meteor."
+     ]
+    }
+   ]
+  }
+ ]
+}

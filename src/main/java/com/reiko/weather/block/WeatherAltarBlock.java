@@ -48,6 +48,7 @@ public class WeatherAltarBlock extends Block {
         OFFERINGS.put(Items.ICE, WeatherType.ICE_STORM);
         OFFERINGS.put(Items.GHAST_TEAR, WeatherType.SUPERCELL);
         OFFERINGS.put(Items.HEART_OF_THE_SEA, WeatherType.HURRICANE);
+        OFFERINGS.put(Items.BREEZE_ROD, WeatherType.DERECHO);
     }
 
     public WeatherAltarBlock(Properties properties) {

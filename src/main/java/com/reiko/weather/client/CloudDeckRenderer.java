@@ -140,13 +140,13 @@ public final class CloudDeckRenderer {
             double dx = cell.x - cam.x, dz = cell.z - cam.z;
             double distance = Math.sqrt(dx * dx + dz * dz);
             float reach = Math.max(2200.0F, range + 1000.0F);
-            if (distance - cell.radius < 40 || distance > reach) {
+            if (cell.distanceTo(cam.x, cam.z) - cell.radius < 40 || distance > reach) {
                 continue;
             }
             double nx = dx / distance, nz = dz / distance;
             double shown = Math.min(distance, Math.min(900.0, maxDistance * 0.9));
             double scale = shown / distance;
-            float half = (float) (cell.radius * 0.75 * scale);
+            float half = (float) (cell.radius * 0.75 * cell.elongation() * scale);
             float alpha = 0.45F * cell.strength() * fogFade * (float) Mth.clamp((reach - distance) / 600, 0, 1);
             float cx = (float) (nx * shown), cz = (float) (nz * shown);
             float px = (float) -nz * half, pz = (float) nx * half;

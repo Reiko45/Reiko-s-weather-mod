@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/under_the_weather",
+  "display": {
+    "icon": {
+      "id": "minecraft:ice"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.thin_ice"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.thin_ice.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

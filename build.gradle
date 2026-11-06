@@ -86,6 +86,12 @@ configurations {
 dependencies {
     // compiled against so the JEI info pages work; never bundled
     compileOnly "maven.modrinth:jei:${jei_version}"
+    compileOnly "maven.modrinth:jade:${jade_version}"
+    compileOnly "maven.modrinth:wthit:${wthit_version}"
+    compileOnly "maven.modrinth:badpackets:${badpackets_version}"
+    compileOnly "maven.modrinth:tough-as-nails:${toughasnails_version}"
+    compileOnly "maven.modrinth:glitchcore:${glitchcore_version}"
+    compileOnly "maven.modrinth:curios:${curios_version}"
 
     // run the dev client/server with the integrations installed: ./gradlew runClient -PwithCompat
     if (project.hasProperty('withCompat')) {
@@ -94,6 +100,19 @@ dependencies {
         localRuntime "maven.modrinth:serene-seasons:${serene_seasons_version}"
         localRuntime "maven.modrinth:glitchcore:${glitchcore_version}"
         localRuntime "maven.modrinth:distanthorizons:${distant_horizons_version}"
+        localRuntime "maven.modrinth:jade:${jade_version}"
+        localRuntime "maven.modrinth:tough-as-nails:${toughasnails_version}"
+        localRuntime "maven.modrinth:curios:${curios_version}"
+    }
+    // ./gradlew runClient -PwithWthit: WTHIT instead of Jade's tooltips (on its own, to compare)
+    if (project.hasProperty('withWthit')) {
+        localRuntime "maven.modrinth:wthit:${wthit_version}"
+        localRuntime "maven.modrinth:badpackets:${badpackets_version}"
+    }
+    // ./gradlew runClient -PwithShaders: Sodium and Iris, to check the visuals with shader packs
+    if (project.hasProperty('withShaders')) {
+        localRuntime "maven.modrinth:sodium:${sodium_version}"
+        localRuntime "maven.modrinth:iris:${iris_version}"
     }
 }
 

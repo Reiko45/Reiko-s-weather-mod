@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:bowl"
+    },
+    {
+      "item": "reikos_weather:rice"
+    },
+    {
+      "item": "reikos_weather:rice"
+    },
+    {
+      "item": "reikos_weather:rice"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "reikos_weather:rice_bowl"
+  }
+}

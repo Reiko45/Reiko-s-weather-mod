@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "I": {
+      "item": "minecraft:packed_ice"
+    },
+    "B": {
+      "item": "minecraft:barrel"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "IBI",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "reikos_weather:icebox"
+  }
+}

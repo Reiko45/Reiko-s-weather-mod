@@ -30,7 +30,8 @@ public final class Frost {
             if (!level.isLoaded(column)) continue;
             BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column);
             BlockState state = level.getBlockState(pos);
-            if (state.getBlock() instanceof CropBlock crop && random.nextFloat() < 0.25F && isFrosty(level, pos, local)) {
+            if (state.getBlock() instanceof CropBlock crop && !(crop instanceof com.reiko.weather.block.KaleCropBlock)
+                    && random.nextFloat() < 0.25F && isFrosty(level, pos, local)) {
                 nip(level, pos, state, crop);
             }
         }

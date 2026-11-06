@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "reikos_weather:block/icebox_top",
+    "front": "reikos_weather:block/icebox_front",
+    "side": "reikos_weather:block/icebox_side"
+  }
+}

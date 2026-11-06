@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "reikos_weather:block/icebox",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "reikos_weather:block/icebox",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "reikos_weather:block/icebox",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "reikos_weather:block/icebox",
+      "y": 270
+    }
+  }
+}

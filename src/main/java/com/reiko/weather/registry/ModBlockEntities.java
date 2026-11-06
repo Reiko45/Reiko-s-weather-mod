@@ -20,5 +20,8 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.reiko.weather.block.ForecastBoardBlockEntity>> FORECAST_BOARD = REGISTER.register("forecast_board",
             () -> BlockEntityType.Builder.of(com.reiko.weather.block.ForecastBoardBlockEntity::new, ModBlocks.FORECAST_BOARD.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.reiko.weather.block.IceboxBlockEntity>> ICEBOX = REGISTER.register("icebox",
+            () -> BlockEntityType.Builder.of(com.reiko.weather.block.IceboxBlockEntity::new, ModBlocks.ICEBOX.get()).build(null));
+
     private ModBlockEntities() {}
 }

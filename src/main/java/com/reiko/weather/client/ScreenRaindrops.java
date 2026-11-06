@@ -34,7 +34,7 @@ public final class ScreenRaindrops {
             d.y += d.slide;
             d.slide *= 0.97F;
         }
-        if (mc.player == null || mc.level == null || mc.isPaused() || !ClientConfig.SCREEN_RAINDROPS.get()
+        if (mc.player == null || mc.level == null || mc.isPaused() || !ClientConfig.SCREEN_RAINDROPS.get() || Accessibility.screenEffects() <= 0.0F
                 || !mc.options.getCameraType().isFirstPerson()) {
             return;
         }
@@ -45,7 +45,7 @@ public final class ScreenRaindrops {
                 || mc.level.getBiome(eyes).value().getPrecipitationAt(eyes) != Biome.Precipitation.RAIN) {
             return;
         }
-        float wanted = rain * up * 0.8F;
+        float wanted = rain * up * 0.8F * Accessibility.screenEffects();
         while (wanted > 0 && DROPS.size() < 80) {
             if (RANDOM.nextFloat() < wanted) {
                 Drop d = new Drop();

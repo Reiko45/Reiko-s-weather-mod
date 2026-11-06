@@ -55,6 +55,7 @@ public enum Season {
                 case SNOW, SLEET -> 0.5F;
                 case BLIZZARD, ICE_STORM -> 0.2F;
                 case HEATWAVE, HURRICANE -> 0.3F;
+                case DERECHO -> 1.2F;
                 default -> 1.0F;
             };
             case SUMMER -> switch (type) {
@@ -62,6 +63,7 @@ public enum Season {
                 case HEATWAVE -> 3.0F;
                 case THUNDERSTORM, SUPERCELL -> 1.6F;
                 case HURRICANE -> 2.0F;
+                case DERECHO -> 2.5F;
                 case SANDSTORM -> 1.5F;
                 case HAIL -> 1.2F;
                 case FOG -> 0.6F;
@@ -77,6 +79,7 @@ public enum Season {
                 case RAIN, HURRICANE, SLEET -> 1.3F;
                 case HEATWAVE -> 0.3F;
                 case SUPERCELL -> 0.5F;
+                case DERECHO -> 0.4F;
                 case SNOW, ICE_STORM -> 0.7F;
                 default -> 1.0F;
             };
@@ -92,7 +95,7 @@ public enum Season {
                 case THUNDERSTORM, HAIL -> 0.3F;
                 case HURRICANE -> 0.2F;
                 case SUPERCELL -> 0.1F;
-                case HEATWAVE -> 0.0F;
+                case HEATWAVE, DERECHO -> 0.0F;
                 default -> 1.0F;
             };
         };

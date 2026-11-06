@@ -48,6 +48,9 @@ public final class ClientWeather {
     private static LocalWeather local;
     private static float rainbow, aurora, mist, wetness, backgroundClouds;
     private static int localRainbowTicks;
+    /** Air temperature at the camera, refreshed twice a second. */
+    private static float airTemperature = 15.0F;
+    private static float halo, sunbeams, bloodMoon, freezingFog;
 
     public static void tick(Minecraft mc) {
         ClientLevel level = mc.level;
@@ -133,7 +136,7 @@ public final class ClientWeather {
         boolean wetHere = rain > 0.3F && level.getBiome(camPos).value().getPrecipitationAt(camPos) == Biome.Precipitation.RAIN;
         wetness = wetHere ? approach(wetness, Math.min(1.0F, rain), 0.002F) : approach(wetness, 0.0F, 0.0006F);
 
-        if (managed && ClientConfig.HEAT_LIGHTNING.get() && sun < -0.1F && level.getSkyFlashTime() <= 0) {
+        if (managed && ClientConfig.HEAT_LIGHTNING.get() && sun < -0.1F && level.getSkyFlashTime() <= 0 && !Accessibility.reduceFlashing()) {
             boolean hotNight = target.heatLightning;
             double stormDistance = distantThunderCell(cam.x, cam.z);
             boolean distantStorm = stormDistance >= 0;
@@ -145,6 +148,15 @@ public final class ClientWeather {
             }
         }
 
+        if (managed && (level.getGameTime() % 10L == 0L || Float.isNaN(airTemperature))) {
+            airTemperature = com.reiko.weather.temperature.Temperature.ambient(level, camPos, local);
+        }
+        updateSkyOptics(level, cam, sun);
+        bloodMoon = approach(bloodMoon, SkyPhenomena.bloodMoonNow(level) ? 1.0F : 0.0F, 0.004F);
+        // freezing fog: fog in sub-zero air, which rimes everything it touches with hoarfrost
+        boolean freezing = managed && type == WeatherType.FOG && airTemperature < -1.0F;
+        freezingFog = approach(freezingFog, freezing ? 1.0F : 0.0F, 0.004F);
+
         active = managed || rain > 0.001F || fog > 0.001F || overcast > 0.001F || wind > 0.001F || mist > 0.001F;
 
         // drive vanilla's rain/thunder rendering with our intensities (drizzle, sleet, storm cells...)
@@ -152,6 +164,33 @@ public final class ClientWeather {
             level.setRainLevel(rain);
             level.setThunderLevel(thunder);
         }
+    }
+
+    /**
+     * Ice-crystal halos and sun dogs on icy days and under thin high cloud; sunbeams when the sun shines
+     * through gaps in broken cloud or morning mist.
+     */
+    private static void updateSkyOptics(ClientLevel level, Vec3 cam, float sun) {
+        boolean on = ClientConfig.SKY_OPTICS.get() && level.dimension() == Level.OVERWORLD && SyncedWeather.managed();
+        boolean dryish = rain < 0.15F && fog < 0.4F;
+        float icy = Mth.clamp((-1.0F - airTemperature) / 6.0F, 0.0F, 1.0F);
+        float thinCloud = Mth.clamp(1.0F - Math.abs(overcast - 0.35F) / 0.25F, 0.0F, 1.0F);
+        float haloTarget = on && dryish && overcast < 0.75F ? Math.max(icy, thinCloud * 0.6F) : 0.0F;
+        halo = approach(halo, haloTarget, 0.003F);
+
+        float broken = Math.max(bell(overcast), bell(cloudsAt(cam.x, cam.z)));
+        float sunUp = Mth.clamp(sun * 6.0F, 0.0F, 1.0F) * Mth.clamp((0.95F - sun) * 4.0F, 0.0F, 1.0F);
+        // also when the sky is clearing after rain, and through morning mist
+        float clearing = rainbow > 0.05F ? 0.8F : 0.0F;
+        float beamTarget = on && rain < 0.5F ? Math.max(Math.max(broken, clearing), mist * 1.2F) * sunUp * (1.0F - rain) : 0.0F;
+        // thick fog hides the sun altogether
+        beamTarget *= 1.0F - Mth.clamp((fog - 0.3F) * 2.5F, 0.0F, 1.0F);
+        sunbeams = approach(sunbeams, Math.min(1.0F, beamTarget), 0.003F);
+    }
+
+    /** 1 for broken cloud (about half the sky), falling to 0 for clear skies and solid overcast. */
+    private static float bell(float cover) {
+        return Mth.clamp(1.0F - Math.abs(cover - 0.55F) / 0.38F, 0.0F, 1.0F);
     }
 
     /** Morning mist over rivers, swamps and beaches, hugging the ground on calm mornings. */
@@ -212,6 +251,8 @@ public final class ClientWeather {
         type = previousType = WeatherType.CLEAR;
         rain = thunder = overcast = fog = wind = tintStrength = fogColorWeight = rainbow = aurora = mist = wetness = backgroundClouds = 0.0F;
         localRainbowTicks = 0;
+        halo = sunbeams = bloodMoon = freezingFog = 0.0F;
+        airTemperature = 15.0F;
         exposure = 1.0F;
         java.util.Arrays.fill(precipRates, 0.0F);
     }
@@ -238,6 +279,12 @@ public final class ClientWeather {
     public static float rainbow() { return rainbow; }
     public static float aurora() { return aurora; }
     public static float mist() { return mist; }
+    public static float overcast() { return overcast; }
+    public static float airTemperature() { return airTemperature; }
+    public static float halo() { return halo; }
+    public static float sunbeams() { return sunbeams; }
+    public static float bloodMoon() { return bloodMoon; }
+    public static float freezingFog() { return freezingFog; }
     public static float wetness() { return ClientConfig.WET_GROUND.get() ? wetness : 0.0F; }
 
     /** Storm-cloud deck coverage at a world position: the background weather plus any storm cell there. */
@@ -258,7 +305,7 @@ public final class ClientWeather {
 
     private static boolean wearingGoggles() {
         Minecraft mc = Minecraft.getInstance();
-        return mc.player != null && mc.player.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.GOGGLES.get());
+        return mc.player != null && com.reiko.weather.compat.Compat.wearing(mc.player, EquipmentSlot.HEAD, ModItems.GOGGLES.get());
     }
 
     /** Effective fog density at the camera; fades out underground and indoors, and goggles cut through storms. */
@@ -298,7 +345,7 @@ public final class ClientWeather {
     // ------------------------------------------------------------------ sky hooks (called from mixins)
 
     public static Vec3 modifySkyColor(Vec3 color) {
-        if (!active || !ClientConfig.SKY_EFFECTS.get()) {
+        if (!active && bloodMoon <= 0 || !ClientConfig.SKY_EFFECTS.get()) {
             return color;
         }
         double r = color.x, g = color.y, b = color.z;
@@ -315,6 +362,11 @@ public final class ClientWeather {
             r = Mth.lerp(tintStrength, r, tintR * brightness);
             g = Mth.lerp(tintStrength, g, tintG * brightness);
             b = Mth.lerp(tintStrength, b, tintB * brightness);
+        }
+        if (bloodMoon > 0) {
+            r = Mth.lerp(bloodMoon * 0.6, r, Math.max(r, 0.16));
+            g = Mth.lerp(bloodMoon * 0.6, g, g * 0.45);
+            b = Mth.lerp(bloodMoon * 0.6, b, b * 0.45);
         }
         return new Vec3(r, g, b);
     }

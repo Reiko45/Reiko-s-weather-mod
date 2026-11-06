@@ -71,6 +71,21 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue FIRE_RAIN_IGNITES;
     public static final ModConfigSpec.BooleanValue VOID_STORM_GUSTS;
     public static final ModConfigSpec.BooleanValue CUSTOM_WEATHERS;
+    public static final ModConfigSpec.BooleanValue BLOOD_MOONS;
+    public static final ModConfigSpec.BooleanValue BLOOD_MOON_NO_SLEEP;
+    public static final ModConfigSpec.BooleanValue SNOWMELT_FLOODS;
+    public static final ModConfigSpec.BooleanValue THIN_ICE;
+    public static final ModConfigSpec.BooleanValue ROUGH_SEAS;
+    public static final ModConfigSpec.BooleanValue TIDES;
+    public static final ModConfigSpec.BooleanValue STORM_DEBRIS;
+    public static final ModConfigSpec.BooleanValue LEAF_PILES;
+    public static final ModConfigSpec.BooleanValue WILD_CROPS;
+    public static final ModConfigSpec.BooleanValue WEATHER_FISHING;
+    public static final ModConfigSpec.BooleanValue EARTHWORMS;
+    public static final ModConfigSpec.BooleanValue FOOD_SPOILAGE;
+    public static final ModConfigSpec.BooleanValue CHARGED_TOOLS;
+    public static final ModConfigSpec.BooleanValue GUIDE_ON_JOIN;
+    public static final ModConfigSpec.BooleanValue TOUGH_AS_NAILS;
 
     public static final ModConfigSpec.BooleanValue TORNADOES;
     public static final ModConfigSpec.DoubleValue TORNADO_CHANCE;
@@ -174,6 +189,20 @@ public final class WeatherConfig {
         b.comment("Farming").push("farming");
         CROP_FROST = b.comment("Frost damages exposed crops on freezing nights (glass greenhouses protect them).")
                 .define("cropFrost", true);
+        LEAF_PILES = b.comment("Fallen leaves pile up under trees in autumn (and are blown down in storms).")
+                .define("leafPiles", true);
+        WILD_CROPS = b.comment("Breaking grass sometimes drops rice (jungles, savannas, swamps) or kale (cold places).")
+                .define("wildCrops", true);
+        FOOD_SPOILAGE = b.comment("Raw meat and fish spoil in hot weather, in your inventory and in containers.",
+                        "Iceboxes, and containers with ice next to them, keep food fresh.")
+                .define("foodSpoilage", true);
+        b.pop();
+
+        b.comment("Fishing").push("fishing");
+        WEATHER_FISHING = b.comment("Rain brings extra catches, and stormfish and icefish bite in storms and through ice.")
+                .define("weatherFishing", true);
+        EARTHWORMS = b.comment("Earthworms come up after rain; dig them out of grass and dirt to use as bait.")
+                .define("earthworms", true);
         b.pop();
 
         b.comment("Local climates and regional weather").push("climate");
@@ -187,6 +216,16 @@ public final class WeatherConfig {
         DRY_LIGHTNING = b.comment("Lightning that strikes where it isn't raining starts fires, and summer heatwaves bring the odd",
                         "dry thunderstorm strike (needs doFireTick and mobGriefing).")
                 .define("dryLightning", true);
+        SNOWMELT_FLOODS = b.comment("Rivers rise for the first days of spring as the snow melts (the water goes down again).")
+                .define("snowmeltFloods", true);
+        THIN_ICE = b.comment("Thin ice over water cracks and breaks under players who sprint on it or stand still too long.")
+                .define("thinIce", true);
+        ROUGH_SEAS = b.comment("Storms toss boats around on open water.")
+                .define("roughSeas", true);
+        TIDES = b.comment("High spring tides (around full and new moons) wash up onto low beaches and drain away again.")
+                .define("tides", true);
+        STORM_DEBRIS = b.comment("Violent storms (derechos, hurricanes, supercells) break branches off trees (needs mobGriefing).")
+                .define("stormDebris", true);
         b.pop();
 
         b.comment("Sky events").push("sky");
@@ -194,6 +233,10 @@ public final class WeatherConfig {
                 .define("meteors", true);
         GEOMAGNETIC_STORMS = b.comment("On some aurora nights a geomagnetic storm makes compasses spin and radars crackle.")
                 .define("geomagneticStorms", true);
+        BLOOD_MOONS = b.comment("Some full moons rise blood red, and monsters swarm under them.")
+                .define("bloodMoons", true);
+        BLOOD_MOON_NO_SLEEP = b.comment("Nobody can sleep through a blood moon.")
+                .define("bloodMoonNoSleep", true);
         b.pop();
 
         b.comment("Villagers and animals").push("creatures");
@@ -222,6 +265,8 @@ public final class WeatherConfig {
                 .define("fulgurite", true);
         BALL_LIGHTNING = b.comment("Rare ball lightning drifts around during thunderstorms.")
                 .define("ballLightning", true);
+        CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
+                .define("chargedTools", true);
         b.pop();
 
         b.comment("The Weather Altar (end-game weather control)").push("altar");
@@ -236,6 +281,14 @@ public final class WeatherConfig {
                 .define("fireRainIgnites", true);
         VOID_STORM_GUSTS = b.comment("Void storm gusts push players and mobs toward the edge of End islands.")
                 .define("voidStormGusts", true);
+        b.pop();
+
+        b.comment("Other mods and the guidebook").push("misc");
+        GUIDE_ON_JOIN = b.comment("Give players a Weather Almanac (the mod's guidebook) the first time they join.")
+                .define("guideOnJoin", true);
+        TOUGH_AS_NAILS = b.comment("When Tough As Nails is installed, let it handle body temperature (this mod's weather still",
+                        "feeds into it) instead of running both temperature systems.")
+                .define("toughAsNailsTemperature", true);
         b.pop();
 
         b.comment("Data-driven weather").push("datapacks");

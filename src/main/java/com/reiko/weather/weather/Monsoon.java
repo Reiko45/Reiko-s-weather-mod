@@ -47,6 +47,11 @@ public final class Monsoon {
         return biome.is(BiomeTags.IS_JUNGLE) || biome.is(BiomeTags.IS_SAVANNA);
     }
 
+    /** The rainy season is on in this (tropical) biome, on the server. */
+    public static boolean monsoonAt(Holder<Biome> biome) {
+        return serverActive && isTropical(biome);
+    }
+
     public static boolean enabled() {
         return WeatherConfig.SPEC.isLoaded() && WeatherConfig.MONSOON.get();
     }

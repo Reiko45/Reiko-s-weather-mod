@@ -144,7 +144,7 @@ public final class Temperature {
             celsius = Mth.lerp(0.6F, celsius, 18.0F); // out of the wind, wrapped up in a bedroll
         }
         // a wide straw brim keeps the sun off
-        if (entity.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.SUN_HAT.get()) && celsius > 22.0F && level.isDay() && level.canSeeSky(eyes)) {
+        if (com.reiko.weather.compat.Compat.wearing(entity, EquipmentSlot.HEAD, ModItems.SUN_HAT.get()) && celsius > 22.0F && level.isDay() && level.canSeeSky(eyes)) {
             celsius -= Math.min(6.0F, celsius - 22.0F);
         }
         if (entity.hasEffect(ModEffects.WARMTH)) celsius += 10.0F;

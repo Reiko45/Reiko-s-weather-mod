@@ -52,9 +52,11 @@ public class ReikosWeather {
         com.reiko.weather.registry.ModEffects.REGISTER.register(modBus);
         com.reiko.weather.registry.ModVillagers.POI_TYPES.register(modBus);
         com.reiko.weather.registry.ModVillagers.PROFESSIONS.register(modBus);
+        com.reiko.weather.registry.ModDataComponents.REGISTER.register(modBus);
 
         modBus.addListener(ModNetwork::register);
         modBus.addListener(ReikosWeather::addCreativeTabContents);
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(com.reiko.weather.compat.Compat::setup));
 
         container.registerConfig(ModConfig.Type.SERVER, WeatherConfig.SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
@@ -88,6 +90,21 @@ public class ReikosWeather {
                 e.setCanceled(true);
             }
         });
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.sky.BloodMoon::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.sky.BloodMoon::onCanSleep);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.tick.LevelTickEvent.Post e) -> {
+            if (e.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+                com.reiko.weather.farming.Spoilage.tickLevel(level);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.nature.NatureEvents::onBlockDrops);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.nature.NatureEvents::onItemFished);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.nature.NatureEvents::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.nature.NatureEvents::onLivingFall);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.ChargedTools::onStruckByLightning);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.ChargedTools::onBreakSpeed);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.ChargedTools::onIncomingDamage);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.WeatherAlmanacItem::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) ->
                 com.reiko.weather.weather.Monsoon.collect(e.getServer().registryAccess()));
     }
@@ -105,6 +122,12 @@ public class ReikosWeather {
             event.accept(ModItems.CLOUD_SEEDING_ROCKET.get());
             event.accept(ModItems.SALT.get());
             event.accept(ModItems.STORM_DATA.get());
+            event.accept(ModItems.WEATHER_ALMANAC.get());
+            event.accept(ModItems.WEATHER_RADIO.get());
+            event.accept(ModItems.PARAGLIDER.get());
+            event.accept(ModItems.RAKE.get());
+            event.accept(ModItems.ICE_SAW.get());
+            event.accept(ModItems.EARTHWORM.get());
         } else if (event.getTabKey() == CreativeModeTabs.COMBAT) {
             event.accept(ModItems.WINTER_COAT.get());
             event.accept(ModItems.GOGGLES.get());
@@ -112,8 +135,18 @@ public class ReikosWeather {
         } else if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
             event.accept(ModItems.HOT_COCOA.get());
             event.accept(ModItems.MELON_COOLER.get());
+            event.accept(ModItems.KALE.get());
+            event.accept(ModItems.RICE_BOWL.get());
+            event.accept(ModItems.WINTER_STEW.get());
+            event.accept(ModItems.STORMFISH.get());
+            event.accept(ModItems.COOKED_STORMFISH.get());
+            event.accept(ModItems.ICEFISH.get());
+            event.accept(ModItems.COOKED_ICEFISH.get());
         } else if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
             event.accept(ModItems.METEORITE.get());
+            event.accept(ModItems.LEAF_PILE.get());
+            event.accept(ModItems.FALLEN_BRANCH.get());
+            event.accept(ModItems.RICE.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
@@ -136,6 +169,7 @@ public class ReikosWeather {
             event.accept(ModItems.TENT.get());
             event.accept(ModItems.LIGHTNING_BATTERY.get());
             event.accept(ModItems.STORM_PROBE.get());
+            event.accept(ModItems.ICEBOX.get());
         }
     }
 }

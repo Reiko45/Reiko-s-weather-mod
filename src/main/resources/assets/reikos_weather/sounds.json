@@ -106,5 +106,20 @@
     "sounds": [
       "reikos_weather:entity/meteor"
     ]
+  },
+  "item.weather_radio.alert": {
+    "subtitle": "subtitles.reikos_weather.item.weather_radio.alert",
+    "sounds": [
+      "reikos_weather:item/weather_radio_alert"
+    ]
+  },
+  "ambient.geese": {
+    "subtitle": "subtitles.reikos_weather.ambient.geese",
+    "sounds": [
+      {
+        "name": "reikos_weather:ambient/geese",
+        "attenuation_distance": 96
+      }
+    ]
   }
 }

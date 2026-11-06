@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/under_the_weather",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:icebox"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.cool_storage"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.cool_storage.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

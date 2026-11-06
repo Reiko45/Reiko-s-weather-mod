@@ -25,7 +25,8 @@ public final class TemperatureEffects {
     public static final float DEADLY_COLD = -12.0F;
 
     public static boolean enabled() {
-        return WeatherConfig.SPEC.isLoaded() && WeatherConfig.TEMPERATURE.get();
+        // with Tough As Nails installed (and allowed to), its body temperature takes over from ours
+        return WeatherConfig.SPEC.isLoaded() && WeatherConfig.TEMPERATURE.get() && !com.reiko.weather.compat.Compat.toughAsNailsHandlesTemperature();
     }
 
     public static void tick(ServerPlayer player) {

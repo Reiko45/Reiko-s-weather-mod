@@ -16,6 +16,7 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemNameBlockItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -68,6 +69,39 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> STORM_PROBE = REGISTER.registerSimpleBlockItem(ModBlocks.STORM_PROBE);
     public static final DeferredItem<Item> STORM_DATA = REGISTER.register("storm_data", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<BlockItem> METEORITE = REGISTER.registerSimpleBlockItem(ModBlocks.METEORITE);
+
+    public static final DeferredItem<BlockItem> FALLEN_BRANCH = REGISTER.registerSimpleBlockItem(ModBlocks.FALLEN_BRANCH);
+    public static final DeferredItem<BlockItem> LEAF_PILE = REGISTER.registerSimpleBlockItem(ModBlocks.LEAF_PILE);
+    public static final DeferredItem<BlockItem> ICEBOX = REGISTER.registerSimpleBlockItem(ModBlocks.ICEBOX);
+    public static final DeferredItem<ItemNameBlockItem> RICE = REGISTER.register("rice", () -> new ItemNameBlockItem(ModBlocks.RICE.get(), new Item.Properties()));
+    public static final DeferredItem<ItemNameBlockItem> KALE = REGISTER.register("kale", () -> new ItemNameBlockItem(ModBlocks.KALE.get(),
+            new Item.Properties().food(new FoodProperties.Builder().nutrition(3).saturationModifier(0.6F).build())));
+    public static final DeferredItem<Item> RICE_BOWL = REGISTER.register("rice_bowl", () -> new Item(new Item.Properties().stacksTo(1)
+            .food(new FoodProperties.Builder().nutrition(7).saturationModifier(0.6F).usingConvertsTo(Items.BOWL).build())));
+    public static final DeferredItem<Item> WINTER_STEW = REGISTER.register("winter_stew", () -> new Item(new Item.Properties().stacksTo(1)
+            .food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.8F).usingConvertsTo(Items.BOWL)
+                    .effect(() -> new MobEffectInstance(ModEffects.WARMTH, 1800), 1.0F).build())));
+    public static final DeferredItem<Item> EARTHWORM = REGISTER.register("earthworm", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> STORMFISH = REGISTER.register("stormfish", () -> new Item(new Item.Properties()
+            .food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.1F).build())));
+    public static final DeferredItem<Item> COOKED_STORMFISH = REGISTER.register("cooked_stormfish", () -> new Item(new Item.Properties()
+            .food(new FoodProperties.Builder().nutrition(6).saturationModifier(0.8F)
+                    .effect(() -> new MobEffectInstance(net.minecraft.world.effect.MobEffects.DIG_SPEED, 600), 1.0F).build())));
+    public static final DeferredItem<Item> ICEFISH = REGISTER.register("icefish", () -> new Item(new Item.Properties()
+            .food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.1F).build())));
+    public static final DeferredItem<Item> COOKED_ICEFISH = REGISTER.register("cooked_icefish", () -> new Item(new Item.Properties()
+            .food(new FoodProperties.Builder().nutrition(5).saturationModifier(0.6F)
+                    .effect(() -> new MobEffectInstance(ModEffects.REFRESHED, 1200), 1.0F).build())));
+    public static final DeferredItem<com.reiko.weather.item.RakeItem> RAKE = REGISTER.register("rake",
+            () -> new com.reiko.weather.item.RakeItem(new Item.Properties().durability(160)));
+    public static final DeferredItem<com.reiko.weather.item.IceSawItem> ICE_SAW = REGISTER.register("ice_saw",
+            () -> new com.reiko.weather.item.IceSawItem(new Item.Properties().durability(220)));
+    public static final DeferredItem<com.reiko.weather.item.ParagliderItem> PARAGLIDER = REGISTER.register("paraglider",
+            () -> new com.reiko.weather.item.ParagliderItem(new Item.Properties().durability(320)));
+    public static final DeferredItem<com.reiko.weather.item.WeatherRadioItem> WEATHER_RADIO = REGISTER.register("weather_radio",
+            () -> new com.reiko.weather.item.WeatherRadioItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<com.reiko.weather.item.WeatherAlmanacItem> WEATHER_ALMANAC = REGISTER.register("weather_almanac",
+            () -> new com.reiko.weather.item.WeatherAlmanacItem(new Item.Properties().stacksTo(1)));
 
     private ModItems() {}
 }

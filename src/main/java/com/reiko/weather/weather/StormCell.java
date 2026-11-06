@@ -5,8 +5,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 
 /**
- * A regional storm: a circle of weather that drifts across the map with the wind, on top of the
- * dimension-wide background weather.
+ * A regional storm: a circle of weather (or, for a derecho, a long band) that drifts across the map
+ * with the wind, on top of the dimension-wide background weather.
  */
 public final class StormCell {
     private static final int FADE_TICKS = 900;
@@ -56,8 +56,24 @@ public final class StormCell {
         return Math.min(grow, fade);
     }
 
+    /** How many times longer than deep the cell is: a derecho is a long line of storms side by side. */
+    public float elongation() {
+        return type == WeatherType.DERECHO ? 3.5F : 1.0F;
+    }
+
+    /**
+     * Distance to the centre, scaled so the cell's outline is at {@code radius}: a circle for most storms,
+     * a band stretched across the direction of travel for a derecho.
+     */
     public double distanceTo(double px, double pz) {
         double dx = px - x, dz = pz - z;
+        float e = elongation();
+        double speed = Math.sqrt(vx * vx + vz * vz);
+        if (e != 1.0F && speed > 1.0E-6) {
+            double ux = vx / speed, uz = vz / speed;
+            double along = dx * ux + dz * uz, across = (-dx * uz + dz * ux) / e;
+            return Math.sqrt(along * along + across * across);
+        }
         return Math.sqrt(dx * dx + dz * dz);
     }
 

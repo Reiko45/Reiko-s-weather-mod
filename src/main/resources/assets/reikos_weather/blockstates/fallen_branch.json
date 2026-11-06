@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "reikos_weather:block/fallen_branch"
+    },
+    "axis=z": {
+      "model": "reikos_weather:block/fallen_branch",
+      "y": 90
+    }
+  }
+}

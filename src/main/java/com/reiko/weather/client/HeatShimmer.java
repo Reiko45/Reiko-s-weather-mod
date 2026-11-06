@@ -26,13 +26,14 @@ public final class HeatShimmer {
             BlockPos eyes = BlockPos.containing(mc.player.getEyePosition());
             float celsius = Temperature.ambient(mc.level, eyes, ClientWeather.local());
             boolean sunny = sun > 0.3F && ClientWeather.rain() < 0.1F && ClientWeather.sunOcclusion() < 0.4F && ClientWeather.exposure() > 0.5F;
-            target = sunny ? Mth.clamp((celsius - 28.0F) / 12.0F, 0.0F, 1.0F) : 0.0F;
+            target = sunny ? Mth.clamp((celsius - 28.0F) / 12.0F, 0.0F, 1.0F) * Accessibility.screenEffects() : 0.0F;
         }
         strength = Mth.approach(strength, target, 0.01F);
     }
 
     public static void onRenderStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL || strength < 0.02F || failed) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL || strength < 0.02F || failed
+                || com.reiko.weather.compat.Shaders.packInUse()) {
             return;
         }
         Minecraft mc = Minecraft.getInstance();

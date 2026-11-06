@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "reikos_weather:stormfish",
+    "reikos_weather:icefish",
+    "reikos_weather:cooked_stormfish",
+    "reikos_weather:cooked_icefish"
+  ]
+}

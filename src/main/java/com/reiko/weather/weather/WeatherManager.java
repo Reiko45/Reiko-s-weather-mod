@@ -467,13 +467,16 @@ public final class WeatherManager {
             radius = switch (type) {
                 case SUPERCELL, HAIL -> 160 + random.nextFloat() * 120;
                 case HURRICANE -> 500 + random.nextFloat() * 250;
+                case DERECHO -> 110 + random.nextFloat() * 60;
                 default -> 220 + random.nextFloat() * 260;
             };
         }
         Vec3 wind = Wind.direction(state.windAngle);
-        double speed = 0.1 + random.nextDouble() * 0.1;
-        // long enough to cross ~2 km of map
-        int maxAge = (int) ((1800 + radius * 2) / speed);
+        boolean derecho = type == WeatherType.DERECHO;
+        // derechos race across the map several times faster than other storms
+        double speed = derecho ? 0.35 + random.nextDouble() * 0.15 : 0.1 + random.nextDouble() * 0.1;
+        // long enough to cross ~2 km of map (a derecho keeps going for ~3.5 km)
+        int maxAge = (int) (((derecho ? 3500 : 1800) + radius * 2) / speed);
         StormCell cell = new StormCell(state.nextCellId++, type, x, z, radius, wind.x * speed, wind.z * speed, maxAge);
         state.cells.add(cell);
         state.setDirty();

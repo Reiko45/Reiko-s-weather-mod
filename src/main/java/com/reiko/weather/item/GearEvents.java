@@ -29,6 +29,11 @@ public final class GearEvents {
         if (player instanceof ServerPlayer serverPlayer) {
             serverTick(serverPlayer);
             com.reiko.weather.temperature.TemperatureEffects.tick(serverPlayer);
+            com.reiko.weather.weather.ThinIce.tick(serverPlayer);
+            Paragliding.serverTick(serverPlayer);
+            com.reiko.weather.farming.Spoilage.tickPlayer(serverPlayer);
+            ChargedTools.tickPlayer(serverPlayer);
+            WeatherRadio.tickPlayer(serverPlayer);
         } else if (player.level().isClientSide && canHoldOpen(player) && player.getDeltaMovement().y < -0.08) {
             Vec3 motion = player.getDeltaMovement();
             if (motion.y < MAX_FALL_SPEED) {

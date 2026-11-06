@@ -1,0 +1,9 @@
+{
+  "reikos_weather:block_info": {
+    "entrypoints": {
+      "client": "com.reiko.weather.compat.wthit.ReikosWeatherWthitPlugin"
+    },
+    "side": "client",
+    "required": ["reikos_weather"]
+  }
+}

@@ -13,14 +13,13 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(value = ReikosWeather.MOD_ID, dist = Dist.CLIENT)
 public class ReikosWeatherClient {
     public ReikosWeatherClient(IEventBus modBus, ModContainer container) {
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new com.reiko.weather.client.ConfigHomeScreen(mod, parent));
 
         modBus.addListener(ClientEvents::registerParticles);
         modBus.addListener(ClientEvents::registerRenderers);
@@ -33,16 +32,33 @@ public class ReikosWeatherClient {
         NeoForge.EVENT_BUS.addListener(ClientEvents::onLoggingIn);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.DebugInfo::onDebugText);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.HeatShimmer::onRenderStage);
-        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) ->
-                e.enqueueWork(com.reiko.weather.client.Geomagnetic::registerCompass));
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
+            com.reiko.weather.client.Geomagnetic.registerCompass();
+            if (com.reiko.weather.compat.Compat.curiosLoaded()) {
+                com.reiko.weather.compat.curios.HeadCurioRenderer.register();
+            }
+        }));
         NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderFog);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onFogColor);
         NeoForge.EVENT_BUS.addListener(SkyEffectsRenderer::onRenderStage);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderStage);
         NeoForge.EVENT_BUS.addListener(AmbientSounds::onPlaySound);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.RoughSeas::onCameraAngles);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.ParagliderClient::onRenderPlayer);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.ItemTooltips::onTooltip);
 
         TornadoEntity.clientTicker = TornadoClient::tick;
         BallLightningEntity.clientTicker = BallLightningClient::tick;
-        ClientActions.Holder.instance = (center, follow) -> Minecraft.getInstance().setScreen(new RadarScreen(center, follow));
+        ClientActions.Holder.instance = new ClientActions() {
+            @Override
+            public void openRadar(net.minecraft.world.phys.Vec3 center, boolean followPlayer) {
+                Minecraft.getInstance().setScreen(new RadarScreen(center, followPlayer));
+            }
+
+            @Override
+            public void openGuide() {
+                Minecraft.getInstance().setScreen(new com.reiko.weather.client.guide.GuideScreen());
+            }
+        };
     }
 }

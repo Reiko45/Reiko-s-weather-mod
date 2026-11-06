@@ -51,7 +51,7 @@ public final class WeatherProfiles {
                 builder().rain(1.0F).thunder(1.0F).overcast(0.85F).fog(0.5F).wind(0.7F)
                         .precip(Precip.SNOW, 1.0F).precip(Precip.HAIL, 0.4F).hail().lightning(4.0F).build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.9F).tint(STORM_GREEN, 0.35F).fog(0.4F).wind(0.7F)
-                        .precip(Precip.HAIL, 0.6F).precip(Precip.DOWNPOUR, 0.5F).hail().lightning(6.0F).tornadoes().waterspouts().floods().build(),
+                        .precip(Precip.HAIL, 0.6F).precip(Precip.DOWNPOUR, 0.5F).hail().lightning(6.0F).tornadoes().waterspouts().floods().debris().build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.85F).tint(STORM_GREEN, 0.3F).fog(0.35F).wind(0.75F)
                         .precip(Precip.DUST, 1.0F).lightning(4.0F).tornadoes().build());
 
@@ -59,7 +59,7 @@ public final class WeatherProfiles {
                 builder().rain(1.0F).thunder(1.0F).overcast(0.85F).tint(SNOW_WHITE, 0.4F).fog(0.85F, SNOW_WHITE).wind(1.0F)
                         .precip(Precip.BLIZZARD, 1.2F).freeze(0.6F).snowLayers(3).lightning(2.0F).build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.9F).fog(0.65F).wind(1.0F)
-                        .precip(Precip.DOWNPOUR, 1.2F).precip(Precip.LEAVES, 0.6F).lightning(3.0F).floods().waterspouts().build(),
+                        .precip(Precip.DOWNPOUR, 1.2F).precip(Precip.LEAVES, 0.6F).lightning(3.0F).floods().waterspouts().debris().build(),
                 builder().rain(1.0F).thunder(1.0F).overcast(0.8F).tint(SAND, 0.5F).fog(0.78F, SAND_FOG).wind(1.0F)
                         .precip(Precip.SAND, 1.2F).lightning(2.0F).build());
 
@@ -106,6 +106,15 @@ public final class WeatherProfiles {
                 WeatherProfile.NONE,
                 builder().tint(0xFFCC88, 0.5F).fog(0.25F, 0xF0D2A0).wind(0.05F).heat().build(),
                 builder().tint(0xFFB866, 0.62F).fog(0.32F, 0xF2C98C).wind(0.05F).heat().build());
+
+        // a derecho: a fast-moving line of violent wind and thunder that breaks branches off trees
+        put(WeatherType.DERECHO,
+                builder().rain(0.8F).thunder(1.0F).overcast(0.8F).fog(0.5F, SNOW_WHITE).wind(1.0F)
+                        .precip(Precip.BLIZZARD, 0.8F).freeze(0.3F).snowLayers(1).lightning(3.0F).debris().build(),
+                builder().rain(1.0F).thunder(1.0F).overcast(0.85F).tint(0x6E7A8A, 0.25F).fog(0.45F).wind(1.0F)
+                        .precip(Precip.DOWNPOUR, 0.7F).precip(Precip.LEAVES, 1.2F).lightning(5.0F).debris().build(),
+                builder().rain(0.6F).thunder(1.0F).overcast(0.75F).tint(SAND, 0.35F).fog(0.6F, SAND_FOG).wind(1.0F)
+                        .precip(Precip.DUST, 1.2F).precip(Precip.SAND, 0.6F).lightning(3.0F).build());
 
         for (WeatherType type : WeatherType.values()) {
             if (!TABLE.containsKey(type)) {

@@ -37,6 +37,7 @@ public final class WeatherAdvancements {
                 if (player.getItemBySlot(EquipmentSlot.CHEST).is(ModItems.WINTER_COAT.get())) award(player, "dressed_for_it");
             }
             if (type == WeatherType.SANDSTORM && climate == Climate.ARID) award(player, "dust_in_the_wind");
+            if (type == WeatherType.DERECHO && local.intensity() > 0.5F) award(player, "straight_line_winds");
         }
 
         for (TornadoEntity tornado : level.getEntities(ModEntities.TORNADO.get(), new AABB(player.blockPosition()).inflate(64), e -> true)) {

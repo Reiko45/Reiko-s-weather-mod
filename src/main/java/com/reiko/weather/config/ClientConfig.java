@@ -31,6 +31,15 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue DRIPPING_LEAVES;
     public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
     public static final ModConfigSpec.BooleanValue WILDLIFE_SOUNDS;
+    public static final ModConfigSpec.BooleanValue SKY_OPTICS;
+    public static final ModConfigSpec.BooleanValue HOARFROST;
+    public static final ModConfigSpec.BooleanValue FIREFLIES;
+    public static final ModConfigSpec.BooleanValue BLOSSOMS;
+    public static final ModConfigSpec.BooleanValue BIRD_FLOCKS;
+    public static final ModConfigSpec.BooleanValue WHITECAPS;
+    public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
+    public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
+    public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
 
     public enum HudMode { BAROMETER, ALWAYS, NEVER }
 
@@ -85,8 +94,30 @@ public final class ClientConfig {
                 .define("drippingLeaves", true);
         SHOOTING_STARS = b.comment("Shooting stars on clear nights, and meteor showers on some nights.")
                 .define("shootingStars", true);
-        WILDLIFE_SOUNDS = b.comment("Birdsong on spring and summer days, crickets on summer nights.")
+        WILDLIFE_SOUNDS = b.comment("Birdsong on spring and summer days, crickets on summer nights, frogs after rain.")
                 .define("wildlifeSounds", true);
+        SKY_OPTICS = b.comment("Ice-crystal halos and sun dogs on icy days, and sunbeams through broken cloud.")
+                .define("skyOptics", true);
+        HOARFROST = b.comment("Freezing fog coats grass and leaves in white hoarfrost.")
+                .define("hoarfrost", true);
+        FIREFLIES = b.comment("Fireflies on warm summer evenings.")
+                .define("fireflies", true);
+        BLOSSOMS = b.comment("Blossom petals drifting down from trees in spring.")
+                .define("blossoms", true);
+        BIRD_FLOCKS = b.comment("Flocks of birds flying over in a V in spring and autumn.")
+                .define("birdFlocks", true);
+        WHITECAPS = b.comment("Whitecaps and spray on rough seas in storms.")
+                .define("whitecaps", true);
+        b.comment("Accessibility").push("accessibility");
+        REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
+                        "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")
+                .define("reduceFlashing", false);
+        SCREEN_EFFECTS = b.comment("Strength of screen effects: raindrops on the screen, heat shimmer, wind shake and sky flashes.",
+                        "0 turns them off.")
+                .defineInRange("screenEffects", 1.0, 0.0, 1.0);
+        WEATHER_ALERT_SOUNDS = b.comment("Play an alert tone with weather radio warnings.")
+                .define("weatherAlertSounds", true);
+        b.pop();
         SPEC = b.build();
     }
 

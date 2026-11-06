@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 
 /**
  * Season-tinted grass and foliage: golden and red-orange leaves in autumn, dull dormant colours in
- * winter, slowly greening up again in spring. Colours change in steps, and only then are chunks re-meshed.
+ * winter, slowly greening up again in spring, and white hoarfrost after freezing fog. Colours change in steps, and only then are chunks re-meshed.
  */
 public final class SeasonalColors {
     private static final int[] AUTUMN_LEAVES = {0xE07B26, 0xC23B22, 0xE8C33A, 0xB8652A, 0xD9A23A};
@@ -28,6 +28,11 @@ public final class SeasonalColors {
     /** Read on chunk-meshing threads. */
     private static volatile float autumn;
     private static volatile float winter;
+    /** Hoarfrost left by freezing fog; it builds up while the fog lasts and melts off in the sun. */
+    private static volatile float frost;
+    private static float frostTarget;
+    private static final int FROST_GRASS = 0xF2F6F8;
+    private static final int FROST_LEAVES = 0xD6E2E6;
     private static long lastRebuild;
     private static boolean rebuildPending;
     private static final RandomSource RANDOM = RandomSource.create();
@@ -48,12 +53,24 @@ public final class SeasonalColors {
                 case SUMMER -> {}
             }
         }
+        // hoarfrost grows over a minute or two of freezing fog, and lingers until the air warms up
+        boolean overworld = mc.level != null && mc.level.dimension() == Level.OVERWORLD && ClientConfig.HOARFROST.get();
+        float air = com.reiko.weather.client.ClientWeather.airTemperature();
+        if (!overworld) {
+            frostTarget = 0.0F;
+        } else if (com.reiko.weather.client.ClientWeather.freezingFog() > 0.5F) {
+            frostTarget = Math.min(1.0F, frostTarget + 0.0006F);
+        } else if (air > 0.5F || com.reiko.weather.client.ClientWeather.rain() > 0.3F) {
+            frostTarget = Math.max(0.0F, frostTarget - (air > 4.0F ? 0.004F : 0.0012F));
+        }
         // change in visible steps so chunks only re-mesh a few times a season
         a = Math.round(a * 8.0F) / 8.0F;
         w = Math.round(w * 8.0F) / 8.0F;
-        if ((a != autumn || w != winter) && mc.level != null) {
+        float f = Math.round(frostTarget * 6.0F) / 6.0F;
+        if ((a != autumn || w != winter || f != frost) && mc.level != null) {
             autumn = a;
             winter = w;
+            frost = f;
             rebuildPending = true;
         }
         long now = System.currentTimeMillis();
@@ -100,21 +117,28 @@ public final class SeasonalColors {
         return t * t * (3.0F - 2.0F * t);
     }
 
+    public static float frost() {
+        return frost;
+    }
+
     public static int grass(int color, BlockPos pos) {
-        float a = autumn, w = winter;
-        if (a <= 0 && w <= 0) return color;
+        float a = autumn, w = winter, f = frost;
+        if (a <= 0 && w <= 0 && f <= 0) return color;
         color = mix(color, AUTUMN_GRASS, a * 0.3F);
-        return mix(color, WINTER_GRASS, w * 0.5F);
+        color = mix(color, WINTER_GRASS, w * 0.5F);
+        return mix(color, FROST_GRASS, f * 0.8F);
     }
 
     public static int foliage(int color, BlockPos pos) {
-        float a = autumn, w = winter;
-        if (a <= 0 && w <= 0) return color;
+        float a = autumn, w = winter, f = frost;
+        if (a <= 0 && w <= 0 && f <= 0) return color;
+        if (a <= 0 && w <= 0) return mix(color, FROST_LEAVES, f * 0.65F);
         // patches of 4x4 blocks share a colour, so whole trees turn together
         int hash = Mth.murmurHash3Mixer((pos.getX() >> 2) * 73856093 ^ (pos.getZ() >> 2) * 19349663 ^ (pos.getY() >> 3) * 83492791);
         int autumnColor = AUTUMN_LEAVES[Math.floorMod(hash, AUTUMN_LEAVES.length)];
         color = mix(color, autumnColor, a * 0.85F);
-        return mix(color, WINTER_LEAVES, w * 0.6F);
+        color = mix(color, WINTER_LEAVES, w * 0.6F);
+        return mix(color, FROST_LEAVES, f * 0.65F);
     }
 
     private static int mix(int a, int b, float t) {

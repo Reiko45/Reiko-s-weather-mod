@@ -99,6 +99,21 @@ public final class WeatherReport {
         return Component.translatable("report.reikos_weather.microclimate", list.withStyle(ChatFormatting.AQUA));
     }
 
+    /** The tide, for players on or near the coast (null inland). */
+    @javax.annotation.Nullable
+    public static Component tide(ServerLevel level, BlockPos pos) {
+        if (level.dimension() != net.minecraft.world.level.Level.OVERWORLD) {
+            return null;
+        }
+        for (BlockPos p : new BlockPos[]{pos, pos.offset(24, 0, 0), pos.offset(-24, 0, 0), pos.offset(0, 0, 24), pos.offset(0, 0, -24)}) {
+            var biome = level.getBiome(p);
+            if (biome.is(net.minecraft.tags.BiomeTags.IS_OCEAN) || biome.is(net.minecraft.tags.BiomeTags.IS_BEACH)) {
+                return Tides.describe(level).copy().withStyle(ChatFormatting.AQUA);
+            }
+        }
+        return null;
+    }
+
     /** 8-point compass name for a horizontal offset (north is -Z). */
     public static String compass(double dx, double dz) {
         double bearing = (Math.toDegrees(Math.atan2(dx, -dz)) + 360.0) % 360.0;

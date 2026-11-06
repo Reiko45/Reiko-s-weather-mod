@@ -52,6 +52,8 @@ public final class WeatherProfile {
     public final float lightning;
     public final boolean tornadoes;
     public final boolean waterspouts;
+    /** Strong enough to break branches off trees (storm debris). */
+    public final boolean debris;
 
     private WeatherProfile(Builder b) {
         this.rain = b.rain;
@@ -77,6 +79,7 @@ public final class WeatherProfile {
         this.lightning = b.lightning;
         this.tornadoes = b.tornadoes;
         this.waterspouts = b.waterspouts;
+        this.debris = b.debris;
     }
 
     public static Builder builder() {
@@ -120,6 +123,7 @@ public final class WeatherProfile {
         r.heatLightning = d.heatLightning;
         r.tornadoes = d.tornadoes;
         r.waterspouts = d.waterspouts;
+        r.debris = d.debris;
         return r.build();
     }
 
@@ -135,7 +139,7 @@ public final class WeatherProfile {
         float rain, thunder, overcast, tintStrength, fog, wind, freeze, lightning, clouds = -1;
         int tint = 0xFFFFFF, fogColor = -1, snowLayers;
         final float[] precip = new float[Precip.values().length];
-        boolean hail, heat, cropBoost, glazeWater, glazeGround, puddles, floods, heatLightning, tornadoes, waterspouts;
+        boolean hail, heat, cropBoost, glazeWater, glazeGround, puddles, floods, heatLightning, tornadoes, waterspouts, debris;
 
         /** A builder pre-filled with an existing profile's values. */
         public static Builder from(WeatherProfile p) {
@@ -145,7 +149,7 @@ public final class WeatherProfile {
             System.arraycopy(p.precip, 0, b.precip, 0, b.precip.length);
             b.hail = p.hail; b.freeze = p.freeze; b.heat = p.heat; b.snowLayers = p.snowLayers; b.cropBoost = p.cropBoost;
             b.glazeWater = p.glazeWater; b.glazeGround = p.glazeGround; b.puddles = p.puddles; b.floods = p.floods;
-            b.heatLightning = p.heatLightning; b.lightning = p.lightning; b.tornadoes = p.tornadoes; b.waterspouts = p.waterspouts;
+            b.heatLightning = p.heatLightning; b.lightning = p.lightning; b.tornadoes = p.tornadoes; b.waterspouts = p.waterspouts; b.debris = p.debris;
             return b;
         }
 
@@ -170,6 +174,7 @@ public final class WeatherProfile {
         public Builder lightning(float perMinute) { lightning = perMinute; return this; }
         public Builder tornadoes() { tornadoes = true; return this; }
         public Builder waterspouts() { waterspouts = true; return this; }
+        public Builder debris() { debris = true; return this; }
         public WeatherProfile build() { return new WeatherProfile(this); }
     }
 }

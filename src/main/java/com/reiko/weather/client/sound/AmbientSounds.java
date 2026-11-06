@@ -65,6 +65,10 @@ public final class AmbientSounds {
             return;
         }
         ResourceLocation id = sound.getLocation();
+        if (!ClientConfig.WEATHER_ALERT_SOUNDS.get() && id.equals(com.reiko.weather.ReikosWeather.id("item.weather_radio.alert"))) {
+            event.setSound(null);
+            return;
+        }
         boolean thunder = id.equals(THUNDER);
         if (ClientConfig.THUNDER_DELAY.get() && (thunder || id.equals(IMPACT)) && !sound.isRelative()) {
             Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();

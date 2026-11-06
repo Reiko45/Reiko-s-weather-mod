@@ -29,6 +29,11 @@ public final class DebugInfo {
             line.append(String.format(Locale.ROOT, " | body %.1f°C -> %.1f°C", body, TemperaturePayload.clientTarget));
         }
         event.getLeft().add(line.toString());
+        if (mc.level.dimension() == Level.OVERWORLD && SyncedWeather.managed()) {
+            event.getLeft().add(String.format(Locale.ROOT, "[Reiko's Weather] air %.1f°C halo %.2f beams %.2f blood %.2f frost %.2f seas %.2f",
+                    ClientWeather.airTemperature(), ClientWeather.halo(), ClientWeather.sunbeams(), ClientWeather.bloodMoon(),
+                    SeasonalColors.frost(), RoughSeas.roughness()));
+        }
     }
 
     private DebugInfo() {}

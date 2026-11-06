@@ -92,8 +92,21 @@ public final class WeatherHazards {
             }
             if (local.type() == WeatherType.HURRICANE && WeatherConfig.STORM_SURGE.get() && intensity > 0.8F) {
                 for (int i = 0; i < 3; i++) {
-                    surge(level, state, randomColumn(level, player, random));
+                    surge(level, state, randomColumn(level, player, random), false);
                 }
+            }
+            if (Tides.flooding(level) && random.nextFloat() < 0.5F) {
+                surge(level, state, randomColumn(level, player, random), true);
+            }
+            if (snowmeltActive() && climate != Climate.ARID && random.nextFloat() < 0.35F) {
+                BlockPos top = randomColumn(level, player, random);
+                if (top != null && level.getBiome(top).is(BiomeTags.IS_RIVER)) {
+                    flood(level, state, top, false);
+                }
+            }
+            if (profile.debris && WeatherConfig.STORM_DEBRIS.get() && intensity > 0.6F && random.nextFloat() < 0.12F * intensity
+                    && level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING)) {
+                StormDebris.drop(level, player, random);
             }
             if (profile.hail && WeatherConfig.HAIL_DAMAGES_CROPS.get() && random.nextFloat() < 0.5F * intensity) {
                 damageCrop(level, randomColumn(level, player, random), random);
@@ -111,6 +124,7 @@ public final class WeatherHazards {
                 com.reiko.weather.mob.WeatherCreatures.everySecond(level, player, local, climate);
             }
             com.reiko.weather.farming.Frost.tick(level, player, local);
+            com.reiko.weather.nature.FallenLeaves.tick(level, player, climate, profile.wind);
             com.reiko.weather.sky.Meteors.tick(level, player, local);
             LightningEvents.maybeSpawnBallLightning(level, player, local);
             ExtremeWeather.tick(level, player, local, climate);
@@ -225,6 +239,11 @@ public final class WeatherHazards {
      * permanent sources, and every one is tracked so it can be removed after the storm.
      */
     private static void flood(ServerLevel level, WeatherState state, @Nullable BlockPos top) {
+        flood(level, state, top, true);
+    }
+
+    /** With {@code needBank} false the water also rises where the banks are high (a swollen river), not just where it can spill. */
+    private static void flood(ServerLevel level, WeatherState state, @Nullable BlockPos top, boolean needBank) {
         if (top == null || state.floodBlocks.size() >= WeatherConfig.MAX_FLOOD_BLOCKS.get()) {
             return;
         }
@@ -240,7 +259,7 @@ public final class WeatherHazards {
                 bank = true;
             }
         }
-        if (!bank) {
+        if (!bank && needBank) {
             return;
         }
         for (int dx = -2; dx <= 2; dx++) {
@@ -273,7 +292,7 @@ public final class WeatherHazards {
      * kept at least three blocks apart (flowing water fills the gaps), so vanilla can never join them into
      * permanent new sources, and every one is tracked and removed after the storm.
      */
-    private static void surge(ServerLevel level, WeatherState state, @Nullable BlockPos top) {
+    private static void surge(ServerLevel level, WeatherState state, @Nullable BlockPos top, boolean tide) {
         if (top == null || state.floodBlocks.size() >= WeatherConfig.MAX_FLOOD_BLOCKS.get()) {
             return;
         }
@@ -281,13 +300,18 @@ public final class WeatherHazards {
         BlockPos pos;
         if (top.getY() == sea && level.getBlockState(top).isAir()) {
             pos = top;
-        } else if (top.getY() == sea + 1 && level.getFluidState(top.below()).is(FluidTags.WATER) && !level.getFluidState(top.below()).isSource()) {
+            if (tide && !level.getBiome(pos).is(BiomeTags.IS_BEACH)) {
+                return; // high tide only washes over beaches
+            }
+        } else if (!tide && top.getY() == sea + 1 && level.getFluidState(top.below()).is(FluidTags.WATER) && !level.getFluidState(top.below()).isSource()) {
             pos = top.below(); // already awash with surge water: deepen it
         } else {
             return;
         }
         BlockPos below = pos.below();
-        if (!level.canSeeSky(pos) || !level.getBlockState(below).isFaceSturdy(level, below, Direction.UP) && !level.getFluidState(below).is(FluidTags.WATER)) {
+        // only over land: water on top of the open sea would just float on it (and sink any boat under it)
+        boolean onLand = level.getBlockState(below).isFaceSturdy(level, below, Direction.UP) && level.getFluidState(below).isEmpty();
+        if (!level.canSeeSky(pos) || !onLand) {
             return;
         }
         boolean nearWater = false;
@@ -322,6 +346,15 @@ public final class WeatherHazards {
         state.setDirty();
     }
 
+    /** The first few days of spring, when melting snow swells the rivers. */
+    public static boolean snowmeltActive() {
+        if (!WeatherConfig.SNOWMELT_FLOODS.get()) {
+            return false;
+        }
+        Seasons.Info info = WeatherManager.seasonInfo();
+        return info.season() == Season.SPRING && info.dayOfSeason() >= 0 && info.dayOfSeason() < Math.max(1, info.daysPerSeason() * 3 / 7);
+    }
+
     private static void recedeFloods(ServerLevel level, WeatherState state) {
         if (state.floodBlocks.isEmpty() || level.getGameTime() % 5L != 0L) {
             return;
@@ -337,6 +370,10 @@ public final class WeatherHazards {
             LocalWeather local = WeatherManager.local(level, pos);
             if (local != null && (floodsOn && local.profile().floods || surgeOn && local.type() == WeatherType.HURRICANE)) {
                 continue; // still pouring
+            }
+            if (Tides.flooding(level) && level.getBiome(pos).is(BiomeTags.IS_BEACH)
+                    || snowmeltActive() && level.getBiome(pos).is(BiomeTags.IS_RIVER)) {
+                continue; // high tide, or the spring thaw is still running off
             }
             if (level.getFluidState(pos).isSourceOfType(Fluids.WATER)) {
                 level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
@@ -460,8 +497,9 @@ public final class WeatherHazards {
     public static void onEntityTick(EntityTickEvent.Post event) {
         Entity entity = event.getEntity();
         Level level = entity.level();
-        if (level.isClientSide || entity instanceof Player && entity.isSpectator()) {
-            return;
+        if (level.isClientSide || entity instanceof Player && entity.isSpectator()
+                || entity instanceof net.minecraft.world.entity.projectile.FishingHook) {
+            return; // (a bobber blown away by the wind would make storm fishing impossible)
         }
         WeatherState state = WeatherManager.activeState(level);
         if (state == null || state.cells.isEmpty() && !WeatherProfiles.affectsEntities(state.type)) {
@@ -487,7 +525,8 @@ public final class WeatherHazards {
         if (profile.hail && (entity.tickCount + entity.getId()) % 20 == 0 && level.random.nextFloat() < 0.25F * intensity) {
             hailHit(living);
         }
-        boolean temperatureRules = living instanceof Player && TemperatureEffects.enabled();
+        // body temperature (ours, or Tough As Nails') replaces the simple weather chill and heat exhaustion for players
+        boolean temperatureRules = living instanceof Player && (TemperatureEffects.enabled() || com.reiko.weather.compat.Compat.toughAsNailsHandlesTemperature());
         if (profile.freeze > 0.0F && WeatherConfig.FREEZING.get() && !temperatureRules) {
             chill(living, profile.freeze * intensity, eyes);
         }
@@ -556,13 +595,54 @@ public final class WeatherHazards {
 
     // ------------------------------------------------------------------ crops
 
+    /** Rice needs water: rain or the monsoon make it shoot up, standing water next to it keeps it going, otherwise it stalls. */
+    private static void riceGrowth(CropGrowEvent.Pre event, ServerLevel level, BlockPos pos) {
+        RandomSource random = level.random;
+        boolean rained = level.isRainingAt(pos.above()) || Monsoon.monsoonAt(level.getBiome(pos));
+        boolean paddy = false;
+        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, -1, 1))) {
+            if (level.getFluidState(p).is(FluidTags.WATER)) {
+                paddy = true;
+                break;
+            }
+        }
+        if (rained) {
+            if (random.nextFloat() < 0.4F) event.setResult(CropGrowEvent.Pre.Result.GROW);
+        } else if (!paddy && random.nextFloat() < 0.8F) {
+            event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+        } else if (WeatherManager.seasonInfo().season() == Season.WINTER && random.nextFloat() < 0.7F) {
+            event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+        }
+    }
+
+    /** Kale likes it cool: it grows on through the winter (with no frost damage) but slows right down in the heat. */
+    private static void kaleGrowth(CropGrowEvent.Pre event, ServerLevel level, BlockPos pos, LocalWeather local) {
+        float celsius = com.reiko.weather.temperature.Temperature.ambient(level, pos, local);
+        if (celsius > 26.0F || local.profile().heat) {
+            if (level.random.nextFloat() < 0.6F) event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+        } else if (celsius < 10.0F && level.random.nextFloat() < 0.2F) {
+            event.setResult(CropGrowEvent.Pre.Result.GROW);
+        }
+    }
+
     public static void onCropGrow(CropGrowEvent.Pre event) {
         if (!(event.getLevel() instanceof ServerLevel level) || event.getResult() != CropGrowEvent.Pre.Result.DEFAULT) {
             return;
         }
         BlockPos pos = event.getPos();
         LocalWeather local = WeatherManager.local(level, pos);
-        if (local == null || !level.canSeeSky(pos)) {
+        if (local == null) {
+            return;
+        }
+        if (event.getState().getBlock() instanceof com.reiko.weather.block.RiceCropBlock) {
+            riceGrowth(event, level, pos);
+            return;
+        }
+        if (event.getState().getBlock() instanceof com.reiko.weather.block.KaleCropBlock) {
+            kaleGrowth(event, level, pos, local);
+            return;
+        }
+        if (!level.canSeeSky(pos)) {
             return;
         }
         WeatherProfile profile = local.profile();

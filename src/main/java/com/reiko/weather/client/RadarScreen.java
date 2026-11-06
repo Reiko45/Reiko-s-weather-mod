@@ -54,6 +54,7 @@ public class RadarScreen extends Screen {
             case ICE_STORM -> 0xB4E6FF;
             case SNOW, BLIZZARD -> 0xE6F4FF;
             case SANDSTORM -> 0xE6B464;
+            case DERECHO -> 0xFF8C28;
             default -> 0x9AA0A6;
         };
     }
@@ -102,11 +103,21 @@ public class RadarScreen extends Screen {
                 py += (jitter.nextFloat() - 0.5F) * 14;
             }
             double r = Math.max(3, cell.radius * scale);
-            if (Math.hypot(px - cx, py - cy) > radius + r) continue;
+            if (Math.hypot(px - cx, py - cy) > radius + r * cell.elongation()) continue;
             int c = colorOf(cell.type);
             blend(); // GUI fills switch blending off again after drawing
             RenderSystem.setShaderColor((c >> 16 & 255) / 255.0F, (c >> 8 & 255) / 255.0F, (c & 255) / 255.0F, 0.5F + 0.45F * cell.strength());
-            g.blit(BLOB, (int) (px - r), (int) (py - r), (int) (r * 2), (int) (r * 2), 0, 0, 64, 64, 64, 64);
+            if (cell.elongation() != 1.0F && Math.hypot(cell.vx, cell.vz) > 1.0E-4) {
+                // a derecho is a long band across its direction of travel
+                g.pose().pushPose();
+                g.pose().translate(px, py, 0);
+                g.pose().mulPose(Axis.ZP.rotation((float) Math.atan2(cell.vz, cell.vx)));
+                int across = (int) (r * cell.elongation());
+                g.blit(BLOB, (int) -r, -across, (int) (r * 2), across * 2, 0, 0, 64, 64, 64, 64);
+                g.pose().popPose();
+            } else {
+                g.blit(BLOB, (int) (px - r), (int) (py - r), (int) (r * 2), (int) (r * 2), 0, 0, 64, 64, 64, 64);
+            }
             RenderSystem.setShaderColor(1, 1, 1, 1);
             // heading arrow
             double speed = Math.hypot(cell.vx, cell.vz);
