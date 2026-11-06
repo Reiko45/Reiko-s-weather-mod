@@ -37,5 +37,10 @@ public final class ModEntities {
                     .sized(1.0F, 1.0F).fireImmune().clientTrackingRange(16).updateInterval(1)
                     .build(ReikosWeather.id("meteor").toString()));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<com.reiko.weather.entity.VolcanicBombEntity>> VOLCANIC_BOMB = REGISTER.register("volcanic_bomb",
+            () -> EntityType.Builder.<com.reiko.weather.entity.VolcanicBombEntity>of(com.reiko.weather.entity.VolcanicBombEntity::new, MobCategory.MISC)
+                    .sized(0.7F, 0.7F).fireImmune().noSummon().clientTrackingRange(16).updateInterval(1)
+                    .build(ReikosWeather.id("volcanic_bomb").toString()));
+
     private ModEntities() {}
 }

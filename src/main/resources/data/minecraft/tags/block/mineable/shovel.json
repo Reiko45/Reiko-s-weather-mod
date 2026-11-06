@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:sandbag"
+    "reikos_weather:sandbag",
+    "reikos_weather:volcanic_ash"
   ]
 }

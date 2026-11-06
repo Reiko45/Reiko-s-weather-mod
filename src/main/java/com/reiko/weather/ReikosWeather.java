@@ -53,6 +53,8 @@ public class ReikosWeather {
         com.reiko.weather.registry.ModVillagers.POI_TYPES.register(modBus);
         com.reiko.weather.registry.ModVillagers.PROFESSIONS.register(modBus);
         com.reiko.weather.registry.ModDataComponents.REGISTER.register(modBus);
+        com.reiko.weather.registry.ModStructures.TYPES.register(modBus);
+        com.reiko.weather.registry.ModStructures.PIECES.register(modBus);
 
         modBus.addListener(ModNetwork::register);
         modBus.addListener(ReikosWeather::addCreativeTabContents);
@@ -105,6 +107,8 @@ public class ReikosWeather {
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.ChargedTools::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.ChargedTools::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.WeatherAlmanacItem::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.volcano.VolcanoManager::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.volcano.VolcanoManager::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) ->
                 com.reiko.weather.weather.Monsoon.collect(e.getServer().registryAccess()));
     }
@@ -128,6 +132,9 @@ public class ReikosWeather {
             event.accept(ModItems.RAKE.get());
             event.accept(ModItems.ICE_SAW.get());
             event.accept(ModItems.EARTHWORM.get());
+        } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(ModItems.SULFUR.get());
+            event.accept(ModItems.VOLCANIC_ASH.get());
         } else if (event.getTabKey() == CreativeModeTabs.COMBAT) {
             event.accept(ModItems.WINTER_COAT.get());
             event.accept(ModItems.GOGGLES.get());
@@ -147,6 +154,9 @@ public class ReikosWeather {
             event.accept(ModItems.LEAF_PILE.get());
             event.accept(ModItems.FALLEN_BRANCH.get());
             event.accept(ModItems.RICE.get());
+            event.accept(ModItems.VOLCANIC_ASH.get());
+            event.accept(ModItems.SULFUR_CRUST.get());
+            event.accept(ModItems.VOLCANIC_VENT.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
@@ -157,6 +167,7 @@ public class ReikosWeather {
             event.accept(ModItems.TORNADO_SIREN.get());
             event.accept(ModItems.LIGHTNING_BATTERY.get());
             event.accept(ModItems.STORM_PROBE.get());
+            event.accept(ModItems.SEISMOGRAPH.get());
         } else if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.WEATHER_RADAR.get());
             event.accept(ModItems.WEATHER_VANE.get());
@@ -170,6 +181,7 @@ public class ReikosWeather {
             event.accept(ModItems.LIGHTNING_BATTERY.get());
             event.accept(ModItems.STORM_PROBE.get());
             event.accept(ModItems.ICEBOX.get());
+            event.accept(ModItems.SEISMOGRAPH.get());
         }
     }
 }

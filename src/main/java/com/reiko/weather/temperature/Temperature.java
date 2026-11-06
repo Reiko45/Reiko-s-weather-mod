@@ -119,6 +119,7 @@ public final class Temperature {
         if (state.getBlock() instanceof CampfireBlock) return state.getValue(CampfireBlock.LIT) ? 10.0F : 0.0F;
         if (state.getBlock() instanceof AbstractFurnaceBlock) return state.getValue(AbstractFurnaceBlock.LIT) ? 6.0F : 0.0F;
         if (state.is(Blocks.MAGMA_BLOCK)) return 5.0F;
+        if (state.is(com.reiko.weather.registry.ModBlocks.VOLCANIC_VENT.get())) return 6.0F;
         if (state.is(Blocks.TORCH) || state.is(Blocks.WALL_TORCH) || state.is(Blocks.LANTERN)) return 2.0F;
         return 0.0F;
     }

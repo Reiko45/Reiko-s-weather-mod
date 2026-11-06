@@ -114,6 +114,24 @@ public final class WeatherReport {
         return null;
     }
 
+    /** "Volcano 420 blocks to the northeast: erupting", for the nearest known volcano within 1024 blocks. */
+    @Nullable
+    public static Component volcano(ServerLevel level, BlockPos pos) {
+        com.reiko.weather.volcano.Volcano v = com.reiko.weather.volcano.VolcanoManager.nearest(level, pos.getX(), pos.getZ(), 1024);
+        if (v == null) {
+            return null;
+        }
+        ChatFormatting color = switch (v.phase) {
+            case DORMANT -> ChatFormatting.GRAY;
+            case RUMBLING -> ChatFormatting.GOLD;
+            case ERUPTING -> ChatFormatting.RED;
+            case COOLING -> ChatFormatting.YELLOW;
+        };
+        return Component.translatable("report.reikos_weather.volcano", (int) v.shape.horizontalDistance(pos.getX(), pos.getZ()),
+                Component.translatable("direction.reikos_weather." + compass(v.shape.cx() - pos.getX(), v.shape.cz() - pos.getZ())),
+                Component.translatable("volcano.reikos_weather.phase." + v.phase.id()).withStyle(color));
+    }
+
     /** 8-point compass name for a horizontal offset (north is -Z). */
     public static String compass(double dx, double dz) {
         double bearing = (Math.toDegrees(Math.atan2(dx, -dz)) + 360.0) % 360.0;

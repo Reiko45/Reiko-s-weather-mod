@@ -10,5 +10,7 @@ public enum Precip {
     BLIZZARD,
     SAND,
     DUST,
-    LEAVES
+    LEAVES,
+    /** Grey volcanic ash drifting down out of an eruption cloud. */
+    ASH
 }

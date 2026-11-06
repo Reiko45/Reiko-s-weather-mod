@@ -69,6 +69,22 @@ public final class WeatherRadio {
                 }
             }
         }
+        // volcanoes waking up
+        if (level.dimension() == Level.OVERWORLD) {
+            for (com.reiko.weather.volcano.Volcano v : com.reiko.weather.volcano.VolcanoManager.near(level, pos.getX(), pos.getZ(), 1024)) {
+                if (v.phase != com.reiko.weather.volcano.Volcano.Phase.RUMBLING && v.phase != com.reiko.weather.volcano.Volcano.Phase.ERUPTING) continue;
+                int distance = (int) v.shape.horizontalDistance(pos.getX(), pos.getZ());
+                Component direction = Component.translatable("direction.reikos_weather." + WeatherReport.compass(v.shape.cx() - pos.getX(), v.shape.cz() - pos.getZ()));
+                if (v.phase == com.reiko.weather.volcano.Volcano.Phase.RUMBLING) {
+                    alert(player, "volcano:" + v.shape.key() + ":rumbling", now,
+                            Component.translatable("radio.reikos_weather.volcano_rumbling", distance, direction), false);
+                } else {
+                    net.minecraft.world.phys.Vec3 wind = com.reiko.weather.weather.Wind.direction(WeatherManager.state(level).windAngle);
+                    alert(player, "volcano:" + v.shape.key() + ":erupting", now, Component.translatable("radio.reikos_weather.volcano_erupting",
+                            distance, direction, Component.translatable("direction.reikos_weather." + WeatherReport.compass(wind.x, wind.z))), true);
+                }
+            }
+        }
         // tornadoes
         for (TornadoEntity tornado : level.getEntitiesOfClass(TornadoEntity.class, new AABB(pos).inflate(250, 128, 250))) {
             if (tornado.kind() == TornadoEntity.Kind.DUST_DEVIL) continue;

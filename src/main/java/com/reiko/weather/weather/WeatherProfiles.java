@@ -116,6 +116,11 @@ public final class WeatherProfiles {
                 builder().rain(0.6F).thunder(1.0F).overcast(0.75F).tint(SAND, 0.35F).fog(0.6F, SAND_FOG).wind(1.0F)
                         .precip(Precip.DUST, 1.2F).precip(Precip.SAND, 0.6F).lightning(3.0F).build());
 
+        // the ash cloud of an erupting volcano: a dark, choking sky raining grey ash (its lightning stays over the volcano)
+        WeatherProfile ash = builder().overcast(0.9F).tint(0x4E4945, 0.55F).fog(0.62F, 0x6A645F).wind(0.25F)
+                .precip(Precip.ASH, 1.0F).precip(Precip.DUST, 0.6F).ashLayers(3).build();
+        put(WeatherType.VOLCANIC_ASH, ash, ash, ash);
+
         for (WeatherType type : WeatherType.values()) {
             if (!TABLE.containsKey(type)) {
                 throw new IllegalStateException("Missing weather profile for " + type);

@@ -87,6 +87,13 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue GUIDE_ON_JOIN;
     public static final ModConfigSpec.BooleanValue TOUGH_AS_NAILS;
 
+    public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
+    public static final ModConfigSpec.BooleanValue ERUPTIONS;
+    public static final ModConfigSpec.DoubleValue DAYS_BETWEEN_ERUPTIONS;
+    public static final ModConfigSpec.BooleanValue LAVA_FLOWS;
+    public static final ModConfigSpec.BooleanValue LAVA_BOMBS;
+    public static final ModConfigSpec.BooleanValue ASH_FALL;
+
     public static final ModConfigSpec.BooleanValue TORNADOES;
     public static final ModConfigSpec.DoubleValue TORNADO_CHANCE;
     public static final ModConfigSpec.IntValue MAX_TORNADOES;
@@ -108,7 +115,9 @@ public final class WeatherConfig {
         b.comment("Relative chance of each weather being chosen next (0 disables it).",
                 "Chances are further biased toward the climates players are standing in.").push("weights");
         for (WeatherType type : WeatherType.values()) {
-            WEIGHTS.put(type, b.defineInRange(type.id(), type.defaultWeight, 0, 1000));
+            if (type.natural()) {
+                WEIGHTS.put(type, b.defineInRange(type.id(), type.defaultWeight, 0, 1000));
+            }
         }
         b.pop();
 
@@ -296,6 +305,21 @@ public final class WeatherConfig {
                 .define("customWeathers", true);
         b.pop();
 
+        b.comment("Volcanoes").push("volcanoes");
+        VOLCANO_GENERATION = b.comment("Generate volcanoes (and volcanic islands) in new parts of the world.")
+                .define("generate", true);
+        ERUPTIONS = b.comment("Volcanoes wake up now and then: the ground rumbles for a few minutes, then they erupt.")
+                .define("eruptions", true);
+        DAYS_BETWEEN_ERUPTIONS = b.comment("Average Minecraft days a volcano sleeps between eruptions (only counted while a player is near it).")
+                .defineInRange("averageDaysBetweenEruptions", 4.0, 0.1, 1000.0);
+        LAVA_FLOWS = b.comment("Erupting volcanoes overflow, sending lava down their flanks; it cools into basalt afterwards (needs mobGriefing).")
+                .define("lavaFlows", true);
+        LAVA_BOMBS = b.comment("Erupting volcanoes hurl lava bombs that burst where they land.")
+                .define("lavaBombs", true);
+        ASH_FALL = b.comment("Eruptions send an ash cloud downwind that darkens the sky and buries the land in ash.")
+                .define("ashFall", true);
+        b.pop();
+
         b.comment("Tornadoes spawned by supercell storms").push("tornadoes");
         TORNADOES = b.comment("Allow supercells to spawn tornadoes.")
                 .define("enabled", true);
@@ -314,7 +338,8 @@ public final class WeatherConfig {
     }
 
     public static int weight(WeatherType type) {
-        return WEIGHTS.get(type).get();
+        ModConfigSpec.IntValue value = WEIGHTS.get(type);
+        return value == null ? 0 : value.get();
     }
 
     private WeatherConfig() {}

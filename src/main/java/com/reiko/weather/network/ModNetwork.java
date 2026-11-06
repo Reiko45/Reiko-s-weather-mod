@@ -12,6 +12,8 @@ public final class ModNetwork {
                 (payload, context) -> TemperaturePayload.accept(payload));
         event.registrar("1").playToClient(OtherworldPayload.TYPE, OtherworldPayload.STREAM_CODEC,
                 (payload, context) -> OtherworldPayload.accept(payload));
+        event.registrar("1").playToClient(VolcanoPayload.TYPE, VolcanoPayload.STREAM_CODEC,
+                (payload, context) -> VolcanoPayload.accept(payload, context.player().level().getGameTime()));
     }
 
     private ModNetwork() {}

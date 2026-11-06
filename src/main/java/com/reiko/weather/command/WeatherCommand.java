@@ -42,6 +42,7 @@ import java.util.List;
 /**
  * /rweather query | forecast | set &lt;type&gt; [seconds] | next | tornado [pos] [kind]
  *          | storm &lt;type&gt; [here] | storms [clear] | season [season]
+ *          | volcano [create [pos] | wake | erupt | calm]
  */
 public final class WeatherCommand {
     private static final DynamicCommandExceptionType UNKNOWN_TYPE =
@@ -93,6 +94,17 @@ public final class WeatherCommand {
                                 .executes(WeatherCommand::setWind)))
                 .then(Commands.literal("storms").executes(WeatherCommand::listStorms)
                         .then(Commands.literal("clear").requires(s -> s.hasPermission(2)).executes(WeatherCommand::clearStorms)))
+                .then(Commands.literal("volcano").executes(ctx -> VolcanoCommands.report(ctx.getSource()))
+                        .then(Commands.literal("create").requires(s -> s.hasPermission(2))
+                                .executes(ctx -> VolcanoCommands.create(ctx.getSource(), ctx.getSource().getPosition()))
+                                .then(Commands.argument("pos", Vec3Argument.vec3())
+                                        .executes(ctx -> VolcanoCommands.create(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos")))))
+                        .then(Commands.literal("wake").requires(s -> s.hasPermission(2))
+                                .executes(ctx -> VolcanoCommands.phase(ctx.getSource(), com.reiko.weather.volcano.Volcano.Phase.RUMBLING)))
+                        .then(Commands.literal("erupt").requires(s -> s.hasPermission(2))
+                                .executes(ctx -> VolcanoCommands.phase(ctx.getSource(), com.reiko.weather.volcano.Volcano.Phase.ERUPTING)))
+                        .then(Commands.literal("calm").requires(s -> s.hasPermission(2))
+                                .executes(ctx -> VolcanoCommands.phase(ctx.getSource(), com.reiko.weather.volcano.Volcano.Phase.COOLING))))
                 .then(Commands.literal("season").executes(WeatherCommand::querySeason)
                         .then(Commands.argument("season", StringArgumentType.word()).requires(s -> s.hasPermission(2))
                                 .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
@@ -133,6 +145,8 @@ public final class WeatherCommand {
         if (terrain != null) source.sendSuccess(() -> terrain, false);
         Component tide = WeatherReport.tide(overworld, pos);
         if (tide != null) source.sendSuccess(() -> tide, false);
+        Component volcano = WeatherReport.volcano(overworld, pos);
+        if (volcano != null) source.sendSuccess(() -> volcano, false);
         return state.type.ordinal();
     }
 

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "reikos_weather:block/volcanic_vent_top",
+    "bottom": "reikos_weather:block/volcanic_vent_side",
+    "side": "reikos_weather:block/volcanic_vent_side"
+  }
+}

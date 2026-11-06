@@ -1,10 +1,10 @@
 # Reiko's Weather
 
 A complete weather overhaul for **Minecraft 1.21.1** on **NeoForge**. It replaces vanilla's
-rain/thunder cycle with 18 weather types, seasons, storms that roll across the map, tornadoes,
+rain/thunder cycle with 19 weather types, seasons, storms that roll across the map, tornadoes,
 waterspouts and dust devils. It also adds body temperature and ways to stay comfortable, local
 climates shaped by the terrain, droughts and wildfires, winter hazards, storm surges and tides,
-meteor showers and blood moons, seasonal wildlife, weather fishing and seasonal crops, a paraglider,
+meteor showers and blood moons, volcanoes that wake up and erupt, seasonal wildlife, weather fishing and seasonal crops, a paraglider,
 weather in the Nether and the End, a weather radar and radio, ways to control the weather, a
 meteorologist villager, weather gear, weather-aware and redstone blocks, a full set of sky, ground
 and sound effects, an in-game guidebook, and datapack-defined weather.
@@ -32,6 +32,7 @@ New players get a **Weather Almanac**, the in-game guide to everything below (wi
 | **Gale** | Strong wind blows leaves around, pushes entities and makes arrows drift. |
 | **Sandstorm** | A wall of sand and an orange sky in deserts and badlands. Storm goggles let you see through it. |
 | **Heatwave** | A hazy amber sky. Standing in the sun costs extra hunger (double in a winter coat), crops grow slower, and there's silent heat lightning at night. |
+| **Volcanic Ash Cloud** | Only from an erupting volcano (never in the forecast): the ash cloud drifts downwind, turning the sky dark grey. Ash sifts down and piles up to 3 layers, crops struggle without the sun, and breathing it leaves you weak unless you wear a helmet. |
 | **Derecho** | A long line of violent thunderstorms that races across the map several times faster than any other storm, in summer. The wind is ferocious and breaks branches off trees. On the radar it's a long orange band. |
 
 Each weather looks and plays differently in **cold**, **temperate** and **arid** climates, and the
@@ -185,6 +186,32 @@ Ways to stay comfortable:
   bright **sun dogs** sit level with it on either side. When the sun shines through broken cloud or
   morning mist, **sunbeams** fan out below the clouds.
 
+## Volcanoes
+Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
+high, with a bowl-shaped crater and a lava lake at the top. Out at sea they form volcanic islands.
+Old lava flows streak the flanks, **steam vents** hiss on the upper slopes, crusted with yellow
+**sulfur**, and a dusting of **volcanic ash** lies lower down. They never form on top of villages.
+
+A volcano sleeps for days at a time (only while someone is within about 1,000 blocks), then:
+- **Rumbling** (3 to 5 minutes): earthquakes shake the ground (and your view, scaled by the screen
+  effect strength setting), smoke rises from the crater and a deep rumble carries for a long way.
+  This is your warning.
+- **Eruption** (5 to 8 minutes): a blast you hear late if you're far away, lava fountains, and a
+  towering **eruption column** of ash that leans downwind, glows at the base and can be seen from
+  well beyond your render distance. **Lava bombs** arc out of the crater and burst where they land,
+  **volcanic lightning** strikes the upper slopes, and lava **pours over the rim** in streams down the
+  mountain. The **ash cloud** drifts downwind as the Volcanic Ash Cloud weather.
+- **Cooling** (about 3 minutes): the smoke thins out, and the lava streams crust over into **lava
+  fields** of basalt, with some blackstone, magma and the odd bit of obsidian.
+
+Lava streams and bomb craters need the `mobGriefing` gamerule. The barometer, weather radio and
+`/rweather query` name the nearest volcano you know of and what it's doing, the radio warns you when
+one starts rumbling or erupting, and the radar shows volcanoes as triangles.
+
+**Finds:** volcanic ash is a fertilizer (use it on a crop like bone meal, or place it in layers like
+snow); sulfur crust drops **sulfur**, which makes gunpowder with charcoal and bone meal; and steam
+vents are warm to stand near but scald you unless you sneak (Silk Touch picks one up).
+
 ## The Nether and the End
 The other dimensions get weather of their own.
 - **Nether:** choking **ash storms**, harmless glowing **ember falls**, and **fire rain** that sets
@@ -193,7 +220,8 @@ The other dimensions get weather of their own.
 
 ## Weather radar
 The **handheld radar** and the **weather radar** block open a radar scope. It shows storm cells
-colour-coded by type, which way they're moving, when they'll reach you and any tornadoes in range.
+colour-coded by type, which way they're moving, when they'll reach you, any tornadoes in range and
+known volcanoes.
 Scroll to zoom out to 3,200 blocks. A comparator next to the radar block reads how close the nearest
 storm is.
 
@@ -277,6 +305,9 @@ Under **Accessibility** in the client settings:
 | **Bowl of Rice** | bowl + 3 rice | A filling meal. |
 | **Winter Stew** | bowl, 2 kale, carrot, baked potato | Warmth for a minute and a half. |
 | **Cooked Stormfish / Icefish** | cook the raw fish | Haste / Refreshed. |
+| **Seismograph** | copper, paper, redstone, amethyst shard, smooth stone slabs | Redstone signal from volcanic tremors: weak while a volcano within 1,024 blocks rumbles (rising as the eruption nears, and the closer you are), up to 15 during an eruption. An early warning. |
+| **Volcanic Ash** | falls from ash clouds | Fertilizes crops like bone meal, or place it in layers. 2 ash make a bone meal. |
+| **Sulfur** | mine sulfur crust | Sulfur + charcoal + bone meal make 2 gunpowder. |
 
 ## Weather & mobs
 - Weather changes which monsters spawn: **strays** in blizzards and snow, **husks** in desert
@@ -296,10 +327,11 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 38 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 42 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
-Thermals, Fishing in Troubled Waters, Supercharged and Straight-Line Winds.
+Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
+crater's rim) and Ring of Fire (witness an eruption).
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at
@@ -364,6 +396,9 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather tornado [pos] [tornado\|waterspout\|dust_devil]` | op | Spawn a whirlwind |
 | `/rweather meteor [pos]` | op | Bring a meteor down at a position (or near you) |
 | `/rweather wind <from>` | op | Set where the wind blows from (`n`, `ne`, `e`, ... `nw`) |
+| `/rweather volcano` | everyone | Known volcanoes within 2 km and what each is doing |
+| `/rweather volcano create [pos]` | op | Raise a volcano at a position (or where you stand); handy for worlds made before volcanoes |
+| `/rweather volcano wake\|erupt\|calm` | op | Start the nearest volcano rumbling, set it erupting, or cool it down |
 
 ## Configuration
 Open the settings from the **Mods** screen. The first page has one-click **presets** for the visual
@@ -377,7 +412,8 @@ effects (Performance, Default, Cinematic) and a button for every setting. Or edi
   meteors, geomagnetic storms, villagers sheltering, winter wool, polar bears, blood moons (and
   whether you can sleep through them), snowmelt floods, thin ice, rough seas, tides, storm debris,
   leaf piles, wild rice and kale, food spoilage, weather fishing, earthworms, lightning-charged tools,
-  the almanac on first join, and Tough As Nails.
+  volcanoes (generation, eruptions and how often, lava flows, lava bombs, ash fall), the almanac on
+  first join, and Tough As Nails.
 - `config/reikos_weather-client.toml`: particle density, fog, sky tinting, storm clouds (and how far
   out they're drawn), wet ground, mist, rainbows, auroras, heat lightning, seasonal colours, falling
   leaves, sounds (delayed thunder, muffling indoors, roof rain and wind whistle), birdsong and
@@ -413,10 +449,14 @@ src/main/java/com/reiko/weather/
   farming/    Greenhouses, crop frost and food spoilage
   nature/     Autumn leaf piles; wild crops, earthworms, weather fishing and leaf-pile landings (NatureEvents)
   sky/        Meteors, blood moons
+  volcano/    VolcanoShape (the cone's geometry), VolcanoBuilder, VolcanoStructure and VolcanoPiece (world
+              generation), VolcanoManager (discovery, the eruption cycle, lava flows, ash clouds, seismic signal)
   otherworld/ Nether and End weather
-  entity/     TornadoEntity (tornado, waterspout, dust devil), ball lightning, cloud seeding rocket, meteor
+  entity/     TornadoEntity (tornado, waterspout, dust devil), ball lightning, cloud seeding rocket, meteor,
+              lava bomb
   block/      Weather station, tornado siren, rain barrel, puddles, ice glaze, icicles, radar, vane, windmill, altar,
-              tent, lightning battery, forecast board, storm probe, leaf pile, fallen branch, rice, kale, icebox
+              tent, lightning battery, forecast board, storm probe, leaf pile, fallen branch, rice, kale, icebox,
+              volcanic ash, steam vent, sulfur crust, seismograph
   item/       Barometer, umbrella, thermometer, handheld radar, rocket, drinks, salt, paraglider, weather radio,
               rake, ice saw, almanac, charged tools and gear events
   compat/     JEI, Jade and WTHIT plugins, Tough As Nails, Curios, shader detection, Distant Horizons
@@ -424,7 +464,8 @@ src/main/java/com/reiko/weather/
   client/     Smoothed visuals, particles, fog/sky/rainbow/aurora/halos/sunbeams/blood moon, storm cloud deck, wet
               ground, forecast and temperature HUD, radar screen, seasonal colours and hoarfrost, Nether/End visuals,
               block renderers, ambient and wildlife sound, shooting stars, breath, footprints, screen raindrops, heat
-              shimmer, rough seas, fireflies, blossoms, worms, bird flocks, paraglider, the almanac screen (guide/),
+              shimmer, rough seas, fireflies, blossoms, worms, bird flocks, paraglider, volcano plumes and tremors,
+              the almanac screen (guide/),
               config presets and accessibility
   mixin/      Sky tinting, seasonal biome temperature and colours, storm cells in vanilla rain checks, monsoon rain,
               fishing bait

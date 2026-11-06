@@ -55,6 +55,7 @@ public class RadarScreen extends Screen {
             case SNOW, BLIZZARD -> 0xE6F4FF;
             case SANDSTORM -> 0xE6B464;
             case DERECHO -> 0xFF8C28;
+            case VOLCANIC_ASH -> 0x8A7F78;
             default -> 0x9AA0A6;
         };
     }
@@ -138,6 +139,20 @@ public class RadarScreen extends Screen {
             int px = (int) (cx + (tornado.getX() - center.x) * scale), py = (int) (cy + (tornado.getZ() - center.z) * scale);
             int color = ((int) (time / 6) % 2 == 0) ? 0xFFFF2020 : 0xFFFFA020;
             g.fill(px - 2, py - 2, px + 3, py + 3, color);
+        }
+        // volcanoes: a small triangle, red and flashing while one erupts
+        if (overworld) {
+            for (com.reiko.weather.network.VolcanoPayload.Entry v : com.reiko.weather.network.VolcanoPayload.client) {
+                double dx = v.x() - center.x, dz = v.z() - center.z;
+                if (dx * dx + dz * dz > blocks * blocks) continue;
+                int px = (int) (cx + dx * scale), py = (int) (cy + dz * scale);
+                boolean erupting = v.phase() == com.reiko.weather.volcano.Volcano.Phase.ERUPTING.ordinal();
+                int color = erupting ? ((int) (time / 6) % 2 == 0 ? 0xFFFF3010 : 0xFFFFB040)
+                        : v.phase() == com.reiko.weather.volcano.Volcano.Phase.RUMBLING.ordinal() ? 0xFFE08A3A : 0xFF8A7F78;
+                for (int row = 0; row < 4; row++) {
+                    g.fill(px - row, py - 2 + row, px + row + 1, py - 1 + row, color);
+                }
+            }
         }
         if (interference) {
             // static from the geomagnetic storm

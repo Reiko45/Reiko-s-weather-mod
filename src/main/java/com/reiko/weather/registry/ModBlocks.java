@@ -101,5 +101,23 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.IceboxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(2.5F)
                     .sound(SoundType.WOOD).ignitedByLava()));
 
+    public static final DeferredBlock<com.reiko.weather.block.VolcanicAshBlock> VOLCANIC_ASH = REGISTER.register("volcanic_ash",
+            () -> new com.reiko.weather.block.VolcanicAshBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).replaceable()
+                    .forceSolidOff().strength(0.2F).sound(SoundType.SAND).pushReaction(PushReaction.DESTROY)
+                    .isViewBlocking((s, l, p) -> s.getValue(com.reiko.weather.block.VolcanicAshBlock.LAYERS) >= 8)));
+
+    public static final DeferredBlock<com.reiko.weather.block.VolcanicVentBlock> VOLCANIC_VENT = REGISTER.register("volcanic_vent",
+            () -> new com.reiko.weather.block.VolcanicVentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 6.0F)
+                    .sound(SoundType.BASALT).requiresCorrectToolForDrops().lightLevel(s -> 3)
+                    .isValidSpawn((s, l, p, type) -> type.fireImmune())));
+
+    public static final DeferredBlock<com.reiko.weather.block.SulfurCrustBlock> SULFUR_CRUST = REGISTER.register("sulfur_crust",
+            () -> new com.reiko.weather.block.SulfurCrustBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(1.2F, 3.0F)
+                    .sound(SoundType.TUFF).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<com.reiko.weather.block.SeismographBlock> SEISMOGRAPH = REGISTER.register("seismograph",
+            () -> new com.reiko.weather.block.SeismographBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(2.0F, 6.0F)
+                    .sound(SoundType.COPPER)));
+
     private ModBlocks() {}
 }

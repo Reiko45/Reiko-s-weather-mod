@@ -12,13 +12,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
-/** Tooltip lines for perishable food and lightning-charged tools, and sparks off a charged tool in hand. */
+/** Tooltip lines for perishable food, lightning-charged tools and a few volcanic things, and sparks off a charged tool in hand. */
 public final class ItemTooltips {
     public static void onTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
         Minecraft mc = Minecraft.getInstance();
         if (stack.is(ModTags.PERISHABLE) && WeatherConfig.SPEC.isLoaded() && WeatherConfig.FOOD_SPOILAGE.get()) {
             event.getToolTip().add(Component.translatable("tooltip.reikos_weather.perishable").withStyle(ChatFormatting.GOLD));
+        }
+        if (stack.is(com.reiko.weather.registry.ModItems.SEISMOGRAPH.get())) {
+            event.getToolTip().add(Component.translatable("tooltip.reikos_weather.seismograph").withStyle(ChatFormatting.GRAY));
+        } else if (stack.is(com.reiko.weather.registry.ModItems.VOLCANIC_ASH.get())) {
+            event.getToolTip().add(Component.translatable("tooltip.reikos_weather.volcanic_ash").withStyle(ChatFormatting.GRAY));
         }
         if (mc.level != null) {
             long left = ChargedTools.remaining(stack, mc.level);

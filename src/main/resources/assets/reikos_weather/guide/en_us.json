@@ -667,6 +667,49 @@
    ]
   },
   {
+   "title": "Volcanoes",
+   "icon": "minecraft:magma_block",
+   "entries": [
+    {
+     "title": "Finding Volcanoes",
+     "icon": "minecraft:basalt",
+     "pages": [
+      "Now and then a volcano rises out of the land: a great cone of basalt, tuff and blackstone with a crater at the top and a lake of lava inside. Out at sea they make volcanic islands.\n\nOld lava flows streak the flanks, and steam vents hiss on the upper slopes, crusted with yellow sulfur.",
+      "A barometer or weather radio names the nearest volcano you know of, how far away it is and what it's doing. Volcanoes show up on the weather radar as small triangles.\n\nVolcanoes never form on top of villages."
+     ]
+    },
+    {
+     "title": "Eruptions",
+     "icon": "minecraft:fire_charge",
+     "pages": [
+      "A volcano sleeps for days at a time (only while someone is nearby). When it wakes, the ground rumbles and shakes for a few minutes and smoke rises from the crater: that's your warning.\n\nThen it erupts: lava fountains, a towering column of ash, lightning in the plume and blasts you'll hear long after you see them.",
+      "Lava bombs arc out of the crater and burst where they land, setting things alight. Lava pours over the rim and creeps down the slopes.\n\nAfterwards the volcano cools: the spilled lava crusts over into basalt (with some magma and the odd bit of obsidian), and it goes back to sleep."
+     ]
+    },
+    {
+     "title": "Ash Fall",
+     "icon": "reikos_weather:volcanic_ash",
+     "pages": [
+      "An eruption's ash cloud drifts downwind for a long way. Under it the sky goes dark, grey ash drifts down and piles up on the ground, crops struggle without the sun, and breathing it in leaves you weak, unless you wear something on your head.\n\nRain washes the ash back into the soil."
+     ]
+    },
+    {
+     "title": "Volcanic Finds",
+     "icon": "reikos_weather:sulfur",
+     "pages": [
+      "Volcanic ash is a fine fertilizer: use it on a crop as you would bone meal. Two ash make a bone meal.\n\nMine sulfur crust for sulfur, and grind it with charcoal and bone meal into gunpowder.\n\nSteam vents are warm to stand near, but scald you if you walk on them; sneak across. Silk Touch picks one up."
+     ]
+    },
+    {
+     "title": "Seismograph",
+     "icon": "reikos_weather:seismograph",
+     "pages": [
+      "A seismograph feels a volcano waking up before you can. It gives a redstone signal while a volcano within 1024 blocks rumbles, getting stronger as the eruption nears and the closer you are, up to 15 during an eruption.\n\nWire it to a bell, a lamp or a door as an early warning."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [
@@ -681,7 +724,7 @@
      "title": "Commands",
      "icon": "minecraft:command_block",
      "pages": [
-      "/rweather query: the weather where you stand.\n/rweather forecast: the next three weathers.\n/rweather storms: storm cells.\n/rweather season: the season.\n\nFor operators: /rweather set, storm, next, tornado and meteor."
+      "/rweather query: the weather where you stand.\n/rweather forecast: the next three weathers.\n/rweather storms: storm cells.\n/rweather season: the season.\n/rweather volcano: volcanoes nearby.\n\nFor operators: /rweather set, storm, next, tornado and meteor, and /rweather volcano create, wake, erupt and calm."
      ]
     }
    ]

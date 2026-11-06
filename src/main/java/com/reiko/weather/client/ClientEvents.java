@@ -84,6 +84,13 @@ public final class ClientEvents {
                     p.setColor((color >> 16 & 255) / 255.0F * shade, (color >> 8 & 255) / 255.0F * shade, (color & 255) / 255.0F * shade);
                     return p;
                 });
+        event.registerSpriteSet(ModParticles.ASH.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.ASH);
+                    float shade = 0.35F + level.random.nextFloat() * 0.3F;
+                    p.setColor(shade, shade * 0.97F, shade * 0.94F);
+                    return p;
+                });
         event.registerSpriteSet(ModParticles.LEAF.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> {
                     WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.LEAF);
@@ -126,6 +133,7 @@ public final class ClientEvents {
         event.registerBlockEntityRenderer(ModBlockEntities.WINDMILL.get(), WindmillRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.FORECAST_BOARD.get(), com.reiko.weather.client.render.ForecastBoardRenderer::new);
         event.registerEntityRenderer(ModEntities.METEOR.get(), com.reiko.weather.client.render.MeteorRenderer::new);
+        event.registerEntityRenderer(ModEntities.VOLCANIC_BOMB.get(), com.reiko.weather.client.render.VolcanicBombRenderer::new);
     }
 
     public static void registerModels(ModelEvent.RegisterAdditional event) {
@@ -166,6 +174,7 @@ public final class ClientEvents {
             WetGroundRenderer.render(cam);
             Footprints.render(cam, partialTick);
             CloudDeckRenderer.render(cam, partialTick);
+            VolcanoClient.renderPlume(event);
             SkyEffectsRenderer.renderSunbeams(event);
             NatureEffects.renderFlocks(event.getCamera(), partialTick);
         }
@@ -193,6 +202,7 @@ public final class ClientEvents {
         RoughSeas.tick(mc);
         NatureEffects.tick(mc);
         ParagliderClient.tick(mc);
+        VolcanoClient.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
@@ -237,6 +247,7 @@ public final class ClientEvents {
         com.reiko.weather.client.sound.WildlifeSounds.reset();
         RoughSeas.reset();
         NatureEffects.reset();
+        VolcanoClient.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();

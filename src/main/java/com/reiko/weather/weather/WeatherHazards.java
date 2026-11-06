@@ -72,6 +72,12 @@ public final class WeatherHazards {
                     accumulateSnow(level, randomColumn(level, player, random), maxLayers);
                 }
             }
+            if (profile.ashLayers > 0 && intensity > 0 && WeatherConfig.ASH_FALL.get()) {
+                int attempts = Mth.ceil(2 * intensity);
+                for (int i = 0; i < attempts; i++) {
+                    settleAsh(level, randomColumn(level, player, random), profile.ashLayers);
+                }
+            }
             if (WeatherConfig.SNOW_MELT.get()) {
                 melt(level, randomColumn(level, player, random));
                 melt(level, randomColumn(level, player, random));
@@ -160,6 +166,28 @@ public final class WeatherHazards {
             }
         } else if (state.isAir() && Blocks.SNOW.defaultBlockState().canSurvive(level, pos)) {
             level.setBlockAndUpdate(pos, Blocks.SNOW.defaultBlockState());
+        }
+    }
+
+    /** Volcanic ash drifting down out of an eruption cloud, burying the ground (and the grass) layer by layer. */
+    private static void settleAsh(ServerLevel level, @Nullable BlockPos pos, int maxLayers) {
+        if (pos == null || !level.isLoaded(pos)) {
+            return;
+        }
+        BlockState state = level.getBlockState(pos);
+        BlockState ash = ModBlocks.VOLCANIC_ASH.get().defaultBlockState();
+        if (state.is(ModBlocks.VOLCANIC_ASH.get())) {
+            int layers = state.getValue(com.reiko.weather.block.VolcanicAshBlock.LAYERS);
+            if (layers < maxLayers) {
+                BlockState grown = state.setValue(com.reiko.weather.block.VolcanicAshBlock.LAYERS, layers + 1);
+                Block.pushEntitiesUp(state, grown, level, pos);
+                level.setBlockAndUpdate(pos, grown);
+            }
+        } else if (state.is(Blocks.SNOW) && state.getValue(SnowLayerBlock.LAYERS) <= 2 && ash.canSurvive(level, pos)) {
+            level.setBlockAndUpdate(pos, ash); // grey ash over a thin dusting of snow
+        } else if ((state.isAir() || state.is(BlockTags.REPLACEABLE) && state.getFluidState().isEmpty() && !state.is(Blocks.SNOW))
+                && ash.canSurvive(level, pos)) {
+            level.setBlockAndUpdate(pos, ash);
         }
     }
 
@@ -530,6 +558,11 @@ public final class WeatherHazards {
         if (profile.freeze > 0.0F && WeatherConfig.FREEZING.get() && !temperatureRules) {
             chill(living, profile.freeze * intensity, eyes);
         }
+        if (profile.ashLayers > 0 && intensity > 0.4F && living instanceof Player player && entity.tickCount % 40 == 0
+                && !player.getAbilities().invulnerable && player.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
+            // breathing in volcanic ash; anything over your face helps
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(MobEffects.WEAKNESS, 120, 0, false, false, true));
+        }
         if (profile.heat && !temperatureRules && living instanceof Player player && level.isDay() && entity.tickCount % 20 == 0
                 && !player.getAbilities().invulnerable && !player.hasEffect(MobEffects.FIRE_RESISTANCE) && !player.isInWaterOrRain()) {
             float exhaustion = (float) (WeatherConfig.HEAT_EXHAUSTION.get() * intensity);
@@ -657,7 +690,9 @@ public final class WeatherHazards {
             }
             return;
         }
-        if (profile.cropBoost && WeatherConfig.RAIN_BOOSTS_CROPS.get() && level.random.nextFloat() < 0.25F) {
+        if (profile.ashLayers > 0 && level.random.nextFloat() < 0.4F) {
+            event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW); // the ash cloud blots out the sun
+        } else if (profile.cropBoost && WeatherConfig.RAIN_BOOSTS_CROPS.get() && level.random.nextFloat() < 0.25F) {
             event.setResult(CropGrowEvent.Pre.Result.GROW);
         } else if (profile.heat && WeatherConfig.HEAT_SLOWS_CROPS.get() && level.random.nextFloat() < 0.5F) {
             event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);

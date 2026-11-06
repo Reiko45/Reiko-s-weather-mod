@@ -1,0 +1,7 @@
+{
+  "type": "reikos_weather:volcano",
+  "biomes": "#reikos_weather:has_structure/volcano",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

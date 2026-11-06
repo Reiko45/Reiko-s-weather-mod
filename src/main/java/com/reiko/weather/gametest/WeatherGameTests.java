@@ -288,4 +288,47 @@ public class WeatherGameTests {
         helper.assertTrue(box instanceof com.reiko.weather.block.IceboxBlockEntity icebox && icebox.getContainerSize() == 27, "27 slots");
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void volcanoesAreConesWithACrater(GameTestHelper helper) {
+        var shape = new com.reiko.weather.volcano.VolcanoShape(0, 0, 64, 50, 90, 9, 14, 12345L);
+        int rim = Integer.MIN_VALUE;
+        for (int r = 12; r <= 14; r++) rim = Math.max(rim, shape.surfaceY(r, 0));
+        helper.assertTrue(shape.surfaceY(0, 0) == shape.craterFloorY(), "the crater floor is at the middle");
+        helper.assertTrue(shape.lavaY() < shape.peakY() - 5, "the lava lake sits well below the rim");
+        helper.assertTrue(rim > shape.peakY() - 6, "the rim is near the peak (got " + rim + ")");
+        helper.assertTrue(shape.surfaceY(80, 0) < shape.baseY() + 10, "the foot is near the base");
+        helper.assertTrue(shape.surfaceY(91, 0) == com.reiko.weather.volcano.VolcanoShape.OUTSIDE, "nothing past the radius");
+        // the flanks fall away steadily
+        int last = shape.peakY() + 10;
+        for (int r = 20; r <= 88; r += 4) {
+            int y = shape.surfaceY(0, r);
+            helper.assertTrue(y <= last + 3, "slopes go downhill (r=" + r + ")");
+            last = y;
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void seismographReadsVolcanicTremors(GameTestHelper helper) {
+        helper.assertTrue(com.reiko.weather.volcano.VolcanoManager.signalFor(com.reiko.weather.volcano.Volcano.Phase.DORMANT, 0.5F, 10) == 0, "quiet when dormant");
+        int early = com.reiko.weather.volcano.VolcanoManager.signalFor(com.reiko.weather.volcano.Volcano.Phase.RUMBLING, 0.0F, 100);
+        int late = com.reiko.weather.volcano.VolcanoManager.signalFor(com.reiko.weather.volcano.Volcano.Phase.RUMBLING, 0.9F, 100);
+        helper.assertTrue(early >= 1 && late > early && late < 15, "rumbling builds up (" + early + " -> " + late + ")");
+        helper.assertTrue(com.reiko.weather.volcano.VolcanoManager.signalFor(com.reiko.weather.volcano.Volcano.Phase.ERUPTING, 0.5F, 200) == 15, "eruptions max it out");
+        helper.assertTrue(com.reiko.weather.volcano.VolcanoManager.signalFor(com.reiko.weather.volcano.Volcano.Phase.ERUPTING, 0.5F, 2000) == 0, "too far to feel");
+        helper.assertTrue(com.reiko.weather.volcano.Volcano.activity(com.reiko.weather.volcano.Volcano.Phase.ERUPTING, 0.4F) > 0.9F, "full fury mid-eruption");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void volcanicAshPilesUpInLayers(GameTestHelper helper) {
+        helper.setBlock(2, 1, 2, net.minecraft.world.level.block.Blocks.STONE);
+        helper.setBlock(2, 2, 2, ModBlocks.VOLCANIC_ASH.get());
+        helper.assertBlockProperty(new BlockPos(2, 2, 2), com.reiko.weather.block.VolcanicAshBlock.LAYERS, 1);
+        helper.setBlock(3, 1, 2, net.minecraft.world.level.block.Blocks.FARMLAND);
+        var ash = ModBlocks.VOLCANIC_ASH.get().defaultBlockState();
+        helper.assertFalse(ash.canSurvive(helper.getLevel(), helper.absolutePos(new BlockPos(3, 2, 2))), "ash can't settle on farmland (or the crops in it)");
+        helper.succeed();
+    }
 }

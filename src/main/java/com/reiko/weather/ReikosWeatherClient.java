@@ -44,6 +44,7 @@ public class ReikosWeatherClient {
         NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderStage);
         NeoForge.EVENT_BUS.addListener(AmbientSounds::onPlaySound);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.RoughSeas::onCameraAngles);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.VolcanoClient::onCameraAngles);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.ParagliderClient::onRenderPlayer);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.ItemTooltips::onTooltip);
 

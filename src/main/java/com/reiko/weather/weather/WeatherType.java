@@ -32,7 +32,9 @@ public enum WeatherType {
     WINDY       (false, false, 8, 3600, 8400, 1.0F, 1.0F, 1.0F),
     SANDSTORM   (false, false, 4, 2400, 6000, 0.0F, 0.1F, 3.0F),
     HEATWAVE    (false, false, 4, 6000, 12000, 0.0F, 0.6F, 2.0F),
-    DERECHO     (true, true, 1, 2400, 4800, 0.2F, 1.0F, 0.3F);
+    DERECHO     (true, true, 1, 2400, 4800, 0.2F, 1.0F, 0.3F),
+    /** Only from volcanic eruptions (the ash cloud drifting downwind), never in the forecast. */
+    VOLCANIC_ASH(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
 
     private static final WeatherType[] VALUES = values();
 
@@ -65,6 +67,11 @@ public enum WeatherType {
         return affinity[climate.ordinal()];
     }
 
+    /** Whether the weather cycle can pick this weather by itself (volcanic ash only comes from eruptions). */
+    public boolean natural() {
+        return this != VOLCANIC_ASH;
+    }
+
     /** Calm weathers are the "breaks" between more eventful weather. */
     public boolean isCalm() {
         return this == CLEAR || this == OVERCAST;
@@ -83,14 +90,14 @@ public enum WeatherType {
     }
 
     /**
-     * Fixed 0-15 redstone code for the weather station (ice storm shares sleet's code and a derecho
-     * shares the gale's, since there are 18 weathers and only 16 signal strengths).
+     * Fixed 0-15 redstone code for the weather station (ice storm shares sleet's code, a derecho shares
+     * the gale's and volcanic ash the sandstorm's, since there are 19 weathers and only 16 signal strengths).
      */
     public int signalCode() {
         return switch (this) {
             case CLEAR -> 0; case OVERCAST -> 1; case FOG -> 2; case DRIZZLE -> 3; case RAIN -> 4;
             case HEAVY_RAIN -> 5; case THUNDERSTORM -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
-            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM -> 14;
+            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH -> 14;
             case HEATWAVE -> 15;
         };
     }

@@ -103,5 +103,12 @@ public final class ModItems {
     public static final DeferredItem<com.reiko.weather.item.WeatherAlmanacItem> WEATHER_ALMANAC = REGISTER.register("weather_almanac",
             () -> new com.reiko.weather.item.WeatherAlmanacItem(new Item.Properties().stacksTo(1)));
 
+    public static final DeferredItem<com.reiko.weather.item.VolcanicAshItem> VOLCANIC_ASH = REGISTER.register("volcanic_ash",
+            () -> new com.reiko.weather.item.VolcanicAshItem(ModBlocks.VOLCANIC_ASH.get(), new Item.Properties()));
+    public static final DeferredItem<Item> SULFUR = REGISTER.register("sulfur", () -> new Item(new Item.Properties()));
+    public static final DeferredItem<BlockItem> SULFUR_CRUST = REGISTER.registerSimpleBlockItem(ModBlocks.SULFUR_CRUST);
+    public static final DeferredItem<BlockItem> VOLCANIC_VENT = REGISTER.registerSimpleBlockItem(ModBlocks.VOLCANIC_VENT);
+    public static final DeferredItem<BlockItem> SEISMOGRAPH = REGISTER.registerSimpleBlockItem(ModBlocks.SEISMOGRAPH);
+
     private ModItems() {}
 }

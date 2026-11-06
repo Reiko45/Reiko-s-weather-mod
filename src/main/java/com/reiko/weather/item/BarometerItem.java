@@ -45,6 +45,8 @@ public class BarometerItem extends Item {
                 if (tide != null) serverPlayer.sendSystemMessage(tide);
                 Component storm = WeatherReport.approachingStorm(state, player.blockPosition());
                 if (storm != null) serverPlayer.sendSystemMessage(storm);
+                Component volcano = WeatherReport.volcano(serverLevel, player.blockPosition());
+                if (volcano != null) serverPlayer.sendSystemMessage(volcano);
             }
             level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.COPPER_BULB_TURN_ON, SoundSource.PLAYERS, 0.6F, 1.4F);
         }

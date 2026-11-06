@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "reikos_weather:block/seismograph_top",
+    "front": "reikos_weather:block/seismograph_front",
+    "side": "reikos_weather:block/seismograph_side"
+  }
+}

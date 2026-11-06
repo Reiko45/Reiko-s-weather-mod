@@ -37,6 +37,8 @@ public class WeatherRadioItem extends Item {
                     player.sendSystemMessage(WeatherReport.forecast(state));
                     Component storm = WeatherReport.approachingStorm(state, player.blockPosition());
                     if (storm != null) player.sendSystemMessage(storm);
+                    Component volcano = WeatherReport.volcano(server, player.blockPosition());
+                    if (volcano != null) player.sendSystemMessage(volcano);
                 } else {
                     player.sendSystemMessage(Component.translatable("radio.reikos_weather.static").withStyle(ChatFormatting.GRAY));
                 }

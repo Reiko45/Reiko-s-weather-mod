@@ -110,6 +110,7 @@ public record CustomWeather(ResourceLocation id, MutableComponent name, WeatherT
                 case "tornadoes" -> b.tornadoes = v.getAsBoolean();
                 case "waterspouts" -> b.waterspouts = v.getAsBoolean();
                 case "debris" -> b.debris = v.getAsBoolean();
+                case "ash_layers" -> b.ashLayers = Math.max(0, Math.min(8, v.getAsInt()));
                 case "precipitation" -> {
                     java.util.Arrays.fill(b.precip, 0.0F);
                     for (Map.Entry<String, JsonElement> p : v.getAsJsonObject().entrySet()) {

@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/hot_spot",
+  "display": {
+    "icon": {
+      "id": "minecraft:magma_block"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.ring_of_fire"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.ring_of_fire.desc"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

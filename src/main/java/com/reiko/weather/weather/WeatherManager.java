@@ -471,12 +471,17 @@ public final class WeatherManager {
                 default -> 220 + random.nextFloat() * 260;
             };
         }
-        Vec3 wind = Wind.direction(state.windAngle);
         boolean derecho = type == WeatherType.DERECHO;
         // derechos race across the map several times faster than other storms
         double speed = derecho ? 0.35 + random.nextDouble() * 0.15 : 0.1 + random.nextDouble() * 0.1;
         // long enough to cross ~2 km of map (a derecho keeps going for ~3.5 km)
         int maxAge = (int) (((derecho ? 3500 : 1800) + radius * 2) / speed);
+        return spawnCell(level, state, type, x, z, radius, speed, maxAge);
+    }
+
+    /** Spawns a storm cell drifting downwind at {@code speed} blocks a tick, lasting {@code maxAge} ticks. */
+    public static StormCell spawnCell(ServerLevel level, WeatherState state, WeatherType type, double x, double z, float radius, double speed, int maxAge) {
+        Vec3 wind = Wind.direction(state.windAngle);
         StormCell cell = new StormCell(state.nextCellId++, type, x, z, radius, wind.x * speed, wind.z * speed, maxAge);
         state.cells.add(cell);
         state.setDirty();

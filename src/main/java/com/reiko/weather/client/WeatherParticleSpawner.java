@@ -97,6 +97,7 @@ public final class WeatherParticleSpawner {
             case SAND -> 26;
             case DUST -> 4;
             case LEAVES -> 2;
+            case ASH -> 22;
             case NONE -> 0;
         };
     }
@@ -104,7 +105,7 @@ public final class WeatherParticleSpawner {
     private static void spawn(ClientLevel level, Precip precip, Vec3 camera) {
         float wind = ClientWeather.wind();
         Vec3 windDir = Wind.direction(ClientWeather.windAngle());
-        boolean falling = precip == Precip.HAIL || precip == Precip.SLEET || precip == Precip.DOWNPOUR || precip == Precip.SNOW;
+        boolean falling = precip == Precip.HAIL || precip == Precip.SLEET || precip == Precip.DOWNPOUR || precip == Precip.SNOW || precip == Precip.ASH;
         double radius = falling ? 14.0 : 20.0;
         // spawn upwind so particles blow into view
         double upwind = falling ? wind * 6.0 : 6.0 + wind * 6.0;
@@ -150,6 +151,7 @@ public final class WeatherParticleSpawner {
             case SAND -> ModParticles.SAND.get();
             case DUST -> ModParticles.DUST.get();
             case LEAVES -> ModParticles.LEAF.get();
+            case ASH -> ModParticles.ASH.get();
             case NONE -> null;
         };
         if (type == null) {
@@ -163,6 +165,7 @@ public final class WeatherParticleSpawner {
             case DOWNPOUR -> -1.1 - RANDOM.nextDouble() * 0.3;
             case SNOW -> -0.08;
             case BLIZZARD -> -0.06;
+            case ASH -> -0.07 - RANDOM.nextDouble() * 0.03;
             default -> 0.0;
         };
         if (precip == Precip.BLIZZARD) {
@@ -171,6 +174,9 @@ public final class WeatherParticleSpawner {
         } else if (precip == Precip.SNOW) {
             vx *= 0.25;
             vz *= 0.25;
+        } else if (precip == Precip.ASH) {
+            vx *= 0.4;
+            vz *= 0.4;
         }
         level.addParticle(type, x, y, z, vx, vy, vz);
     }

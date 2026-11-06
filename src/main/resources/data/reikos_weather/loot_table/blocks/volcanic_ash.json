@@ -1,0 +1,133 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "reikos_weather:volcanic_ash",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 1.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "1"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 2.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "2"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 3.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "3"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 4.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "4"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 5.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "5"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 6.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "6"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 7.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "7"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_count",
+              "add": false,
+              "count": 8.0,
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "reikos_weather:volcanic_ash",
+                  "properties": {
+                    "layers": "8"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:explosion_decay"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "reikos_weather:blocks/volcanic_ash"
+}

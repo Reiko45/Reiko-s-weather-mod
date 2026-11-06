@@ -121,5 +121,22 @@
         "attenuation_distance": 96
       }
     ]
+  },
+  "weather.volcano_rumble": {
+    "subtitle": "subtitles.reikos_weather.weather.volcano_rumble",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/volcano_rumble",
+        "stream": true
+      }
+    ]
+  },
+  "weather.volcano_eruption": {
+    "subtitle": "subtitles.reikos_weather.weather.volcano_eruption",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/volcano_eruption"
+      }
+    ]
   }
 }

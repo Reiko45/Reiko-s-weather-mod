@@ -23,7 +23,9 @@ public class WindBlownParticle extends TextureSheetParticle {
         /** Tumbling leaves. */
         LEAF(0.6, 0.04, 1.0F),
         /** Soft morning mist drifting low over water. */
-        MIST(0.12, 0.0, 0.2F);
+        MIST(0.12, 0.0, 0.2F),
+        /** Grey flakes of volcanic ash, sifting down. */
+        ASH(0.4, 0.07, 0.9F);
 
         final double windFactor;
         final double fallSpeed;
@@ -62,6 +64,7 @@ public class WindBlownParticle extends TextureSheetParticle {
             case DUST -> { quadSize = 1.2F + random.nextFloat() * 2.0F; lifetime = 70 + random.nextInt(50); hasPhysics = false; }
             case LEAF -> { quadSize = 0.11F + random.nextFloat() * 0.06F; lifetime = 100 + random.nextInt(60); }
             case MIST -> { quadSize = 2.0F + random.nextFloat() * 2.5F; lifetime = 120 + random.nextInt(80); hasPhysics = false; }
+            case ASH -> { quadSize = 0.05F + random.nextFloat() * 0.07F; lifetime = 140 + random.nextInt(60); }
         }
         this.targetAlpha = kind.maxAlpha * (kind == Kind.DUST || kind == Kind.MIST ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
         if (kind != Kind.DUST && kind != Kind.MIST) {

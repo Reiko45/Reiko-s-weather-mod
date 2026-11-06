@@ -22,6 +22,8 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> METEOR = register("entity.meteor");
     public static final DeferredHolder<SoundEvent, SoundEvent> RADIO_ALERT = register("item.weather_radio.alert");
     public static final DeferredHolder<SoundEvent, SoundEvent> GEESE = register("ambient.geese");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VOLCANO_RUMBLE = register("weather.volcano_rumble");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VOLCANO_ERUPTION = register("weather.volcano_eruption");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(ReikosWeather.id(name)));

@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/hot_spot",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:sulfur"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.brimstone"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.brimstone.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
