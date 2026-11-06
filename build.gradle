@@ -109,11 +109,6 @@ dependencies {
         localRuntime "maven.modrinth:wthit:${wthit_version}"
         localRuntime "maven.modrinth:badpackets:${badpackets_version}"
     }
-    // ./gradlew runClient -PwithShaders: Sodium and Iris, to check the visuals with shader packs
-    if (project.hasProperty('withShaders')) {
-        localRuntime "maven.modrinth:sodium:${sodium_version}"
-        localRuntime "maven.modrinth:iris:${iris_version}"
-    }
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

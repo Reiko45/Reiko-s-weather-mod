@@ -395,9 +395,11 @@ Requires JDK 21.
 ./gradlew runServer      # launch a dev server
 ./gradlew runClient -PwithCompat   # with JEI, Jade, Curios, Tough As Nails, Serene Seasons and Distant Horizons
 ./gradlew runClient -PwithWthit    # with WTHIT (instead of comparing against Jade)
-./gradlew runClient -PwithShaders  # with Sodium and Iris
 ./gradlew runGameTestServer        # run the automated in-game tests
 ```
+
+To check the visuals with shader packs, put the Sodium and Iris jars in `run/client/mods/` (Sodium
+doesn't start when added through Gradle in the dev environment).
 
 ## Project layout
 ```
