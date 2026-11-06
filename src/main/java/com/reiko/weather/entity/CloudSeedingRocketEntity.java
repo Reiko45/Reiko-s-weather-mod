@@ -46,6 +46,10 @@ public class CloudSeedingRocketEntity extends Entity implements ItemSupplier {
         }
     }
 
+    /** Who fired it (for the advancement). */
+    @javax.annotation.Nullable
+    public java.util.UUID owner;
+
     private void burst(ServerLevel level) {
         level.sendParticles(ParticleTypes.CLOUD, getX(), getY(), getZ(), 120, 3.0, 1.0, 3.0, 0.05);
         level.playSound(null, getX(), getY(), getZ(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.WEATHER, 3.0F, 0.7F);
@@ -57,6 +61,9 @@ public class CloudSeedingRocketEntity extends Entity implements ItemSupplier {
             StormCell cell = WeatherManager.spawnCell(level, state, type, getX(), getZ(), 160 + random.nextFloat() * 80);
             cell.age = 500; // already well on its way
             message = "message.reikos_weather.rocket_seeded";
+            if (owner != null && level.getPlayerByUUID(owner) instanceof ServerPlayer shooter) {
+                com.reiko.weather.weather.WeatherAdvancements.award(shooter, "rainmaker");
+            }
         }
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(this) < 128 * 128) {

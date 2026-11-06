@@ -6,6 +6,13 @@ import com.reiko.weather.item.CloudSeedingRocketItem;
 import com.reiko.weather.item.HandheldRadarItem;
 import com.reiko.weather.item.ThermometerItem;
 import com.reiko.weather.item.UmbrellaItem;
+import com.reiko.weather.item.DrinkItem;
+import com.reiko.weather.item.SaltItem;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.BedItem;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -44,6 +51,23 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> WEATHER_RADAR = REGISTER.registerSimpleBlockItem(ModBlocks.WEATHER_RADAR);
     public static final DeferredItem<BlockItem> WEATHER_VANE = REGISTER.registerSimpleBlockItem(ModBlocks.WEATHER_VANE);
     public static final DeferredItem<BlockItem> WINDMILL = REGISTER.registerSimpleBlockItem(ModBlocks.WINDMILL);
+
+    public static final DeferredItem<DrinkItem> HOT_COCOA = REGISTER.register("hot_cocoa", () -> new DrinkItem(new Item.Properties().stacksTo(16)
+            .food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.6F).alwaysEdible().usingConvertsTo(Items.BOWL)
+                    .effect(() -> new MobEffectInstance(ModEffects.WARMTH, 3600), 1.0F).build()), "item.reikos_weather.hot_cocoa.tooltip"));
+    public static final DeferredItem<DrinkItem> MELON_COOLER = REGISTER.register("melon_cooler", () -> new DrinkItem(new Item.Properties().stacksTo(16)
+            .food(new FoodProperties.Builder().nutrition(3).saturationModifier(0.4F).alwaysEdible().usingConvertsTo(Items.GLASS_BOTTLE)
+                    .effect(() -> new MobEffectInstance(ModEffects.REFRESHED, 3600), 1.0F).build()), "item.reikos_weather.melon_cooler.tooltip"));
+    public static final DeferredItem<ArmorItem> SUN_HAT = REGISTER.register("sun_hat",
+            () -> new ArmorItem(ModArmorMaterials.STRAW, ArmorItem.Type.HELMET, new Item.Properties().durability(ArmorItem.Type.HELMET.getDurability(6))));
+    public static final DeferredItem<BedItem> TENT = REGISTER.register("tent", () -> new BedItem(ModBlocks.TENT.get(), new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<SaltItem> SALT = REGISTER.register("salt", () -> new SaltItem(new Item.Properties()));
+    public static final DeferredItem<BlockItem> SANDBAG = REGISTER.registerSimpleBlockItem(ModBlocks.SANDBAG);
+    public static final DeferredItem<BlockItem> LIGHTNING_BATTERY = REGISTER.registerSimpleBlockItem(ModBlocks.LIGHTNING_BATTERY);
+    public static final DeferredItem<BlockItem> FORECAST_BOARD = REGISTER.registerSimpleBlockItem(ModBlocks.FORECAST_BOARD);
+    public static final DeferredItem<BlockItem> STORM_PROBE = REGISTER.registerSimpleBlockItem(ModBlocks.STORM_PROBE);
+    public static final DeferredItem<Item> STORM_DATA = REGISTER.register("storm_data", () -> new Item(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<BlockItem> METEORITE = REGISTER.registerSimpleBlockItem(ModBlocks.METEORITE);
 
     private ModItems() {}
 }

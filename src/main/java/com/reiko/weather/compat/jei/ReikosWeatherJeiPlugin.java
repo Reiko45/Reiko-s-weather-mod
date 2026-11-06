@@ -28,7 +28,9 @@ public class ReikosWeatherJeiPlugin implements IModPlugin {
         List<DeferredItem<? extends Item>> items = List.of(ModItems.BAROMETER, ModItems.UMBRELLA, ModItems.WINTER_COAT, ModItems.GOGGLES,
                 ModItems.THERMOMETER, ModItems.HANDHELD_RADAR, ModItems.CLOUD_SEEDING_ROCKET, ModItems.WEATHER_STATION,
                 ModItems.TORNADO_SIREN, ModItems.RAIN_BARREL, ModItems.WEATHER_RADAR, ModItems.WEATHER_VANE, ModItems.WINDMILL,
-                ModItems.WEATHER_ALTAR);
+                ModItems.WEATHER_ALTAR, ModItems.HOT_COCOA, ModItems.MELON_COOLER, ModItems.SUN_HAT, ModItems.TENT, ModItems.SALT,
+                ModItems.SANDBAG, ModItems.LIGHTNING_BATTERY, ModItems.FORECAST_BOARD, ModItems.STORM_PROBE, ModItems.STORM_DATA,
+                ModItems.METEORITE);
         for (DeferredItem<? extends Item> item : items) {
             String key = "jei.reikos_weather." + BuiltInRegistries.ITEM.getKey(item.get()).getPath();
             registration.addIngredientInfo(item.get(), Component.translatable(key));

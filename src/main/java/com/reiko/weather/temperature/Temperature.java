@@ -1,5 +1,8 @@
 package com.reiko.weather.temperature;
 
+import com.reiko.weather.block.TentBlock;
+import com.reiko.weather.farming.Greenhouse;
+import com.reiko.weather.registry.ModEffects;
 import com.reiko.weather.registry.ModItems;
 import com.reiko.weather.weather.LocalWeather;
 import com.reiko.weather.weather.Seasons;
@@ -92,6 +95,8 @@ public final class Temperature {
         }
         if (!sky) {
             celsius = Mth.lerp(0.4F, celsius, 16.0F); // buildings and caves even things out
+        } else if (Greenhouse.underGlass(level, pos)) {
+            celsius = Mth.lerp(0.5F, celsius, sun > 0 ? 24.0F : 14.0F); // glass keeps the warmth in
         }
         return celsius;
     }
@@ -124,6 +129,7 @@ public final class Temperature {
         for (EquipmentSlot slot : ARMOR) {
             ItemStack stack = entity.getItemBySlot(slot);
             if (stack.is(ModItems.WINTER_COAT.get())) insulation += 14.0F;
+            else if (stack.is(ModItems.SUN_HAT.get())) insulation += 0.0F;
             else if (stack.is(ItemTags.FREEZE_IMMUNE_WEARABLES)) insulation += 3.0F;
             else if (!stack.isEmpty()) insulation += 1.0F;
         }
@@ -132,7 +138,17 @@ public final class Temperature {
 
     /** What it feels like to this entity, in °C. */
     public static float felt(Level level, LivingEntity entity, @Nullable LocalWeather local) {
-        float celsius = ambient(level, BlockPos.containing(entity.getEyePosition()), local) + heatSources(level, entity.blockPosition());
+        BlockPos eyes = BlockPos.containing(entity.getEyePosition());
+        float celsius = ambient(level, eyes, local) + heatSources(level, entity.blockPosition());
+        if (TentBlock.isInside(entity)) {
+            celsius = Mth.lerp(0.6F, celsius, 18.0F); // out of the wind, wrapped up in a bedroll
+        }
+        // a wide straw brim keeps the sun off
+        if (entity.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.SUN_HAT.get()) && celsius > 22.0F && level.isDay() && level.canSeeSky(eyes)) {
+            celsius -= Math.min(6.0F, celsius - 22.0F);
+        }
+        if (entity.hasEffect(ModEffects.WARMTH)) celsius += 10.0F;
+        if (entity.hasEffect(ModEffects.REFRESHED)) celsius -= 10.0F;
         float insulation = insulation(entity);
         // clothing keeps you warm in the cold, and makes you hotter in the heat
         celsius += celsius < 18.0F ? Math.min(insulation, 18.0F - celsius) : insulation * 0.5F;

@@ -56,5 +56,29 @@ public final class ModBlocks {
     public static final DeferredBlock<WindmillBlock> WINDMILL = REGISTER.register("windmill", () -> new WindmillBlock(
             BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F).sound(SoundType.WOOD).noOcclusion()));
 
+    public static final DeferredBlock<com.reiko.weather.block.TentBlock> TENT = REGISTER.register("tent", () -> new com.reiko.weather.block.TentBlock(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.4F).sound(SoundType.WOOL).noOcclusion()
+                    .ignitedByLava().pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> SANDBAG = REGISTER.register("sandbag", () -> new net.minecraft.world.level.block.Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(1.0F, 12.0F).sound(SoundType.SAND)));
+
+    public static final DeferredBlock<com.reiko.weather.block.LightningBatteryBlock> LIGHTNING_BATTERY = REGISTER.register("lightning_battery",
+            () -> new com.reiko.weather.block.LightningBatteryBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(3.0F, 6.0F)
+                    .sound(SoundType.COPPER).requiresCorrectToolForDrops()
+                    .lightLevel(s -> s.getValue(com.reiko.weather.block.LightningBatteryBlock.CHARGE) * 3)));
+
+    public static final DeferredBlock<com.reiko.weather.block.ForecastBoardBlock> FORECAST_BOARD = REGISTER.register("forecast_board",
+            () -> new com.reiko.weather.block.ForecastBoardBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F)
+                    .sound(SoundType.WOOD).noCollission().noOcclusion().ignitedByLava()));
+
+    public static final DeferredBlock<com.reiko.weather.block.StormProbeBlock> STORM_PROBE = REGISTER.register("storm_probe",
+            () -> new com.reiko.weather.block.StormProbeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(1.5F)
+                    .sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> METEORITE = REGISTER.register("meteorite", () -> new net.minecraft.world.level.block.Block(
+            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(5.0F, 9.0F).sound(SoundType.ANCIENT_DEBRIS)
+                    .requiresCorrectToolForDrops()));
+
     private ModBlocks() {}
 }

@@ -58,6 +58,16 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue BALL_LIGHTNING;
     public static final ModConfigSpec.IntValue ALTAR_COOLDOWN;
     public static final ModConfigSpec.BooleanValue OTHERWORLD_WEATHER;
+    public static final ModConfigSpec.BooleanValue CROP_FROST;
+    public static final ModConfigSpec.BooleanValue STORM_SURGE;
+    public static final ModConfigSpec.BooleanValue DRY_LIGHTNING;
+    public static final ModConfigSpec.BooleanValue MONSOON;
+    public static final ModConfigSpec.BooleanValue MICROCLIMATES;
+    public static final ModConfigSpec.BooleanValue METEORS;
+    public static final ModConfigSpec.BooleanValue GEOMAGNETIC_STORMS;
+    public static final ModConfigSpec.BooleanValue VILLAGERS_SHELTER;
+    public static final ModConfigSpec.BooleanValue WINTER_WOOL;
+    public static final ModConfigSpec.BooleanValue POLAR_BEARS;
     public static final ModConfigSpec.BooleanValue FIRE_RAIN_IGNITES;
     public static final ModConfigSpec.BooleanValue VOID_STORM_GUSTS;
     public static final ModConfigSpec.BooleanValue CUSTOM_WEATHERS;
@@ -159,6 +169,40 @@ public final class WeatherConfig {
                 "clothing and nearby heat sources (campfires, fires, lava, furnaces...)").push("temperature");
         TEMPERATURE = b.comment("Players freeze when it is too cold and get exhausted (and eventually heatstroke) when it is too hot.")
                 .define("enabled", true);
+        b.pop();
+
+        b.comment("Farming").push("farming");
+        CROP_FROST = b.comment("Frost damages exposed crops on freezing nights (glass greenhouses protect them).")
+                .define("cropFrost", true);
+        b.pop();
+
+        b.comment("Local climates and regional weather").push("climate");
+        MICROCLIMATES = b.comment("Terrain shapes the weather: calm, foggy valleys; windy peaks; drier land in the rain shadow",
+                        "of mountains; lake-effect snow downwind of big lakes in the cold.")
+                .define("microclimates", true);
+        MONSOON = b.comment("Summer is the rainy season in jungles and savannas (savannas get rain at all).")
+                .define("monsoon", true);
+        STORM_SURGE = b.comment("Hurricanes push the sea up onto low-lying coasts for a while (sandbags hold it back).")
+                .define("stormSurge", true);
+        DRY_LIGHTNING = b.comment("Lightning that strikes where it isn't raining starts fires, and summer heatwaves bring the odd",
+                        "dry thunderstorm strike (needs doFireTick and mobGriefing).")
+                .define("dryLightning", true);
+        b.pop();
+
+        b.comment("Sky events").push("sky");
+        METEORS = b.comment("Meteors fall on meteor shower nights, leaving a meteorite (needs mobGriefing for the crater).")
+                .define("meteors", true);
+        GEOMAGNETIC_STORMS = b.comment("On some aurora nights a geomagnetic storm makes compasses spin and radars crackle.")
+                .define("geomagneticStorms", true);
+        b.pop();
+
+        b.comment("Villagers and animals").push("creatures");
+        VILLAGERS_SHELTER = b.comment("Villagers go indoors during storms.")
+                .define("villagersShelter", true);
+        WINTER_WOOL = b.comment("Sheep sheared in winter or in the cold give extra wool.")
+                .define("winterWool", true);
+        POLAR_BEARS = b.comment("Polar bears roam in blizzards.")
+                .define("polarBears", true);
         b.pop();
 
         b.comment("Extreme weather").push("extremes");

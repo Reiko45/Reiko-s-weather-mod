@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "reikos_weather:tent",
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "reikos_weather:tent",
+              "properties": {
+                "part": "head"
+              }
+            }
+          ]
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "reikos_weather:blocks/tent"
+}

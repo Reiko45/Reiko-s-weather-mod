@@ -64,7 +64,8 @@ public final class TornadoClient {
             double r = level.random.nextDouble() * radius;
             double x = tornado.getX() + Math.cos(angle) * r;
             double z = tornado.getZ() + Math.sin(angle) * r;
-            int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(x), Mth.floor(z));
+            // clients only receive the MOTION_BLOCKING heightmap
+            int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(x), Mth.floor(z));
             BlockState ground = level.getBlockState(BlockPos.containing(x, top - 1, z));
             double tx = -Math.sin(angle) * 0.6, tz = Math.cos(angle) * 0.6;
             if (tornado.kind() == TornadoEntity.Kind.WATERSPOUT) {

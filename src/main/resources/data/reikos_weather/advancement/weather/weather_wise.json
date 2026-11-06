@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/weather_station",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:forecast_board"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.weather_wise"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.weather_wise.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

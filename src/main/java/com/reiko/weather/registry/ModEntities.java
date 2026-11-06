@@ -32,5 +32,10 @@ public final class ModEntities {
                     .sized(0.25F, 0.25F).clientTrackingRange(8).updateInterval(1)
                     .build(ReikosWeather.id("cloud_seeding_rocket").toString()));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<com.reiko.weather.entity.MeteorEntity>> METEOR = REGISTER.register("meteor",
+            () -> EntityType.Builder.<com.reiko.weather.entity.MeteorEntity>of(com.reiko.weather.entity.MeteorEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F).fireImmune().clientTrackingRange(16).updateInterval(1)
+                    .build(ReikosWeather.id("meteor").toString()));
+
     private ModEntities() {}
 }

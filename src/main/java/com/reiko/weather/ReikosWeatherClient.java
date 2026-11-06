@@ -30,6 +30,11 @@ public class ReikosWeatherClient {
 
         NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onLoggingOut);
+        NeoForge.EVENT_BUS.addListener(ClientEvents::onLoggingIn);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.DebugInfo::onDebugText);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.HeatShimmer::onRenderStage);
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) ->
+                e.enqueueWork(com.reiko.weather.client.Geomagnetic::registerCompass));
         NeoForge.EVENT_BUS.addListener(ClientEvents::onRenderFog);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onFogColor);
         NeoForge.EVENT_BUS.addListener(SkyEffectsRenderer::onRenderStage);

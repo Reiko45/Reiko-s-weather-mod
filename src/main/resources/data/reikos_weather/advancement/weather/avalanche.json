@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/whiteout",
+  "display": {
+    "icon": {
+      "id": "minecraft:snow_block"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.avalanche"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.avalanche.desc"
+    },
+    "frame": "goal",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

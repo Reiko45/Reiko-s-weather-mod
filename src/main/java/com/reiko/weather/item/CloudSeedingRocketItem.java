@@ -27,6 +27,7 @@ public class CloudSeedingRocketItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (!level.isClientSide) {
             CloudSeedingRocketEntity rocket = new CloudSeedingRocketEntity(ModEntities.CLOUD_SEEDING_ROCKET.get(), level);
+            rocket.owner = player.getUUID();
             rocket.moveTo(player.getX(), player.getEyeY() - 0.2, player.getZ(), 0.0F, 0.0F);
             rocket.setDeltaMovement(player.getLookAngle().x * 0.15, 0.6, player.getLookAngle().z * 0.15);
             level.addFreshEntity(rocket);

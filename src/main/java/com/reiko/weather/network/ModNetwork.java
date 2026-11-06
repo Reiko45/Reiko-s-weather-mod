@@ -8,6 +8,8 @@ public final class ModNetwork {
                 (payload, context) -> SyncedWeather.accept(payload));
         event.registrar("1").playToClient(CustomWeatherPayload.TYPE, CustomWeatherPayload.STREAM_CODEC,
                 (payload, context) -> com.reiko.weather.weather.CustomWeathers.accept(payload));
+        event.registrar("1").playToClient(TemperaturePayload.TYPE, TemperaturePayload.STREAM_CODEC,
+                (payload, context) -> TemperaturePayload.accept(payload));
         event.registrar("1").playToClient(OtherworldPayload.TYPE, OtherworldPayload.STREAM_CODEC,
                 (payload, context) -> OtherworldPayload.accept(payload));
     }

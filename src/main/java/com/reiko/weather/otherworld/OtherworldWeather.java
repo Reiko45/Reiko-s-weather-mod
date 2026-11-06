@@ -84,6 +84,15 @@ public final class OtherworldWeather {
             sync(level, state);
             state.setDirty();
         }
+        if (level.getGameTime() % 20L == 0L && state.elapsed > 300 && (state.type == OtherworldType.ASH_STORM || state.type == OtherworldType.VOID_STORM)) {
+            for (ServerPlayer player : level.players()) {
+                boolean outside = level.dimension() == Level.NETHER ? openAbove(level, player.blockPosition().above())
+                        : com.reiko.weather.weather.Wind.isExposed(level, player.blockPosition().above());
+                if (!player.isSpectator() && outside) {
+                    com.reiko.weather.weather.WeatherAdvancements.award(player, state.type == OtherworldType.ASH_STORM ? "ash_storm" : "void_storm");
+                }
+            }
+        }
         if (state.type == OtherworldType.FIRE_RAIN && state.elapsed > 200) {
             for (ServerPlayer player : level.players()) {
                 if (!player.isSpectator() && level.random.nextFloat() < 0.04F) {

@@ -87,6 +87,9 @@ public class WeatherAltarBlock extends Block {
             }
             serverLevel.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 40, 0.3, 0.6, 0.3, 0.08);
             serverLevel.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0F, 1.2F);
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                com.reiko.weather.weather.WeatherAdvancements.award(serverPlayer, "weather_wizard");
+            }
             for (var p : serverLevel.players()) {
                 p.displayClientMessage(Component.translatable("block.reikos_weather.weather_altar.answered", wanted.displayName())
                         .withStyle(ChatFormatting.LIGHT_PURPLE), true);

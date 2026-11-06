@@ -76,7 +76,9 @@ public final class WeatherManager {
         if (state == null) {
             return null;
         }
-        return LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
+        Climate climate = Climate.at(level, pos);
+        return Microclimate.apply(level, climate, pos.getX(), pos.getZ(), state.windAngle,
+                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5));
     }
 
     public static Seasons.Info seasonInfo() {
@@ -143,6 +145,7 @@ public final class WeatherManager {
         adoptVanillaChanges(level, state);
         if (level.getGameTime() % 20L == 0L) {
             seasonInfo = Seasons.compute(level, state);
+            Monsoon.setServerActive(Monsoon.enabled() && seasonInfo.season() == Season.SUMMER);
         }
 
         state.elapsed++;
@@ -275,6 +278,7 @@ public final class WeatherManager {
     private static WeatherState.Forecast pick(ServerLevel level, WeatherType after) {
         float[] mix = climateMix(level);
         boolean regional = WeatherConfig.REGIONAL_STORMS.get();
+        float monsoon = Monsoon.enabled() && seasonInfo.season() == Season.SUMMER ? tropicalFraction(level) : 0.0F;
         WeatherType[] types = WeatherType.values();
         float[] weights = new float[types.length];
         float total = 0.0F;
@@ -298,6 +302,14 @@ public final class WeatherManager {
             if (after == WeatherType.SNOW && t == WeatherType.BLIZZARD) w *= 2.0F;
             if (after == WeatherType.SLEET && t == WeatherType.ICE_STORM) w *= 2.0F;
             if (after == WeatherType.OVERCAST && t.vanillaRain) w *= 1.5F;
+            if (monsoon > 0) {
+                // the rainy season: downpours and storms most days
+                if (t == WeatherType.RAIN || t == WeatherType.HEAVY_RAIN || t == WeatherType.THUNDERSTORM || t == WeatherType.DRIZZLE) {
+                    w *= 1.0F + 3.0F * monsoon;
+                } else if (t == WeatherType.CLEAR || t == WeatherType.HEATWAVE || t == WeatherType.SANDSTORM) {
+                    w *= 1.0F - 0.6F * monsoon;
+                }
+            }
             weights[i] = w;
             total += w;
         }
@@ -342,6 +354,18 @@ public final class WeatherManager {
     }
 
     /** Fraction of players in each climate, or a temperate-leaning default when nobody is online. */
+    /** Fraction of players in jungles and savannas. */
+    private static float tropicalFraction(ServerLevel level) {
+        int count = 0, tropical = 0;
+        for (ServerPlayer player : level.players()) {
+            if (!player.isSpectator()) {
+                count++;
+                if (Monsoon.isTropical(level.getBiome(player.blockPosition()))) tropical++;
+            }
+        }
+        return count == 0 ? 0.0F : tropical / (float) count;
+    }
+
     private static float[] climateMix(ServerLevel level) {
         float[] mix = new float[Climate.values().length];
         int count = 0;

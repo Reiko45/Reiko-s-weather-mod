@@ -45,7 +45,7 @@ public final class SkyEffectsRenderer {
         }
         float rainbow = ClientWeather.rainbow();
         float aurora = ClientWeather.aurora();
-        if (rainbow <= 0.005F && aurora <= 0.005F) {
+        if (rainbow <= 0.005F && aurora <= 0.005F && !ShootingStars.any()) {
             return;
         }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
@@ -77,6 +77,9 @@ public final class SkyEffectsRenderer {
                 drawAurora(pose, level.getGameTime() + partialTick, alpha);
             }
         }
+
+        float night = Mth.clamp((-sun.y - 0.1F) * 4.0F, 0.0F, 1.0F);
+        ShootingStars.render(pose, partialTick, night * clearSky);
 
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);

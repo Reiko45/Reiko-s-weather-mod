@@ -49,6 +49,9 @@ public class ReikosWeather {
         ModSounds.REGISTER.register(modBus);
         ModEntities.REGISTER.register(modBus);
         ModItems.REGISTER.register(modBus);
+        com.reiko.weather.registry.ModEffects.REGISTER.register(modBus);
+        com.reiko.weather.registry.ModVillagers.POI_TYPES.register(modBus);
+        com.reiko.weather.registry.ModVillagers.PROFESSIONS.register(modBus);
 
         modBus.addListener(ModNetwork::register);
         modBus.addListener(ReikosWeather::addCreativeTabContents);
@@ -75,6 +78,18 @@ public class ReikosWeather {
         NeoForge.EVENT_BUS.addListener(OtherworldWeather::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.weather.CustomWeathers::onAddReloadListeners);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.weather.CustomWeathers::onDatapackSync);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.mob.WeatherCreatures::onEntityTick);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.mob.WeatherCreatures::onEntityInteract);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.mob.WeatherCreatures::onVillagerTrades);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.mob.WeatherCreatures::onTrade);
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent e) -> {
+            // sleeping in a tent never moves your spawn point
+            if (e.getNewSpawn() != null && e.getEntity().level().getBlockState(e.getNewSpawn()).getBlock() instanceof com.reiko.weather.block.TentBlock) {
+                e.setCanceled(true);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) ->
+                com.reiko.weather.weather.Monsoon.collect(e.getServer().registryAccess()));
     }
 
     public static ResourceLocation id(String path) {
@@ -88,15 +103,27 @@ public class ReikosWeather {
             event.accept(ModItems.HANDHELD_RADAR.get());
             event.accept(ModItems.UMBRELLA.get());
             event.accept(ModItems.CLOUD_SEEDING_ROCKET.get());
+            event.accept(ModItems.SALT.get());
+            event.accept(ModItems.STORM_DATA.get());
         } else if (event.getTabKey() == CreativeModeTabs.COMBAT) {
             event.accept(ModItems.WINTER_COAT.get());
             event.accept(ModItems.GOGGLES.get());
+            event.accept(ModItems.SUN_HAT.get());
+        } else if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
+            event.accept(ModItems.HOT_COCOA.get());
+            event.accept(ModItems.MELON_COOLER.get());
+        } else if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
+            event.accept(ModItems.METEORITE.get());
+        } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
+            event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
             event.accept(ModItems.WEATHER_RADAR.get());
             event.accept(ModItems.WEATHER_VANE.get());
             event.accept(ModItems.WINDMILL.get());
             event.accept(ModItems.WEATHER_STATION.get());
             event.accept(ModItems.TORNADO_SIREN.get());
+            event.accept(ModItems.LIGHTNING_BATTERY.get());
+            event.accept(ModItems.STORM_PROBE.get());
         } else if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.WEATHER_RADAR.get());
             event.accept(ModItems.WEATHER_VANE.get());
@@ -105,6 +132,10 @@ public class ReikosWeather {
             event.accept(ModItems.WEATHER_STATION.get());
             event.accept(ModItems.TORNADO_SIREN.get());
             event.accept(ModItems.RAIN_BARREL.get());
+            event.accept(ModItems.FORECAST_BOARD.get());
+            event.accept(ModItems.TENT.get());
+            event.accept(ModItems.LIGHTNING_BATTERY.get());
+            event.accept(ModItems.STORM_PROBE.get());
         }
     }
 }

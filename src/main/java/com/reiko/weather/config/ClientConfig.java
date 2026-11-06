@@ -24,6 +24,13 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue AMBIENT_LOOPS;
     public static final ModConfigSpec.BooleanValue FAHRENHEIT;
     public static final ModConfigSpec.IntValue STORM_CLOUD_RANGE;
+    public static final ModConfigSpec.BooleanValue BREATH;
+    public static final ModConfigSpec.BooleanValue FOOTPRINTS;
+    public static final ModConfigSpec.BooleanValue SCREEN_RAINDROPS;
+    public static final ModConfigSpec.BooleanValue HEAT_SHIMMER;
+    public static final ModConfigSpec.BooleanValue DRIPPING_LEAVES;
+    public static final ModConfigSpec.BooleanValue SHOOTING_STARS;
+    public static final ModConfigSpec.BooleanValue WILDLIFE_SOUNDS;
 
     public enum HudMode { BAROMETER, ALWAYS, NEVER }
 
@@ -66,6 +73,20 @@ public final class ClientConfig {
         STORM_CLOUD_RANGE = b.comment("How far out the storm cloud deck is drawn, in blocks. 0 = automatic",
                         "(about 960, or matched to Distant Horizons' render distance when it is installed).")
                 .defineInRange("stormCloudRange", 0, 0, 16384);
+        BREATH = b.comment("Your breath (and other creatures') shows as vapour in the cold.")
+                .define("breath", true);
+        FOOTPRINTS = b.comment("Footprints in snow.")
+                .define("footprints", true);
+        SCREEN_RAINDROPS = b.comment("Raindrops on the screen when you look up into the rain.")
+                .define("screenRaindrops", true);
+        HEAT_SHIMMER = b.comment("Distant ground shimmers in the heat on hot, sunny days.")
+                .define("heatShimmer", true);
+        DRIPPING_LEAVES = b.comment("Leaves keep dripping for a while after the rain.")
+                .define("drippingLeaves", true);
+        SHOOTING_STARS = b.comment("Shooting stars on clear nights, and meteor showers on some nights.")
+                .define("shootingStars", true);
+        WILDLIFE_SOUNDS = b.comment("Birdsong on spring and summer days, crickets on summer nights.")
+                .define("wildlifeSounds", true);
         SPEC = b.build();
     }
 

@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/storm_chaser",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:storm_data"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.eye_of_the_storm"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.eye_of_the_storm.desc"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

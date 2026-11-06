@@ -5,6 +5,7 @@ import com.reiko.weather.network.SyncedWeather;
 import com.reiko.weather.registry.ModItems;
 import com.reiko.weather.weather.Climate;
 import com.reiko.weather.weather.CustomWeathers;
+import com.reiko.weather.weather.Microclimate;
 import com.reiko.weather.weather.LocalWeather;
 import com.reiko.weather.weather.Precip;
 import com.reiko.weather.weather.SkyPhenomena;
@@ -61,11 +62,14 @@ public final class ClientWeather {
         if (managed) {
             SyncedWeather.tick();
         }
+        com.reiko.weather.weather.Monsoon.setClientActive(managed && com.reiko.weather.weather.Monsoon.enabled()
+                && SyncedWeather.season() == com.reiko.weather.weather.Season.SUMMER);
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
         BlockPos camPos = BlockPos.containing(cam);
         climate = Climate.at(level, camPos);
         local = managed
-                ? LocalWeather.resolve(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), 1.0F, SyncedWeather.cells(), climate, cam.x, cam.z)
+                ? Microclimate.apply(level, climate, camPos.getX(), camPos.getZ(), SyncedWeather.windAngle(),
+                    LocalWeather.resolve(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), 1.0F, SyncedWeather.cells(), climate, cam.x, cam.z))
                 : null;
         previousType = type;
         type = local != null ? local.type() : WeatherType.CLEAR;
@@ -117,8 +121,11 @@ public final class ClientWeather {
         boolean rainbowWanted = managed && rainbowTicks > 0 && type.isCalm() && ClientConfig.RAINBOWS.get() && climate != Climate.ARID;
         rainbow = approach(rainbow, rainbowWanted ? Math.min(1.0F, rainbowTicks / 600.0F) : 0.0F, 0.004F);
 
+        // in a geomagnetic storm the aurora reaches down into temperate lands too
+        boolean auroraClimate = climate == Climate.COLD || climate == Climate.TEMPERATE && SkyPhenomena.isGeomagneticStormNight(level.getDayTime())
+                && com.reiko.weather.config.WeatherConfig.SPEC.isLoaded() && com.reiko.weather.config.WeatherConfig.GEOMAGNETIC_STORMS.get();
         boolean auroraWanted = managed && ClientConfig.AURORAS.get() && SkyPhenomena.isAuroraNight(level.getDayTime())
-                && climate == Climate.COLD && (type == WeatherType.CLEAR || type == WeatherType.WINDY);
+                && auroraClimate && (type == WeatherType.CLEAR || type == WeatherType.WINDY);
         aurora = approach(aurora, auroraWanted ? 1.0F : 0.0F, 0.003F);
 
         mist = approach(mist, managed ? mistTarget(level, camPos, cam.y) : 0.0F, 0.003F);
@@ -161,8 +168,13 @@ public final class ClientWeather {
         Holder<Biome> biome = level.getBiome(pos);
         boolean damp = biome.is(BiomeTags.IS_RIVER) || biome.is(BiomeTags.IS_BEACH) || biome.is(Biomes.SWAMP)
                 || biome.is(Biomes.MANGROVE_SWAMP) || biome.is(BiomeTags.IS_OCEAN) || nearOpenWater(level, pos);
-        if (!damp) {
+        // cold air pools in valleys overnight, so they fill with fog at dawn
+        float valley = Microclimate.at(level, pos.getX(), pos.getZ(), windAngle).valley();
+        if (!damp && valley < 0.3F) {
             return 0.0F;
+        }
+        if (!damp) {
+            return dawn * Mth.clamp(valley * 1.3F, 0.0F, 1.0F);
         }
         float altitude = 1.0F - Mth.clamp((float) (camY - level.getSeaLevel() - 6) / 14.0F, 0.0F, 1.0F);
         return dawn * altitude;

@@ -1,6 +1,8 @@
 package com.reiko.weather.weather;
 
 import com.reiko.weather.config.WeatherConfig;
+import com.reiko.weather.farming.Greenhouse;
+import net.minecraft.tags.BiomeTags;
 import com.reiko.weather.entity.TornadoEntity;
 import com.reiko.weather.registry.ModBlocks;
 import com.reiko.weather.registry.ModDamageTypes;
@@ -58,7 +60,8 @@ public final class WeatherHazards {
                 continue;
             }
             Climate climate = Climate.at(level, player.blockPosition());
-            LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, player.getX(), player.getZ());
+            LocalWeather local = Microclimate.apply(level, climate, player.getBlockX(), player.getBlockZ(), state.windAngle,
+                    LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, player.getX(), player.getZ()));
             WeatherProfile profile = local.profile();
             float intensity = local.intensity();
 
@@ -87,6 +90,11 @@ public final class WeatherHazards {
             if (profile.floods && WeatherConfig.FLASH_FLOODS.get() && intensity > 0.8F && random.nextFloat() < 0.25F) {
                 flood(level, state, randomColumn(level, player, random));
             }
+            if (local.type() == WeatherType.HURRICANE && WeatherConfig.STORM_SURGE.get() && intensity > 0.8F) {
+                for (int i = 0; i < 3; i++) {
+                    surge(level, state, randomColumn(level, player, random));
+                }
+            }
             if (profile.hail && WeatherConfig.HAIL_DAMAGES_CROPS.get() && random.nextFloat() < 0.5F * intensity) {
                 damageCrop(level, randomColumn(level, player, random), random);
             }
@@ -100,7 +108,10 @@ public final class WeatherHazards {
             if (everySecond) {
                 trySpawnWhirlwinds(level, player, local, climate);
                 WeatherAdvancements.check(level, state, player, local, climate);
+                com.reiko.weather.mob.WeatherCreatures.everySecond(level, player, local, climate);
             }
+            com.reiko.weather.farming.Frost.tick(level, player, local);
+            com.reiko.weather.sky.Meteors.tick(level, player, local);
             LightningEvents.maybeSpawnBallLightning(level, player, local);
             ExtremeWeather.tick(level, player, local, climate);
         }
@@ -239,8 +250,75 @@ public final class WeatherHazards {
                 }
             }
         }
+        if (protectedBySandbags(level, top)) {
+            return;
+        }
         level.setBlockAndUpdate(top, Blocks.WATER.defaultBlockState());
         state.floodBlocks.add(top.asLong());
+        state.setDirty();
+    }
+
+    /** Sandbags stop flood water from being placed within two blocks of them. */
+    public static boolean protectedBySandbags(Level level, BlockPos pos) {
+        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-2, -1, -2), pos.offset(2, 1, 2))) {
+            if (level.getBlockState(p).is(ModBlocks.SANDBAG.get())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Hurricanes push the sea one block up onto low-lying coasts. Like flash floods, surge sources are
+     * kept at least three blocks apart (flowing water fills the gaps), so vanilla can never join them into
+     * permanent new sources, and every one is tracked and removed after the storm.
+     */
+    private static void surge(ServerLevel level, WeatherState state, @Nullable BlockPos top) {
+        if (top == null || state.floodBlocks.size() >= WeatherConfig.MAX_FLOOD_BLOCKS.get()) {
+            return;
+        }
+        int sea = level.getSeaLevel();
+        BlockPos pos;
+        if (top.getY() == sea && level.getBlockState(top).isAir()) {
+            pos = top;
+        } else if (top.getY() == sea + 1 && level.getFluidState(top.below()).is(FluidTags.WATER) && !level.getFluidState(top.below()).isSource()) {
+            pos = top.below(); // already awash with surge water: deepen it
+        } else {
+            return;
+        }
+        BlockPos below = pos.below();
+        if (!level.canSeeSky(pos) || !level.getBlockState(below).isFaceSturdy(level, below, Direction.UP) && !level.getFluidState(below).is(FluidTags.WATER)) {
+            return;
+        }
+        boolean nearWater = false;
+        for (int dx = -3; dx <= 3 && !nearWater; dx++) {
+            for (int dz = -3; dz <= 3; dz++) {
+                BlockPos n = pos.offset(dx, 0, dz);
+                if ((dx != 0 || dz != 0) && (level.getFluidState(n).is(FluidTags.WATER) || level.getFluidState(n.below()).is(FluidTags.WATER))) {
+                    nearWater = true;
+                    break;
+                }
+            }
+        }
+        boolean coastal = false;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            var biome = level.getBiome(pos.relative(d, 6));
+            if (biome.is(BiomeTags.IS_OCEAN) || biome.is(BiomeTags.IS_BEACH)) {
+                coastal = true;
+            }
+        }
+        if (!nearWater || !coastal || protectedBySandbags(level, pos)) {
+            return;
+        }
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                if (level.getFluidState(pos.offset(dx, 0, dz)).isSourceOfType(Fluids.WATER)) {
+                    return;
+                }
+            }
+        }
+        level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
+        state.floodBlocks.add(pos.asLong());
         state.setDirty();
     }
 
@@ -249,6 +327,7 @@ public final class WeatherHazards {
             return;
         }
         boolean floodsOn = WeatherConfig.FLASH_FLOODS.get();
+        boolean surgeOn = WeatherConfig.STORM_SURGE.get();
         for (int i = 0; i < 4 && !state.floodBlocks.isEmpty(); i++) {
             int index = level.random.nextInt(state.floodBlocks.size());
             BlockPos pos = BlockPos.of(state.floodBlocks.getLong(index));
@@ -256,11 +335,21 @@ public final class WeatherHazards {
                 continue;
             }
             LocalWeather local = WeatherManager.local(level, pos);
-            if (floodsOn && local != null && local.profile().floods) {
+            if (local != null && (floodsOn && local.profile().floods || surgeOn && local.type() == WeatherType.HURRICANE)) {
                 continue; // still pouring
             }
             if (level.getFluidState(pos).isSourceOfType(Fluids.WATER)) {
                 level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                if (pos.getY() == level.getSeaLevel()) {
+                    // a surge can leave stray sources where vanilla joined two of ours: drain those too
+                    for (Direction d : Direction.Plane.HORIZONTAL) {
+                        BlockPos n = pos.relative(d);
+                        // nothing natural sits on top of the sea, so a source here was left by the surge
+                        if (level.getFluidState(n).isSourceOfType(Fluids.WATER) && !state.floodBlocks.contains(n.asLong())) {
+                            level.setBlockAndUpdate(n, Blocks.AIR.defaultBlockState());
+                        }
+                    }
+                }
             }
             state.floodBlocks.removeLong(index);
             state.setDirty();
@@ -272,7 +361,7 @@ public final class WeatherHazards {
             return;
         }
         BlockState state = level.getBlockState(pos);
-        if (state.getBlock() instanceof CropBlock crop && random.nextFloat() < 0.35F) {
+        if (state.getBlock() instanceof CropBlock crop && random.nextFloat() < 0.35F && !Greenhouse.underGlass(level, pos)) {
             int age = crop.getAge(state);
             if (age > 0) {
                 level.setBlockAndUpdate(pos, crop.getStateForAge(age - 1));
@@ -379,10 +468,12 @@ public final class WeatherHazards {
             return;
         }
         BlockPos eyes = BlockPos.containing(entity.getEyePosition());
-        if (!Wind.isExposed(level, eyes)) {
+        if (!Wind.isExposed(level, eyes) || entity instanceof LivingEntity && com.reiko.weather.block.TentBlock.isInside(entity)) {
             return;
         }
-        LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, eyes), entity.getX(), entity.getZ());
+        Climate entityClimate = Climate.at(level, eyes);
+        LocalWeather local = Microclimate.apply(level, entityClimate, eyes.getX(), eyes.getZ(), state.windAngle,
+                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, entityClimate, entity.getX(), entity.getZ()));
         WeatherProfile profile = local.profile();
         float intensity = local.intensity();
 
@@ -475,6 +566,17 @@ public final class WeatherHazards {
             return;
         }
         WeatherProfile profile = local.profile();
+        if (Greenhouse.underGlass(level, pos)) {
+            // no rain gets in, but the warmth keeps crops growing through winter
+            if (WeatherManager.seasonInfo().season() == Season.WINTER) {
+                level.players().stream().filter(p -> p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 32 * 32)
+                        .forEach(p -> WeatherAdvancements.award(p, "green_thumb"));
+            }
+            if (profile.heat && WeatherConfig.HEAT_SLOWS_CROPS.get() && level.random.nextFloat() < 0.5F) {
+                event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+            }
+            return;
+        }
         if (profile.cropBoost && WeatherConfig.RAIN_BOOSTS_CROPS.get() && level.random.nextFloat() < 0.25F) {
             event.setResult(CropGrowEvent.Pre.Result.GROW);
         } else if (profile.heat && WeatherConfig.HEAT_SLOWS_CROPS.get() && level.random.nextFloat() < 0.5F) {

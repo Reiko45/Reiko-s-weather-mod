@@ -1,0 +1,84 @@
+{
+  "variants": {
+    "charge=0,facing=north": {
+      "model": "reikos_weather:block/lightning_battery_c0",
+      "y": 0
+    },
+    "charge=0,facing=east": {
+      "model": "reikos_weather:block/lightning_battery_c0",
+      "y": 90
+    },
+    "charge=0,facing=south": {
+      "model": "reikos_weather:block/lightning_battery_c0",
+      "y": 180
+    },
+    "charge=0,facing=west": {
+      "model": "reikos_weather:block/lightning_battery_c0",
+      "y": 270
+    },
+    "charge=1,facing=north": {
+      "model": "reikos_weather:block/lightning_battery_c1",
+      "y": 0
+    },
+    "charge=1,facing=east": {
+      "model": "reikos_weather:block/lightning_battery_c1",
+      "y": 90
+    },
+    "charge=1,facing=south": {
+      "model": "reikos_weather:block/lightning_battery_c1",
+      "y": 180
+    },
+    "charge=1,facing=west": {
+      "model": "reikos_weather:block/lightning_battery_c1",
+      "y": 270
+    },
+    "charge=2,facing=north": {
+      "model": "reikos_weather:block/lightning_battery_c2",
+      "y": 0
+    },
+    "charge=2,facing=east": {
+      "model": "reikos_weather:block/lightning_battery_c2",
+      "y": 90
+    },
+    "charge=2,facing=south": {
+      "model": "reikos_weather:block/lightning_battery_c2",
+      "y": 180
+    },
+    "charge=2,facing=west": {
+      "model": "reikos_weather:block/lightning_battery_c2",
+      "y": 270
+    },
+    "charge=3,facing=north": {
+      "model": "reikos_weather:block/lightning_battery_c3",
+      "y": 0
+    },
+    "charge=3,facing=east": {
+      "model": "reikos_weather:block/lightning_battery_c3",
+      "y": 90
+    },
+    "charge=3,facing=south": {
+      "model": "reikos_weather:block/lightning_battery_c3",
+      "y": 180
+    },
+    "charge=3,facing=west": {
+      "model": "reikos_weather:block/lightning_battery_c3",
+      "y": 270
+    },
+    "charge=4,facing=north": {
+      "model": "reikos_weather:block/lightning_battery_c4",
+      "y": 0
+    },
+    "charge=4,facing=east": {
+      "model": "reikos_weather:block/lightning_battery_c4",
+      "y": 90
+    },
+    "charge=4,facing=south": {
+      "model": "reikos_weather:block/lightning_battery_c4",
+      "y": 180
+    },
+    "charge=4,facing=west": {
+      "model": "reikos_weather:block/lightning_battery_c4",
+      "y": 270
+    }
+  }
+}

@@ -197,6 +197,9 @@ public class TornadoEntity extends Entity {
         }
 
         float strength = strength();
+        if (kind != Kind.DUST_DEVIL && strength > 0.3F && age % 10 == 0) {
+            recordProbes(level);
+        }
         if (strength > 0.05F) {
             pullEntities(level, strength);
             excusePlayers(level);
@@ -204,6 +207,17 @@ public class TornadoEntity extends Entity {
                 liftBlocks(level, strength);
             }
         }
+    }
+
+    /** Storm probes nearby take readings. */
+    private void recordProbes(ServerLevel level) {
+        level.getPoiManager().getInRange(holder -> holder.is(com.reiko.weather.registry.ModVillagers.STORM_PROBE_POI), blockPosition(),
+                (int) com.reiko.weather.block.StormProbeBlock.NEAR + 2, net.minecraft.world.entity.ai.village.poi.PoiManager.Occupancy.ANY)
+                .forEach(poi -> {
+                    BlockPos p = poi.getPos();
+                    double dx = p.getX() + 0.5 - getX(), dz = p.getZ() + 0.5 - getZ();
+                    com.reiko.weather.block.StormProbeBlock.record(level, p, Math.sqrt(dx * dx + dz * dz));
+                });
     }
 
     private void pullEntities(ServerLevel level, float strength) {

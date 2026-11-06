@@ -82,6 +82,10 @@ public final class WeatherCommand {
                                         Arrays.stream(WeatherType.values()).filter(WeatherType::isStorm).map(WeatherType::id), builder))
                                 .executes(ctx -> storm(ctx, false))
                                 .then(Commands.literal("here").executes(ctx -> storm(ctx, true)))))
+                .then(Commands.literal("meteor").requires(s -> s.hasPermission(2))
+                        .executes(ctx -> meteor(ctx.getSource(), ctx.getSource().getPosition()))
+                        .then(Commands.argument("pos", Vec3Argument.vec3())
+                                .executes(ctx -> meteor(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos")))))
                 .then(Commands.literal("storms").executes(WeatherCommand::listStorms)
                         .then(Commands.literal("clear").requires(s -> s.hasPermission(2)).executes(WeatherCommand::clearStorms)))
                 .then(Commands.literal("season").executes(WeatherCommand::querySeason)
@@ -120,6 +124,8 @@ public final class WeatherCommand {
         if (season != null) source.sendSuccess(() -> season, false);
         Component storm = WeatherReport.approachingStorm(state, pos);
         if (storm != null) source.sendSuccess(() -> storm, false);
+        Component terrain = WeatherReport.microclimate(overworld, state, pos);
+        if (terrain != null) source.sendSuccess(() -> terrain, false);
         return state.type.ordinal();
     }
 
@@ -220,6 +226,15 @@ public final class WeatherCommand {
         source.sendSuccess(() -> Component.translatable(here ? "commands.reikos_weather.storm_here" : "commands.reikos_weather.storm",
                 type.displayName(), (int) cell.radius), true);
         return cell.id;
+    }
+
+    private static int meteor(CommandSourceStack source, Vec3 pos) throws CommandSyntaxException {
+        if (source.getLevel().dimension() != Level.OVERWORLD) {
+            throw WRONG_DIMENSION.create();
+        }
+        com.reiko.weather.sky.Meteors.spawn(source.getLevel(), pos);
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.meteor"), true);
+        return 1;
     }
 
     private static int listStorms(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

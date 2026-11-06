@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/weather_station",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:cloud_seeding_rocket"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.rainmaker"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.rainmaker.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

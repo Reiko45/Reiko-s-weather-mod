@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "W": {
+      "item": "minecraft:wheat"
+    }
+  },
+  "pattern": [
+    "WWW",
+    "W W"
+  ],
+  "result": {
+    "count": 1,
+    "id": "reikos_weather:sun_hat"
+  }
+}

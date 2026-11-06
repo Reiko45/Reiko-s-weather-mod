@@ -39,7 +39,7 @@ public final class ForecastHud {
         bottom = 0;
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null || mc.level == null || mc.level.dimension() != Level.OVERWORLD
-                || !SyncedWeather.managed() || mc.getDebugOverlay().showDebugScreen()) {
+                || !SyncedWeather.managed() || mc.getDebugOverlay().showDebugScreen() || menuOpen(mc)) {
             return;
         }
         ClientConfig.HudMode mode = ClientConfig.HUD.get();
@@ -108,6 +108,11 @@ public final class ForecastHud {
             icon(graphics, type, fx, fy);
             fx += ICON + 2;
         }
+    }
+
+    /** True while a menu (other than chat) is open, so the panels don't sit on top of inventories and JEI. */
+    public static boolean menuOpen(Minecraft mc) {
+        return mc.screen != null && !(mc.screen instanceof net.minecraft.client.gui.screens.ChatScreen);
     }
 
     private static void icon(GuiGraphics graphics, WeatherType type, int x, int y) {

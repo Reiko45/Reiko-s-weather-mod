@@ -11,7 +11,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import com.reiko.weather.network.TemperaturePayload;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +34,9 @@ public final class TemperatureHud {
             return;
         }
         float a = Temperature.ambient(mc.level, BlockPos.containing(player.getEyePosition()), ClientWeather.local());
-        float f = Temperature.felt(mc.level, player, ClientWeather.local());
+        // the server keeps your actual body temperature (it changes gradually); fall back to our own estimate
+        float body = TemperaturePayload.clientBody;
+        float f = Float.isNaN(body) ? Temperature.felt(mc.level, player, ClientWeather.local()) : body;
         air = Float.isNaN(air) ? a : Mth.lerp(0.5F, air, a);
         felt = Float.isNaN(felt) ? f : Mth.lerp(0.5F, felt, f);
     }
@@ -49,7 +53,7 @@ public final class TemperatureHud {
     public static void render(GuiGraphics graphics, DeltaTracker delta) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.player == null || Float.isNaN(felt) || mc.getDebugOverlay().showDebugScreen()
-                || ClientConfig.HUD.get() == ClientConfig.HudMode.NEVER) {
+                || ClientConfig.HUD.get() == ClientConfig.HudMode.NEVER || ForecastHud.menuOpen(mc)) {
             return;
         }
         Font font = mc.font;
@@ -57,7 +61,13 @@ public final class TemperatureHud {
         Temperature.Feel feel = Temperature.Feel.of(felt);
         Component main = Component.literal(Temperature.format(felt, fahrenheit)).withStyle(feel.color, ChatFormatting.BOLD);
         Component feelText = feel.displayName();
-        Component airText = Component.translatable("hud.reikos_weather.air", Temperature.format(air, fahrenheit)).withStyle(ChatFormatting.GRAY);
+        MutableComponent airText = Component.translatable("hud.reikos_weather.air", Temperature.format(air, fahrenheit)).withStyle(ChatFormatting.GRAY);
+        float target = TemperaturePayload.clientTarget;
+        if (!Float.isNaN(target) && Math.abs(target - felt) > 1.0F) {
+            airText.append(Component.literal(target > felt ? "  ▲ " : "  ▼ ").withStyle(target > felt ? ChatFormatting.GOLD : ChatFormatting.AQUA))
+                    .append(Component.translatable(target > felt ? "hud.reikos_weather.warming" : "hud.reikos_weather.cooling")
+                            .withStyle(target > felt ? ChatFormatting.GOLD : ChatFormatting.AQUA));
+        }
         int textWidth = Math.max(font.width(main) + 4 + font.width(feelText), font.width(airText));
         int width = 16 + 6 + textWidth + 8;
         int height = 26;

@@ -93,8 +93,14 @@ public class RadarScreen extends Screen {
         g.blit(BACK, cx - radius, cy - radius, size, size, 0, 0, 256, 256, 256, 256);
 
         List<StormCell> cells = new ArrayList<>(overworld ? SyncedWeather.cells() : List.of());
+        boolean interference = overworld && Geomagnetic.active();
+        java.util.Random jitter = new java.util.Random((long) (time / 3));
         for (StormCell cell : cells) {
             double px = cx + (cell.x - center.x) * scale, py = cy + (cell.z - center.z) * scale;
+            if (interference) {
+                px += (jitter.nextFloat() - 0.5F) * 14;
+                py += (jitter.nextFloat() - 0.5F) * 14;
+            }
             double r = Math.max(3, cell.radius * scale);
             if (Math.hypot(px - cx, py - cy) > radius + r) continue;
             int c = colorOf(cell.type);
@@ -121,6 +127,16 @@ public class RadarScreen extends Screen {
             int px = (int) (cx + (tornado.getX() - center.x) * scale), py = (int) (cy + (tornado.getZ() - center.z) * scale);
             int color = ((int) (time / 6) % 2 == 0) ? 0xFFFF2020 : 0xFFFFA020;
             g.fill(px - 2, py - 2, px + 3, py + 3, color);
+        }
+        if (interference) {
+            // static from the geomagnetic storm
+            for (int i = 0; i < 260; i++) {
+                double a = jitter.nextDouble() * Math.PI * 2, d = Math.sqrt(jitter.nextDouble()) * radius;
+                int sx = (int) (cx + Math.cos(a) * d), sy = (int) (cy + Math.sin(a) * d);
+                int shade = 120 + jitter.nextInt(135);
+                g.fill(sx, sy, sx + 1 + jitter.nextInt(2), sy + 1, (0x50 + jitter.nextInt(0x60)) << 24 | shade << 16 | shade << 8 | shade);
+            }
+            blend();
         }
         // the sweep
         blend();
@@ -165,6 +181,10 @@ public class RadarScreen extends Screen {
         Component here = Component.translatable("screen.reikos_weather.radar.here", ClientWeather.type().displayName());
         g.drawString(font, here, x, y, 0xFFFFFF, false);
         y += 14;
+        if (Geomagnetic.active()) {
+            g.drawWordWrap(font, Component.translatable("screen.reikos_weather.radar.interference").withStyle(ChatFormatting.GOLD), x, y, maxWidth, 0xFFAA00);
+            y += 22;
+        }
         cells.sort(Comparator.comparingDouble(c -> c.distanceTo(center.x, center.z) - c.radius));
         if (cells.isEmpty()) {
             g.drawString(font, Component.translatable("screen.reikos_weather.radar.clear"), x, y, 0x80FF80, false);

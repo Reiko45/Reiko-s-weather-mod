@@ -17,5 +17,8 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WindmillBlockEntity>> WINDMILL = REGISTER.register("windmill",
             () -> BlockEntityType.Builder.of(WindmillBlockEntity::new, ModBlocks.WINDMILL.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.reiko.weather.block.ForecastBoardBlockEntity>> FORECAST_BOARD = REGISTER.register("forecast_board",
+            () -> BlockEntityType.Builder.of(com.reiko.weather.block.ForecastBoardBlockEntity::new, ModBlocks.FORECAST_BOARD.get()).build(null));
+
     private ModBlockEntities() {}
 }

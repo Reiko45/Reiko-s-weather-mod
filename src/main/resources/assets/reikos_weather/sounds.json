@@ -70,5 +70,41 @@
         "attenuation_distance": 64
       }
     ]
+  },
+  "ambient.birdsong": {
+    "subtitle": "subtitles.reikos_weather.ambient.birdsong",
+    "sounds": [
+      {
+        "name": "reikos_weather:ambient/bird1",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "reikos_weather:ambient/bird2",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "reikos_weather:ambient/bird3",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "reikos_weather:ambient/bird4",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "ambient.crickets": {
+    "subtitle": "subtitles.reikos_weather.ambient.crickets",
+    "sounds": [
+      {
+        "name": "reikos_weather:ambient/crickets",
+        "stream": true
+      }
+    ]
+  },
+  "entity.meteor": {
+    "subtitle": "subtitles.reikos_weather.entity.meteor",
+    "sounds": [
+      "reikos_weather:entity/meteor"
+    ]
   }
 }

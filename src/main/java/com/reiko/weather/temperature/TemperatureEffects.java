@@ -4,7 +4,10 @@ import com.reiko.weather.config.WeatherConfig;
 import com.reiko.weather.registry.ModDamageTypes;
 import com.reiko.weather.weather.LocalWeather;
 import com.reiko.weather.weather.WeatherManager;
+import com.reiko.weather.network.TemperaturePayload;
+import com.reiko.weather.weather.WeatherAdvancements;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.LightLayer;
 
@@ -15,6 +18,9 @@ import net.minecraft.world.level.LightLayer;
  */
 public final class TemperatureEffects {
     private static final String FELT = "reikos_weather.felt";
+    private static final String BODY = "reikos_weather.body";
+    private static final float COMFORT_LOW = 10.0F;
+    private static final float COMFORT_HIGH = 26.0F;
     public static final float HEATSTROKE = 48.0F;
     public static final float DEADLY_COLD = -12.0F;
 
@@ -27,11 +33,19 @@ public final class TemperatureEffects {
             return;
         }
         var data = player.getPersistentData();
-        if (player.tickCount % 20 == 0 || !data.contains(FELT)) {
+        if (player.tickCount % 20 == 0 || !data.contains(FELT) || !data.contains(BODY)) {
             LocalWeather local = WeatherManager.local(player.level(), player.blockPosition());
-            data.putFloat(FELT, Temperature.felt(player.level(), player, local));
+            float target = Temperature.felt(player.level(), player, local);
+            data.putFloat(FELT, target);
+            // your body warms up and cools down gradually: quickly back toward comfort, slowly away from it
+            float body = data.contains(BODY) ? data.getFloat(BODY) : target;
+            boolean recovering = body < COMFORT_LOW && target > body || body > COMFORT_HIGH && target < body;
+            float rate = recovering ? 2.5F : 0.6F;
+            body += Mth.clamp(target - body, -rate, rate);
+            data.putFloat(BODY, body);
+            PacketDistributor.sendToPlayer(player, new TemperaturePayload(body, target));
         }
-        float felt = data.getFloat(FELT);
+        float felt = data.getFloat(BODY);
 
         if (felt < 0.0F && player.canFreeze() && player.level().getBrightness(LightLayer.BLOCK, player.blockPosition()) < 11) {
             float rate = Mth.clamp(-felt / 25.0F, 0.05F, 1.0F);
@@ -45,6 +59,7 @@ public final class TemperatureEffects {
             // deadly cold hurts more slowly than powder snow, so there's time to find shelter or a fire
             if (felt < DEADLY_COLD && player.getTicksFrozen() >= required - 1 && player.tickCount % 100 == 0) {
                 player.hurt(player.damageSources().freeze(), 1.0F);
+                WeatherAdvancements.award(player, "frostbite");
             }
         }
         // heat makes you hungry: about a drumstick a minute at 40 °C, two at 48 °C
@@ -54,12 +69,18 @@ public final class TemperatureEffects {
         // and in extreme heat, slow heatstroke unless you cool off in water or rain
         if (felt > HEATSTROKE && player.tickCount % 300 == 0 && !player.isInWaterOrRain()) {
             player.hurt(player.damageSources().source(ModDamageTypes.HEATSTROKE), 1.0F);
+            WeatherAdvancements.award(player, "heatstroke");
         }
     }
 
     /** The last felt temperature computed for a player (server side). */
     public static float lastFelt(ServerPlayer player) {
         return player.getPersistentData().getFloat(FELT);
+    }
+
+    /** The player's body temperature: the felt temperature, smoothed over time. */
+    public static float body(ServerPlayer player) {
+        return player.getPersistentData().getFloat(BODY);
     }
 
     private TemperatureEffects() {}

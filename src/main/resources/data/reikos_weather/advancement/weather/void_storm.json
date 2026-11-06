@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/ash_storm",
+  "display": {
+    "icon": {
+      "id": "minecraft:end_stone"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.void_storm"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.void_storm.desc"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

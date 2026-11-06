@@ -95,6 +95,9 @@ public class BallLightningEntity extends Entity {
                 e -> !(e instanceof Player p && (p.isSpectator() || p.isCreative())))) {
             target.hurt(source, 2.0F);
             hit = true;
+            if (target instanceof net.minecraft.server.level.ServerPlayer player) {
+                com.reiko.weather.weather.WeatherAdvancements.award(player, "shocking");
+            }
         }
         if (hit) {
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, getX(), getY() + 0.3, getZ(), 20, 1.0, 0.6, 1.0, 0.2);

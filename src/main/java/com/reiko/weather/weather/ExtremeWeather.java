@@ -42,6 +42,9 @@ public final class ExtremeWeather {
             if (WeatherConfig.WILDFIRES.get() && climate == Climate.ARID && random.nextInt(2400) == 0) {
                 wildfire(level, player);
             }
+            if (climate == Climate.TEMPERATE) {
+                LightningEvents.maybeDryStrike(level, player);
+            }
             // a few columns near the player each tick: unwatered crops lose a stage every few minutes and
             // a full cauldron in the sun dries out over one heatwave
             boolean wilting = WeatherConfig.CROP_WILTING.get(), evaporating = WeatherConfig.CAULDRON_EVAPORATION.get();
@@ -125,6 +128,10 @@ public final class ExtremeWeather {
         BlockState state = level.getBlockState(pos);
         if (state.is(Blocks.WATER_CAULDRON) && level.random.nextFloat() < 0.5F) {
             LayeredCauldronBlock.lowerFillLevel(state, level, pos);
+            // the water leaves its salt behind
+            if (level.random.nextFloat() < 0.35F) {
+                net.minecraft.world.level.block.Block.popResource(level, pos.above(), new net.minecraft.world.item.ItemStack(com.reiko.weather.registry.ModItems.SALT.get()));
+            }
         }
     }
 
@@ -226,6 +233,7 @@ public final class ExtremeWeather {
                 for (ServerPlayer p : level.players()) {
                     if (p.distanceToSqr(x, height, z) < 64 * 64) {
                         p.displayClientMessage(Component.translatable("message.reikos_weather.avalanche").withStyle(s -> s.withColor(0xBBDDFF).withBold(true)), true);
+                        WeatherAdvancements.award(p, "avalanche");
                     }
                 }
                 return;

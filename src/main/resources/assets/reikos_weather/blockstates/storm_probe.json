@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "readings=0": {
+      "model": "reikos_weather:block/storm_probe_0"
+    },
+    "readings=1": {
+      "model": "reikos_weather:block/storm_probe_1"
+    },
+    "readings=2": {
+      "model": "reikos_weather:block/storm_probe_2"
+    }
+  }
+}

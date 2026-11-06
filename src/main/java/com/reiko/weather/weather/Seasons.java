@@ -59,6 +59,14 @@ public final class Seasons {
         temperatureShift = shift;
     }
 
+    public static boolean onServerThread() {
+        return Thread.currentThread() == serverThread;
+    }
+
+    public static boolean onClientThread() {
+        return Thread.currentThread() == clientThread;
+    }
+
     public static boolean usingSereneSeasons() {
         return ModList.get() != null && ModList.get().isLoaded("sereneseasons");
     }

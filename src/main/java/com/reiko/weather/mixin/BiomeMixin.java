@@ -13,4 +13,10 @@ public abstract class BiomeMixin {
     private float reikos_weather$season(float temperature) {
         return temperature + Seasons.temperatureShiftForCurrentThread();
     }
+
+    /** The monsoon brings rain to savannas in summer. */
+    @ModifyReturnValue(method = "hasPrecipitation", at = @At("RETURN"))
+    private boolean reikos_weather$monsoon(boolean precipitation) {
+        return precipitation || com.reiko.weather.weather.Monsoon.addsRain((Biome) (Object) this);
+    }
 }

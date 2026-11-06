@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/under_the_weather",
+  "display": {
+    "icon": {
+      "id": "minecraft:glass"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.fulgurite"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.fulgurite.desc"
+    },
+    "frame": "task",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

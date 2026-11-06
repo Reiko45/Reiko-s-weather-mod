@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/four_seasons",
+  "display": {
+    "icon": {
+      "id": "minecraft:glass"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.green_thumb"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.green_thumb.desc"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

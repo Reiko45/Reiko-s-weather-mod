@@ -26,6 +26,10 @@ public final class ModArmorMaterials {
             defense(1, 1, 1, 1), 12, SoundEvents.ARMOR_EQUIP_LEATHER, () -> Ingredient.of(Items.LEATHER),
             List.of(new ArmorMaterial.Layer(ReikosWeather.id("goggles"))), 0.0F, 0.0F));
 
+    public static final DeferredHolder<ArmorMaterial, ArmorMaterial> STRAW = REGISTER.register("straw", () -> new ArmorMaterial(
+            defense(1, 1, 1, 1), 15, SoundEvents.ARMOR_EQUIP_LEATHER, () -> Ingredient.of(Items.WHEAT),
+            List.of(new ArmorMaterial.Layer(ReikosWeather.id("straw"))), 0.0F, 0.0F));
+
     private static EnumMap<ArmorItem.Type, Integer> defense(int boots, int legs, int chest, int helmet) {
         return Util.make(new EnumMap<>(ArmorItem.Type.class), map -> {
             map.put(ArmorItem.Type.BOOTS, boots);

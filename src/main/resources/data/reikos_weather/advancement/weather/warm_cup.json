@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/frostbite",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:hot_cocoa"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.warm_cup"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.warm_cup.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -102,6 +102,8 @@ public final class ClientEvents {
                 (type, level, x, y, z, xd, yd, zd) -> new RippleParticle(level, x, y, z, sprites));
         event.registerSpriteSet(ModParticles.EMBER.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new EmberParticle(level, x, y, z, xd, yd, zd, sprites));
+        event.registerSpriteSet(ModParticles.BREATH.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.BreathParticle(level, x, y, z, xd, yd, zd, sprites));
         event.registerSpriteSet(ModParticles.FUNNEL.get(), sprites -> {
             FunnelParticle.sprites = sprites;
             return (type, level, x, y, z, xd, yd, zd) -> null;
@@ -114,6 +116,8 @@ public final class ClientEvents {
         event.registerEntityRenderer(ModEntities.CLOUD_SEEDING_ROCKET.get(), ThrownItemRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WEATHER_VANE.get(), WeatherVaneRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WINDMILL.get(), WindmillRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.FORECAST_BOARD.get(), com.reiko.weather.client.render.ForecastBoardRenderer::new);
+        event.registerEntityRenderer(ModEntities.METEOR.get(), com.reiko.weather.client.render.MeteorRenderer::new);
     }
 
     public static void registerModels(ModelEvent.RegisterAdditional event) {
@@ -130,6 +134,7 @@ public final class ClientEvents {
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ForecastHud.ID, ForecastHud::render);
         event.registerAbove(ForecastHud.ID, TemperatureHud.ID, TemperatureHud::render);
+        event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ScreenRaindrops.ID, ScreenRaindrops::render);
     }
 
     public static void onRenderStage(RenderLevelStageEvent event) {
@@ -137,6 +142,7 @@ public final class ClientEvents {
             Vec3 cam = event.getCamera().getPosition();
             float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
             WetGroundRenderer.render(cam);
+            Footprints.render(cam, partialTick);
             CloudDeckRenderer.render(cam, partialTick);
         }
     }
@@ -154,6 +160,12 @@ public final class ClientEvents {
         OtherworldClient.tick(mc);
         AmbientSounds.tick(mc);
         TemperatureHud.tick(mc);
+        ShootingStars.tick(mc);
+        Atmosphere.tick(mc);
+        Footprints.tick(mc);
+        ScreenRaindrops.tick(mc);
+        HeatShimmer.tick(mc);
+        com.reiko.weather.client.sound.WildlifeSounds.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
     }
@@ -181,10 +193,22 @@ public final class ClientEvents {
         }
     }
 
+    public static void onLoggingIn(ClientPlayerNetworkEvent.LoggingIn event) {
+        com.reiko.weather.weather.Monsoon.collect(event.getPlayer().level().registryAccess());
+    }
+
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         SyncedWeather.reset();
         ClientWeather.reset();
         AmbientSounds.reset();
+        ShootingStars.reset();
+        Atmosphere.reset();
+        Footprints.reset();
+        ScreenRaindrops.reset();
+        HeatShimmer.reset();
+        com.reiko.weather.client.sound.WildlifeSounds.reset();
+        com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
+        com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();
         OtherworldPayload.clientWeather = 0;
         windSound = null;

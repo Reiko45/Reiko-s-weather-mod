@@ -39,6 +39,8 @@ public class BarometerItem extends Item {
                 serverPlayer.sendSystemMessage(WeatherReport.forecast(state));
                 Component season = WeatherReport.season();
                 if (season != null) serverPlayer.sendSystemMessage(season);
+                Component terrain = WeatherReport.microclimate(serverLevel, state, player.blockPosition());
+                if (terrain != null) serverPlayer.sendSystemMessage(terrain);
                 Component storm = WeatherReport.approachingStorm(state, player.blockPosition());
                 if (storm != null) serverPlayer.sendSystemMessage(storm);
             }

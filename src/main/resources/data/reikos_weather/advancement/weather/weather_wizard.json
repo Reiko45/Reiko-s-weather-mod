@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/rainmaker",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:weather_altar"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.weather_wizard"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.weather_wizard.desc"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

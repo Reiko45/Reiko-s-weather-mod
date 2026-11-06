@@ -2,9 +2,11 @@
 
 A complete weather overhaul for **Minecraft 1.21.1** on **NeoForge**. It replaces vanilla's
 rain/thunder cycle with 17 weather types, seasons, storms that roll across the map, tornadoes,
-waterspouts and dust devils. It also adds temperature, droughts and wildfires, winter hazards,
-weather in the Nether and the End, a weather radar, ways to control the weather, weather gear,
-weather-aware blocks, a full set of sky, ground and sound effects, and datapack-defined weather.
+waterspouts and dust devils. It also adds body temperature and ways to stay comfortable, local
+climates shaped by the terrain, droughts and wildfires, winter hazards, storm surges, meteor showers,
+weather in the Nether and the End, a weather radar, ways to control the weather, a meteorologist
+villager, weather gear, weather-aware and redstone blocks, a full set of sky, ground and sound
+effects, and datapack-defined weather.
 
 ## Weather types
 
@@ -64,11 +66,28 @@ way rain normally does: riptide, cauldrons filling, fires going out, snow piling
   banks. Every flood source is tracked, and the water recedes after the storm.
 - **Puddles**, **wet-looking ground** and **raindrop ripples** on water.
 
+## Local climates
+The terrain shapes the weather around you:
+- **Valleys** are calmer and collect fog and mist.
+- **Peaks and high ground** are windier.
+- Land in the **rain shadow** downwind of a mountain range gets less rain.
+- In cold biomes, **lake-effect snow** falls downwind of big lakes, even on otherwise calm days.
+
+`/rweather query`, the barometer and the F3 screen all show the local climate where you stand.
+
+Jungles and savannas have a **monsoon**: summer is their rainy season, and savannas, which normally
+never see rain, get it in summer too. Dry weather is less likely there while it lasts.
+
 ## Temperature
 Every spot has an air temperature, made up of the biome, the season, the height, the time of day and
 the weather (rain cools, wind chills, sunshine and heatwaves warm). How warm *you* feel also depends
 on your clothes, on being in water, and on heat sources nearby: campfires, fires, lava, lit furnaces,
 magma and even torches. Buildings and caves even things out.
+
+Your **body temperature** follows the air temperature gradually: you cool down over half a minute or
+so out in the cold, and warm back up quickly once you're by a fire. The temperature HUD shows your
+body temperature and whether you're warming up or cooling down. The effects below depend on your body
+temperature, not the air.
 
 - Below 0 °C frost creeps in. In deadly cold (a blizzard, for example) you start to freeze and take
   damage slowly, so there's time to find shelter or a fire. Leather armor and the winter coat keep
@@ -77,6 +96,19 @@ magma and even torches. Buildings and caves even things out.
   water or rain. A winter coat in a heatwave is a bad idea.
 - Hold a **thermometer** to see the air temperature and how warm you feel (Celsius or Fahrenheit,
   set in the client config).
+
+Ways to stay comfortable:
+- **Hot cocoa** gives *Warmth* (+10 °C) for 3 minutes. A **melon cooler** gives *Refreshed* (−10 °C).
+- The **sun hat** shades you from the midday sun (up to −6 °C on hot days).
+- A **tent** is a portable shelter: it's much milder inside, and the weather can't reach you.
+  You can sleep in it to skip the night, but it never sets your spawn point.
+- **Glass greenhouses** are much milder inside than out, warmest by day.
+
+## Farming
+- On freezing nights (or in any hard frost), **frost** damages crops open to the sky and knocks them
+  back a few growth stages. Seedlings can die.
+- A crop with **glass or glass panes** above it is in a greenhouse: it's safe from frost and hail, and
+  keeps growing through winter. It doesn't get the rain bonus, though.
 
 ## Extreme weather
 - **Droughts:** during heatwaves, dry grass in deserts and savannas can catch fire (**wildfires**),
@@ -87,6 +119,23 @@ magma and even torches. Buildings and caves even things out.
 - **Lightning** turns the sand it strikes into glass (fulgurite), and in big storms you might meet
   **ball lightning**: a crackling orb that drifts around, zaps anything that gets too close and
   pops after a while.
+- **Dry lightning:** lightning that strikes where it isn't raining can set dry grass and wood alight,
+  and summer heatwaves bring the odd dry thunderstorm strike. It respects `doFireTick` and
+  `mobGriefing`.
+- **Storm surges:** hurricanes push the sea up onto low beaches and coastal flats. The water drains
+  away once the storm has passed. **Sandbags** hold it back: no surge or flood water appears within 2
+  blocks of one.
+- **Salt** melts ice glaze, snow, icicles, powder snow and ice in a 3×3×3 area when you use it on a
+  block. Smelt a water bottle to get some, and cauldrons that dry out in the sun sometimes leave salt
+  behind.
+
+## Sky events
+- **Shooting stars** streak across clear night skies.
+- On **meteor shower** nights there are dozens of them, and now and then a **meteor** comes down.
+  It glows, roars, leaves a small crater (only if `mobGriefing` is on) and a **meteorite** block,
+  which drops raw iron, gold nuggets and sometimes a diamond. Silk touch keeps the block.
+- On some aurora nights a **geomagnetic storm** brings auroras to temperate skies, makes compasses
+  spin and fills radar screens with static.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -114,6 +163,15 @@ Thunder arrives after the flash, later the further away the strike is. Distant s
 horizon. Indoors, the weather sounds muffled and rain drums on the roof. In strong wind, the wind
 whistles around corners and between buildings.
 
+## Atmosphere
+- Your **breath** shows in the cold.
+- Leaves keep **dripping** for a while after the rain stops.
+- The air **shimmers** over hot ground on sunny days above about 28 °C.
+- You leave **footprints** in snow, which fade over time.
+- **Raindrops** run down the screen when you look up into the rain.
+- The F3 screen has a line with the local weather, the local climate and your body temperature.
+- The forecast and temperature panels hide while a menu is open.
+
 ## Gear & blocks
 | | Recipe | What it does |
 |---|---|---|
@@ -131,15 +189,35 @@ whistles around corners and between buildings.
 | **Windmill** | wool, sticks, redstone, planks | Turns into the wind and gives off redstone as strong as the wind. Works best high up and in the open. |
 | **Cloud Seeding Rocket** | paper, gunpowder, snowball (makes 2) | Fire it straight up to seed a rain cloud. |
 | **Weather Altar** | diamonds, nether star, gold blocks, barometer, crying obsidian | End-game weather control (see above). |
+| **Hot Cocoa** | 2 cocoa beans, sugar, milk bucket, bowl | A warm drink: *Warmth* for 3 minutes. Always drinkable. |
+| **Melon Cooler** | 2 melon slices, ice, sugar, glass bottle | A cold drink: *Refreshed* for 3 minutes. |
+| **Sun Hat** | 5 wheat | Shade from the sun on hot days. |
+| **Tent** | 3 wool over 2 sticks (sticks in the corners) | Shelter from the cold and the weather. Sleep in it to skip the night (doesn't set your spawn). |
+| **Sandbag** | 3 sand + string (makes 2) | Keeps storm surges and flash floods away within 2 blocks. |
+| **Salt** | smelt a water bottle | Use on a block to melt ice and snow around it. |
+| **Lightning Battery** | copper, lightning rod, redstone block | Put it under a lightning rod (up to 4 blocks below the strike) to store up to 4 strikes. A redstone pulse from the side, back or bottom lets one out as a strong 2-second pulse from the front. Comparators read the charge, and it glows brighter as it fills. |
+| **Forecast Board** | 5 planks + barometer | A wall board that shows the current weather, the season and the next three weathers. |
+| **Storm Probe** | barometer, iron, redstone | Leave it in a tornado's path. Probes near a tornado record readings and drop **storm data** when broken (more from close to the funnel). Meteorologists buy storm data. |
 
 ## Weather & mobs
 - Weather changes which monsters spawn: **strays** in blizzards and snow, **husks** in desert
   sandstorms and heatwaves, and **drowned** near water in heavy rain and hurricanes.
 - **Animals look for shelter** under trees and roofs during rough weather.
+- **Villagers go indoors** during storms.
+- **Polar bears** sometimes wander in out of blizzards in cold biomes.
+- Sheep grow a thicker coat in winter and in cold biomes: shearing them gives **extra wool**.
+- **Birdsong** on spring and summer days, **crickets** on summer nights.
+
+### The meteorologist
+A villager who claims a **weather station** becomes a meteorologist. They buy paper, copper and storm
+data, and sell thermometers, barometers, umbrellas, cloud seeding rockets, salt, sandbags, storm
+probes, goggles, winter coats, handheld radars and, at master level, lightning batteries and weather
+radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 14 entries, including Storm Chaser, We're Not in Kansas
-Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout and Four Seasons.
+A "Reiko's Weather" advancement tab with 29 entries, including Storm Chaser, We're Not in Kansas
+Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
+Lightning, Eye of the Storm, Make a Wish, Roughing It and Weather-Wise.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at
@@ -192,6 +270,7 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather storm <type> [here]` | op | Start a storm cell upwind (or right overhead) |
 | `/rweather next` | op | Skip to the next forecast weather |
 | `/rweather tornado [pos] [tornado\|waterspout\|dust_devil]` | op | Spawn a whirlwind |
+| `/rweather meteor [pos]` | op | Bring a meteor down at a position (or near you) |
 
 ## Configuration
 Open the config from the **Mods** screen, or edit the files directly:
@@ -200,11 +279,13 @@ Open the config from the **Mods** screen, or edit the files directly:
   how many), every hazard, flash floods, puddles, ice glaze, tornadoes, waterspouts, dust devils,
   weather mobs, animal sheltering, temperature, wildfires, crop wilting, drying cauldrons, freezing
   rivers, icicles, avalanches, fulgurite, ball lightning, the altar's cooldown, Nether and End
-  weather, and datapack weather.
+  weather, datapack weather, crop frost, local climates, the monsoon, storm surges, dry lightning,
+  meteors, geomagnetic storms, villagers sheltering, winter wool and polar bears.
 - `config/reikos_weather-client.toml`: particle density, fog, sky tinting, storm clouds (and how far
   out they're drawn), wet ground, mist, rainbows, auroras, heat lightning, seasonal colours, falling
-  leaves, sounds (delayed thunder, muffling indoors, roof rain and wind whistle), Fahrenheit, and the
-  forecast panel (`BAROMETER`, `ALWAYS` or `NEVER`).
+  leaves, sounds (delayed thunder, muffling indoors, roof rain and wind whistle), birdsong and
+  crickets, breath, footprints, screen raindrops, heat shimmer, dripping leaves, shooting stars,
+  Fahrenheit, and the forecast panel (`BAROMETER`, `ALWAYS` or `NEVER`).
 
 ## Building
 Requires JDK 21.
@@ -214,6 +295,7 @@ Requires JDK 21.
 ./gradlew runClient      # launch a dev client
 ./gradlew runServer      # launch a dev server
 ./gradlew runClient -PwithCompat   # with JEI, Serene Seasons and Distant Horizons installed
+./gradlew runGameTestServer        # run the automated in-game tests
 ```
 
 ## Project layout
@@ -221,17 +303,23 @@ Requires JDK 21.
 src/main/java/com/reiko/weather/
   weather/    WeatherType, Climate, WeatherProfiles (per-climate table), WeatherManager (cycle and storm cells),
               LocalWeather (what you get at one spot), Seasons, WeatherHazards (gameplay), WeatherAdvancements
-              ExtremeWeather (droughts, wildfires, icicles, avalanches), LightningEvents, CustomWeather(s) (datapacks)
-  temperature/ Temperature (air and felt temperature), TemperatureEffects (cold and heat)
+              ExtremeWeather (droughts, wildfires, icicles, avalanches), LightningEvents, CustomWeather(s) (datapacks),
+              Microclimate (valleys, peaks, rain shadow, lake effect), Monsoon, SkyPhenomena
+  temperature/ Temperature (air and felt temperature), TemperatureEffects (body temperature, cold and heat)
+  farming/    Greenhouses and crop frost
+  sky/        Meteors
   otherworld/ Nether and End weather
-  entity/     TornadoEntity (tornado, waterspout, dust devil), ball lightning, cloud seeding rocket
-  block/      Weather station, tornado siren, rain barrel, puddles, ice glaze, icicles, radar, vane, windmill, altar
-  item/       Barometer, umbrella, thermometer, handheld radar, rocket and gear events
+  entity/     TornadoEntity (tornado, waterspout, dust devil), ball lightning, cloud seeding rocket, meteor
+  block/      Weather station, tornado siren, rain barrel, puddles, ice glaze, icicles, radar, vane, windmill, altar,
+              tent, lightning battery, forecast board, storm probe
+  item/       Barometer, umbrella, thermometer, handheld radar, rocket, drinks, salt and gear events
   compat/     JEI plugin, Distant Horizons
-  mob/        Weather-themed spawns, animals seeking shelter
+  mob/        Weather-themed spawns, animals seeking shelter, WeatherCreatures (villagers, polar bears, wool, meteorologist trades)
   client/     Smoothed visuals, particles, fog/sky/rainbow/aurora, storm cloud deck, wet ground, forecast and
-              temperature HUD, radar screen, seasonal colours, Nether/End visuals, block renderers, ambient sound
-  mixin/      Sky tinting, seasonal biome temperature and colours, storm cells in vanilla rain checks
+              temperature HUD, radar screen, seasonal colours, Nether/End visuals, block renderers, ambient and
+              wildlife sound, shooting stars, breath, footprints, screen raindrops, heat shimmer
+  mixin/      Sky tinting, seasonal biome temperature and colours, storm cells in vanilla rain checks, monsoon rain
+  gametest/   Automated in-game tests
   network/    Server → client weather sync
 ```
 

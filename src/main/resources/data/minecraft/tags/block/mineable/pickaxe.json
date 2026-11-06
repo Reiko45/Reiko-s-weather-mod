@@ -5,6 +5,9 @@
     "reikos_weather:tornado_siren",
     "reikos_weather:weather_altar",
     "reikos_weather:weather_radar",
-    "reikos_weather:weather_vane"
+    "reikos_weather:weather_vane",
+    "reikos_weather:lightning_battery",
+    "reikos_weather:storm_probe",
+    "reikos_weather:meteorite"
   ]
 }

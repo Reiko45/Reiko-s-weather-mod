@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/weather_station",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:lightning_battery"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.bottled_lightning"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.bottled_lightning.desc"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

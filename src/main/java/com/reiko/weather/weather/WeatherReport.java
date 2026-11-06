@@ -13,7 +13,8 @@ import java.util.Locale;
 public final class WeatherReport {
     public static Component current(ServerLevel level, WeatherState state, BlockPos pos) {
         Climate climate = Climate.at(level, pos);
-        LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5);
+        LocalWeather local = Microclimate.apply(level, climate, pos.getX(), pos.getZ(), state.windAngle,
+                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5));
         Component climateName = Component.translatable("climate.reikos_weather." + climate.name().toLowerCase(Locale.ROOT));
         if (local.cell() != null && local.cellWeight() >= 0.5F) {
             return Component.translatable("report.reikos_weather.current_cell",
@@ -31,7 +32,8 @@ public final class WeatherReport {
     }
 
     public static Component wind(ServerLevel level, WeatherState state, BlockPos pos) {
-        LocalWeather local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
+        LocalWeather local = WeatherManager.local(level, pos);
+        if (local == null) local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
         float strength = local.profile().wind * local.intensity();
         return Component.translatable("report.reikos_weather.wind",
                 Component.literal(String.valueOf(Wind.kmh(strength))).withStyle(ChatFormatting.WHITE),
@@ -75,6 +77,26 @@ public final class WeatherReport {
         return Component.translatable(cell.approaching(pos.getX(), pos.getZ()) ? "report.reikos_weather.storm_approaching" : "report.reikos_weather.storm_passing",
                 cell.type.displayName().withStyle(ChatFormatting.GOLD), distance,
                 Component.translatable("direction.reikos_weather." + direction));
+    }
+
+    /** "Local climate: a sheltered valley", or null when the terrain isn't doing much here. */
+    @Nullable
+    public static Component microclimate(ServerLevel level, WeatherState state, BlockPos pos) {
+        Microclimate.Info info = Microclimate.at(level, pos.getX(), pos.getZ(), state.windAngle);
+        java.util.List<Component> parts = new java.util.ArrayList<>();
+        if (info.valley() > 0.3F) parts.add(Component.translatable("report.reikos_weather.microclimate.valley"));
+        if (info.peak() > 0.3F) parts.add(Component.translatable("report.reikos_weather.microclimate.peak"));
+        if (info.rainShadow() > 0.3F) parts.add(Component.translatable("report.reikos_weather.microclimate.rain_shadow"));
+        if (info.lakeEffect() > 0.3F && Climate.at(level, pos) == Climate.COLD) parts.add(Component.translatable("report.reikos_weather.microclimate.lake_effect"));
+        if (parts.isEmpty()) {
+            return null;
+        }
+        MutableComponent list = Component.empty();
+        for (int i = 0; i < parts.size(); i++) {
+            if (i > 0) list.append(", ");
+            list.append(parts.get(i));
+        }
+        return Component.translatable("report.reikos_weather.microclimate", list.withStyle(ChatFormatting.AQUA));
     }
 
     /** 8-point compass name for a horizontal offset (north is -Z). */
