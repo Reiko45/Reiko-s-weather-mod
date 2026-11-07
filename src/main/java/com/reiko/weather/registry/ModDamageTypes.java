@@ -12,6 +12,7 @@ public final class ModDamageTypes {
     public static final ResourceKey<DamageType> ICICLE = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("icicle"));
     public static final ResourceKey<DamageType> HEATSTROKE = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("heatstroke"));
     public static final ResourceKey<DamageType> BALL_LIGHTNING = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("ball_lightning"));
+    public static final ResourceKey<DamageType> ACID_RAIN = ResourceKey.create(Registries.DAMAGE_TYPE, ReikosWeather.id("acid_rain"));
 
     private ModDamageTypes() {}
 }

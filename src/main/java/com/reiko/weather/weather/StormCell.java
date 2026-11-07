@@ -20,6 +20,10 @@ public final class StormCell {
     public double vz;
     public int age;
     public int maxAge;
+    /** Ticks the cell takes to build up to full strength (afternoon storms tower up slowly). */
+    public int grow = FADE_TICKS;
+    /** Whether it turns with the wind (a sea fog bank keeps rolling in toward the land). */
+    public boolean steer = true;
 
     public StormCell(int id, WeatherType type, double x, double z, float radius, double vx, double vz, int maxAge) {
         this.id = id;
@@ -36,6 +40,8 @@ public final class StormCell {
     public StormCell copy() {
         StormCell c = new StormCell(id, type, x, z, radius, vx, vz, maxAge);
         c.age = age;
+        c.grow = grow;
+        c.steer = steer;
         return c;
     }
 
@@ -51,14 +57,19 @@ public final class StormCell {
 
     /** 0 to 1: the storm builds up after forming and dies down before it ends. */
     public float strength() {
-        float grow = Mth.clamp(age / (float) FADE_TICKS, 0.0F, 1.0F);
+        float up = Mth.clamp(age / (float) Math.max(1, grow), 0.0F, 1.0F);
         float fade = Mth.clamp((maxAge - age) / (float) FADE_TICKS, 0.0F, 1.0F);
-        return Math.min(grow, fade);
+        return Math.min(up, fade);
     }
 
     /** How many times longer than deep the cell is: a derecho is a long line of storms side by side. */
     public float elongation() {
-        return type == WeatherType.DERECHO ? 3.5F : 1.0F;
+        return switch (type) {
+            case DERECHO -> 3.5F;
+            case COLD_FRONT -> 9.0F;
+            case WARM_FRONT -> 3.0F;
+            default -> 1.0F;
+        };
     }
 
     /**
@@ -103,6 +114,8 @@ public final class StormCell {
         tag.putDouble("vz", vz);
         tag.putInt("age", age);
         tag.putInt("maxAge", maxAge);
+        tag.putInt("grow", grow);
+        tag.putBoolean("steer", steer);
         return tag;
     }
 
@@ -111,6 +124,8 @@ public final class StormCell {
         StormCell cell = new StormCell(tag.getInt("id"), type == null ? WeatherType.RAIN : type, tag.getDouble("x"), tag.getDouble("z"),
                 tag.getFloat("radius"), tag.getDouble("vx"), tag.getDouble("vz"), tag.getInt("maxAge"));
         cell.age = tag.getInt("age");
+        cell.grow = tag.contains("grow") ? tag.getInt("grow") : FADE_TICKS;
+        cell.steer = !tag.contains("steer") || tag.getBoolean("steer");
         return cell;
     }
 
@@ -124,6 +139,8 @@ public final class StormCell {
         buf.writeFloat((float) vz);
         buf.writeVarInt(age);
         buf.writeVarInt(maxAge);
+        buf.writeVarInt(grow);
+        buf.writeBoolean(steer);
     }
 
     public static StormCell read(FriendlyByteBuf buf) {
@@ -135,6 +152,8 @@ public final class StormCell {
         int age = buf.readVarInt(), maxAge = buf.readVarInt();
         StormCell cell = new StormCell(id, type, x, z, radius, vx, vz, maxAge);
         cell.age = age;
+        cell.grow = buf.readVarInt();
+        cell.steer = buf.readBoolean();
         return cell;
     }
 }

@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:salt"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.salt_of_the_earth"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.salt_of_the_earth.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

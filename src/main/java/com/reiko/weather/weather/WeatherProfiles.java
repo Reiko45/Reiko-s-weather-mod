@@ -121,6 +121,34 @@ public final class WeatherProfiles {
                 .precip(Precip.ASH, 1.0F).precip(Precip.DUST, 0.6F).ashLayers(3).build();
         put(WeatherType.VOLCANIC_ASH, ash, ash, ash);
 
+        // a cold front: a fast squall line of wind, downpours and thunder (a snow squall in the cold, a dust front in deserts)
+        put(WeatherType.COLD_FRONT,
+                builder().rain(1.0F).thunder(0.6F).overcast(0.9F).fog(0.6F, SNOW_WHITE).wind(0.9F)
+                        .precip(Precip.BLIZZARD, 1.0F).freeze(0.4F).snowLayers(1).lightning(1.0F).build(),
+                builder().rain(1.0F).thunder(1.0F).overcast(0.9F).tint(0x5C6878, 0.25F).fog(0.45F).wind(0.9F)
+                        .precip(Precip.DOWNPOUR, 0.9F).precip(Precip.LEAVES, 0.6F).lightning(3.0F).build(),
+                builder().rain(0.5F).thunder(1.0F).overcast(0.7F).tint(SAND, 0.3F).fog(0.55F, SAND_FOG).wind(0.95F)
+                        .precip(Precip.DUST, 1.2F).precip(Precip.SAND, 0.4F).lightning(2.0F).build());
+
+        // a warm front: a wide, slow band of low cloud and drizzle (light snow in the cold)
+        put(WeatherType.WARM_FRONT,
+                builder().rain(0.6F).overcast(0.85F).fog(0.35F).wind(0.2F).precip(Precip.SNOW, 0.4F).build(),
+                builder().rain(0.4F).overcast(0.85F).fog(0.35F).wind(0.2F).cropBoost().build(),
+                builder().overcast(0.75F).fog(0.15F, SAND_FOG).wind(0.25F).build());
+
+        // a bank of sea fog: thick and white, and very still
+        WeatherProfile seaFog = builder().overcast(0.45F).fog(0.85F, 0xCDD3D8).wind(0.04F).clouds(0.0F).build();
+        put(WeatherType.SEA_FOG, seaFog, seaFog, seaFog);
+
+        // wildfire smoke: an orange-brown haze that turns the sun red
+        WeatherProfile smoke = builder().overcast(0.45F).tint(0xC0703A, 0.5F).fog(0.5F, 0x9C7B62).wind(0.2F)
+                .precip(Precip.DUST, 0.35F).build();
+        put(WeatherType.WILDFIRE_SMOKE, smoke, smoke, smoke);
+
+        // volcanic smog ("vog"): a sulfurous yellow-grey haze with a stinging acid drizzle
+        WeatherProfile vog = builder().rain(0.3F).overcast(0.7F).tint(0xB0A672, 0.35F).fog(0.42F, 0xB4AC86).wind(0.15F).acid().build();
+        put(WeatherType.VOLCANIC_SMOG, vog, vog, vog);
+
         for (WeatherType type : WeatherType.values()) {
             if (!TABLE.containsKey(type)) {
                 throw new IllegalStateException("Missing weather profile for " + type);

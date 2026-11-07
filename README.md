@@ -1,10 +1,11 @@
 # Reiko's Weather
 
 A complete weather overhaul for **Minecraft 1.21.1** on **NeoForge**. It replaces vanilla's
-rain/thunder cycle with 19 weather types, seasons, storms that roll across the map, tornadoes,
+rain/thunder cycle with 24 weather types, seasons, storms and weather fronts that roll across the map, tornadoes,
 waterspouts and dust devils. It also adds body temperature and ways to stay comfortable, local
 climates shaped by the terrain, droughts and wildfires, winter hazards, storm surges and tides,
-meteor showers and blood moons, volcanoes that wake up and erupt, seasonal wildlife, weather fishing and seasonal crops, a paraglider,
+meteor showers and blood moons, volcanoes that wake up and erupt, landforms shaped by the weather (hot
+springs and geysers, salt flats, glaciers, dunes and more), seasonal wildlife, weather fishing and seasonal crops, a paraglider,
 weather in the Nether and the End, a weather radar and radio, ways to control the weather, a
 meteorologist villager, weather gear, weather-aware and redstone blocks, a full set of sky, ground
 and sound effects, an in-game guidebook, and datapack-defined weather.
@@ -33,6 +34,11 @@ New players get a **Weather Almanac**, the in-game guide to everything below (wi
 | **Sandstorm** | A wall of sand and an orange sky in deserts and badlands. Storm goggles let you see through it. |
 | **Heatwave** | A hazy amber sky. Standing in the sun costs extra hunger (double in a winter coat), crops grow slower, and there's silent heat lightning at night. |
 | **Volcanic Ash Cloud** | Only from an erupting volcano (never in the forecast): the ash cloud drifts downwind, turning the sky dark grey. Ash sifts down and piles up to 3 layers, crops struggle without the sun, and breathing it leaves you weak unless you wear a helmet. |
+| **Cold Front** | A long, fast squall line of wind, downpours and thunder racing across the map (a snow squall in the cold). Behind it the air is about 7 °C colder and the wind swings round. Arrives as a storm cell, most often in spring and autumn. |
+| **Warm Front** | A wide, slow band of low cloud and drizzle, with milder air (about 4 °C) behind it. Arrives as a storm cell. |
+| **Sea Fog Bank** | On cool, calm mornings fog builds up out at sea and rolls in over the coast, then burns off by mid-morning. |
+| **Smoke Plume** | Big wildfires send smoke drifting downwind: an orange-brown haze that turns the sun into a dull red ball. |
+| **Smog Cloud** | Volcanic smog left behind by an eruption: a yellowish haze with a stinging acid drizzle that weathers copper, withers leaves, slows crops and stings bare heads. |
 | **Derecho** | A long line of violent thunderstorms that races across the map several times faster than any other storm, in summer. The wind is ferocious and breaks branches off trees. On the radar it's a long orange band. |
 
 Each weather looks and plays differently in **cold**, **temperate** and **arid** climates, and the
@@ -66,7 +72,18 @@ the wind. Players far apart can have different weather. You can watch a storm ap
 low, dark cloud deck with shafts of rain hanging beneath it. Inside a cell, everything works the
 way rain normally does: riptide, cauldrons filling, fires going out, snow piling up and lightning.
 
+Thunderstorms tower up into tall, anvil-topped clouds you can watch from far away. On **summer
+afternoons** (any day in the tropics) the sun heats the ground, the clouds build through the day and
+some break into thunderstorms (even hailstorms), dying away by dusk.
+
 ## Phenomena
+- **St. Elmo's fire:** a few seconds before the storm's lightning strikes, blue sparks crackle around
+  the spot and on anyone near it ("your hair stands on end"): time to move. Lightning rods and metal
+  tools held up in a thunderstorm spark too.
+- **Hail breaks glass:** big hail cracks or smashes glass open to the sky (tinted glass holds), so
+  greenhouses take a beating. Needs `mobGriefing`.
+- **Mudslides:** after a couple of minutes of pouring rain, soil on steep slopes can slide downhill as
+  mud (needs `mobGriefing`).
 - **Tornadoes** (supercells): a 70-block funnel that wanders with the wind. It pulls in mobs,
   items and players, lifts them 20+ blocks and flings them out, and rips up leaves, plants, crops
   and snow (tag `reikos_weather:tornado_liftable`; respects `mobGriefing`).
@@ -185,6 +202,8 @@ Ways to stay comfortable:
 - **Halos** ring the sun or moon on icy days and under thin, high cloud, and when the sun is low,
   bright **sun dogs** sit level with it on either side. When the sun shines through broken cloud or
   morning mist, **sunbeams** fan out below the clouds.
+- **Diamond dust:** on bitterly cold, clear, still mornings the air glitters with ice crystals, and
+  a **sun pillar** stands straight up from the low sun.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -211,6 +230,30 @@ one starts rumbling or erupting, and the radar shows volcanoes as triangles.
 **Finds:** volcanic ash is a fertilizer (use it on a crop like bone meal, or place it in layers like
 snow); sulfur crust drops **sulfur**, which makes gunpowder with charcoal and bone meal; and steam
 vents are warm to stand near but scald you unless you sneak (Silk Touch picks one up).
+
+Active volcanoes have **lava tubes** running down under their flanks (look for skylights where the
+roof has fallen in), and volcanic islands have **black sand** beaches. As an eruption dies down it
+leaves **volcanic smog** drifting downwind (see Smog Cloud above).
+
+## Landforms
+New parts of the world also get landforms shaped by the weather. None of them form on top of a
+village or a volcano.
+- **Hot springs:** white sinter with steaming pools ringed in orange and yellow, bubbling mud and
+  hissing vents. Soak in a pool to warm up and slowly heal. **Geysers** on little mounds erupt every
+  few minutes, throwing anything above them high into the air (a huge lift for a paraglider); a
+  comparator reads a geyser's eruptions.
+- **Crater lakes:** long-extinct volcanoes, grassy and wooded, with a deep lake in the crater.
+- **Meteor craters:** old, grassed-over impact craters with a raised rim (sometimes a pond in the
+  bottom) and the meteorite buried under the middle.
+- **Salt flats:** dead-flat dry lake beds in deserts, crusted white with **salt crust** (mine it for
+  salt). When a storm passes over they flood into a shallow lake that mirrors the sky, then dry back
+  out. On hot days a **mirage** shimmers across them (and any flat desert) like water.
+- **Glaciers:** tongues of packed and blue ice flowing down cold mountains, with **crevasses** cut
+  across them, many hidden under a bridge of powder snow. In summer the lower end melts back a little.
+- **Tidal flats:** wide mud flats at the sea's edge, level with the water: every high tide washes over
+  them. Tide pools hold seagrass, sea pickles and **suspicious sand** to brush for treasure.
+- **Dune fields:** rows of tall dunes across the prevailing wind, each with a long, gentle slope and a
+  steep face. In sandstorms the sand blows off the crests and the dunes creep downwind.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -308,6 +351,9 @@ Under **Accessibility** in the client settings:
 | **Seismograph** | copper, paper, redstone, amethyst shard, smooth stone slabs | Redstone signal from volcanic tremors: weak while a volcano within 1,024 blocks rumbles (rising as the eruption nears, and the closer you are), up to 15 during an eruption. An early warning. |
 | **Volcanic Ash** | falls from ash clouds | Fertilizes crops like bone meal, or place it in layers. 2 ash make a bone meal. |
 | **Sulfur** | mine sulfur crust | Sulfur + charcoal + bone meal make 2 gunpowder. |
+| **Geyser** | Silk Touch one from hot springs | Erupts every few minutes; comparators read 15 while it erupts. |
+| **Salt Crust** | mine it on salt flats | Drops salt. |
+| **Black Sand** | volcanic island beaches | Decorative sand; smelts into glass. |
 
 ## Weather & mobs
 - Weather changes which monsters spawn: **strays** in blizzards and snow, **husks** in desert
@@ -327,11 +373,12 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 42 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 50 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
-crater's rim) and Ring of Fire (witness an eruption).
+crater's rim), Ring of Fire (witness an eruption), Hair-Raising, Old Faithful, Hot Tub and Mind the
+Gap.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at
@@ -361,8 +408,9 @@ change:
 - `seasons` and `climates`: where it can happen (leave them out for anywhere).
 - `profile`: any of `rain`, `thunder`, `overcast`, `fog`, `fog_color`, `tint`, `tint_strength`,
   `wind`, `clouds`, `freeze`, `lightning`, `snow_layers`, `hail`, `heat`, `crop_boost`, `puddles`,
-  `glaze_water`, `glaze_ground`, `floods`, `heat_lightning`, `tornadoes`, `waterspouts`, `debris` and
-  `precipitation` (rates for `hail`, `sleet`, `downpour`, `snow`, `blizzard`, `sand`, `dust`, `leaves`).
+  `glaze_water`, `glaze_ground`, `floods`, `heat_lightning`, `tornadoes`, `waterspouts`, `debris`,
+  `ash_layers` (0-8), `acid` and `precipitation` (rates for `hail`, `sleet`, `downpour`, `snow`,
+  `blizzard`, `sand`, `dust`, `leaves`, `ash`).
 - `climate_profiles`: extra overrides for `cold`, `temperate` or `arid`.
 
 The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, and **Ashfall**
@@ -391,7 +439,7 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather storms` | everyone | List storm cells (`/rweather storms clear` to remove them, op) |
 | `/rweather season` | everyone | The current season (`/rweather season <season>` to change it, op) |
 | `/rweather set <type> [seconds]` | op | Change the world-wide weather. Also takes datapack weathers (`namespace:name`), and in the Nether or End sets that dimension's weather (`ash_storm`, `ember_fall`, `fire_rain`, `void_storm`, `calm`) |
-| `/rweather storm <type> [here]` | op | Start a storm cell upwind (or right overhead) |
+| `/rweather storm <type> [here]` | op | Start a storm cell upwind (or right overhead). Also takes `sea_fog`, `wildfire_smoke`, `volcanic_smog` and `volcanic_ash` |
 | `/rweather next` | op | Skip to the next forecast weather |
 | `/rweather tornado [pos] [tornado\|waterspout\|dust_devil]` | op | Spawn a whirlwind |
 | `/rweather meteor [pos]` | op | Bring a meteor down at a position (or near you) |
@@ -412,13 +460,16 @@ effects (Performance, Default, Cinematic) and a button for every setting. Or edi
   meteors, geomagnetic storms, villagers sheltering, winter wool, polar bears, blood moons (and
   whether you can sleep through them), snowmelt floods, thin ice, rough seas, tides, storm debris,
   leaf piles, wild rice and kale, food spoilage, weather fishing, earthworms, lightning-charged tools,
-  volcanoes (generation, eruptions and how often, lava flows, lava bombs, ash fall), the almanac on
-  first join, and Tough As Nails.
+  volcanoes (generation, eruptions and how often, lava flows, lava bombs, ash fall, lava tubes, smog
+  and acid rain), afternoon storms, sea fog, wildfire smoke, lightning warnings, hail breaking glass,
+  mudslides, each landform's generation and whether landforms change with the weather, the almanac
+  on first join, and Tough As Nails.
 - `config/reikos_weather-client.toml`: particle density, fog, sky tinting, storm clouds (and how far
   out they're drawn), wet ground, mist, rainbows, auroras, heat lightning, seasonal colours, falling
   leaves, sounds (delayed thunder, muffling indoors, roof rain and wind whistle), birdsong and
   crickets, breath, footprints, screen raindrops, heat shimmer, dripping leaves, shooting stars,
-  halos and sunbeams, hoarfrost, fireflies, blossoms, bird flocks, whitecaps, accessibility
+  halos and sunbeams, hoarfrost, fireflies, blossoms, bird flocks, whitecaps, towering storm clouds,
+  sea fog banks, smoke columns, diamond dust, St. Elmo's fire sparks, mirages, accessibility
   (reduce flashing, screen effect strength, the radio's alert tone), Fahrenheit, and the forecast
   panel (`BAROMETER`, `ALWAYS` or `NEVER`).
 
@@ -444,19 +495,22 @@ src/main/java/com/reiko/weather/
               LocalWeather (what you get at one spot), Seasons, WeatherHazards (gameplay), WeatherAdvancements
               ExtremeWeather (droughts, wildfires, icicles, avalanches), LightningEvents, CustomWeather(s) (datapacks),
               Microclimate (valleys, peaks, rain shadow, lake effect), Monsoon, SkyPhenomena, Tides, ThinIce,
-              StormDebris
+              StormDebris, Fronts, Convection (afternoon storms), SeaFog, FireTracker (wildfire smoke),
+              LightningWarnings (St. Elmo's fire), HailGlass, AcidRain
   temperature/ Temperature (air and felt temperature), TemperatureEffects (body temperature, cold and heat)
   farming/    Greenhouses, crop frost and food spoilage
   nature/     Autumn leaf piles; wild crops, earthworms, weather fishing and leaf-pile landings (NatureEvents)
   sky/        Meteors, blood moons
   volcano/    VolcanoShape (the cone's geometry), VolcanoBuilder, VolcanoStructure and VolcanoPiece (world
               generation), VolcanoManager (discovery, the eruption cycle, lava flows, ash clouds, seismic signal)
+  landform/   LandformStructure and LandformPiece (one structure type for every landform), hot springs, crater
+              lakes, meteor craters, salt flats, glaciers, tidal flats, dunes; LandformManager (weather changing them)
   otherworld/ Nether and End weather
   entity/     TornadoEntity (tornado, waterspout, dust devil), ball lightning, cloud seeding rocket, meteor,
               lava bomb
   block/      Weather station, tornado siren, rain barrel, puddles, ice glaze, icicles, radar, vane, windmill, altar,
               tent, lightning battery, forecast board, storm probe, leaf pile, fallen branch, rice, kale, icebox,
-              volcanic ash, steam vent, sulfur crust, seismograph
+              volcanic ash, steam vent, sulfur crust, seismograph, geyser, salt crust
   item/       Barometer, umbrella, thermometer, handheld radar, rocket, drinks, salt, paraglider, weather radio,
               rake, ice saw, almanac, charged tools and gear events
   compat/     JEI, Jade and WTHIT plugins, Tough As Nails, Curios, shader detection, Distant Horizons
@@ -465,6 +519,7 @@ src/main/java/com/reiko/weather/
               ground, forecast and temperature HUD, radar screen, seasonal colours and hoarfrost, Nether/End visuals,
               block renderers, ambient and wildlife sound, shooting stars, breath, footprints, screen raindrops, heat
               shimmer, rough seas, fireflies, blossoms, worms, bird flocks, paraglider, volcano plumes and tremors,
+              towering clouds and fog banks (PuffRenderer), diamond dust, mirages, St. Elmo's fire,
               the almanac screen (guide/),
               config presets and accessibility
   mixin/      Sky tinting, seasonal biome temperature and colours, storm cells in vanilla rain checks, monsoon rain,

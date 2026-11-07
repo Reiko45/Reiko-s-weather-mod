@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "reikos_weather:block/geyser"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/under_the_weather",
+  "display": {
+    "icon": {
+      "id": "minecraft:lightning_rod"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.hair_raising"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.hair_raising.desc"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

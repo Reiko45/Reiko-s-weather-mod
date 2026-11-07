@@ -47,7 +47,8 @@ public final class SkyEffectsRenderer {
         float aurora = ClientWeather.aurora();
         float halo = ClientWeather.halo();
         float blood = ClientWeather.bloodMoon();
-        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && !ShootingStars.any()) {
+        float smoke = ClientWeather.smoke(), dust = ClientWeather.diamondDust();
+        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()) {
             return;
         }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
@@ -99,6 +100,12 @@ public final class SkyEffectsRenderer {
         }
         if (blood > 0.005F) {
             drawBloodMoon(pose, new Vector3f(sun).negate(), blood);
+        }
+        if (dust > 0.005F && sun.y > -0.05F && sun.y < 0.4F) {
+            drawSunPillar(pose, sun, dust * Mth.clamp((0.4F - sun.y) * 5.0F, 0.0F, 1.0F) * Mth.clamp((sun.y + 0.05F) * 10.0F, 0.0F, 1.0F));
+        }
+        if (smoke > 0.005F && sun.y > -0.1F) {
+            drawRedSun(pose, sun, smoke);
         }
 
         RenderSystem.enableCull();
@@ -321,6 +328,56 @@ public final class SkyEffectsRenderer {
             vertex(buffer, pose, c, red, 0.35F * strength);
             vertex(buffer, pose, ringPoint(moon, basis[0], basis[1], phi0, 26.0F * Mth.DEG_TO_RAD), red, 0.0F);
             vertex(buffer, pose, ringPoint(moon, basis[0], basis[1], phi1, 26.0F * Mth.DEG_TO_RAD), red, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    /** Through wildfire smoke the sun is a dull red ball. */
+    private static void drawRedSun(Matrix4f pose, Vector3f sun, float strength) {
+        Vector3f[] basis = basis(sun);
+        RenderSystem.defaultBlendFunc();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        float[] red = {0.92F, 0.28F, 0.12F};
+        int segments = 32;
+        Vector3f c = new Vector3f(sun).normalize().mul(DOME);
+        float disc = 5.5F * Mth.DEG_TO_RAD, edge = 8.5F * Mth.DEG_TO_RAD;
+        float a = 0.88F * strength;
+        for (int i = 0; i < segments; i++) {
+            float phi0 = i / (float) segments * Mth.TWO_PI, phi1 = (i + 1) / (float) segments * Mth.TWO_PI;
+            Vector3f d0 = ringPoint(sun, basis[0], basis[1], phi0, disc), d1 = ringPoint(sun, basis[0], basis[1], phi1, disc);
+            Vector3f e0 = ringPoint(sun, basis[0], basis[1], phi0, edge), e1 = ringPoint(sun, basis[0], basis[1], phi1, edge);
+            vertex(buffer, pose, c, red, a);
+            vertex(buffer, pose, d0, red, a);
+            vertex(buffer, pose, d1, red, a);
+            vertex(buffer, pose, d0, red, a);
+            vertex(buffer, pose, e0, red, 0.0F);
+            vertex(buffer, pose, e1, red, 0.0F);
+            vertex(buffer, pose, d0, red, a);
+            vertex(buffer, pose, e1, red, 0.0F);
+            vertex(buffer, pose, d1, red, a);
+        }
+        draw(buffer);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+    }
+
+    /** A sun pillar: a column of light standing straight up from the low sun, lit by the ice crystals in the air. */
+    private static void drawSunPillar(Matrix4f pose, Vector3f sun, float strength) {
+        Vector3f s = new Vector3f(sun).normalize();
+        Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F).sub(new Vector3f(s).mul(s.y)).normalize();
+        Vector3f side = new Vector3f(s).cross(up).normalize();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] warm = {1.0F, 0.9F, 0.75F};
+        float half = 0.9F * Mth.DEG_TO_RAD, top = 16.0F * Mth.DEG_TO_RAD, bottom = -5.0F * Mth.DEG_TO_RAD;
+        float a = 0.55F * strength;
+        for (float[] span : new float[][]{{0.0F, top}, {0.0F, bottom}}) {
+            Vector3f p0l = new Vector3f(s).add(new Vector3f(up).mul(span[0])).add(new Vector3f(side).mul(-half)).normalize().mul(DOME);
+            Vector3f p0r = new Vector3f(s).add(new Vector3f(up).mul(span[0])).add(new Vector3f(side).mul(half)).normalize().mul(DOME);
+            Vector3f p1l = new Vector3f(s).add(new Vector3f(up).mul(span[1])).add(new Vector3f(side).mul(-half)).normalize().mul(DOME);
+            Vector3f p1r = new Vector3f(s).add(new Vector3f(up).mul(span[1])).add(new Vector3f(side).mul(half)).normalize().mul(DOME);
+            vertex(buffer, pose, p0l, warm, a);
+            vertex(buffer, pose, p0r, warm, a);
+            vertex(buffer, pose, p1r, warm, 0.0F);
+            vertex(buffer, pose, p1l, warm, 0.0F);
         }
         draw(buffer);
     }

@@ -84,6 +84,8 @@ public final class ClientEvents {
                     p.setColor((color >> 16 & 255) / 255.0F * shade, (color >> 8 & 255) / 255.0F * shade, (color & 255) / 255.0F * shade);
                     return p;
                 });
+        event.registerSpriteSet(ModParticles.DIAMOND_DUST.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.GlitterParticle(level, x, y, z, xd, yd, zd, sprites));
         event.registerSpriteSet(ModParticles.ASH.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> {
                     WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.ASH);
@@ -174,7 +176,10 @@ public final class ClientEvents {
             WetGroundRenderer.render(cam);
             Footprints.render(cam, partialTick);
             CloudDeckRenderer.render(cam, partialTick);
-            VolcanoClient.renderPlume(event);
+            Mirage.render(event);
+            VolcanoClient.collectPlumes(event.getCamera(), partialTick);
+            CloudPuffs.collect(event.getCamera(), partialTick);
+            PuffRenderer.render(event.getCamera());
             SkyEffectsRenderer.renderSunbeams(event);
             NatureEffects.renderFlocks(event.getCamera(), partialTick);
         }
@@ -203,6 +208,9 @@ public final class ClientEvents {
         NatureEffects.tick(mc);
         ParagliderClient.tick(mc);
         VolcanoClient.tick(mc);
+        StaticElectricity.tick(mc);
+        DiamondDust.tick(mc);
+        Mirage.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
@@ -248,6 +256,7 @@ public final class ClientEvents {
         RoughSeas.reset();
         NatureEffects.reset();
         VolcanoClient.reset();
+        Mirage.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();

@@ -50,7 +50,7 @@ public final class ClientWeather {
     private static int localRainbowTicks;
     /** Air temperature at the camera, refreshed twice a second. */
     private static float airTemperature = 15.0F;
-    private static float halo, sunbeams, bloodMoon, freezingFog;
+    private static float halo, sunbeams, bloodMoon, freezingFog, smoke, diamondDust;
 
     public static void tick(Minecraft mc) {
         ClientLevel level = mc.level;
@@ -185,7 +185,18 @@ public final class ClientWeather {
         float beamTarget = on && rain < 0.5F ? Math.max(Math.max(broken, clearing), mist * 1.2F) * sunUp * (1.0F - rain) : 0.0F;
         // thick fog hides the sun altogether
         beamTarget *= 1.0F - Mth.clamp((fog - 0.3F) * 2.5F, 0.0F, 1.0F);
+        beamTarget *= 1.0F - smoke; // smoke hides the beams too (the sun's just a red ball)
         sunbeams = approach(sunbeams, Math.min(1.0F, beamTarget), 0.003F);
+
+        // wildfire smoke overhead turns the sun red
+        float smokeTarget = local != null && local.cell() != null && local.cell().type == WeatherType.WILDFIRE_SMOKE ? local.cellWeight() : 0.0F;
+        smoke = approach(smoke, smokeTarget, 0.004F);
+        // diamond dust: ice crystals in the air on bitterly cold, clear, still mornings
+        long time = level.getDayTime() % 24000L;
+        boolean morning = time > 22500L || time < 3000L;
+        float dustTarget = on && ClientConfig.DIAMOND_DUST.get() && morning && rain < 0.05F && overcast < 0.2F && fog < 0.3F && wind < 0.4F
+                ? Mth.clamp((-8.0F - airTemperature) / 6.0F, 0.0F, 1.0F) : 0.0F;
+        diamondDust = approach(diamondDust, dustTarget, 0.004F);
     }
 
     /** 1 for broken cloud (about half the sky), falling to 0 for clear skies and solid overcast. */
@@ -251,7 +262,7 @@ public final class ClientWeather {
         type = previousType = WeatherType.CLEAR;
         rain = thunder = overcast = fog = wind = tintStrength = fogColorWeight = rainbow = aurora = mist = wetness = backgroundClouds = 0.0F;
         localRainbowTicks = 0;
-        halo = sunbeams = bloodMoon = freezingFog = 0.0F;
+        halo = sunbeams = bloodMoon = freezingFog = smoke = diamondDust = 0.0F;
         airTemperature = 15.0F;
         exposure = 1.0F;
         java.util.Arrays.fill(precipRates, 0.0F);
@@ -285,6 +296,9 @@ public final class ClientWeather {
     public static float sunbeams() { return sunbeams; }
     public static float bloodMoon() { return bloodMoon; }
     public static float freezingFog() { return freezingFog; }
+    public static float smoke() { return smoke; }
+    public static float diamondDust() { return diamondDust; }
+    public static float thunder() { return thunder; }
     public static float wetness() { return ClientConfig.WET_GROUND.get() ? wetness : 0.0F; }
 
     /** Storm-cloud deck coverage at a world position: the background weather plus any storm cell there. */

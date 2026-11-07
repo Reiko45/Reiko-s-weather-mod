@@ -710,6 +710,137 @@
    ]
   },
   {
+   "title": "Fronts, Fog and Fire",
+   "icon": "minecraft:lightning_rod",
+   "entries": [
+    {
+     "title": "Weather Fronts",
+     "icon": "reikos_weather:barometer",
+     "pages": [
+      "A cold front is a long line of storms racing across the map: a squall of wind, downpours and thunder. Behind it the air is about 7 degrees colder and the wind swings round.\n\nA warm front is a wide, slow band of low cloud and drizzle, with milder air behind it. Both are most common in spring and autumn."
+     ]
+    },
+    {
+     "title": "Afternoon Storms",
+     "icon": "minecraft:sunflower",
+     "pages": [
+      "On summer days (and any day in the tropics) the sun heats the ground and the clouds start to tower up around midday. Watch them: by the afternoon some of them grow into thunderstorms, even hailstorms, and they die away again by dusk.\n\nThunderstorms anywhere tower into tall, anvil-topped clouds you can see from far away."
+     ]
+    },
+    {
+     "title": "Sea Fog",
+     "icon": "minecraft:kelp",
+     "pages": [
+      "On cool, calm mornings a bank of fog builds up out at sea and rolls in over the coast, thick and white. It burns off by the middle of the morning."
+     ]
+    },
+    {
+     "title": "Wildfire Smoke",
+     "icon": "minecraft:campfire",
+     "pages": [
+      "Fires burning out in the open send up tall columns of smoke. A big wildfire sends a pall of smoke drifting downwind: an orange-brown haze that turns the sun into a dull red ball."
+     ]
+    },
+    {
+     "title": "St. Elmo's Fire",
+     "icon": "minecraft:lightning_rod",
+     "pages": [
+      "In a thunderstorm, blue sparks crackle on lightning rods and on metal tools you hold up.\n\nIf sparks start dancing around you and your hair stands on end, lightning is about to strike right there: you have a few seconds to get away."
+     ]
+    },
+    {
+     "title": "Hail and Glass",
+     "icon": "minecraft:glass_pane",
+     "pages": [
+      "Big hail cracks or smashes glass that's open to the sky, and a cracked pane goes on the next hit. Greenhouse roofs take a beating in a hailstorm. Tinted glass is tough enough to hold, or put a proper roof over your glass."
+     ]
+    },
+    {
+     "title": "Mudslides",
+     "icon": "minecraft:mud",
+     "pages": [
+      "After a couple of minutes of pouring rain, waterlogged soil on steep slopes can give way and slide downhill as mud, taking the grass and flowers with it. Don't build at the foot of a bare, steep hill."
+     ]
+    },
+    {
+     "title": "Diamond Dust",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "On bitterly cold, clear, still mornings the air fills with glittering ice crystals, and a pillar of light stands straight up from the low sun."
+     ]
+    },
+    {
+     "title": "Volcanic Smog",
+     "icon": "minecraft:copper_block",
+     "pages": [
+      "As an eruption dies down, the volcano leaves a yellowish smog drifting downwind with an acid drizzle. Copper turns green faster, leaves wither and fall, crops struggle, and the rain stings bare skin: wear a helmet."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Landforms",
+   "icon": "minecraft:calcite",
+   "entries": [
+    {
+     "title": "Hot Springs",
+     "icon": "reikos_weather:geyser",
+     "pages": [
+      "Hot springs are patches of white sinter with steaming pools ringed in orange and yellow, bubbling mud and hissing vents. The pools are warm: soak in one to warm up and slowly heal.\n\nGeysers sit on little mounds and erupt every few minutes, throwing anything above them high into the air. Glide over one with a paraglider for a huge lift."
+     ]
+    },
+    {
+     "title": "Crater Lakes",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "A crater lake is a long-extinct volcano: a grassy, wooded cone with a deep, cold lake filling its crater."
+     ]
+    },
+    {
+     "title": "Lava Tubes",
+     "icon": "reikos_weather:black_sand",
+     "pages": [
+      "Under the flanks of active volcanoes run lava tubes, caves left behind when old lava flows crusted over while the lava inside drained away. Look for skylights where the roof has fallen in.\n\nVolcanic islands have black sand beaches. Black sand smelts into glass."
+     ]
+    },
+    {
+     "title": "Meteor Craters",
+     "icon": "reikos_weather:meteorite",
+     "pages": [
+      "Old impact craters are round bowls with a raised rim, grassed over by now, sometimes with a pond in the bottom. Dig down in the middle: the meteorite itself is buried a few blocks under the floor."
+     ]
+    },
+    {
+     "title": "Salt Flats",
+     "icon": "reikos_weather:salt_crust",
+     "pages": [
+      "Salt flats are dead-flat dry lake beds in the desert, crusted white. Mine the crust for salt.\n\nWhen a storm passes over, the flat floods into a shallow lake that mirrors the sky, then dries back out to salt. On hot days a mirage shimmers across the flats like water you can never reach."
+     ]
+    },
+    {
+     "title": "Glaciers",
+     "icon": "minecraft:blue_ice",
+     "pages": [
+      "Glaciers flow down cold mountainsides: packed ice with veins of blue ice, snowy higher up and bare lower down. Crevasses cut across them, and many hide under a thin bridge of powder snow. Watch your step.\n\nIn summer the lower end melts back a little and meltwater runs off it."
+     ]
+    },
+    {
+     "title": "Tidal Flats",
+     "icon": "minecraft:mud",
+     "pages": [
+      "Tidal flats are wide stretches of mud at the edge of the sea, level with the water. High tide washes over them; at low tide they're bare, dotted with tide pools of seagrass and sea pickles. Brush the sand at the bottom of a tide pool for buried treasure."
+     ]
+    },
+    {
+     "title": "Dune Fields",
+     "icon": "minecraft:sand",
+     "pages": [
+      "Dune fields are rows of tall sand dunes across the prevailing wind, each with a long, gentle slope and a steep face. In sandstorms the wind carries sand off the crests and drops it beyond, so the dunes slowly creep downwind."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

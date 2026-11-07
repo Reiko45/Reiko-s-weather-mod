@@ -37,6 +37,12 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue BLOSSOMS;
     public static final ModConfigSpec.BooleanValue BIRD_FLOCKS;
     public static final ModConfigSpec.BooleanValue WHITECAPS;
+    public static final ModConfigSpec.BooleanValue TOWERING_CLOUDS;
+    public static final ModConfigSpec.BooleanValue FOG_BANKS;
+    public static final ModConfigSpec.BooleanValue SMOKE_COLUMNS;
+    public static final ModConfigSpec.BooleanValue DIAMOND_DUST;
+    public static final ModConfigSpec.BooleanValue STATIC_SPARKS;
+    public static final ModConfigSpec.BooleanValue MIRAGES;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -108,6 +114,18 @@ public final class ClientConfig {
                 .define("birdFlocks", true);
         WHITECAPS = b.comment("Whitecaps and spray on rough seas in storms.")
                 .define("whitecaps", true);
+        TOWERING_CLOUDS = b.comment("Thunderstorms tower up into tall clouds you can watch from far away.")
+                .define("toweringClouds", true);
+        FOG_BANKS = b.comment("Sea fog shows as a low bank of fog rolling in over the water.")
+                .define("fogBanks", true);
+        SMOKE_COLUMNS = b.comment("Fires burning in the open send up tall columns of smoke.")
+                .define("smokeColumns", true);
+        DIAMOND_DUST = b.comment("Glittering ice crystals in the air on bitterly cold, clear mornings, with a sun pillar.")
+                .define("diamondDust", true);
+        STATIC_SPARKS = b.comment("St. Elmo's fire: sparks on lightning rods and metal tools in thunderstorms.")
+                .define("staticSparks", true);
+        MIRAGES = b.comment("Shimmering mirages over hot desert flats and salt flats.")
+                .define("mirages", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

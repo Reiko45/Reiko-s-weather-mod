@@ -138,5 +138,32 @@
         "name": "reikos_weather:weather/volcano_eruption"
       }
     ]
+  },
+  "weather.static_crackle": {
+    "subtitle": "subtitles.reikos_weather.weather.static_crackle",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/static_crackle",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "block.geyser.erupt": {
+    "subtitle": "subtitles.reikos_weather.block.geyser.erupt",
+    "sounds": [
+      {
+        "name": "reikos_weather:block/geyser_erupt",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "block.hot_spring.bubble": {
+    "subtitle": "subtitles.reikos_weather.block.hot_spring.bubble",
+    "sounds": [
+      {
+        "name": "reikos_weather:block/hot_spring_bubble",
+        "attenuation_distance": 12
+      }
+    ]
   }
 }

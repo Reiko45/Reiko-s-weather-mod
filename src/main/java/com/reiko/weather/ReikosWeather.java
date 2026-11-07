@@ -109,6 +109,8 @@ public class ReikosWeather {
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.item.WeatherAlmanacItem::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.volcano.VolcanoManager::onLevelTick);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.volcano.VolcanoManager::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.landform.LandformManager::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.landform.LandformManager::onPlayerTick);
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) ->
                 com.reiko.weather.weather.Monsoon.collect(e.getServer().registryAccess()));
     }
@@ -157,6 +159,9 @@ public class ReikosWeather {
             event.accept(ModItems.VOLCANIC_ASH.get());
             event.accept(ModItems.SULFUR_CRUST.get());
             event.accept(ModItems.VOLCANIC_VENT.get());
+            event.accept(ModItems.GEYSER.get());
+            event.accept(ModItems.SALT_CRUST.get());
+            event.accept(ModItems.BLACK_SAND.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

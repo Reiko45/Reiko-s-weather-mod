@@ -331,4 +331,60 @@ public class WeatherGameTests {
         helper.assertFalse(ash.canSurvive(helper.getLevel(), helper.absolutePos(new BlockPos(3, 2, 2))), "ash can't settle on farmland (or the crops in it)");
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void coldFrontsLeaveColderAirBehind(GameTestHelper helper) {
+        // a cold front at the origin moving east (+x)
+        var cell = new com.reiko.weather.weather.StormCell(1, WeatherType.COLD_FRONT, 0, 0, 80, 0.3, 0.0, 20000);
+        cell.age = 5000;
+        var cells = java.util.List.of(cell);
+        float behind = com.reiko.weather.weather.Fronts.temperatureOffset(cells, -600, 0);
+        float ahead = com.reiko.weather.weather.Fronts.temperatureOffset(cells, 600, 0);
+        float beyondTheEnd = com.reiko.weather.weather.Fronts.temperatureOffset(cells, -600, 2000);
+        helper.assertTrue(behind < -4.0F, "colder behind the front (" + behind + ")");
+        helper.assertTrue(ahead == 0.0F && beyondTheEnd == 0.0F, "no change ahead of it or past its end");
+        helper.assertTrue(WeatherType.COLD_FRONT.cellOnly() && WeatherType.COLD_FRONT.isStorm() && !WeatherType.SEA_FOG.natural(),
+                "fronts only come as storm cells; sea fog is never in the forecast");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void dunesHaveASteepLeeFace(GameTestHelper helper) {
+        var dunes = new com.reiko.weather.landform.Dunes(0, 0, 200, 0.0F, 30, 10, 0L);
+        // walk downwind along the middle of the field and find the steepest climb and the steepest drop
+        float maxRise = 0.0F, maxDrop = 0.0F, last = dunes.duneHeight(-60, 0);
+        for (int x = -59; x <= 60; x++) {
+            float h = dunes.duneHeight(x, 0);
+            maxRise = Math.max(maxRise, h - last);
+            maxDrop = Math.max(maxDrop, last - h);
+            last = h;
+        }
+        helper.assertTrue(maxDrop > maxRise * 2.0F, "the lee face is much steeper than the windward slope (" + maxRise + " up, " + maxDrop + " down)");
+        helper.assertTrue(dunes.duneHeight(250, 0) == 0.0F, "no dunes outside the field");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void landformShapes(GameTestHelper helper) {
+        var flat = new com.reiko.weather.landform.SaltFlat(0, 0, 64, 50, 30, 0.0F, 1L);
+        helper.assertTrue(flat.ellipse(0, 0) < 0.01F && flat.ellipse(45, 0) < 1.0F && flat.ellipse(0, 40) > 1.0F, "salt flat is an ellipse");
+        var glacier = new com.reiko.weather.landform.Glacier(0, 0, 0.0F, 100, 30, 8, 1L);
+        helper.assertTrue(glacier.thicknessAt(0, 0) > 6.0F, "thick in the middle");
+        helper.assertTrue(glacier.thicknessAt(0, 13) < glacier.thicknessAt(0, 0), "thinner toward its sides");
+        helper.assertTrue(glacier.thicknessAt(0, 40) == 0.0F && glacier.thicknessAt(80, 0) == 0.0F, "no ice outside it");
+        var crater = new com.reiko.weather.landform.MeteorCrater(0, 0, 70, 15, 6, false, 1L);
+        helper.assertTrue(crater.profile(0) == 64.0F && crater.profile(16) > 70.0F && crater.profile(40) < 70.5F, "a bowl with a raised rim");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void geysersShootUpAndDieBack(GameTestHelper helper) {
+        float start = com.reiko.weather.block.GeyserBlock.height(40), middle = com.reiko.weather.block.GeyserBlock.height(20),
+                end = com.reiko.weather.block.GeyserBlock.height(0);
+        helper.assertTrue(start == 0.0F && end == 0.0F && middle > 15.0F, "the jet rises, holds and falls (" + middle + ")");
+        helper.assertTrue(com.reiko.weather.weather.HailGlass.breakable(net.minecraft.world.level.block.Blocks.GLASS_PANE.defaultBlockState())
+                && !com.reiko.weather.weather.HailGlass.breakable(net.minecraft.world.level.block.Blocks.TINTED_GLASS.defaultBlockState()),
+                "hail breaks glass panes but not tinted glass");
+        helper.succeed();
+    }
 }

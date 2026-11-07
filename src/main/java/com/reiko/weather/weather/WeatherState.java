@@ -46,6 +46,8 @@ public class WeatherState extends SavedData {
     /** Id of the datapack-defined weather that is active, or null for a built-in one. */
     @javax.annotation.Nullable
     public String custom;
+    /** The last day an afternoon thunderstorm and a morning sea fog were considered (one chance a day each). */
+    public long convectionDay = -1, seaFogDay = -1;
     /** Water sources placed by flash floods, removed again once the rain stops. */
     public final LongArrayList floodBlocks = new LongArrayList();
 
@@ -82,6 +84,8 @@ public class WeatherState extends SavedData {
         tag.putInt("seasonOffsetDays", seasonOffsetDays);
         tag.put("floodBlocks", new LongArrayTag(floodBlocks.toLongArray()));
         tag.putLong("altarReadyAt", altarReadyAt);
+        tag.putLong("convectionDay", convectionDay);
+        tag.putLong("seaFogDay", seaFogDay);
         if (custom != null) tag.putString("custom", custom);
         return tag;
     }
@@ -112,6 +116,8 @@ public class WeatherState extends SavedData {
         state.cellCooldown = tag.contains("cellCooldown") ? tag.getInt("cellCooldown") : 6000;
         state.seasonOffsetDays = tag.getInt("seasonOffsetDays");
         state.altarReadyAt = tag.getLong("altarReadyAt");
+        state.convectionDay = tag.contains("convectionDay") ? tag.getLong("convectionDay") : -1;
+        state.seaFogDay = tag.contains("seaFogDay") ? tag.getLong("seaFogDay") : -1;
         state.custom = tag.contains("custom") ? tag.getString("custom") : null;
         for (long pos : tag.getLongArray("floodBlocks")) {
             state.floodBlocks.add(pos);

@@ -78,6 +78,8 @@ public final class Temperature {
             return celsius;
         }
         boolean sky = level.canSeeSky(pos);
+        // cooler air behind a cold front, milder behind a warm one
+        celsius += com.reiko.weather.weather.Fronts.temperatureOffset(com.reiko.weather.weather.Fronts.cells(level), pos.getX(), pos.getZ());
         float sun = SkyPhenomena.sunHeight(level, 1.0F);
         float daily = sun > 0 ? 4.0F * sun : 6.0F * sun; // +4 at noon, -6 at midnight
         celsius += sky ? daily : daily * 0.4F;

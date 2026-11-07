@@ -56,6 +56,11 @@ public class RadarScreen extends Screen {
             case SANDSTORM -> 0xE6B464;
             case DERECHO -> 0xFF8C28;
             case VOLCANIC_ASH -> 0x8A7F78;
+            case COLD_FRONT -> 0x4F8DFF;
+            case WARM_FRONT -> 0xFF6F6F;
+            case SEA_FOG -> 0xD6DCE2;
+            case WILDFIRE_SMOKE -> 0xB0703A;
+            case VOLCANIC_SMOG -> 0xB8B07A;
             default -> 0x9AA0A6;
         };
     }

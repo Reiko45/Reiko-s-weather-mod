@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "glacier",
+  "biomes": "#reikos_weather:has_structure/glacier",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

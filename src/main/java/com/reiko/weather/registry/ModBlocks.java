@@ -119,5 +119,17 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.SeismographBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(2.0F, 6.0F)
                     .sound(SoundType.COPPER)));
 
+    public static final DeferredBlock<com.reiko.weather.block.GeyserBlock> GEYSER = REGISTER.register("geyser",
+            () -> new com.reiko.weather.block.GeyserBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).strength(1.5F, 6.0F)
+                    .sound(SoundType.CALCITE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<com.reiko.weather.block.SaltCrustBlock> SALT_CRUST = REGISTER.register("salt_crust",
+            () -> new com.reiko.weather.block.SaltCrustBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.8F)
+                    .sound(SoundType.CALCITE)));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.ColoredFallingBlock> BLACK_SAND = REGISTER.register("black_sand",
+            () -> new net.minecraft.world.level.block.ColoredFallingBlock(new net.minecraft.util.ColorRGBA(0x2B2826),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SoundType.SAND)));
+
     private ModBlocks() {}
 }

@@ -68,6 +68,13 @@ public final class Paragliding {
                 continue;
             }
             float fade = 1.0F - depth / 64.0F;
+            if (state.getBlock() instanceof com.reiko.weather.block.GeyserBlock) {
+                // an erupting geyser is the strongest updraft there is; even a resting one steams a little
+                return Math.max(ridgeLift, state.getValue(com.reiko.weather.block.GeyserBlock.ERUPTING) ? 1.0F : 0.3F * fade);
+            }
+            if (state.is(com.reiko.weather.registry.ModBlocks.VOLCANIC_VENT.get())) {
+                return Math.max(ridgeLift, 0.6F * fade);
+            }
             if (state.is(Blocks.LAVA) || state.is(Blocks.MAGMA_BLOCK) || state.is(BlockTags.FIRE)
                     || state.getBlock() instanceof CampfireBlock && state.getValue(CampfireBlock.LIT)) {
                 return Math.max(ridgeLift, fade);

@@ -31,6 +31,11 @@ public final class Tides {
                 && springness(level) >= 1.0F && cycle(level.getDayTime()) > 0.8F;
     }
 
+    /** Whether the tide is in over the tidal flats (every high tide, not just the spring tides). */
+    public static boolean floodingFlats(Level level) {
+        return WeatherConfig.SPEC.isLoaded() && WeatherConfig.TIDES.get() && level.dimension() == Level.OVERWORLD && cycle(level.getDayTime()) > 0.45F;
+    }
+
     /** "Tide: high (spring tide), falling" and so on. */
     public static Component describe(Level level) {
         long time = level.getDayTime();

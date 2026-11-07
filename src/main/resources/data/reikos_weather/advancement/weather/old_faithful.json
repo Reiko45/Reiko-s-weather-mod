@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/hot_tub",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:geyser"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.old_faithful"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.old_faithful.desc"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

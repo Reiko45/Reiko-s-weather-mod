@@ -101,8 +101,10 @@ public final class WeatherHazards {
                     surge(level, state, randomColumn(level, player, random), false);
                 }
             }
-            if (Tides.flooding(level) && random.nextFloat() < 0.5F) {
-                surge(level, state, randomColumn(level, player, random), true);
+            if ((Tides.flooding(level) || Tides.floodingFlats(level)) && random.nextFloat() < 0.5F) {
+                for (int i = 0; i < 2; i++) {
+                    surge(level, state, randomColumn(level, player, random), true);
+                }
             }
             if (snowmeltActive() && climate != Climate.ARID && random.nextFloat() < 0.35F) {
                 BlockPos top = randomColumn(level, player, random);
@@ -116,6 +118,13 @@ public final class WeatherHazards {
             }
             if (profile.hail && WeatherConfig.HAIL_DAMAGES_CROPS.get() && random.nextFloat() < 0.5F * intensity) {
                 damageCrop(level, randomColumn(level, player, random), random);
+            }
+            if (profile.hail && intensity > 0.6F && WeatherConfig.HAIL_BREAKS_GLASS.get() && random.nextFloat() < 0.35F * intensity
+                    && level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING)) {
+                HailGlass.hit(level, randomColumn(level, player, random));
+            }
+            if (profile.acid && intensity > 0.4F && WeatherConfig.ACID_RAIN.get()) {
+                AcidRain.tick(level, player, random, randomColumn(level, player, random));
             }
             float lightning = profile.lightning;
             if (local.cell() != null && local.type().vanillaThunder && local.cellWeight() >= 0.5F) {
@@ -136,6 +145,8 @@ public final class WeatherHazards {
             ExtremeWeather.tick(level, player, local, climate);
         }
         recedeFloods(level, state);
+        LightningWarnings.tick(level);
+        HailGlass.tick(level);
     }
 
     /** The surface position of a random column near the player, or null if that chunk isn't loaded. */
@@ -328,8 +339,9 @@ public final class WeatherHazards {
         BlockPos pos;
         if (top.getY() == sea && level.getBlockState(top).isAir()) {
             pos = top;
-            if (tide && !level.getBiome(pos).is(BiomeTags.IS_BEACH)) {
-                return; // high tide only washes over beaches
+            boolean flat = level.getBlockState(pos.below()).is(Blocks.MUD);
+            if (tide && !(Tides.flooding(level) && level.getBiome(pos).is(BiomeTags.IS_BEACH) || flat && Tides.floodingFlats(level))) {
+                return; // high tide only washes over beaches (at spring tides) and tidal flats (every high tide)
             }
         } else if (!tide && top.getY() == sea + 1 && level.getFluidState(top.below()).is(FluidTags.WATER) && !level.getFluidState(top.below()).isSource()) {
             pos = top.below(); // already awash with surge water: deepen it
@@ -400,6 +412,7 @@ public final class WeatherHazards {
                 continue; // still pouring
             }
             if (Tides.flooding(level) && level.getBiome(pos).is(BiomeTags.IS_BEACH)
+                    || Tides.floodingFlats(level) && level.getBlockState(pos.below()).is(Blocks.MUD)
                     || snowmeltActive() && level.getBiome(pos).is(BiomeTags.IS_RIVER)) {
                 continue; // high tide, or the spring thaw is still running off
             }
@@ -436,6 +449,10 @@ public final class WeatherHazards {
 
     private static void strikeLightning(ServerLevel level, @Nullable BlockPos pos) {
         if (pos == null || !level.isLoaded(pos)) {
+            return;
+        }
+        if (WeatherConfig.LIGHTNING_WARNINGS.get()) {
+            LightningWarnings.schedule(level, pos); // sparks crackle around the spot for a few seconds first
             return;
         }
         LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
@@ -557,6 +574,10 @@ public final class WeatherHazards {
         boolean temperatureRules = living instanceof Player && (TemperatureEffects.enabled() || com.reiko.weather.compat.Compat.toughAsNailsHandlesTemperature());
         if (profile.freeze > 0.0F && WeatherConfig.FREEZING.get() && !temperatureRules) {
             chill(living, profile.freeze * intensity, eyes);
+        }
+        if (profile.acid && intensity > 0.4F && living instanceof Player player && entity.tickCount % 120 == 0 && WeatherConfig.ACID_RAIN.get()
+                && !player.getAbilities().invulnerable && player.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && !player.isUnderWater()) {
+            player.hurt(level.damageSources().source(ModDamageTypes.ACID_RAIN), 1.0F); // the acid drizzle stings
         }
         if (profile.ashLayers > 0 && intensity > 0.4F && living instanceof Player player && entity.tickCount % 40 == 0
                 && !player.getAbilities().invulnerable && player.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -692,6 +713,8 @@ public final class WeatherHazards {
         }
         if (profile.ashLayers > 0 && level.random.nextFloat() < 0.4F) {
             event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW); // the ash cloud blots out the sun
+        } else if (profile.acid && level.random.nextFloat() < 0.4F) {
+            event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW); // acid rain burns the leaves
         } else if (profile.cropBoost && WeatherConfig.RAIN_BOOSTS_CROPS.get() && level.random.nextFloat() < 0.25F) {
             event.setResult(CropGrowEvent.Pre.Result.GROW);
         } else if (profile.heat && WeatherConfig.HEAT_SLOWS_CROPS.get() && level.random.nextFloat() < 0.5F) {

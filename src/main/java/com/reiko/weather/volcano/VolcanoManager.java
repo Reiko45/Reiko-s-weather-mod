@@ -228,6 +228,9 @@ public final class VolcanoManager {
         if (phase == Phase.ERUPTING) {
             v.flowsStarted = 0;
             feedAshCloud(level, v, random);
+        } else if (phase == Phase.COOLING) {
+            v.flows.clear();
+            smog(level, v, random);
         } else {
             v.flows.clear();
         }
@@ -322,6 +325,19 @@ public final class VolcanoManager {
         StormCell cell = WeatherManager.spawnCell(level, state, WeatherType.VOLCANIC_ASH, s.cx() + wind.x * radius * 0.4,
                 s.cz() + wind.z * radius * 0.4, radius, speed, 7000 + random.nextInt(3000));
         v.ashCells.add(cell.id);
+    }
+
+    /** As an eruption dies down it leaves a lingering, sulfurous smog (with an acid drizzle) drifting downwind. */
+    private static void smog(ServerLevel level, Volcano v, RandomSource random) {
+        WeatherState state = WeatherManager.activeState(level);
+        if (state == null || !WeatherConfig.ACID_RAIN.get()) {
+            return;
+        }
+        Vec3 wind = Wind.direction(state.windAngle);
+        float radius = 220.0F + random.nextFloat() * 80.0F;
+        double speed = 0.03 + random.nextDouble() * 0.02;
+        WeatherManager.spawnCell(level, state, WeatherType.VOLCANIC_SMOG, v.shape.cx() + wind.x * radius * 0.5, v.shape.cz() + wind.z * radius * 0.5,
+                radius, wind.x * speed, wind.z * speed, 9000 + random.nextInt(4000), 1500, true);
     }
 
     @Nullable

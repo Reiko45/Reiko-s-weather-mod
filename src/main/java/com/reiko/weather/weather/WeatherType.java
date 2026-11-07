@@ -34,7 +34,17 @@ public enum WeatherType {
     HEATWAVE    (false, false, 4, 6000, 12000, 0.0F, 0.6F, 2.0F),
     DERECHO     (true, true, 1, 2400, 4800, 0.2F, 1.0F, 0.3F),
     /** Only from volcanic eruptions (the ash cloud drifting downwind), never in the forecast. */
-    VOLCANIC_ASH(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
+    VOLCANIC_ASH(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F),
+    /** A cold front: a fast squall line, with cooler air and a wind shift behind it. Only ever a storm cell. */
+    COLD_FRONT  (true, true, 2, 2400, 4800, 0.6F, 1.0F, 0.5F),
+    /** A warm front: a broad band of cloud and drizzle, with milder air behind it. Only ever a storm cell. */
+    WARM_FRONT  (true, false, 2, 3600, 6000, 0.6F, 1.0F, 0.3F),
+    /** A fog bank rolling in off the sea on cool mornings. */
+    SEA_FOG     (false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F),
+    /** Smoke drifting downwind from a big wildfire. */
+    WILDFIRE_SMOKE(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F),
+    /** Volcanic smog after an eruption: a yellowish haze with stinging acid drizzle. */
+    VOLCANIC_SMOG(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
 
     private static final WeatherType[] VALUES = values();
 
@@ -69,7 +79,16 @@ public enum WeatherType {
 
     /** Whether the weather cycle can pick this weather by itself (volcanic ash only comes from eruptions). */
     public boolean natural() {
-        return this != VOLCANIC_ASH;
+        return this != VOLCANIC_ASH && this != SEA_FOG && this != WILDFIRE_SMOKE && this != VOLCANIC_SMOG;
+    }
+
+    /** Weathers that only ever come as a storm cell (a front is a line, not the whole world's weather). */
+    public boolean cellOnly() {
+        return !natural() || this == COLD_FRONT || this == WARM_FRONT;
+    }
+
+    public boolean isFront() {
+        return this == COLD_FRONT || this == WARM_FRONT;
     }
 
     /** Calm weathers are the "breaks" between more eventful weather. */
@@ -84,19 +103,21 @@ public enum WeatherType {
     /** Weathers that can also arrive as a regional storm cell drifting across the map. */
     public boolean isStorm() {
         return switch (this) {
-            case RAIN, HEAVY_RAIN, THUNDERSTORM, SUPERCELL, HURRICANE, HAIL, SLEET, ICE_STORM, SNOW, BLIZZARD, SANDSTORM, DERECHO -> true;
+            case RAIN, HEAVY_RAIN, THUNDERSTORM, SUPERCELL, HURRICANE, HAIL, SLEET, ICE_STORM, SNOW, BLIZZARD, SANDSTORM, DERECHO,
+                 COLD_FRONT, WARM_FRONT -> true;
             default -> false;
         };
     }
 
     /**
-     * Fixed 0-15 redstone code for the weather station (ice storm shares sleet's code, a derecho shares
-     * the gale's and volcanic ash the sandstorm's, since there are 19 weathers and only 16 signal strengths).
+     * Fixed 0-15 redstone code for the weather station. There are more weathers than signal strengths, so
+     * the newer ones share the code of the weather they're most like (a cold front reads as a thunderstorm,
+     * sea fog and smoke as fog, and so on).
      */
     public int signalCode() {
         return switch (this) {
-            case CLEAR -> 0; case OVERCAST -> 1; case FOG -> 2; case DRIZZLE -> 3; case RAIN -> 4;
-            case HEAVY_RAIN -> 5; case THUNDERSTORM -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
+            case CLEAR -> 0; case OVERCAST -> 1; case FOG, SEA_FOG, WILDFIRE_SMOKE -> 2; case DRIZZLE, WARM_FRONT, VOLCANIC_SMOG -> 3; case RAIN -> 4;
+            case HEAVY_RAIN -> 5; case THUNDERSTORM, COLD_FRONT -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
             case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH -> 14;
             case HEATWAVE -> 15;
         };

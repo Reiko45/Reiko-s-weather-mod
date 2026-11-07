@@ -222,18 +222,14 @@ public final class VolcanoClient {
 
     // ------------------------------------------------------------------ the eruption column
 
-    /** One camera-facing puff of the plume, relative to the camera. */
-    private record Puff(float x, float y, float z, float size, float r, float g, float b, float a, boolean glow, float dist) {}
-
-    public static void renderPlume(RenderLevelStageEvent event) {
+    /** Adds this frame's eruption columns to the shared puff renderer. */
+    public static void collectPlumes(Camera camera, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level == null || level.dimension() != Level.OVERWORLD || VolcanoPayload.client.isEmpty()) {
             return;
         }
-        Camera camera = event.getCamera();
         Vec3 cam = camera.getPosition();
-        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         float time = level.getGameTime() + partialTick;
         float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
         float daylight = level.getSkyDarken(partialTick);
@@ -241,62 +237,18 @@ public final class VolcanoClient {
         float fog = 1.0F - 0.55F * ClientWeather.fogDensity();
         Vec3 wind = Wind.direction(ClientWeather.windAngle());
         float windStrength = ClientWeather.wind();
-        List<Puff> puffs = new ArrayList<>();
         for (Live v : live(level)) {
             if (v.activity() <= 0.0F) continue;
-            plume(puffs, v, cam, time, wind, windStrength, daylight, night, fog, maxDistance);
+            plume(v, cam, time, wind, windStrength, daylight, night, fog, maxDistance);
         }
-        if (puffs.isEmpty()) {
-            return;
-        }
-        puffs.sort((p, q) -> Float.compare(q.dist(), p.dist()));
-
-        Vector3f left = new Vector3f(camera.getLeftVector()), up = new Vector3f(camera.getUpVector());
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, PUFF);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.disableCull();
-        for (boolean glow : new boolean[]{false, true}) {
-            if (glow) {
-                RenderSystem.blendFunc(com.mojang.blaze3d.platform.GlStateManager.SourceFactor.SRC_ALPHA, com.mojang.blaze3d.platform.GlStateManager.DestFactor.ONE);
-            } else {
-                RenderSystem.defaultBlendFunc();
-            }
-            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            boolean any = false;
-            for (Puff p : puffs) {
-                if (p.glow() != glow) continue;
-                float lx = left.x() * p.size(), ly = left.y() * p.size(), lz = left.z() * p.size();
-                float ux = up.x() * p.size(), uy = up.y() * p.size(), uz = up.z() * p.size();
-                buffer.addVertex(p.x() - lx - ux, p.y() - ly - uy, p.z() - lz - uz).setUv(0, 1).setColor(p.r(), p.g(), p.b(), p.a());
-                buffer.addVertex(p.x() + lx - ux, p.y() + ly - uy, p.z() + lz - uz).setUv(1, 1).setColor(p.r(), p.g(), p.b(), p.a());
-                buffer.addVertex(p.x() + lx + ux, p.y() + ly + uy, p.z() + lz + uz).setUv(1, 0).setColor(p.r(), p.g(), p.b(), p.a());
-                buffer.addVertex(p.x() - lx + ux, p.y() - ly + uy, p.z() - lz + uz).setUv(0, 0).setColor(p.r(), p.g(), p.b(), p.a());
-                any = true;
-            }
-            MeshData mesh = buffer.build();
-            if (mesh != null && any) {
-                BufferUploader.drawWithShader(mesh);
-            } else if (mesh != null) {
-                mesh.close();
-            }
-        }
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.enableCull();
-        RenderSystem.depthMask(true);
-        RenderSystem.disableBlend();
     }
 
     private static float hash(int i, int salt) {
-        int h = Mth.murmurHash3Mixer(i * 0x9E3779B9 + salt * 0x85EBCA6B);
-        return (h >>> 8) / (float) (1 << 24);
+        return PuffRenderer.hash(i, salt);
     }
 
     /** Builds the puffs of one volcano's plume: a smoky wisp while it rumbles, a towering ash column while it erupts. */
-    private static void plume(List<Puff> out, Live v, Vec3 cam, float time, Vec3 wind, float windStrength, float daylight, float night,
+    private static void plume(Live v, Vec3 cam, float time, Vec3 wind, float windStrength, float daylight, float night,
                               float fog, float maxDistance) {
         VolcanoPayload.Entry e = v.entry();
         boolean erupting = v.phase() == Volcano.Phase.ERUPTING;
@@ -327,7 +279,7 @@ public final class VolcanoClient {
             // the base of an eruption column glows with the lava under it, most of all at night
             float glow = erupting ? Mth.clamp(1.0F - s / 0.18F, 0.0F, 1.0F) * (0.35F + 0.65F * night) * a : 0.0F;
             float r = Mth.lerp(glow, shade, 0.85F), g = Mth.lerp(glow, shade, 0.32F), b = Mth.lerp(glow, shade * 1.02F, 0.12F);
-            add(out, px, py, pz, width, r, g, b, alpha * fade, false, cam, maxDistance);
+            add(px, py, pz, width, r, g, b, alpha * fade, false, cam, maxDistance);
         }
         if (erupting) {
             // the umbrella of ash spreading out downwind at the top of the column
@@ -341,7 +293,7 @@ public final class VolcanoClient {
                 double pz = oz + wind.z * along + wind.x * across * width * (0.6F + t);
                 double py = oy + height * (0.92F - 0.12F * t) + (hash(i, salt + 11) - 0.5F) * 18.0F;
                 float wobble = 0.85F + 0.15F * Mth.sin(time * 0.01F + i);
-                add(out, px, py, pz, width * wobble, grey, grey, grey * 1.02F, alpha * (0.8F - 0.4F * t), false, cam, maxDistance);
+                add(px, py, pz, width * wobble, grey, grey, grey * 1.02F, alpha * (0.8F - 0.4F * t), false, cam, maxDistance);
             }
             // lava fountaining out of the crater
             for (int i = 0; i < 8; i++) {
@@ -349,31 +301,14 @@ public final class VolcanoClient {
                 double px = ox + (hash(i, salt + 20) - 0.5F) * e.craterRadius();
                 double pz = oz + (hash(i, salt + 21) - 0.5F) * e.craterRadius();
                 double py = oy + 2.0 + hash(i, salt + 22) * 14.0 * a;
-                add(out, px, py, pz, 3.0F + 5.0F * a, 1.0F, 0.45F, 0.12F, 0.55F * a * flicker * fog, true, cam, maxDistance);
+                add(px, py, pz, 3.0F + 5.0F * a, 1.0F, 0.45F, 0.12F, 0.55F * a * flicker * fog, true, cam, maxDistance);
             }
         }
     }
 
-    private static void add(List<Puff> out, double wx, double wy, double wz, float size, float r, float g, float b, float a, boolean glow,
+    private static void add(double wx, double wy, double wz, float size, float r, float g, float b, float a, boolean glow,
                             Vec3 cam, float maxDistance) {
-        if (a < 0.01F) return;
-        // colours past 1 would wrap around in the vertex buffer
-        r = Mth.clamp(r, 0.0F, 1.0F);
-        g = Mth.clamp(g, 0.0F, 1.0F);
-        b = Mth.clamp(b, 0.0F, 1.0F);
-        a = Math.min(a, 1.0F);
-        float x = (float) (wx - cam.x), y = (float) (wy - cam.y), z = (float) (wz - cam.z);
-        float d = Mth.sqrt(x * x + y * y + z * z);
-        if (d < size * 0.6F) return; // we're inside it: the fog does the work
-        if (d > maxDistance) {
-            // slide it in along the view ray: it covers the same part of the sky, so it stays visible past render distance
-            float k = maxDistance / d;
-            x *= k;
-            y *= k;
-            z *= k;
-            size *= k;
-        }
-        out.add(new Puff(x, y, z, size, r, g, b, a, glow, d));
+        PuffRenderer.add(wx, wy, wz, size, r, g, b, a, glow, cam, maxDistance);
     }
 
     // ------------------------------------------------------------------ misc

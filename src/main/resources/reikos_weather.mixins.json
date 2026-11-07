@@ -9,12 +9,15 @@
     "ServerLevelMixin",
     "ServerGamePacketListenerImplAccessor",
     "LightningBoltAccessor",
-    "FishingHookAccessor"
+    "FishingHookAccessor",
+    "FireBlockMixin"
   ],
   "client": [
     "ClientLevelMixin",
     "LevelRendererMixin",
-    "BiomeColorsMixin"
+    "BiomeColorsMixin",
+    "BaseFireBlockMixin",
+    "LightningRodBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

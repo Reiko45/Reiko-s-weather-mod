@@ -26,6 +26,7 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> FIREFLY = simple("firefly");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> WORM = simple("worm");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ASH = simple("ash");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DIAMOND_DUST = simple("diamond_dust");
 
     private static DeferredHolder<ParticleType<?>, SimpleParticleType> simple(String name) {
         return REGISTER.register(name, () -> new SimpleParticleType(false));

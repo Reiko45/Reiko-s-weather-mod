@@ -3,6 +3,7 @@
   "values": [
     "reikos_weather:hail",
     "reikos_weather:tornado",
-    "reikos_weather:heatstroke"
+    "reikos_weather:heatstroke",
+    "reikos_weather:acid_rain"
   ]
 }

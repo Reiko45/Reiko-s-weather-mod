@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:heatstroke"
+    "reikos_weather:heatstroke",
+    "reikos_weather:acid_rain"
   ]
 }

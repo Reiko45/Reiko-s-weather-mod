@@ -68,6 +68,10 @@ public final class ExtremeWeather {
                 dropIcicleAbove(level, player, random);
             }
         }
+        if (profile.floods && intensity >= 0.85F && WeatherConfig.MUDSLIDES.get() && random.nextInt(1500) == 0 && soaked(level, local)
+                && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            mudslide(level, player, random);
+        }
         if (local.type() == WeatherType.BLIZZARD && freezing && intensity >= 0.9F && WeatherConfig.AVALANCHES.get()
                 && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && random.nextInt(3000) == 0) {
             avalanche(level, player, random);
@@ -234,6 +238,70 @@ public final class ExtremeWeather {
                     if (p.distanceToSqr(x, height, z) < 64 * 64) {
                         p.displayClientMessage(Component.translatable("message.reikos_weather.avalanche").withStyle(s -> s.withColor(0xBBDDFF).withBold(true)), true);
                         WeatherAdvancements.award(p, "avalanche");
+                    }
+                }
+                return;
+            }
+        }
+    }
+
+    /** Whether it's been pouring here for a couple of minutes at least. */
+    private static boolean soaked(ServerLevel level, LocalWeather local) {
+        StormCell cell = local.cell();
+        return cell != null && local.cellWeight() >= 0.5F ? cell.age > 2400 : WeatherManager.state(level).elapsed > 2400;
+    }
+
+    private static boolean slides(BlockState s) {
+        return s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.DIRT) || s.is(Blocks.COARSE_DIRT) || s.is(Blocks.PODZOL) || s.is(Blocks.ROOTED_DIRT)
+                || s.is(Blocks.MUD) || s.is(Blocks.GRAVEL) || s.is(Blocks.MYCELIUM);
+    }
+
+    /** Waterlogged soil on a steep slope gives way and slides downhill as mud (and gravel). */
+    private static void mudslide(ServerLevel level, ServerPlayer player, RandomSource random) {
+        for (int attempt = 0; attempt < 12; attempt++) {
+            float angle = random.nextFloat() * Mth.TWO_PI;
+            double distance = 12 + random.nextDouble() * 28;
+            int x = Mth.floor(player.getX() + Mth.cos(angle) * distance), z = Mth.floor(player.getZ() + Mth.sin(angle) * distance);
+            if (!level.isLoaded(new BlockPos(x, 0, z))) continue;
+            int height = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            if (!slides(level.getBlockState(new BlockPos(x, height - 1, z)))) continue;
+            Direction downhill = null;
+            int drop = 0;
+            for (Direction d : Direction.Plane.HORIZONTAL) {
+                int h = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x + d.getStepX() * 6, z + d.getStepZ() * 6);
+                if (height - h > drop) {
+                    drop = height - h;
+                    downhill = d;
+                }
+            }
+            if (downhill == null || drop < 5) continue;
+            int moved = 0;
+            for (int dx = -3; dx <= 3; dx++) {
+                for (int dz = -3; dz <= 3; dz++) {
+                    if (dx * dx + dz * dz > 10 || random.nextFloat() < 0.3F) continue;
+                    int sx = x + dx, sz = z + dz;
+                    BlockPos ground = new BlockPos(sx, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, sx, sz) - 1, sz);
+                    for (BlockPos p : new BlockPos[]{ground, ground.below()}) {
+                        BlockState s = level.getBlockState(p);
+                        if (!slides(s)) break;
+                        BlockState above = level.getBlockState(p.above());
+                        if (!above.isAir() && above.canBeReplaced()) {
+                            level.destroyBlock(p.above(), true); // the grass and flowers go with it
+                        }
+                        BlockState falling = s.is(Blocks.GRAVEL) ? s : Blocks.MUD.defaultBlockState();
+                        FallingBlockEntity mud = FallingBlockEntity.fall(level, p, falling);
+                        mud.setDeltaMovement(downhill.getStepX() * (0.35 + random.nextDouble() * 0.3), 0.1, downhill.getStepZ() * (0.35 + random.nextDouble() * 0.3));
+                        mud.setHurtsEntities(1.0F, 4);
+                        mud.hurtMarked = true;
+                        moved++;
+                    }
+                }
+            }
+            if (moved >= 6) {
+                level.playSound(null, x, height, z, ModSounds.AVALANCHE.get(), SoundSource.WEATHER, 3.0F, 0.6F + random.nextFloat() * 0.15F);
+                for (ServerPlayer p : level.players()) {
+                    if (p.distanceToSqr(x, height, z) < 64 * 64) {
+                        p.displayClientMessage(Component.translatable("message.reikos_weather.mudslide").withStyle(s -> s.withColor(0xA0703C).withBold(true)), true);
                     }
                 }
                 return;

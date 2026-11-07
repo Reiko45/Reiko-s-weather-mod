@@ -133,6 +133,10 @@ public final class WeatherManager {
         cachedState = null;
         seasonInfo = Seasons.Info.NONE;
         Seasons.setTemperatureShift(0.0F);
+        Fronts.reset();
+        FireTracker.reset();
+        LightningWarnings.reset();
+        HailGlass.reset();
     }
 
     // ------------------------------------------------------------------ cycle
@@ -161,6 +165,11 @@ public final class WeatherManager {
         }
         driftWind(level.random, state);
         tickCells(level, state, cycle);
+        if (cycle && level.getGameTime() % 100L == 0L) {
+            Convection.tick(level, state);
+            SeaFog.tick(level, state);
+            FireTracker.tick(level, state);
+        }
 
         if (level.getGameTime() % 100L == 0L) {
             sync(level, state);
@@ -284,6 +293,9 @@ public final class WeatherManager {
         float total = 0.0F;
         for (int i = 0; i < types.length; i++) {
             WeatherType t = types[i];
+            if (t.cellOnly()) {
+                continue; // fronts and the like only ever come as storm cells
+            }
             float w = WeatherConfig.weight(t) * seasonMultiplier(t);
             float affinity = 0.0F;
             for (Climate c : Climate.values()) {
@@ -409,11 +421,14 @@ public final class WeatherManager {
         Vec3 wind = Wind.direction(state.windAngle);
         for (StormCell cell : state.cells) {
             // storms steer with the wind
-            double speed = Math.sqrt(cell.vx * cell.vx + cell.vz * cell.vz);
-            cell.vx = Mth.lerp(0.002, cell.vx, wind.x * speed);
-            cell.vz = Mth.lerp(0.002, cell.vz, wind.z * speed);
+            if (cell.steer) {
+                double speed = Math.sqrt(cell.vx * cell.vx + cell.vz * cell.vz);
+                cell.vx = Mth.lerp(0.002, cell.vx, wind.x * speed);
+                cell.vz = Mth.lerp(0.002, cell.vz, wind.z * speed);
+            }
             cell.tick();
         }
+        Fronts.tick(level, state);
         if (state.cells.removeIf(StormCell::expired)) {
             changed = true;
         }
@@ -468,12 +483,14 @@ public final class WeatherManager {
                 case SUPERCELL, HAIL -> 160 + random.nextFloat() * 120;
                 case HURRICANE -> 500 + random.nextFloat() * 250;
                 case DERECHO -> 110 + random.nextFloat() * 60;
+                case COLD_FRONT -> 70 + random.nextFloat() * 30;
+                case WARM_FRONT -> 170 + random.nextFloat() * 60;
                 default -> 220 + random.nextFloat() * 260;
             };
         }
-        boolean derecho = type == WeatherType.DERECHO;
-        // derechos race across the map several times faster than other storms
-        double speed = derecho ? 0.35 + random.nextDouble() * 0.15 : 0.1 + random.nextDouble() * 0.1;
+        boolean derecho = type == WeatherType.DERECHO || type == WeatherType.COLD_FRONT;
+        // derechos and cold fronts race across the map several times faster than other storms
+        double speed = derecho ? (type == WeatherType.COLD_FRONT ? 0.25 : 0.35) + random.nextDouble() * 0.15 : 0.1 + random.nextDouble() * 0.1;
         // long enough to cross ~2 km of map (a derecho keeps going for ~3.5 km)
         int maxAge = (int) (((derecho ? 3500 : 1800) + radius * 2) / speed);
         return spawnCell(level, state, type, x, z, radius, speed, maxAge);
@@ -482,7 +499,18 @@ public final class WeatherManager {
     /** Spawns a storm cell drifting downwind at {@code speed} blocks a tick, lasting {@code maxAge} ticks. */
     public static StormCell spawnCell(ServerLevel level, WeatherState state, WeatherType type, double x, double z, float radius, double speed, int maxAge) {
         Vec3 wind = Wind.direction(state.windAngle);
-        StormCell cell = new StormCell(state.nextCellId++, type, x, z, radius, wind.x * speed, wind.z * speed, maxAge);
+        return spawnCell(level, state, type, x, z, radius, wind.x * speed, wind.z * speed, maxAge, -1, true);
+    }
+
+    /**
+     * Spawns a cell with a given velocity. {@code grow} is how many ticks it takes to build up (below 0 for
+     * the usual), and {@code steer} whether it turns with the wind.
+     */
+    public static StormCell spawnCell(ServerLevel level, WeatherState state, WeatherType type, double x, double z, float radius,
+                                      double vx, double vz, int maxAge, int grow, boolean steer) {
+        StormCell cell = new StormCell(state.nextCellId++, type, x, z, radius, vx, vz, maxAge);
+        if (grow > 0) cell.grow = grow;
+        cell.steer = steer;
         state.cells.add(cell);
         state.setDirty();
         sync(level, state);

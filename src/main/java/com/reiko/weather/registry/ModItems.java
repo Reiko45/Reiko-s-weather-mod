@@ -110,5 +110,9 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> VOLCANIC_VENT = REGISTER.registerSimpleBlockItem(ModBlocks.VOLCANIC_VENT);
     public static final DeferredItem<BlockItem> SEISMOGRAPH = REGISTER.registerSimpleBlockItem(ModBlocks.SEISMOGRAPH);
 
+    public static final DeferredItem<BlockItem> GEYSER = REGISTER.registerSimpleBlockItem(ModBlocks.GEYSER);
+    public static final DeferredItem<BlockItem> SALT_CRUST = REGISTER.registerSimpleBlockItem(ModBlocks.SALT_CRUST);
+    public static final DeferredItem<BlockItem> BLACK_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.BLACK_SAND);
+
     private ModItems() {}
 }

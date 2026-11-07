@@ -20,8 +20,17 @@ public final class ModStructures {
     public static final DeferredHolder<StructurePieceType, StructurePieceType> VOLCANO_PIECE = PIECES.register("volcano",
             () -> VolcanoPiece::new);
 
+    public static final DeferredHolder<StructureType<?>, StructureType<com.reiko.weather.landform.LandformStructure>> LANDFORM = TYPES.register("landform",
+            () -> () -> com.reiko.weather.landform.LandformStructure.CODEC);
+    public static final DeferredHolder<StructurePieceType, StructurePieceType> LANDFORM_PIECE = PIECES.register("landform",
+            () -> com.reiko.weather.landform.LandformPiece::new);
+
     /** The volcano structure itself (defined by data, in worldgen/structure/volcano.json). */
     public static final ResourceKey<Structure> VOLCANO_KEY = ResourceKey.create(Registries.STRUCTURE, ReikosWeather.id("volcano"));
+
+    public static final ResourceKey<Structure> SALT_FLAT_KEY = ResourceKey.create(Registries.STRUCTURE, ReikosWeather.id("salt_flat"));
+    public static final ResourceKey<Structure> GLACIER_KEY = ResourceKey.create(Registries.STRUCTURE, ReikosWeather.id("glacier"));
+    public static final ResourceKey<Structure> DUNES_KEY = ResourceKey.create(Registries.STRUCTURE, ReikosWeather.id("dune_field"));
 
     private ModStructures() {}
 }

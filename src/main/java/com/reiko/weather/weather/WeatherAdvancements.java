@@ -38,6 +38,8 @@ public final class WeatherAdvancements {
             }
             if (type == WeatherType.SANDSTORM && climate == Climate.ARID) award(player, "dust_in_the_wind");
             if (type == WeatherType.DERECHO && local.intensity() > 0.5F) award(player, "straight_line_winds");
+            if (type == WeatherType.WILDFIRE_SMOKE && level.isDay()) award(player, "red_sky");
+            if (type == WeatherType.COLD_FRONT) award(player, "front_line");
         }
 
         for (TornadoEntity tornado : level.getEntities(ModEntities.TORNADO.get(), new AABB(player.blockPosition()).inflate(64), e -> true)) {

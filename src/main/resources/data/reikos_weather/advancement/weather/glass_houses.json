@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/under_the_weather",
+  "display": {
+    "icon": {
+      "id": "minecraft:glass_pane"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.glass_houses"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.glass_houses.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

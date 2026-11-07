@@ -87,6 +87,23 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue GUIDE_ON_JOIN;
     public static final ModConfigSpec.BooleanValue TOUGH_AS_NAILS;
 
+    public static final ModConfigSpec.BooleanValue AFTERNOON_STORMS;
+    public static final ModConfigSpec.BooleanValue SEA_FOG;
+    public static final ModConfigSpec.BooleanValue WILDFIRE_SMOKE;
+    public static final ModConfigSpec.BooleanValue LIGHTNING_WARNINGS;
+    public static final ModConfigSpec.BooleanValue HAIL_BREAKS_GLASS;
+    public static final ModConfigSpec.BooleanValue MUDSLIDES;
+    public static final ModConfigSpec.BooleanValue ACID_RAIN;
+    public static final ModConfigSpec.BooleanValue HOT_SPRINGS;
+    public static final ModConfigSpec.BooleanValue CRATER_LAKES;
+    public static final ModConfigSpec.BooleanValue LAVA_TUBES;
+    public static final ModConfigSpec.BooleanValue METEOR_CRATERS;
+    public static final ModConfigSpec.BooleanValue SALT_FLATS;
+    public static final ModConfigSpec.BooleanValue GLACIERS;
+    public static final ModConfigSpec.BooleanValue TIDAL_FLATS;
+    public static final ModConfigSpec.BooleanValue DUNES;
+    public static final ModConfigSpec.BooleanValue CHANGING_LANDFORMS;
+
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
     public static final ModConfigSpec.DoubleValue DAYS_BETWEEN_ERUPTIONS;
@@ -126,6 +143,8 @@ public final class WeatherConfig {
                 .defineInRange("hailDamage", 1.0, 0.0, 20.0);
         HAIL_DAMAGES_CROPS = b.comment("Hail can knock back the growth of exposed crops.")
                 .define("hailDamagesCrops", true);
+        HAIL_BREAKS_GLASS = b.comment("Big hail cracks and smashes glass open to the sky (tinted glass holds). Needs mobGriefing.")
+                .define("hailBreaksGlass", true);
         FREEZING = b.comment("Blizzards and sleet chill unsheltered creatures. Leather armor and nearby heat sources protect.")
                 .define("freezing", true);
         HEAT_EXHAUSTION = b.comment("Extra hunger exhaustion per second for players in direct sun during a heatwave (0 disables).")
@@ -235,6 +254,11 @@ public final class WeatherConfig {
                 .define("tides", true);
         STORM_DEBRIS = b.comment("Violent storms (derechos, hurricanes, supercells) break branches off trees (needs mobGriefing).")
                 .define("stormDebris", true);
+        AFTERNOON_STORMS = b.comment("On summer days (any day in the tropics) clouds tower up and some break into thunderstorms",
+                        "in the afternoon, dying away by dusk.")
+                .define("afternoonStorms", true);
+        SEA_FOG = b.comment("On cool, calm mornings a bank of fog rolls in off the sea, burning off by mid-morning.")
+                .define("seaFog", true);
         b.pop();
 
         b.comment("Sky events").push("sky");
@@ -274,6 +298,13 @@ public final class WeatherConfig {
                 .define("fulgurite", true);
         BALL_LIGHTNING = b.comment("Rare ball lightning drifts around during thunderstorms.")
                 .define("ballLightning", true);
+        LIGHTNING_WARNINGS = b.comment("St. Elmo's fire: sparks crackle around the spot (and on anyone near it) a few seconds",
+                        "before the mod's storm lightning strikes there.")
+                .define("lightningWarnings", true);
+        WILDFIRE_SMOKE = b.comment("Big fires send a pall of smoke drifting downwind that turns the sun red.")
+                .define("wildfireSmoke", true);
+        MUDSLIDES = b.comment("Long downpours make soil on steep slopes slide downhill as mud (needs mobGriefing).")
+                .define("mudslides", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -318,6 +349,31 @@ public final class WeatherConfig {
                 .define("lavaBombs", true);
         ASH_FALL = b.comment("Eruptions send an ash cloud downwind that darkens the sky and buries the land in ash.")
                 .define("ashFall", true);
+        ACID_RAIN = b.comment("After an eruption, volcanic smog drifts downwind with an acid drizzle: copper weathers faster,",
+                        "leaves wilt and fall, crops struggle and bare heads sting.")
+                .define("acidRain", true);
+        LAVA_TUBES = b.comment("Lava tube caves run down under the flanks of active volcanoes.")
+                .define("lavaTubes", true);
+        b.pop();
+
+        b.comment("Landforms shaped by the weather (generated in new parts of the world)").push("landforms");
+        HOT_SPRINGS = b.comment("Steaming hot springs (warm, and they heal you) and geysers that erupt every few minutes.")
+                .define("hotSprings", true);
+        CRATER_LAKES = b.comment("Extinct volcanoes with a lake in the crater and forest on the slopes.")
+                .define("craterLakes", true);
+        METEOR_CRATERS = b.comment("Old, weathered meteor craters with meteorite buried in the middle.")
+                .define("meteorCraters", true);
+        SALT_FLATS = b.comment("Salt-crusted dry lake beds in deserts that flood when a storm passes over and dry out again.")
+                .define("saltFlats", true);
+        GLACIERS = b.comment("Glaciers in cold mountains, with hidden crevasses under the snow.")
+                .define("glaciers", true);
+        TIDAL_FLATS = b.comment("Muddy tidal flats on the coast, under water at high tide, with tide pools to forage in.")
+                .define("tidalFlats", true);
+        DUNES = b.comment("Dune fields in deserts, shaped by the prevailing wind.")
+                .define("dunes", true);
+        CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
+                        "and grow in winter, and dunes creep downwind in sandstorms.")
+                .define("changingLandforms", true);
         b.pop();
 
         b.comment("Tornadoes spawned by supercell storms").push("tornadoes");

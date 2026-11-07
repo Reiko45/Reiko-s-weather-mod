@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "meteor_crater",
+  "biomes": "#reikos_weather:has_structure/meteor_crater",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

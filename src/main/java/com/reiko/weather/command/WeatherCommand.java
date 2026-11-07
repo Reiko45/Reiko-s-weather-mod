@@ -81,7 +81,7 @@ public final class WeatherCommand {
                 .then(Commands.literal("storm").requires(s -> s.hasPermission(2))
                         .then(Commands.argument("type", StringArgumentType.word())
                                 .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
-                                        Arrays.stream(WeatherType.values()).filter(WeatherType::isStorm).map(WeatherType::id), builder))
+                                        Arrays.stream(WeatherType.values()).filter(t -> t.isStorm() || !t.natural()).map(WeatherType::id), builder))
                                 .executes(ctx -> storm(ctx, false))
                                 .then(Commands.literal("here").executes(ctx -> storm(ctx, true)))))
                 .then(Commands.literal("meteor").requires(s -> s.hasPermission(2))
@@ -232,7 +232,7 @@ public final class WeatherCommand {
     private static int storm(CommandContext<CommandSourceStack> ctx, boolean here) throws CommandSyntaxException {
         String id = StringArgumentType.getString(ctx, "type");
         WeatherType type = WeatherType.byId(id);
-        if (type == null || !type.isStorm()) {
+        if (type == null || !type.isStorm() && type.natural()) {
             throw UNKNOWN_TYPE.create(id);
         }
         CommandSourceStack source = ctx.getSource();

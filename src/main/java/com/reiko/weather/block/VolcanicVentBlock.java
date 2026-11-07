@@ -26,9 +26,28 @@ public class VolcanicVentBlock extends Block {
         return CODEC;
     }
 
+    /** Under a hot spring the vent bubbles up through the water, and steam drifts off the surface. */
+    private static void hotSpring(Level level, BlockPos pos, RandomSource random) {
+        BlockPos.MutableBlockPos p = pos.above().mutable();
+        for (int i = 0; i < 6 && level.getFluidState(p).is(net.minecraft.tags.FluidTags.WATER); i++) {
+            level.addParticle(ParticleTypes.BUBBLE_COLUMN_UP, p.getX() + random.nextDouble(), p.getY() + 0.2, p.getZ() + random.nextDouble(), 0.0, 0.04, 0.0);
+            p.move(0, 1, 0);
+        }
+        if (level.getBlockState(p).isAir()) {
+            for (int i = 0; i < 3; i++) {
+                level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, p.getX() + (random.nextDouble() - 0.5) * 3.0 + 0.5, p.getY() + 0.1,
+                        p.getZ() + (random.nextDouble() - 0.5) * 3.0 + 0.5, 0.0, 0.02, 0.0);
+            }
+            if (random.nextInt(8) == 0) {
+                level.playLocalSound(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, com.reiko.weather.registry.ModSounds.HOT_SPRING.get(),
+                        SoundSource.BLOCKS, 0.4F, 0.8F + random.nextFloat() * 0.4F, false);
+            }
+        }
+    }
+
     @Override
     public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
-        if (!entity.isSteppingCarefully() && entity instanceof LivingEntity) {
+        if (!entity.isSteppingCarefully() && entity instanceof LivingEntity && !entity.isInWater()) {
             entity.hurt(level.damageSources().hotFloor(), 1.0F);
         }
         super.stepOn(level, pos, state, entity);
@@ -36,6 +55,10 @@ public class VolcanicVentBlock extends Block {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (level.getFluidState(pos.above()).is(net.minecraft.tags.FluidTags.WATER)) {
+            hotSpring(level, pos, random);
+            return;
+        }
         if (!level.getBlockState(pos.above()).isAir()) {
             return;
         }

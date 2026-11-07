@@ -56,6 +56,8 @@ public final class WeatherProfile {
     public final boolean debris;
     /** Volcanic ash piles up to this many layers (0 = none). */
     public final int ashLayers;
+    /** Acid rain: copper weathers faster, leaves wilt and fall, and unprotected skin stings. */
+    public final boolean acid;
 
     private WeatherProfile(Builder b) {
         this.rain = b.rain;
@@ -83,6 +85,7 @@ public final class WeatherProfile {
         this.waterspouts = b.waterspouts;
         this.debris = b.debris;
         this.ashLayers = b.ashLayers;
+        this.acid = b.acid;
     }
 
     public static Builder builder() {
@@ -128,6 +131,7 @@ public final class WeatherProfile {
         r.waterspouts = d.waterspouts;
         r.debris = d.debris;
         r.ashLayers = d.ashLayers;
+        r.acid = d.acid;
         return r.build();
     }
 
@@ -143,7 +147,7 @@ public final class WeatherProfile {
         float rain, thunder, overcast, tintStrength, fog, wind, freeze, lightning, clouds = -1;
         int tint = 0xFFFFFF, fogColor = -1, snowLayers, ashLayers;
         final float[] precip = new float[Precip.values().length];
-        boolean hail, heat, cropBoost, glazeWater, glazeGround, puddles, floods, heatLightning, tornadoes, waterspouts, debris;
+        boolean hail, heat, cropBoost, glazeWater, glazeGround, puddles, floods, heatLightning, tornadoes, waterspouts, debris, acid;
 
         /** A builder pre-filled with an existing profile's values. */
         public static Builder from(WeatherProfile p) {
@@ -153,7 +157,7 @@ public final class WeatherProfile {
             System.arraycopy(p.precip, 0, b.precip, 0, b.precip.length);
             b.hail = p.hail; b.freeze = p.freeze; b.heat = p.heat; b.snowLayers = p.snowLayers; b.cropBoost = p.cropBoost;
             b.glazeWater = p.glazeWater; b.glazeGround = p.glazeGround; b.puddles = p.puddles; b.floods = p.floods;
-            b.heatLightning = p.heatLightning; b.lightning = p.lightning; b.tornadoes = p.tornadoes; b.waterspouts = p.waterspouts; b.debris = p.debris; b.ashLayers = p.ashLayers;
+            b.heatLightning = p.heatLightning; b.lightning = p.lightning; b.tornadoes = p.tornadoes; b.waterspouts = p.waterspouts; b.debris = p.debris; b.ashLayers = p.ashLayers; b.acid = p.acid;
             return b;
         }
 
@@ -180,6 +184,7 @@ public final class WeatherProfile {
         public Builder waterspouts() { waterspouts = true; return this; }
         public Builder debris() { debris = true; return this; }
         public Builder ashLayers(int v) { ashLayers = v; return this; }
+        public Builder acid() { acid = true; return this; }
         public WeatherProfile build() { return new WeatherProfile(this); }
     }
 }

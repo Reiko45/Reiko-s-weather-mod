@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "reikos_weather:sandbag",
-    "reikos_weather:volcanic_ash"
+    "reikos_weather:volcanic_ash",
+    "reikos_weather:black_sand"
   ]
 }
