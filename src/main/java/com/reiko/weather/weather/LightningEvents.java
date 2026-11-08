@@ -41,6 +41,13 @@ public final class LightningEvents {
         if (WeatherConfig.DRY_LIGHTNING.get() && level.dimension() == Level.OVERWORLD && !level.isRainingAt(strike.above())) {
             dryLightningFire(level, strike);
         }
+        if (WeatherConfig.PEAT_FIRES.get()) {
+            // a strike on a bog can set the peat under it smouldering
+            int lit = 0;
+            for (BlockPos pos : BlockPos.betweenClosed(strike.offset(-1, -3, -1), strike.offset(1, 0, 1))) {
+                if (lit < 3 && com.reiko.weather.block.PeatBlock.ignite(level, pos.immutable())) lit++;
+            }
+        }
     }
 
     /** Lightning batteries within a few blocks of a strike (for example under a lightning rod) soak it up. */

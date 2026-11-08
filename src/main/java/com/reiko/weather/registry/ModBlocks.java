@@ -131,5 +131,26 @@ public final class ModBlocks {
             () -> new net.minecraft.world.level.block.ColoredFallingBlock(new net.minecraft.util.ColorRGBA(0x2B2826),
                     BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F).sound(SoundType.SAND)));
 
+    public static final DeferredBlock<com.reiko.weather.block.CrackedMudBlock> CRACKED_MUD = REGISTER.register("cracked_mud",
+            () -> new com.reiko.weather.block.CrackedMudBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).strength(0.8F, 2.0F)
+                    .sound(SoundType.PACKED_MUD).randomTicks()));
+
+    /** Desert dust blown far from a sandstorm and settled out of the haze (washes away in the rain, like ash). */
+    public static final DeferredBlock<com.reiko.weather.block.VolcanicAshBlock> DESERT_DUST = REGISTER.register("desert_dust",
+            () -> new com.reiko.weather.block.VolcanicAshBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).replaceable()
+                    .forceSolidOff().strength(0.1F).sound(SoundType.SAND).pushReaction(PushReaction.DESTROY)
+                    .isViewBlocking((s, l, p) -> s.getValue(com.reiko.weather.block.VolcanicAshBlock.LAYERS) >= 8)));
+
+    /** Snow reddened by desert dust settling out of a haze (fresh snow buries it again). */
+    public static final DeferredBlock<net.minecraft.world.level.block.SnowLayerBlock> DUSTY_SNOW = REGISTER.register("dusty_snow",
+            () -> new net.minecraft.world.level.block.SnowLayerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_PINK).replaceable()
+                    .forceSolidOff().randomTicks().strength(0.1F).requiresCorrectToolForDrops().sound(SoundType.SNOW)
+                    .isViewBlocking((s, l, p) -> s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) >= 8)
+                    .pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredBlock<com.reiko.weather.block.PeatBlock> PEAT = REGISTER.register("peat",
+            () -> new com.reiko.weather.block.PeatBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.6F)
+                    .sound(SoundType.ROOTED_DIRT).lightLevel(s -> s.getValue(com.reiko.weather.block.PeatBlock.SMOULDERING) ? 3 : 0)));
+
     private ModBlocks() {}
 }

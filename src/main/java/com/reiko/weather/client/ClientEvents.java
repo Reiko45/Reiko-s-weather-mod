@@ -107,6 +107,18 @@ public final class ClientEvents {
                     p.setColor(0.94F, 0.95F, 0.97F);
                     return p;
                 });
+        event.registerSpriteSet(ModParticles.STEAM_FOG.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.STEAM);
+                    p.setColor(0.95F, 0.96F, 0.98F);
+                    return p;
+                });
+        event.registerSpriteSet(ModParticles.SPRAY.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.SPRAY);
+                    p.setColor(0.97F, 0.98F, 1.0F);
+                    return p;
+                });
         event.registerSpriteSet(ModParticles.RIPPLE.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new RippleParticle(level, x, y, z, sprites));
         event.registerSpriteSet(ModParticles.EMBER.get(), sprites ->
@@ -136,6 +148,7 @@ public final class ClientEvents {
         event.registerBlockEntityRenderer(ModBlockEntities.FORECAST_BOARD.get(), com.reiko.weather.client.render.ForecastBoardRenderer::new);
         event.registerEntityRenderer(ModEntities.METEOR.get(), com.reiko.weather.client.render.MeteorRenderer::new);
         event.registerEntityRenderer(ModEntities.VOLCANIC_BOMB.get(), com.reiko.weather.client.render.VolcanicBombRenderer::new);
+        event.registerEntityRenderer(ModEntities.ICE_FLOE.get(), com.reiko.weather.client.render.IceFloeRenderer::new);
     }
 
     public static void registerModels(ModelEvent.RegisterAdditional event) {
@@ -179,7 +192,9 @@ public final class ClientEvents {
             Mirage.render(event);
             VolcanoClient.collectPlumes(event.getCamera(), partialTick);
             CloudPuffs.collect(event.getCamera(), partialTick);
+            SkySights.collectSprites(event.getCamera(), partialTick);
             PuffRenderer.render(event.getCamera());
+            WaterMist.renderRainbows(event);
             SkyEffectsRenderer.renderSunbeams(event);
             NatureEffects.renderFlocks(event.getCamera(), partialTick);
         }
@@ -211,6 +226,8 @@ public final class ClientEvents {
         StaticElectricity.tick(mc);
         DiamondDust.tick(mc);
         Mirage.tick(mc);
+        WaterMist.tick(mc);
+        SkySights.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);

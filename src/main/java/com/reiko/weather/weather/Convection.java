@@ -24,6 +24,9 @@ public final class Convection {
         if (!state.type.isCalm() && state.type != WeatherType.HEATWAVE) {
             return; // it has to be a fine morning for the ground to heat up
         }
+        if (Drought.severity(state) > 0.5F) {
+            return; // in a drought the air is too dry for the clouds to build into storms
+        }
         Season season = WeatherManager.seasonInfo().season();
         RandomSource random = level.random;
         for (ServerPlayer player : level.players()) {

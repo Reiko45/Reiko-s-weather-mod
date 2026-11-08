@@ -8,6 +8,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 /** Small helpers shared by the landform builders. */
 public final class Terrain {
@@ -56,6 +57,27 @@ public final class Terrain {
     public static void set(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int y, int z, BlockState state) {
         pos.set(x, y, z);
         level.setBlock(pos, state, FLAGS);
+    }
+
+    /** Sets a block only if it's inside {@code area} (the chunk being built): for things that reach across chunks, like trees. */
+    public static void setIn(WorldGenLevel level, BoundingBox area, BlockPos.MutableBlockPos pos, int x, int y, int z, BlockState state) {
+        if (area.isInside(x, y, z)) {
+            set(level, pos, x, y, z, state);
+        }
+    }
+
+    /** Whether a column is inside the area being built. */
+    public static boolean column(BoundingBox area, int x, int z) {
+        return x >= area.minX() && x <= area.maxX() && z >= area.minZ() && z <= area.maxZ();
+    }
+
+    /** A smooth 0-1 value-noise field (bilinear between a grid of {@code scale}-block cells). */
+    public static float field(long seed, double x, double z, double scale) {
+        double gx = x / scale, gz = z / scale;
+        int x0 = Mth.floor(gx), z0 = Mth.floor(gz);
+        float fx = smooth((float) (gx - x0)), fz = smooth((float) (gz - z0));
+        float a = noise(seed, x0, 0, z0), b = noise(seed, x0 + 1, 0, z0), c = noise(seed, x0, 0, z0 + 1), d = noise(seed, x0 + 1, 0, z0 + 1);
+        return Mth.lerp(fz, Mth.lerp(fx, a, b), Mth.lerp(fx, c, d));
     }
 
     /** A repeatable 0-1 value for a position. */

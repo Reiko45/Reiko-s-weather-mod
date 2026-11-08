@@ -42,5 +42,10 @@ public final class ModEntities {
                     .sized(0.7F, 0.7F).fireImmune().noSummon().clientTrackingRange(16).updateInterval(1)
                     .build(ReikosWeather.id("volcanic_bomb").toString()));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<com.reiko.weather.entity.IceFloeEntity>> ICE_FLOE = REGISTER.register("ice_floe",
+            () -> EntityType.Builder.<com.reiko.weather.entity.IceFloeEntity>of(com.reiko.weather.entity.IceFloeEntity::new, MobCategory.MISC)
+                    .sized(2.0F, 0.45F).clientTrackingRange(8).updateInterval(3)
+                    .build(ReikosWeather.id("ice_floe").toString()));
+
     private ModEntities() {}
 }

@@ -128,6 +128,21 @@ public final class Microclimate {
             b.clouds = p.clouds * (1.0F - 0.4F * info.rainShadow());
             for (int i = 0; i < b.precip.length; i++) b.precip[i] *= dry;
         }
+        // a föhn (chinook) wind: strong wind coming down off high ground upwind has dropped its rain on the far side,
+        // and warms as it sinks, so it arrives warm and bone-dry, and the snow melts away fast
+        float foehn = foehn(info, p);
+        if (foehn > 0.0F) {
+            b.tempOffset += 9.0F * foehn;
+            b.rain *= 1.0F - 0.5F * foehn;
+            b.overcast *= 1.0F - 0.6F * foehn;
+            b.fog *= 1.0F - 0.7F * foehn;
+            b.snowLayers = 0;
+        }
+        // a frost hollow: on clear, still nights cold air drains downhill and pools in the valley bottom
+        float hollow = frostHollow(level, info, p);
+        if (hollow > 0.0F) {
+            b.tempOffset -= 6.0F * hollow;
+        }
         WeatherType type = local.type();
         if (info.lakeEffect() > 0 && climate == Climate.COLD
                 && (type.isCalm() || type == WeatherType.WINDY || type == WeatherType.SNOW || type == WeatherType.FOG)) {
@@ -139,6 +154,20 @@ public final class Microclimate {
             if (le > 0.5F) b.snowLayers = Math.max(b.snowLayers, 2);
         }
         return new LocalWeather(type, b.build(), local.intensity(), local.cell(), local.cellWeight());
+    }
+
+    /** 0 to 1: how strongly a föhn wind is blowing here (rain shadow plus a strong wind over the mountains). */
+    public static float foehn(Info info, WeatherProfile p) {
+        if (info.rainShadow() <= 0.3F || p.wind < 0.45F) return 0.0F;
+        return Mth.clamp((info.rainShadow() - 0.3F) / 0.4F, 0.0F, 1.0F) * Mth.clamp((p.wind - 0.45F) / 0.25F, 0.0F, 1.0F);
+    }
+
+    /** 0 to 1: how much cold air is pooling here (a valley floor on a clear, calm night). */
+    public static float frostHollow(Level level, Info info, WeatherProfile p) {
+        if (info.valley() <= 0.2F || p.overcast > 0.4F || p.rain > 0.1F || p.wind > 0.35F || p.fog > 0.6F) return 0.0F;
+        float sun = SkyPhenomena.sunHeight(level, 1.0F);
+        float night = Mth.clamp((0.05F - sun) * 5.0F, 0.0F, 1.0F);
+        return night * Mth.clamp((info.valley() - 0.2F) / 0.5F, 0.0F, 1.0F) * (1.0F - p.overcast * 2.0F);
     }
 
     private Microclimate() {}

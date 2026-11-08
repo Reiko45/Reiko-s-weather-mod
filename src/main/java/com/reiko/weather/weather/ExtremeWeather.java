@@ -54,6 +54,16 @@ public final class ExtremeWeather {
                 if (evaporating) evaporate(level, top);
             }
         }
+        // a drought: the land dries out day by day, crops wilt and the dry grass catches easily
+        float drought = Drought.severity(WeatherManager.state(level));
+        if (drought > 0.0F && climate == Climate.TEMPERATE && level.isDay() && profile.rain < 0.1F) {
+            if (drought > 0.5F && WeatherConfig.WILDFIRES.get() && random.nextInt(Math.round(5400 / drought)) == 0) {
+                wildfire(level, player);
+            }
+            if (WeatherConfig.CROP_WILTING.get() && random.nextFloat() < 0.5F * drought) {
+                wilt(level, column(level, player, random, HEAT_AREA));
+            }
+        }
         boolean freezing = climate == Climate.COLD;
         if (freezing && WeatherConfig.FREEZE_RIVERS.get()) {
             for (int i = 0; i < 3; i++) {
@@ -72,6 +82,7 @@ public final class ExtremeWeather {
                 && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
             mudslide(level, player, random);
         }
+        GroundEvents.tick(level, player, local, climate, profile.rain > 0.8F && soaked(level, local));
         if (local.type() == WeatherType.BLIZZARD && freezing && intensity >= 0.9F && WeatherConfig.AVALANCHES.get()
                 && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && random.nextInt(3000) == 0) {
             avalanche(level, player, random);

@@ -18,12 +18,15 @@ public record LocalWeather(WeatherType type, WeatherProfile profile, float inten
     public static LocalWeather resolve(WeatherType background, @Nullable CustomWeather custom, float backgroundIntensity,
                                        List<StormCell> cells, Climate climate, double x, double z) {
         StormCell best = null;
-        float bestWeight = 0.0F;
+        float bestWeight = 0.0F, bestRank = 0.0F;
         for (StormCell cell : cells) {
             float w = cell.weightAt(x, z);
-            if (w > bestWeight) {
+            // a dust haze is high up: any real weather underneath it takes over (and rain falling through it comes down dusty)
+            float rank = cell.type == WeatherType.DUST_HAZE || w <= 0.3F ? w : w + 1.0F;
+            if (rank > bestRank) {
                 best = cell;
                 bestWeight = w;
+                bestRank = rank;
             }
         }
         WeatherProfile backgroundProfile = CustomWeathers.backgroundProfile(background, custom, climate);
@@ -31,6 +34,20 @@ public record LocalWeather(WeatherType type, WeatherProfile profile, float inten
             return new LocalWeather(background, backgroundProfile, backgroundIntensity, null, 0.0F);
         }
         WeatherProfile blended = WeatherProfile.blend(backgroundProfile, WeatherProfiles.get(best.type, climate), bestWeight);
+        if (best.type == WeatherType.DUST_HAZE && background.vanillaRain) {
+            // the haze is high up: the rain keeps falling underneath it (and brings the dust down with it)
+            WeatherProfile.Builder b = WeatherProfile.Builder.from(blended);
+            b.rain = Math.max(b.rain, backgroundProfile.rain);
+            b.thunder = Math.max(b.thunder, backgroundProfile.thunder);
+            b.cropBoost = backgroundProfile.cropBoost;
+            b.puddles = backgroundProfile.puddles;
+            b.floods = backgroundProfile.floods;
+            b.dustLayers = 0;
+            for (Precip p : Precip.values()) {
+                b.precip[p.ordinal()] = Math.max(b.precip[p.ordinal()], backgroundProfile.rateOf(p));
+            }
+            return new LocalWeather(background, b.build(), backgroundIntensity, best, bestWeight);
+        }
         boolean cellDominant = bestWeight >= 0.5F;
         return new LocalWeather(cellDominant ? best.type : background, blended,
                 cellDominant ? bestWeight : backgroundIntensity, best, bestWeight);

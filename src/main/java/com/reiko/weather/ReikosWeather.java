@@ -162,6 +162,9 @@ public class ReikosWeather {
             event.accept(ModItems.GEYSER.get());
             event.accept(ModItems.SALT_CRUST.get());
             event.accept(ModItems.BLACK_SAND.get());
+            event.accept(ModItems.CRACKED_MUD.get());
+            event.accept(ModItems.DESERT_DUST.get());
+            event.accept(ModItems.PEAT.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

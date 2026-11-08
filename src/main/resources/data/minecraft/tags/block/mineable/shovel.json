@@ -3,6 +3,10 @@
   "values": [
     "reikos_weather:sandbag",
     "reikos_weather:volcanic_ash",
-    "reikos_weather:black_sand"
+    "reikos_weather:black_sand",
+    "reikos_weather:cracked_mud",
+    "reikos_weather:desert_dust",
+    "reikos_weather:dusty_snow",
+    "reikos_weather:peat"
   ]
 }

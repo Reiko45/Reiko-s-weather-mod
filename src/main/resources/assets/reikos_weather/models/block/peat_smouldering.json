@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "reikos_weather:block/peat_smouldering",
+    "side": "reikos_weather:block/peat_smouldering_side",
+    "bottom": "reikos_weather:block/peat"
+  }
+}

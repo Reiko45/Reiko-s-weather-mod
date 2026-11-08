@@ -58,6 +58,10 @@ public final class WeatherProfile {
     public final int ashLayers;
     /** Acid rain: copper weathers faster, leaves wilt and fall, and unprotected skin stings. */
     public final boolean acid;
+    /** Desert dust settles out of the haze, up to this many layers (0 = none). */
+    public final int dustLayers;
+    /** Degrees (°C) the air is warmer (or, below 0, colder) than usual: a cold snap, a föhn wind, a frost hollow. */
+    public final float tempOffset;
 
     private WeatherProfile(Builder b) {
         this.rain = b.rain;
@@ -86,6 +90,8 @@ public final class WeatherProfile {
         this.debris = b.debris;
         this.ashLayers = b.ashLayers;
         this.acid = b.acid;
+        this.dustLayers = b.dustLayers;
+        this.tempOffset = b.tempOffset;
     }
 
     public static Builder builder() {
@@ -118,6 +124,7 @@ public final class WeatherProfile {
         }
         r.freeze = Mth.lerp(t, a.freeze, b.freeze);
         r.lightning = Mth.lerp(t, a.lightning, b.lightning);
+        r.tempOffset = Mth.lerp(t, a.tempOffset, b.tempOffset);
         r.hail = d.hail;
         r.heat = d.heat;
         r.snowLayers = d.snowLayers;
@@ -132,6 +139,7 @@ public final class WeatherProfile {
         r.debris = d.debris;
         r.ashLayers = d.ashLayers;
         r.acid = d.acid;
+        r.dustLayers = d.dustLayers;
         return r.build();
     }
 
@@ -144,8 +152,8 @@ public final class WeatherProfile {
 
     public static final class Builder {
         // package-private so datapack weathers (CustomWeather) can override any field
-        float rain, thunder, overcast, tintStrength, fog, wind, freeze, lightning, clouds = -1;
-        int tint = 0xFFFFFF, fogColor = -1, snowLayers, ashLayers;
+        float rain, thunder, overcast, tintStrength, fog, wind, freeze, lightning, tempOffset, clouds = -1;
+        int tint = 0xFFFFFF, fogColor = -1, snowLayers, ashLayers, dustLayers;
         final float[] precip = new float[Precip.values().length];
         boolean hail, heat, cropBoost, glazeWater, glazeGround, puddles, floods, heatLightning, tornadoes, waterspouts, debris, acid;
 
@@ -158,6 +166,7 @@ public final class WeatherProfile {
             b.hail = p.hail; b.freeze = p.freeze; b.heat = p.heat; b.snowLayers = p.snowLayers; b.cropBoost = p.cropBoost;
             b.glazeWater = p.glazeWater; b.glazeGround = p.glazeGround; b.puddles = p.puddles; b.floods = p.floods;
             b.heatLightning = p.heatLightning; b.lightning = p.lightning; b.tornadoes = p.tornadoes; b.waterspouts = p.waterspouts; b.debris = p.debris; b.ashLayers = p.ashLayers; b.acid = p.acid;
+            b.dustLayers = p.dustLayers; b.tempOffset = p.tempOffset;
             return b;
         }
 
@@ -185,6 +194,9 @@ public final class WeatherProfile {
         public Builder debris() { debris = true; return this; }
         public Builder ashLayers(int v) { ashLayers = v; return this; }
         public Builder acid() { acid = true; return this; }
+        public Builder dustLayers(int v) { dustLayers = v; return this; }
+        /** Air this many °C warmer than usual (colder below 0). */
+        public Builder tempOffset(float celsius) { tempOffset = celsius; return this; }
         public WeatherProfile build() { return new WeatherProfile(this); }
     }
 }

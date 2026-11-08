@@ -24,6 +24,10 @@ public final class StormCell {
     public int grow = FADE_TICKS;
     /** Whether it turns with the wind (a sea fog bank keeps rolling in toward the land). */
     public boolean steer = true;
+    /** Hurricanes: how strong it is, 0 to 1. It strengthens over warm sea and weakens over land. */
+    public float power = 1.0F;
+    /** Radians a tick its track curves by (hurricanes curve round as they go). */
+    public float turn;
 
     public StormCell(int id, WeatherType type, double x, double z, float radius, double vx, double vz, int maxAge) {
         this.id = id;
@@ -42,10 +46,18 @@ public final class StormCell {
         c.age = age;
         c.grow = grow;
         c.steer = steer;
+        c.power = power;
+        c.turn = turn;
         return c;
     }
 
     public void tick() {
+        if (turn != 0.0F) {
+            double c = Math.cos(turn), s = Math.sin(turn);
+            double nx = vx * c - vz * s;
+            vz = vx * s + vz * c;
+            vx = nx;
+        }
         x += vx;
         z += vz;
         age++;
@@ -95,7 +107,45 @@ public final class StormCell {
             return 0.0F;
         }
         float t = Mth.clamp((float) ((radius - d) / (radius * 0.3)), 0.0F, 1.0F);
-        return t * t * (3.0F - 2.0F * t) * strength();
+        float w = t * t * (3.0F - 2.0F * t) * strength();
+        return type == WeatherType.HURRICANE ? w * hurricaneStructure(px, pz, d / radius) : w;
+    }
+
+    /** The calm eye of a hurricane, as a fraction of its radius (0 while it's too weak to have one). */
+    public float eyeFraction() {
+        return type == WeatherType.HURRICANE && power >= 0.45F ? 0.05F + 0.03F * power : 0.0F;
+    }
+
+    /** 1 to 5, the hurricane's category. */
+    public int category() {
+        return Mth.clamp(1 + (int) (power * 5.0F), 1, 5);
+    }
+
+    /**
+     * A hurricane is not a uniform disc: there's a calm, clear eye in the middle, the worst of the wind in the
+     * eyewall around it, and spiral rain bands sweeping round (anticlockwise) farther out, with lulls between them.
+     */
+    private float hurricaneStructure(double px, double pz, double r) {
+        float eye = eyeFraction();
+        float k = 1.0F;
+        if (eye > 0.0F) {
+            float wall = Mth.clamp((float) ((r - eye) / (eye * 0.7)), 0.0F, 1.0F);
+            k *= wall * wall * (3.0F - 2.0F * wall);
+        }
+        double inner = Math.max(eye, 0.05F) * 3.0;
+        if (r > inner) {
+            double angle = Math.atan2(pz - z, px - x);
+            float band = 0.5F + 0.5F * Mth.sin((float) (angle * 2.0 - Math.log(Math.max(r, 0.01)) * 9.0 + age * 0.0015));
+            float outer = Mth.clamp((float) ((r - inner) / 0.25), 0.0F, 1.0F);
+            k *= 1.0F - outer * 0.42F * (1.0F - band);
+        }
+        return k * (0.55F + 0.45F * Mth.clamp(power, 0.0F, 1.0F));
+    }
+
+    /** Whether a point is in the hurricane's eye. */
+    public boolean inEye(double px, double pz) {
+        float eye = eyeFraction();
+        return eye > 0.0F && distanceTo(px, pz) < radius * eye;
     }
 
     /** Whether the cell is moving toward a point (used for "approaching" reports). */
@@ -116,6 +166,8 @@ public final class StormCell {
         tag.putInt("maxAge", maxAge);
         tag.putInt("grow", grow);
         tag.putBoolean("steer", steer);
+        tag.putFloat("power", power);
+        tag.putFloat("turn", turn);
         return tag;
     }
 
@@ -126,6 +178,8 @@ public final class StormCell {
         cell.age = tag.getInt("age");
         cell.grow = tag.contains("grow") ? tag.getInt("grow") : FADE_TICKS;
         cell.steer = !tag.contains("steer") || tag.getBoolean("steer");
+        cell.power = tag.contains("power") ? tag.getFloat("power") : 1.0F;
+        cell.turn = tag.getFloat("turn");
         return cell;
     }
 
@@ -141,6 +195,8 @@ public final class StormCell {
         buf.writeVarInt(maxAge);
         buf.writeVarInt(grow);
         buf.writeBoolean(steer);
+        buf.writeFloat(power);
+        buf.writeFloat(turn);
     }
 
     public static StormCell read(FriendlyByteBuf buf) {
@@ -154,6 +210,8 @@ public final class StormCell {
         cell.age = age;
         cell.grow = buf.readVarInt();
         cell.steer = buf.readBoolean();
+        cell.power = buf.readFloat();
+        cell.turn = buf.readFloat();
         return cell;
     }
 }

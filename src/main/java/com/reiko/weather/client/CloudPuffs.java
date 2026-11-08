@@ -23,7 +23,8 @@ public final class CloudPuffs {
         if (level == null || level.dimension() != Level.OVERWORLD || !SyncedWeather.managed() || SyncedWeather.cells().isEmpty()) {
             return;
         }
-        boolean towers = ClientConfig.TOWERING_CLOUDS.get(), banks = ClientConfig.FOG_BANKS.get();
+        boolean towers = ClientConfig.TOWERING_CLOUDS.get(), banks = ClientConfig.FOG_BANKS.get(), shapes = ClientConfig.STORM_CLOUD_SHAPES.get();
+        sunset = sunsetGlow(level, partialTick);
         Vec3 cam = camera.getPosition();
         float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
         float daylight = level.getSkyDarken(partialTick);
@@ -36,6 +37,9 @@ public final class CloudPuffs {
             switch (cell.type) {
                 case THUNDERSTORM, SUPERCELL, HAIL, HURRICANE, DERECHO, COLD_FRONT -> {
                     if (towers) towers(level, cell, cam, maxDistance, daylight, fog, time, wind, strength);
+                    if (shapes && (cell.type == WeatherType.COLD_FRONT || cell.type == WeatherType.DERECHO)) {
+                        shelfCloud(level, cell, cam, maxDistance, daylight, fog, strength);
+                    }
                 }
                 case SEA_FOG -> {
                     if (banks) fogBank(level, cell, cam, maxDistance, daylight, fog, strength);
@@ -89,6 +93,68 @@ public final class CloudPuffs {
                     PuffRenderer.add(x, base + height * (0.95F + 0.05F * t), z, width * 0.9F, shade, shade, shade * 1.03F,
                             alpha * (strength - 0.6F) * 2.5F * (1.0F - 0.5F * t), false, cam, maxDistance);
                 }
+                if (strength > 0.75F && !line && ClientConfig.STORM_CLOUD_SHAPES.get()) {
+                    mammatus(cell, cx, cz, base + height * 0.9F, width, wind, alpha * (strength - 0.75F) * 4.0F, daylight, cam, maxDistance, salt + c);
+                }
+            }
+        }
+    }
+
+    /** How orange the low sun is making the undersides of the clouds (0 by day and night). */
+    private static float sunset;
+
+    private static float sunsetGlow(ClientLevel level, float partialTick) {
+        float sun = com.reiko.weather.weather.SkyPhenomena.sunHeight(level, partialTick);
+        return Mth.clamp(1.0F - Math.abs(sun - 0.05F) / 0.15F, 0.0F, 1.0F);
+    }
+
+    /**
+     * Mammatus: pouches of cloud hanging in rows from the underside of the anvil, best seen as the storm moves off
+     * (and glowing orange when the sun is low).
+     */
+    private static void mammatus(StormCell cell, double cx, double cz, float y, float width, Vec3 wind, float alpha, float daylight,
+                                 Vec3 cam, float maxDistance, int salt) {
+        if (alpha < 0.02F) return;
+        for (int i = 0; i < 16; i++) {
+            float t = 0.3F + 0.7F * PuffRenderer.hash(i, salt + 505);
+            float across = (PuffRenderer.hash(i, salt + 606) - 0.5F) * 1.6F;
+            double x = cx + wind.x * t * width * 2.0 - wind.z * across * width;
+            double z = cz + wind.z * t * width * 2.0 + wind.x * across * width;
+            float size = width * (0.18F + 0.1F * PuffRenderer.hash(i, salt + 707));
+            float shade = 0.55F * (0.25F + 0.75F * daylight);
+            float r = Mth.lerp(sunset, shade, 0.95F), g = Mth.lerp(sunset, shade, 0.55F), b = Mth.lerp(sunset, shade * 1.03F, 0.4F);
+            PuffRenderer.add(x, y - size * 0.6F, z, size, r, g, b, alpha * 0.8F, false, cam, maxDistance);
+        }
+    }
+
+    /**
+     * A shelf cloud: a long, low, dark wedge of cloud along the leading edge of a squall line, with a lighter
+     * underside and tiers stepping up behind it.
+     */
+    private static void shelfCloud(ClientLevel level, StormCell cell, Vec3 cam, float maxDistance, float daylight, float fog, float strength) {
+        double speed = Math.sqrt(cell.vx * cell.vx + cell.vz * cell.vz);
+        if (speed < 1.0E-6 || strength < 0.3F) return;
+        double ux = cell.vx / speed, uz = cell.vz / speed;
+        // only from ahead of the front (from underneath it you're in the downpour)
+        double ahead = (cam.x - cell.x) * ux + (cam.z - cell.z) * uz;
+        if (ahead < cell.radius * 0.5) return;
+        float base = level.getSeaLevel() + 38.0F;
+        float halfLength = cell.radius * cell.elongation() * 0.8F;
+        int salt = cell.id * 15485863;
+        int n = 26;
+        for (int tier = 0; tier < 3; tier++) {
+            double front = cell.radius * (0.85 - tier * 0.18);
+            for (int i = 0; i < n; i++) {
+                float s = (i + PuffRenderer.hash(i, salt + tier)) / n * 2.0F - 1.0F;
+                double along = s * halfLength;
+                double x = cell.x + ux * front - uz * along, z = cell.z + uz * front + ux * along;
+                double dx = x - cam.x, dz = z - cam.z;
+                if (dx * dx + dz * dz < 30 * 30) continue;
+                float ends = Mth.clamp((1.0F - Math.abs(s)) * 4.0F, 0.0F, 1.0F);
+                float size = 26.0F + 10.0F * PuffRenderer.hash(i, salt + tier + 11);
+                float shade = (0.22F + 0.12F * tier) * (0.25F + 0.75F * daylight);
+                PuffRenderer.add(x, base + tier * 16.0F + 4.0F * PuffRenderer.hash(i, salt + 3), z, size,
+                        shade, shade * 1.02F, shade * 1.08F, 0.85F * strength * ends * fog, false, cam, maxDistance);
             }
         }
     }

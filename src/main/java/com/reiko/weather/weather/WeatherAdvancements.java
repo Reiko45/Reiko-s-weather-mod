@@ -40,6 +40,10 @@ public final class WeatherAdvancements {
             if (type == WeatherType.DERECHO && local.intensity() > 0.5F) award(player, "straight_line_winds");
             if (type == WeatherType.WILDFIRE_SMOKE && level.isDay()) award(player, "red_sky");
             if (type == WeatherType.COLD_FRONT) award(player, "front_line");
+            if (type == WeatherType.COLD_SNAP) award(player, "bitter_cold");
+        }
+        for (StormCell cell : state.cells) {
+            if (cell.type == WeatherType.HURRICANE && cell.inEye(player.getX(), player.getZ()) && exposed) award(player, "the_eye");
         }
 
         for (TornadoEntity tornado : level.getEntities(ModEntities.TORNADO.get(), new AABB(player.blockPosition()).inflate(64), e -> true)) {
@@ -61,7 +65,7 @@ public final class WeatherAdvancements {
             award(player, "over_the_rainbow");
         }
         if (exposed && climate == Climate.COLD && sun < -0.25F && SkyPhenomena.isAuroraNight(level.getDayTime())
-                && (type == WeatherType.CLEAR || type == WeatherType.WINDY)) {
+                && (type == WeatherType.CLEAR || type == WeatherType.WINDY || type == WeatherType.COLD_SNAP)) {
             award(player, "northern_lights");
         }
 
@@ -72,6 +76,16 @@ public final class WeatherAdvancements {
             data.putInt(SEASONS_SEEN, seen);
             if (seen == 0b1111) award(player, "four_seasons");
         }
+    }
+
+    private static final String LANDFORMS_SEEN = "reikos_weather.landforms_seen";
+
+    /** Visiting landforms: five different kinds makes you a field geologist. */
+    public static void visitedLandform(ServerPlayer player, com.reiko.weather.landform.LandformKind kind) {
+        CompoundTag data = player.getPersistentData();
+        int seen = data.getInt(LANDFORMS_SEEN) | 1 << kind.ordinal();
+        data.putInt(LANDFORMS_SEEN, seen);
+        if (Integer.bitCount(seen) >= 5) award(player, "field_geologist");
     }
 
     private WeatherAdvancements() {}

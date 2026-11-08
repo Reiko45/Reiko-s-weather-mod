@@ -149,6 +149,17 @@ public final class WeatherProfiles {
         WeatherProfile vog = builder().rain(0.3F).overcast(0.7F).tint(0xB0A672, 0.35F).fog(0.42F, 0xB4AC86).wind(0.15F).acid().build();
         put(WeatherType.VOLCANIC_SMOG, vog, vog, vog);
 
+        // a cold snap: a hard, clear frost, with only a breath of wind (a sharp nip even in the desert)
+        put(WeatherType.COLD_SNAP,
+                builder().fog(0.05F, 0xDCE6F0).wind(0.12F).clouds(0.0F).freeze(0.3F).tempOffset(-12.0F).build(),
+                builder().fog(0.04F, 0xD8E0E8).wind(0.12F).clouds(0.0F).freeze(0.25F).tempOffset(-11.0F).build(),
+                builder().wind(0.15F).clouds(0.0F).tempOffset(-8.0F).build());
+
+        // dust carried far downwind of a sandstorm: a tawny haze that dims the sun, and dust settling on everything
+        WeatherProfile haze = builder().overcast(0.3F).tint(0xD0884A, 0.5F).fog(0.36F, 0xC4925E).wind(0.3F).clouds(0.0F)
+                .precip(Precip.DUST, 0.3F).dustLayers(1).build();
+        put(WeatherType.DUST_HAZE, haze, haze, haze);
+
         for (WeatherType type : WeatherType.values()) {
             if (!TABLE.containsKey(type)) {
                 throw new IllegalStateException("Missing weather profile for " + type);
@@ -167,7 +178,7 @@ public final class WeatherProfiles {
     /** Whether this weather can produce any per-entity effect anywhere (used to skip work quickly). */
     public static boolean affectsEntities(WeatherType type) {
         for (WeatherProfile p : TABLE.get(type)) {
-            if (p.hail || p.freeze > 0 || p.heat || p.wind > Wind.PUSH_THRESHOLD) {
+            if (p.hail || p.freeze > 0 || p.heat || p.wind > Wind.PUSH_THRESHOLD || p.acid || p.ashLayers > 0) {
                 return true;
             }
         }

@@ -29,6 +29,26 @@ public record PlanContext(RandomSource random, int x, int z, IntBinaryOperator g
         return Math.max(max, c) - Math.min(min, c);
     }
 
+    /**
+     * Which way the sea is from here: the direction (radians) where the ground {@code distance} blocks out is lowest,
+     * or NaN unless it's under the sea that way and dry land the other way.
+     */
+    public float seaward(int distance, int landAbove) {
+        float best = Float.NaN;
+        int lowest = Integer.MAX_VALUE;
+        for (int i = 0; i < 12; i++) {
+            float a = i * (float) Math.PI * 2.0F / 12.0F;
+            int h = groundAt(x + (int) Math.round(Math.cos(a) * distance), z + (int) Math.round(Math.sin(a) * distance));
+            if (h < lowest) {
+                lowest = h;
+                best = a;
+            }
+        }
+        if (Float.isNaN(best) || lowest > seaLevel - 4) return Float.NaN;
+        int behind = groundAt(x - (int) Math.round(Math.cos(best) * distance), z - (int) Math.round(Math.sin(best) * distance));
+        return behind >= seaLevel + landAbove ? best : Float.NaN;
+    }
+
     public boolean fits(int y, int below, int above) {
         return y - below > heights.getMinBuildHeight() + 2 && y + above < heights.getMaxBuildHeight() - 2;
     }

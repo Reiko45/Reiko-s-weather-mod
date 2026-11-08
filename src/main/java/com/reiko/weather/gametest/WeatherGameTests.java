@@ -387,4 +387,100 @@ public class WeatherGameTests {
                 "hail breaks glass panes but not tinted glass");
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void hurricanesHaveACalmEye(GameTestHelper helper) {
+        var cell = new StormCell(1, WeatherType.HURRICANE, 0, 0, 600, -0.15, 0.0, 20000);
+        cell.age = 5000;
+        cell.power = 1.0F;
+        float eye = cell.weightAt(0, 0), wall = cell.weightAt(90, 0), bands = cell.weightAt(420, 0);
+        helper.assertTrue(eye < 0.05F, "calm in the eye (" + eye + ")");
+        helper.assertTrue(wall > 0.9F, "the worst of it in the eyewall (" + wall + ")");
+        helper.assertTrue(bands > 0.3F && bands <= wall, "rain bands farther out (" + bands + ")");
+        helper.assertTrue(cell.inEye(10, 10) && !cell.inEye(90, 0) && cell.category() == 5, "a category 5 has an eye");
+        cell.power = 0.3F;
+        helper.assertTrue(cell.weightAt(0, 0) > 0.4F && cell.eyeFraction() == 0.0F && cell.category() == 2, "a weak one has no eye");
+        // the track curves round
+        cell.turn = 0.001F;
+        for (int i = 0; i < 1000; i++) cell.tick();
+        double heading = Math.atan2(cell.vz, cell.vx);
+        helper.assertTrue(Math.abs(Mth.wrapDegrees((float) Math.toDegrees(heading)) - (180.0F + 57.3F - 360.0F)) < 2.0F,
+                "it turned by about a radian (" + Math.toDegrees(heading) + ")");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void newWeathers(GameTestHelper helper) {
+        var snap = com.reiko.weather.weather.WeatherProfiles.get(WeatherType.COLD_SNAP, Climate.TEMPERATE);
+        helper.assertTrue(snap.tempOffset < -8.0F && snap.rain == 0.0F && snap.overcast == 0.0F, "a cold snap is clear and bitter");
+        helper.assertTrue(WeatherType.COLD_SNAP.natural() && !WeatherType.COLD_SNAP.cellOnly(), "cold snaps are in the forecast");
+        var haze = com.reiko.weather.weather.WeatherProfiles.get(WeatherType.DUST_HAZE, Climate.TEMPERATE);
+        helper.assertTrue(!WeatherType.DUST_HAZE.natural() && WeatherType.DUST_HAZE.cellOnly() && haze.dustLayers > 0, "dust haze only drifts in from sandstorms");
+        var state = new com.reiko.weather.weather.WeatherState();
+        state.droughtLength = state.droughtDaysLeft = 6;
+        float first = com.reiko.weather.weather.Drought.severity(state);
+        state.droughtDaysLeft = 3;
+        float later = com.reiko.weather.weather.Drought.severity(state);
+        state.droughtDaysLeft = 0;
+        helper.assertTrue(first > 0.0F && first < 0.5F && later == 1.0F && com.reiko.weather.weather.Drought.severity(state) == 0.0F,
+                "a drought worsens over its first days (" + first + ", " + later + ")");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void droughtsDryUpShallowPonds(GameTestHelper helper) {
+        for (int x = 0; x <= 4; x++) {
+            for (int z = 0; z <= 4; z++) {
+                boolean pond = x >= 1 && x <= 3 && z >= 1 && z <= 3;
+                helper.setBlock(x, 1, z, pond ? Blocks.DIRT : Blocks.STONE);
+                helper.setBlock(x, 2, z, pond ? Blocks.WATER : Blocks.STONE);
+            }
+        }
+        var state = new com.reiko.weather.weather.WeatherState();
+        boolean dried = com.reiko.weather.weather.Drought.dryPond(helper.getLevel(), state, helper.absolutePos(new BlockPos(2, 3, 2)));
+        helper.assertTrue(dried, "the pond dried up");
+        helper.assertBlockPresent(Blocks.AIR, 2, 2, 2);
+        helper.assertBlockPresent(ModBlocks.CRACKED_MUD.get(), 1, 1, 3);
+        helper.assertTrue(state.driedPonds.size() == 9, "every source is remembered, to refill it (" + state.driedPonds.size() + ")");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void peatSmoulders(GameTestHelper helper) {
+        helper.setBlock(1, 1, 1, ModBlocks.PEAT.get());
+        helper.setBlock(3, 1, 1, ModBlocks.PEAT.get());
+        helper.setBlock(3, 2, 1, Blocks.WATER);
+        var level = helper.getLevel();
+        helper.assertTrue(com.reiko.weather.block.PeatBlock.ignite(level, helper.absolutePos(new BlockPos(1, 1, 1))), "dry peat catches");
+        helper.assertFalse(com.reiko.weather.block.PeatBlock.ignite(level, helper.absolutePos(new BlockPos(3, 1, 1))), "wet peat doesn't");
+        helper.assertTrue(helper.getBlockState(new BlockPos(1, 1, 1)).getValue(com.reiko.weather.block.PeatBlock.SMOULDERING), "it's smouldering");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void landformsPlanOnTheRightGround(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int sea = level.getSeaLevel();
+        java.util.function.Function<java.util.function.IntBinaryOperator, com.reiko.weather.landform.PlanContext> at = ground ->
+                new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(7), 0, 0, ground, sea, level);
+        // a cliff to the east: a waterfall goes over it, heading east
+        var fall = com.reiko.weather.landform.LandformKind.WATERFALL.plan(at.apply((x, z) -> x < 10 ? sea + 40 : x < 16 ? sea + 40 - (x - 10) * 20 / 6 : sea + 20));
+        helper.assertTrue(fall instanceof com.reiko.weather.landform.Waterfall w && Math.abs(w.angle()) < 0.01F && w.top() - w.foot() >= 10,
+                "a waterfall over the cliff (" + fall + ")");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.WATERFALL.plan(at.apply((x, z) -> sea + 40)) == null, "no waterfall on the flat");
+        // atolls need open sea all round
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.ATOLL.plan(at.apply((x, z) -> sea - 20)) != null, "an atoll in the open sea");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.ATOLL.plan(at.apply((x, z) -> x > 40 ? sea + 5 : sea - 20)) == null, "but not by land");
+        // arroyos never run uphill
+        var wash = com.reiko.weather.landform.LandformKind.ARROYO.plan(at.apply((x, z) -> sea + 12 + (x + z) / 20));
+        helper.assertTrue(wash instanceof com.reiko.weather.landform.Arroyo, "an arroyo on the desert");
+        int[] floor = ((com.reiko.weather.landform.Arroyo) wash).floor();
+        for (int i = 1; i < floor.length; i++) helper.assertTrue(floor[i] <= floor[i - 1], "the bed only ever falls downstream");
+        // coasts: basalt columns where the land meets the sea, and a fjord from the sea into the mountains
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.BASALT_COLUMNS.plan(at.apply((x, z) -> x < 2 ? sea + 6 : sea - 8)) != null, "basalt on the coast");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.FJORD.plan(at.apply((x, z) -> x < 10 ? sea - 15 : sea + 60)) instanceof com.reiko.weather.landform.Fjord,
+                "a fjord into the mountains");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.FJORD.plan(at.apply((x, z) -> sea - 15)) == null, "no fjord without mountains");
+        helper.succeed();
+    }
 }

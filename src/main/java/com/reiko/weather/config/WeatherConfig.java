@@ -103,6 +103,23 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue TIDAL_FLATS;
     public static final ModConfigSpec.BooleanValue DUNES;
     public static final ModConfigSpec.BooleanValue CHANGING_LANDFORMS;
+    public static final ModConfigSpec.BooleanValue DROUGHTS;
+    public static final ModConfigSpec.BooleanValue DRYING_PONDS;
+    public static final ModConfigSpec.BooleanValue ICE_BREAKUP;
+    public static final ModConfigSpec.BooleanValue DESERT_DUST;
+    public static final ModConfigSpec.BooleanValue SINKHOLES;
+    public static final ModConfigSpec.BooleanValue ROCKFALL;
+    public static final ModConfigSpec.BooleanValue PEAT_FIRES;
+    public static final ModConfigSpec.BooleanValue ARROYOS;
+    public static final ModConfigSpec.BooleanValue CENOTES;
+    public static final ModConfigSpec.BooleanValue OASES;
+    public static final ModConfigSpec.BooleanValue WATERFALLS;
+    public static final ModConfigSpec.BooleanValue BASALT_COLUMNS;
+    public static final ModConfigSpec.BooleanValue SEA_STACKS;
+    public static final ModConfigSpec.BooleanValue ATOLLS;
+    public static final ModConfigSpec.BooleanValue FJORDS;
+    public static final ModConfigSpec.BooleanValue ERRATICS;
+    public static final ModConfigSpec.BooleanValue PEAT_BOGS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -305,6 +322,22 @@ public final class WeatherConfig {
                 .define("wildfireSmoke", true);
         MUDSLIDES = b.comment("Long downpours make soil on steep slopes slide downhill as mud (needs mobGriefing).")
                 .define("mudslides", true);
+        DROUGHTS = b.comment("Droughts: after a dry spell (mostly in summer) the rain stays away for days, grass browns, crops wilt",
+                        "and wildfires break out more easily, until the drought breaks with a storm.")
+                .define("droughts", true);
+        DRYING_PONDS = b.comment("Shallow ponds dry up to cracked mud in a drought (and fill again when the rain returns). Needs mobGriefing.",
+                        "Water next to farmland is left alone.")
+                .define("dryingPonds", true);
+        ICE_BREAKUP = b.comment("In the spring thaw, river ice breaks up into floes that drift downstream; floes that jam up flood the banks.")
+                .define("iceBreakup", true);
+        DESERT_DUST = b.comment("Sandstorms send a haze of dust far downwind, which settles on snow and colours the rain.")
+                .define("desertDust", true);
+        SINKHOLES = b.comment("After a long downpour the ground over a cave can give way into a sinkhole (needs mobGriefing).")
+                .define("sinkholes", true);
+        ROCKFALL = b.comment("Freeze-thaw: on mild spring days and thaws, rocks break off cliffs and pile up as scree below (needs mobGriefing).")
+                .define("rockfall", true);
+        PEAT_FIRES = b.comment("Lightning can set peat smouldering; peat fires creep slowly underground and send up smoke.")
+                .define("peatFires", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -371,6 +404,26 @@ public final class WeatherConfig {
                 .define("tidalFlats", true);
         DUNES = b.comment("Dune fields in deserts, shaped by the prevailing wind.")
                 .define("dunes", true);
+        ARROYOS = b.comment("Dry, sandy riverbeds winding across deserts and badlands, which flash-flood in a downpour.")
+                .define("arroyos", true);
+        CENOTES = b.comment("Cenotes: deep, round, water-filled sinkholes in jungles, hung with vines.")
+                .define("cenotes", true);
+        OASES = b.comment("Desert oases: a pool ringed with grass, reeds and palm trees.")
+                .define("oases", true);
+        WATERFALLS = b.comment("Waterfalls off cliffs and steep slopes, with a plunge pool at the foot.")
+                .define("waterfalls", true);
+        BASALT_COLUMNS = b.comment("Coasts of columnar basalt stepping down into the sea.")
+                .define("basaltColumns", true);
+        SEA_STACKS = b.comment("Sea stacks and natural arches standing off rocky coasts.")
+                .define("seaStacks", true);
+        ATOLLS = b.comment("Coral atolls in warm seas: a ring of sandy islets with palms around a shallow lagoon.")
+                .define("atolls", true);
+        FJORDS = b.comment("Fjords: long, deep, steep-walled inlets of the sea cut into cold coasts.")
+                .define("fjords", true);
+        ERRATICS = b.comment("Glacial leftovers: big erratic boulders and long moraine ridges (glaciers get a moraine at their foot too).")
+                .define("erratics", true);
+        PEAT_BOGS = b.comment("Peat bogs: wet, mossy flats over deep peat (a slow-burning fuel), dotted with dark pools.")
+                .define("peatBogs", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

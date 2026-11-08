@@ -44,7 +44,11 @@ public enum WeatherType {
     /** Smoke drifting downwind from a big wildfire. */
     WILDFIRE_SMOKE(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F),
     /** Volcanic smog after an eruption: a yellowish haze with stinging acid drizzle. */
-    VOLCANIC_SMOG(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
+    VOLCANIC_SMOG(false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F),
+    /** A cold snap: bitterly cold, clear, still air pouring down from the north for a day or two. */
+    COLD_SNAP   (false, false, 3, 12000, 30000, 1.5F, 0.8F, 0.1F),
+    /** Desert dust carried far downwind of a sandstorm: a tawny haze, and reddish dust in the rain and on the snow. */
+    DUST_HAZE   (false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
 
     private static final WeatherType[] VALUES = values();
 
@@ -79,7 +83,7 @@ public enum WeatherType {
 
     /** Whether the weather cycle can pick this weather by itself (volcanic ash only comes from eruptions). */
     public boolean natural() {
-        return this != VOLCANIC_ASH && this != SEA_FOG && this != WILDFIRE_SMOKE && this != VOLCANIC_SMOG;
+        return this != VOLCANIC_ASH && this != SEA_FOG && this != WILDFIRE_SMOKE && this != VOLCANIC_SMOG && this != DUST_HAZE;
     }
 
     /** Weathers that only ever come as a storm cell (a front is a line, not the whole world's weather). */
@@ -112,13 +116,13 @@ public enum WeatherType {
     /**
      * Fixed 0-15 redstone code for the weather station. There are more weathers than signal strengths, so
      * the newer ones share the code of the weather they're most like (a cold front reads as a thunderstorm,
-     * sea fog and smoke as fog, and so on).
+     * sea fog and smoke as fog, a cold snap as clear skies, and so on).
      */
     public int signalCode() {
         return switch (this) {
-            case CLEAR -> 0; case OVERCAST -> 1; case FOG, SEA_FOG, WILDFIRE_SMOKE -> 2; case DRIZZLE, WARM_FRONT, VOLCANIC_SMOG -> 3; case RAIN -> 4;
+            case CLEAR, COLD_SNAP -> 0; case OVERCAST -> 1; case FOG, SEA_FOG, WILDFIRE_SMOKE -> 2; case DRIZZLE, WARM_FRONT, VOLCANIC_SMOG -> 3; case RAIN -> 4;
             case HEAVY_RAIN -> 5; case THUNDERSTORM, COLD_FRONT -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
-            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH -> 14;
+            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH, DUST_HAZE -> 14;
             case HEATWAVE -> 15;
         };
     }

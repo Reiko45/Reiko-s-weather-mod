@@ -32,6 +32,10 @@ public final class SeasonalColors {
     private static volatile float frost;
     private static float frostTarget;
     private static final int FROST_GRASS = 0xF2F6F8;
+    /** Grass baked straw-brown in a drought. */
+    private static final int DROUGHT_GRASS = 0xB9A462;
+    private static final int DROUGHT_LEAVES = 0x8C9446;
+    private static volatile float drought;
     private static final int FROST_LEAVES = 0xD6E2E6;
     private static long lastRebuild;
     private static boolean rebuildPending;
@@ -60,6 +64,9 @@ public final class SeasonalColors {
             frostTarget = 0.0F;
         } else if (com.reiko.weather.client.ClientWeather.freezingFog() > 0.5F) {
             frostTarget = Math.min(1.0F, frostTarget + 0.0006F);
+        } else if (air < -3.0F && ClientWeather.overcast() < 0.3F && ClientWeather.rain() < 0.05F && clearNightOrDawn(mc)) {
+            // white frost: on a clear, hard-frosty night everything turns white by morning
+            frostTarget = Math.min(0.85F, frostTarget + 0.0003F);
         } else if (air > 0.5F || com.reiko.weather.client.ClientWeather.rain() > 0.3F) {
             frostTarget = Math.max(0.0F, frostTarget - (air > 4.0F ? 0.004F : 0.0012F));
         }
@@ -67,10 +74,13 @@ public final class SeasonalColors {
         a = Math.round(a * 8.0F) / 8.0F;
         w = Math.round(w * 8.0F) / 8.0F;
         float f = Math.round(frostTarget * 6.0F) / 6.0F;
-        if ((a != autumn || w != winter || f != frost) && mc.level != null) {
+        boolean colours = mc.level != null && mc.level.dimension() == Level.OVERWORLD && ClientConfig.SEASONAL_COLORS.get();
+        float d = colours ? Math.round(SyncedWeather.drought() * 4.0F) / 4.0F : 0.0F;
+        if ((a != autumn || w != winter || f != frost || d != drought) && mc.level != null) {
             autumn = a;
             winter = w;
             frost = f;
+            drought = d;
             rebuildPending = true;
         }
         long now = System.currentTimeMillis();
@@ -121,17 +131,24 @@ public final class SeasonalColors {
         return frost;
     }
 
+    private static boolean clearNightOrDawn(Minecraft mc) {
+        long time = Math.floorMod(mc.level.getDayTime(), 24000L);
+        return time > 13000L || time < 1500L;
+    }
+
     public static int grass(int color, BlockPos pos) {
-        float a = autumn, w = winter, f = frost;
-        if (a <= 0 && w <= 0 && f <= 0) return color;
+        float a = autumn, w = winter, f = frost, d = drought;
+        if (a <= 0 && w <= 0 && f <= 0 && d <= 0) return color;
+        color = mix(color, DROUGHT_GRASS, d * 0.6F);
         color = mix(color, AUTUMN_GRASS, a * 0.3F);
         color = mix(color, WINTER_GRASS, w * 0.5F);
         return mix(color, FROST_GRASS, f * 0.8F);
     }
 
     public static int foliage(int color, BlockPos pos) {
-        float a = autumn, w = winter, f = frost;
-        if (a <= 0 && w <= 0 && f <= 0) return color;
+        float a = autumn, w = winter, f = frost, d = drought;
+        if (a <= 0 && w <= 0 && f <= 0 && d <= 0) return color;
+        color = mix(color, DROUGHT_LEAVES, d * 0.2F);
         if (a <= 0 && w <= 0) return mix(color, FROST_LEAVES, f * 0.65F);
         // patches of 4x4 blocks share a colour, so whole trees turn together
         int hash = Mth.murmurHash3Mixer((pos.getX() >> 2) * 73856093 ^ (pos.getZ() >> 2) * 19349663 ^ (pos.getY() >> 3) * 83492791);

@@ -25,7 +25,11 @@ public class WindBlownParticle extends TextureSheetParticle {
         /** Soft morning mist drifting low over water. */
         MIST(0.12, 0.0, 0.2F),
         /** Grey flakes of volcanic ash, sifting down. */
-        ASH(0.4, 0.07, 0.9F);
+        ASH(0.4, 0.07, 0.9F),
+        /** Steam fog: wisps rising off water much warmer than the bitter air over it. */
+        STEAM(0.15, -0.025, 0.2F),
+        /** Spray billowing up from the foot of a waterfall. */
+        SPRAY(0.3, -0.035, 0.32F);
 
         final double windFactor;
         final double fallSpeed;
@@ -65,9 +69,11 @@ public class WindBlownParticle extends TextureSheetParticle {
             case LEAF -> { quadSize = 0.11F + random.nextFloat() * 0.06F; lifetime = 100 + random.nextInt(60); }
             case MIST -> { quadSize = 2.0F + random.nextFloat() * 2.5F; lifetime = 120 + random.nextInt(80); hasPhysics = false; }
             case ASH -> { quadSize = 0.05F + random.nextFloat() * 0.07F; lifetime = 140 + random.nextInt(60); }
+            case STEAM -> { quadSize = 0.7F + random.nextFloat() * 0.9F; lifetime = 50 + random.nextInt(40); hasPhysics = false; }
+            case SPRAY -> { quadSize = 1.0F + random.nextFloat() * 1.4F; lifetime = 35 + random.nextInt(30); hasPhysics = false; }
         }
-        this.targetAlpha = kind.maxAlpha * (kind == Kind.DUST || kind == Kind.MIST ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
-        if (kind != Kind.DUST && kind != Kind.MIST) {
+        this.targetAlpha = kind.maxAlpha * (soft() ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
+        if (!soft()) {
             this.setSize(0.08F, 0.08F);
         }
     }
@@ -98,8 +104,8 @@ public class WindBlownParticle extends TextureSheetParticle {
                 + (kind == Kind.SAND || kind == Kind.DUST ? sway * 0.01 : 0.0);
         this.yd += (targetY - this.yd) * 0.1;
         this.roll += spin;
-        if (kind == Kind.DUST || kind == Kind.MIST) {
-            this.quadSize *= 1.004F;
+        if (soft()) {
+            this.quadSize *= kind == Kind.STEAM || kind == Kind.SPRAY ? 1.012F : 1.004F;
         }
         this.move(this.xd, this.yd, this.zd);
         if (this.onGround && kind != Kind.SAND && kind != Kind.LEAF) {
@@ -109,6 +115,11 @@ public class WindBlownParticle extends TextureSheetParticle {
             this.xd *= 0.5;
             this.zd *= 0.5;
         }
+    }
+
+    /** Big, soft clouds rather than little flakes. */
+    private boolean soft() {
+        return kind == Kind.DUST || kind == Kind.MIST || kind == Kind.STEAM || kind == Kind.SPRAY;
     }
 
     @Override

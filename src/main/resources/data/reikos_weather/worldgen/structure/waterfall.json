@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "waterfall",
+  "biomes": "#reikos_weather:has_structure/waterfall",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

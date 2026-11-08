@@ -89,6 +89,7 @@ public final class Temperature {
             celsius -= p.rain * 3.0F * i;
             celsius -= p.overcast * 1.5F * i;
             celsius -= p.freeze * 12.0F * i;
+            celsius += p.tempOffset * i; // a cold snap, a föhn wind, cold air pooled in a frost hollow
             if (p.heat) celsius += 8.0F * i;
             if (sky) {
                 celsius -= p.wind * 7.0F * i; // wind chill out in the open

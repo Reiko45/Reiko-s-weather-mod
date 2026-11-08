@@ -54,16 +54,25 @@ public final class WeatherRadio {
                 double dx = pos.getX() - cell.x, dz = pos.getZ() - cell.z, len = Math.max(1, Math.hypot(dx, dz));
                 double closing = (cell.vx * dx + cell.vz * dz) / len;
                 double minutes = closing > 0.01 ? edge / closing / 1200.0 : 99;
-                if (minutes < 4) {
+                if (minutes < 4 && cell.type == WeatherType.HURRICANE) {
+                    alert(player, "storm:" + cell.id, now, Component.translatable("radio.reikos_weather.hurricane", cell.category(),
+                            Component.translatable("direction.reikos_weather." + WeatherReport.compass(cell.x - pos.getX(), cell.z - pos.getZ())),
+                            Math.max(1, Math.round(minutes))), true);
+                } else if (minutes < 4) {
                     alert(player, "storm:" + cell.id, now, Component.translatable("radio.reikos_weather.storm", cell.type.displayName(),
                             Component.translatable("direction.reikos_weather." + WeatherReport.compass(cell.x - pos.getX(), cell.z - pos.getZ())),
                             Math.max(1, Math.round(minutes))), cell.type.isSevere());
                 }
             }
+            // a drought setting in
+            if (com.reiko.weather.weather.Drought.severity(state) > 0.0F) {
+                long started = day - (state.droughtLength - state.droughtDaysLeft);
+                alert(player, "drought:" + started, now, Component.translatable("radio.reikos_weather.drought"), false);
+            }
             // the weather turning nasty
             if (!state.forecast.isEmpty() && state.remaining < 1200) {
                 WeatherType next = state.forecast.get(0).type();
-                if (next.isSevere() || next == WeatherType.HEATWAVE || next.vanillaThunder) {
+                if (next.isSevere() || next == WeatherType.HEATWAVE || next == WeatherType.COLD_SNAP || next.vanillaThunder) {
                     alert(player, "forecast:" + next.id() + ":" + now / 24000L, now,
                             Component.translatable("radio.reikos_weather.forecast", next.displayName()), next.isSevere());
                 }

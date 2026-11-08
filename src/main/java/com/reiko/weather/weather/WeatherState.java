@@ -50,6 +50,19 @@ public class WeatherState extends SavedData {
     public long convectionDay = -1, seaFogDay = -1;
     /** Water sources placed by flash floods, removed again once the rain stops. */
     public final LongArrayList floodBlocks = new LongArrayList();
+    /** Ticks of rain so far today, and the day that is (for droughts). */
+    public int rainToday;
+    public long droughtCheckDay = -1;
+    /** Days in a row without proper rain. */
+    public int dryDays;
+    /** Days the drought still has to run (0 when there's none), and how long it was set to last. */
+    public int droughtDaysLeft, droughtLength;
+    /** Shallow pond water a drought dried up (the bed turned to cracked mud), refilled when the rain comes back. */
+    public final LongArrayList driedPonds = new LongArrayList();
+    /** Water a cold snap froze where it normally wouldn't, thawed again when it warms up. */
+    public final LongArrayList snapIce = new LongArrayList();
+    /** Water a flash flood sent down an arroyo, drained again once the rain stops. */
+    public final LongArrayList flashFlood = new LongArrayList();
 
     /** 0 to 1, how established the current weather is. Hazards scale with this so storms build up. */
     public float intensity() {
@@ -83,6 +96,14 @@ public class WeatherState extends SavedData {
         tag.putInt("cellCooldown", cellCooldown);
         tag.putInt("seasonOffsetDays", seasonOffsetDays);
         tag.put("floodBlocks", new LongArrayTag(floodBlocks.toLongArray()));
+        tag.put("driedPonds", new LongArrayTag(driedPonds.toLongArray()));
+        tag.put("snapIce", new LongArrayTag(snapIce.toLongArray()));
+        tag.put("flashFlood", new LongArrayTag(flashFlood.toLongArray()));
+        tag.putInt("rainToday", rainToday);
+        tag.putLong("droughtCheckDay", droughtCheckDay);
+        tag.putInt("dryDays", dryDays);
+        tag.putInt("droughtDaysLeft", droughtDaysLeft);
+        tag.putInt("droughtLength", droughtLength);
         tag.putLong("altarReadyAt", altarReadyAt);
         tag.putLong("convectionDay", convectionDay);
         tag.putLong("seaFogDay", seaFogDay);
@@ -122,6 +143,20 @@ public class WeatherState extends SavedData {
         for (long pos : tag.getLongArray("floodBlocks")) {
             state.floodBlocks.add(pos);
         }
+        for (long pos : tag.getLongArray("driedPonds")) {
+            state.driedPonds.add(pos);
+        }
+        for (long pos : tag.getLongArray("snapIce")) {
+            state.snapIce.add(pos);
+        }
+        for (long pos : tag.getLongArray("flashFlood")) {
+            state.flashFlood.add(pos);
+        }
+        state.rainToday = tag.getInt("rainToday");
+        state.droughtCheckDay = tag.contains("droughtCheckDay") ? tag.getLong("droughtCheckDay") : -1;
+        state.dryDays = tag.getInt("dryDays");
+        state.droughtDaysLeft = tag.getInt("droughtDaysLeft");
+        state.droughtLength = tag.getInt("droughtLength");
         return state;
     }
 }

@@ -45,6 +45,7 @@ public class BarometerItem extends Item {
                 if (tide != null) serverPlayer.sendSystemMessage(tide);
                 Component storm = WeatherReport.approachingStorm(state, player.blockPosition());
                 if (storm != null) serverPlayer.sendSystemMessage(storm);
+                WeatherReport.conditions(serverLevel, state, player.blockPosition()).forEach(serverPlayer::sendSystemMessage);
                 Component volcano = WeatherReport.volcano(serverLevel, player.blockPosition());
                 if (volcano != null) serverPlayer.sendSystemMessage(volcano);
             }

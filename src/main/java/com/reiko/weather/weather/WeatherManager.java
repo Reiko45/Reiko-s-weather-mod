@@ -137,6 +137,7 @@ public final class WeatherManager {
         FireTracker.reset();
         LightningWarnings.reset();
         HailGlass.reset();
+        com.reiko.weather.landform.Arroyo.reset();
     }
 
     // ------------------------------------------------------------------ cycle
@@ -165,10 +166,12 @@ public final class WeatherManager {
         }
         driftWind(level.random, state);
         tickCells(level, state, cycle);
+        Drought.tick(level, state, cycle);
         if (cycle && level.getGameTime() % 100L == 0L) {
             Convection.tick(level, state);
             SeaFog.tick(level, state);
             FireTracker.tick(level, state);
+            DustHaze.tick(level, state);
         }
 
         if (level.getGameTime() % 100L == 0L) {
@@ -288,13 +291,14 @@ public final class WeatherManager {
         float[] mix = climateMix(level);
         boolean regional = WeatherConfig.REGIONAL_STORMS.get();
         float monsoon = Monsoon.enabled() && seasonInfo.season() == Season.SUMMER ? tropicalFraction(level) : 0.0F;
+        float drought = Drought.severity(state(level));
         WeatherType[] types = WeatherType.values();
         float[] weights = new float[types.length];
         float total = 0.0F;
         for (int i = 0; i < types.length; i++) {
             WeatherType t = types[i];
-            if (t.cellOnly()) {
-                continue; // fronts and the like only ever come as storm cells
+            if (t.cellOnly() || regional && t == WeatherType.HURRICANE) {
+                continue; // fronts and the like only ever come as storm cells (and so do hurricanes, off the sea)
             }
             float w = WeatherConfig.weight(t) * seasonMultiplier(t);
             float affinity = 0.0F;
@@ -321,6 +325,11 @@ public final class WeatherManager {
                 } else if (t == WeatherType.CLEAR || t == WeatherType.HEATWAVE || t == WeatherType.SANDSTORM) {
                     w *= 1.0F - 0.6F * monsoon;
                 }
+            }
+            if (drought > 0) {
+                // in a drought the rain just won't come
+                if (t.vanillaRain && t != WeatherType.SNOW && t != WeatherType.BLIZZARD) w *= 1.0F - 0.85F * drought;
+                else if (t == WeatherType.CLEAR || t == WeatherType.HEATWAVE) w *= 1.0F + drought;
             }
             weights[i] = w;
             total += w;
@@ -427,6 +436,9 @@ public final class WeatherManager {
                 cell.vz = Mth.lerp(0.002, cell.vz, wind.z * speed);
             }
             cell.tick();
+            if (cell.type == WeatherType.HURRICANE && level.getGameTime() % 20L == 0L && Hurricanes.develop(level, cell)) {
+                changed = true;
+            }
         }
         Fronts.tick(level, state);
         if (state.cells.removeIf(StormCell::expired)) {
@@ -459,6 +471,7 @@ public final class WeatherManager {
         double x = target.getX() - wind.x * distance;
         double z = target.getZ() - wind.z * distance;
         Climate climate = Climate.at(level, BlockPos.containing(x, level.getSeaLevel(), z));
+        float drought = Drought.severity(state);
         WeatherType[] types = WeatherType.values();
         float[] weights = new float[types.length];
         float total = 0.0F;
@@ -466,11 +479,15 @@ public final class WeatherManager {
             WeatherType t = types[i];
             if (!t.isStorm()) continue;
             weights[i] = WeatherConfig.weight(t) * t.affinity(climate) * seasonMultiplier(t);
+            if (t.vanillaRain && t != WeatherType.SNOW && t != WeatherType.BLIZZARD) weights[i] *= 1.0F - 0.8F * drought;
             total += weights[i];
         }
         WeatherType type = weightedPick(types, weights, total, level.random, null);
         if (type == null) {
             return null;
+        }
+        if (type == WeatherType.HURRICANE) {
+            return Hurricanes.spawnOffshore(level, state, target); // they only form over the sea
         }
         return spawnCell(level, state, type, x, z, -1);
     }
@@ -491,8 +508,8 @@ public final class WeatherManager {
         boolean derecho = type == WeatherType.DERECHO || type == WeatherType.COLD_FRONT;
         // derechos and cold fronts race across the map several times faster than other storms
         double speed = derecho ? (type == WeatherType.COLD_FRONT ? 0.25 : 0.35) + random.nextDouble() * 0.15 : 0.1 + random.nextDouble() * 0.1;
-        // long enough to cross ~2 km of map (a derecho keeps going for ~3.5 km)
-        int maxAge = (int) (((derecho ? 3500 : 1800) + radius * 2) / speed);
+        // long enough to cross ~2 km of map (a derecho keeps going for ~3.5 km, a hurricane ~3 km)
+        int maxAge = (int) (((derecho ? 3500 : type == WeatherType.HURRICANE ? 3000 : 1800) + radius * 2) / speed);
         return spawnCell(level, state, type, x, z, radius, speed, maxAge);
     }
 
@@ -511,6 +528,9 @@ public final class WeatherManager {
         StormCell cell = new StormCell(state.nextCellId++, type, x, z, radius, vx, vz, maxAge);
         if (grow > 0) cell.grow = grow;
         cell.steer = steer;
+        if (type == WeatherType.HURRICANE) {
+            Hurricanes.setUp(cell, level.random);
+        }
         state.cells.add(cell);
         state.setDirty();
         sync(level, state);
@@ -540,7 +560,8 @@ public final class WeatherManager {
         Seasons.Info season = seasonInfo;
         return new WeatherSyncPayload(state.type.ordinal(), state.elapsed, state.remaining, state.windAngle, state.rainbowTicks,
                 season.season() == null ? -1 : season.season().ordinal(), season.dayOfSeason(), season.daysPerSeason(),
-                season.temperatureShift(), forecast, cells, state.custom != null && CustomWeathers.of(state) != null ? state.custom : "");
+                season.temperatureShift(), forecast, cells, state.custom != null && CustomWeathers.of(state) != null ? state.custom : "",
+                Drought.severity(state));
     }
 
     public static void sync(ServerLevel level, WeatherState state) {

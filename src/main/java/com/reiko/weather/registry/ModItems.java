@@ -113,6 +113,10 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> GEYSER = REGISTER.registerSimpleBlockItem(ModBlocks.GEYSER);
     public static final DeferredItem<BlockItem> SALT_CRUST = REGISTER.registerSimpleBlockItem(ModBlocks.SALT_CRUST);
     public static final DeferredItem<BlockItem> BLACK_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.BLACK_SAND);
+    public static final DeferredItem<BlockItem> CRACKED_MUD = REGISTER.registerSimpleBlockItem(ModBlocks.CRACKED_MUD);
+    public static final DeferredItem<com.reiko.weather.item.VolcanicAshItem> DESERT_DUST = REGISTER.register("desert_dust",
+            () -> new com.reiko.weather.item.VolcanicAshItem(ModBlocks.DESERT_DUST.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> PEAT = REGISTER.registerSimpleBlockItem(ModBlocks.PEAT);
 
     private ModItems() {}
 }

@@ -24,7 +24,7 @@ New players get a **Weather Almanac**, the in-game guide to everything below (wi
 | **Heavy Rain** | A downpour with extra rain streaks and splashes, misty visibility and wind. Heavy snow in cold biomes. |
 | **Thunderstorm** | Rain, thunder and lightning, with gusty wind. A *dry* dust storm in deserts. Can spawn waterspouts over open water. |
 | **Supercell** | A severe storm under a green-tinted sky: hail, constant lightning, **tornadoes** and waterspouts. |
-| **Hurricane** | Hurricane-force wind that shoves players, mobs and items, torrential rain and flying leaves. A thundersnow whiteout in cold biomes, a sandstorm in deserts. |
+| **Hurricane** | Forms over the open sea and comes in on a track that curves round. Warm sea strengthens it (category 1 to 5), land and cold water weaken it until it's just a big rainstorm. Spiral rain bands sweep round a calm, clear **eye** ringed by the eyewall. Hurricane-force wind that shoves players, mobs and items, torrential rain and flying leaves; a thundersnow whiteout in cold biomes, a sandstorm in deserts. With storm cells on, hurricanes only ever arrive as storm cells. |
 | **Hailstorm** | Hailstones hurt unsheltered creatures. Helmets and umbrellas protect you, and livestock gets bruised but survives. Crops can be knocked back. |
 | **Sleet** | Icy, slanting rain that chills and slows creatures, and glazes still water with thin ice. |
 | **Ice Storm** | Freezing rain that coats the ground and treetops in slippery **ice glaze**, which melts once the storm passes. |
@@ -39,6 +39,8 @@ New players get a **Weather Almanac**, the in-game guide to everything below (wi
 | **Sea Fog Bank** | On cool, calm mornings fog builds up out at sea and rolls in over the coast, then burns off by mid-morning. |
 | **Smoke Plume** | Big wildfires send smoke drifting downwind: an orange-brown haze that turns the sun into a dull red ball. |
 | **Smog Cloud** | Volcanic smog left behind by an eruption: a yellowish haze with a stinging acid drizzle that weathers copper, withers leaves, slows crops and stings bare heads. |
+| **Cold Snap** | Bitterly cold, clear, still air for a day or two, mostly in winter: lakes and rivers freeze over even where they usually don't (they thaw again afterwards), crops get frosted, animals huddle under cover, and white frost covers everything by morning. |
+| **Dust Haze** | Dust carried hundreds of blocks downwind of a sandstorm: a tawny haze that dims the sun. It turns the snow pink, leaves a film of **desert dust** on rock and roofs, and rain falling through it comes down reddish-brown. Never in the forecast. |
 | **Derecho** | A long line of violent thunderstorms that races across the map several times faster than any other storm, in summer. The wind is ferocious and breaks branches off trees. On the radar it's a long orange band. |
 
 Each weather looks and plays differently in **cold**, **temperate** and **arid** climates, and the
@@ -106,6 +108,12 @@ some break into thunderstorms (even hailstorms), dying away by dusk.
 - **Freezing fog** coats grass and leaves in white **hoarfrost**, which melts off once it warms up.
 - **Storm debris:** derechos, hurricanes and supercells break **branches** off trees (they drop
   sticks, or rot away after a few days) and strip their leaves.
+- **Steam fog:** on bitterly cold, still mornings, unfrozen lakes and rivers steam.
+- **Ice breakup:** in the spring thaw, river ice breaks up into **ice floes** that drift downstream
+  (you can stand on one, like a boat). Floes that jam up in a narrow stretch back the river up over its
+  banks until the jam melts.
+- **Waterfall spray:** mist billows up at the foot of waterfalls, with a little rainbow in it when the
+  sun is behind you.
 - **Puddles**, **wet-looking ground** and **raindrop ripples** on water.
 
 ## Local climates
@@ -114,6 +122,10 @@ The terrain shapes the weather around you:
 - **Peaks and high ground** are windier.
 - Land in the **rain shadow** downwind of a mountain range gets less rain.
 - In cold biomes, **lake-effect snow** falls downwind of big lakes, even on otherwise calm days.
+- A strong wind coming down off a mountain range is a **föhn** (chinook): warm and bone-dry, and the
+  snow melts away fast.
+- On clear, calm nights cold air pools in valley bottoms, making **frost hollows** several degrees
+  colder than the slopes above.
 
 `/rweather query`, the barometer and the F3 screen all show the local climate where you stand.
 
@@ -169,8 +181,19 @@ Ways to stay comfortable:
   you cast to bait the hook, so fish bite sooner and better ones come up.
 
 ## Extreme weather
-- **Droughts:** during heatwaves, dry grass in deserts and savannas can catch fire (**wildfires**),
-  crops on unwatered farmland wilt, and water cauldrons out in the sun dry up.
+- **Heatwaves:** dry grass in deserts and savannas can catch fire (**wildfires**), crops on unwatered
+  farmland wilt, and water cauldrons out in the sun dry up.
+- **Droughts:** after a dry spell (mostly in summer) the rain stays away for days on end. The grass
+  browns, crops wilt, wildfires catch easily even in temperate lands, and shallow ponds dry up to
+  **cracked mud** (water next to farmland is left alone). It ends with a storm, and the rain fills the
+  ponds again. `/rweather drought` tells you about it.
+- **Sinkholes:** after a long downpour, the ground over a cave close under the surface can cave in
+  (never near anything built; needs `mobGriefing`).
+- **Rockfall:** in the spring thaw, and whenever it's thawing, rocks break off cliffs and pile up as
+  scree at the bottom (needs `mobGriefing`).
+- **Peat fires:** lightning (or fire) can set **peat** smouldering. A peat fire creeps slowly through
+  the bog for a long time, sends up smoke (a big one sends smoke downwind) and burns whatever walks on
+  it, until it burns out or water puts it out.
 - **Winter:** ponds and rivers ice over from the banks, **icicles** grow under the edges of roofs
   and can break off onto whoever is standing below, and blizzards set off **avalanches** of snow on
   steep slopes.
@@ -204,6 +227,12 @@ Ways to stay comfortable:
   morning mist, **sunbeams** fan out below the clouds.
 - **Diamond dust:** on bitterly cold, clear, still mornings the air glitters with ice crystals, and
   a **sun pillar** stands straight up from the low sun.
+- **Red sprites** flicker high above distant thunderstorms on dark nights, and on some summer nights
+  **noctilucent clouds** glow electric blue low in the north long after sunset.
+- Squall lines come in under a dark **shelf cloud**, and **mammatus** pouches hang under the anvils of
+  big storms.
+- After night rain under a full moon, look for a pale **moonbow**; when a low sun shines through thin
+  fog, a broad white **fogbow**.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -254,6 +283,22 @@ village or a volcano.
   them. Tide pools hold seagrass, sea pickles and **suspicious sand** to brush for treasure.
 - **Dune fields:** rows of tall dunes across the prevailing wind, each with a long, gentle slope and a
   steep face. In sandstorms the sand blows off the crests and the dunes creep downwind.
+- **Arroyos:** dry, sandy riverbeds winding across deserts and badlands. When a real storm breaks over
+  one, a **flash flood** races down the channel, and drains away soon after the rain stops.
+- **Cenotes:** round, sheer-sided sinkholes in the jungle with deep, clear water at the bottom, hung
+  with vines, roots and stalactites.
+- **Oases:** a pool in a hollow among the dunes, ringed with grass, reeds and palm trees.
+- **Waterfalls:** streams pouring off cliffs into a deep plunge pool, in a notch cut back into the
+  hillside.
+- **Basalt columns:** a coast of polygonal basalt columns stepping down into the sea.
+- **Sea stacks:** layered rock pillars standing off rocky coasts, notched at the waterline and capped
+  with turf, and a natural **arch** with the sea running through it.
+- **Atolls:** in warm seas, a ring of coral reef round a shallow sandy lagoon, with islets and palms.
+- **Fjords:** long, deep, sheer-walled inlets of the sea cut into cold mountains.
+- **Erratics and moraines:** big boulders of out-of-place rock and long rubble ridges left by the ice
+  sheets. Glaciers have a moraine round their foot too.
+- **Peat bogs:** wet, mossy flats over deep **peat** (a slow-burning furnace fuel), with dark pools,
+  cotton grass and cranberries.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -373,12 +418,13 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 50 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 56 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
-crater's rim), Ring of Fire (witness an eruption), Hair-Raising, Old Faithful, Hot Tub and Mind the
-Gap.
+crater's rim), Ring of Fire (witness an eruption), Hair-Raising, Old Faithful, Hot Tub, Mind the
+Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold and Field Geologist
+(visit five kinds of landform).
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at
@@ -439,7 +485,8 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather storms` | everyone | List storm cells (`/rweather storms clear` to remove them, op) |
 | `/rweather season` | everyone | The current season (`/rweather season <season>` to change it, op) |
 | `/rweather set <type> [seconds]` | op | Change the world-wide weather. Also takes datapack weathers (`namespace:name`), and in the Nether or End sets that dimension's weather (`ash_storm`, `ember_fall`, `fire_rain`, `void_storm`, `calm`) |
-| `/rweather storm <type> [here]` | op | Start a storm cell upwind (or right overhead). Also takes `sea_fog`, `wildfire_smoke`, `volcanic_smog` and `volcanic_ash` |
+| `/rweather storm <type> [here]` | op | Start a storm cell upwind (or right overhead). Also takes `sea_fog`, `wildfire_smoke`, `volcanic_smog`, `volcanic_ash` and `dust_haze` |
+| `/rweather drought` | everyone | Whether there's a drought, and how far into it we are (`/rweather drought start [days]` or `end`, op) |
 | `/rweather next` | op | Skip to the next forecast weather |
 | `/rweather tornado [pos] [tornado\|waterspout\|dust_devil]` | op | Spawn a whirlwind |
 | `/rweather meteor [pos]` | op | Bring a meteor down at a position (or near you) |
@@ -462,14 +509,17 @@ effects (Performance, Default, Cinematic) and a button for every setting. Or edi
   leaf piles, wild rice and kale, food spoilage, weather fishing, earthworms, lightning-charged tools,
   volcanoes (generation, eruptions and how often, lava flows, lava bombs, ash fall, lava tubes, smog
   and acid rain), afternoon storms, sea fog, wildfire smoke, lightning warnings, hail breaking glass,
-  mudslides, each landform's generation and whether landforms change with the weather, the almanac
+  mudslides, droughts (and drying ponds), ice breakup, desert dust, sinkholes, rockfall, peat fires,
+  each landform's generation and whether landforms change with the weather, the almanac
   on first join, and Tough As Nails.
 - `config/reikos_weather-client.toml`: particle density, fog, sky tinting, storm clouds (and how far
   out they're drawn), wet ground, mist, rainbows, auroras, heat lightning, seasonal colours, falling
   leaves, sounds (delayed thunder, muffling indoors, roof rain and wind whistle), birdsong and
   crickets, breath, footprints, screen raindrops, heat shimmer, dripping leaves, shooting stars,
   halos and sunbeams, hoarfrost, fireflies, blossoms, bird flocks, whitecaps, towering storm clouds,
-  sea fog banks, smoke columns, diamond dust, St. Elmo's fire sparks, mirages, accessibility
+  sea fog banks, smoke columns, diamond dust, St. Elmo's fire sparks, mirages, steam fog, waterfall
+  spray, dusty rain, red sprites, noctilucent clouds, shelf clouds and mammatus, moonbows, fogbows,
+  accessibility
   (reduce flashing, screen effect strength, the radio's alert tone), Fahrenheit, and the forecast
   panel (`BAROMETER`, `ALWAYS` or `NEVER`).
 

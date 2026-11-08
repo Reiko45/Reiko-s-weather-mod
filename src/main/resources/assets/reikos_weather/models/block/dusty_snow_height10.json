@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/snow_height10",
+  "textures": {
+    "particle": "reikos_weather:block/dusty_snow",
+    "texture": "reikos_weather:block/dusty_snow"
+  }
+}

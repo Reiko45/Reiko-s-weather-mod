@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "basalt_columns",
+  "biomes": "#reikos_weather:has_structure/basalt_columns",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": {
+    "reikos_weather:peat": {
+      "burn_time": 1200
+    }
+  }
+}

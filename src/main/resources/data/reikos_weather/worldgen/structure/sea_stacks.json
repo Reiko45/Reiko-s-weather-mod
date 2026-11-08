@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "sea_stacks",
+  "biomes": "#reikos_weather:has_structure/sea_stacks",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

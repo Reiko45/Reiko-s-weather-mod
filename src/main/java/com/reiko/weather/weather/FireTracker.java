@@ -26,6 +26,13 @@ public final class FireTracker {
         }
     }
 
+    /** Smouldering peat ticks far less often than fire, so each tick counts for more (a big peat fire smokes too). */
+    public static void onSmoulder(Level level, BlockPos pos) {
+        if (level.dimension() == Level.OVERWORLD) {
+            COUNTS.addTo(ChunkPos.asLong(pos.getX() >> 5, pos.getZ() >> 5), 20);
+        }
+    }
+
     static void tick(ServerLevel level, WeatherState state) {
         if (COUNTS.isEmpty()) {
             return;

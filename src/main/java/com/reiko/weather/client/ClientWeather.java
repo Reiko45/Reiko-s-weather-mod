@@ -50,7 +50,7 @@ public final class ClientWeather {
     private static int localRainbowTicks;
     /** Air temperature at the camera, refreshed twice a second. */
     private static float airTemperature = 15.0F;
-    private static float halo, sunbeams, bloodMoon, freezingFog, smoke, diamondDust;
+    private static float halo, sunbeams, bloodMoon, freezingFog, smoke, diamondDust, dustyRain;
 
     public static void tick(Minecraft mc) {
         ClientLevel level = mc.level;
@@ -128,7 +128,7 @@ public final class ClientWeather {
         boolean auroraClimate = climate == Climate.COLD || climate == Climate.TEMPERATE && SkyPhenomena.isGeomagneticStormNight(level.getDayTime())
                 && com.reiko.weather.config.WeatherConfig.SPEC.isLoaded() && com.reiko.weather.config.WeatherConfig.GEOMAGNETIC_STORMS.get();
         boolean auroraWanted = managed && ClientConfig.AURORAS.get() && SkyPhenomena.isAuroraNight(level.getDayTime())
-                && auroraClimate && (type == WeatherType.CLEAR || type == WeatherType.WINDY);
+                && auroraClimate && (type == WeatherType.CLEAR || type == WeatherType.WINDY || type == WeatherType.COLD_SNAP);
         aurora = approach(aurora, auroraWanted ? 1.0F : 0.0F, 0.003F);
 
         mist = approach(mist, managed ? mistTarget(level, camPos, cam.y) : 0.0F, 0.003F);
@@ -156,6 +156,14 @@ public final class ClientWeather {
         // freezing fog: fog in sub-zero air, which rimes everything it touches with hoarfrost
         boolean freezing = managed && type == WeatherType.FOG && airTemperature < -1.0F;
         freezingFog = approach(freezingFog, freezing ? 1.0F : 0.0F, 0.004F);
+        // rain falling through a dust haze washes the dust down with it, reddish-brown
+        float haze = 0.0F;
+        if (managed && ClientConfig.DUSTY_RAIN.get()) {
+            for (StormCell cell : SyncedWeather.cells()) {
+                if (cell.type == WeatherType.DUST_HAZE) haze = Math.max(haze, cell.weightAt(cam.x, cam.z));
+            }
+        }
+        dustyRain = approach(dustyRain, haze * Mth.clamp(rain * 2.0F, 0.0F, 1.0F), 0.01F);
 
         active = managed || rain > 0.001F || fog > 0.001F || overcast > 0.001F || wind > 0.001F || mist > 0.001F;
 
@@ -298,6 +306,8 @@ public final class ClientWeather {
     public static float freezingFog() { return freezingFog; }
     public static float smoke() { return smoke; }
     public static float diamondDust() { return diamondDust; }
+    /** 0 to 1: how much desert dust is in the rain. */
+    public static float dustyRain() { return dustyRain; }
     public static float thunder() { return thunder; }
     public static float wetness() { return ClientConfig.WET_GROUND.get() ? wetness : 0.0F; }
 

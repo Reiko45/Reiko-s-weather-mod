@@ -109,7 +109,32 @@ public final class WeatherCommand {
                         .then(Commands.argument("season", StringArgumentType.word()).requires(s -> s.hasPermission(2))
                                 .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
                                         Arrays.stream(Season.values()).map(Season::id), builder))
-                                .executes(WeatherCommand::setSeason))));
+                                .executes(WeatherCommand::setSeason)))
+                .then(Commands.literal("drought").executes(WeatherCommand::queryDrought)
+                        .then(Commands.literal("start").requires(s -> s.hasPermission(2)).executes(ctx -> startDrought(ctx, 6))
+                                .then(Commands.argument("days", IntegerArgumentType.integer(1, 60)).executes(ctx -> startDrought(ctx, IntegerArgumentType.getInteger(ctx, "days")))))
+                        .then(Commands.literal("end").requires(s -> s.hasPermission(2)).executes(WeatherCommand::endDrought))));
+    }
+
+    private static int queryDrought(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        WeatherState state = requireState(ctx.getSource());
+        Component line = com.reiko.weather.weather.Drought.describe(state);
+        ctx.getSource().sendSuccess(() -> line != null ? line : Component.translatable("commands.reikos_weather.drought.none", state.dryDays), false);
+        return state.droughtDaysLeft;
+    }
+
+    private static int startDrought(CommandContext<CommandSourceStack> ctx, int days) throws CommandSyntaxException {
+        WeatherState state = requireState(ctx.getSource());
+        com.reiko.weather.weather.Drought.start(ctx.getSource().getServer().overworld(), state, days);
+        ctx.getSource().sendSuccess(() -> Component.translatable("commands.reikos_weather.drought.start", days), true);
+        return days;
+    }
+
+    private static int endDrought(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        WeatherState state = requireState(ctx.getSource());
+        com.reiko.weather.weather.Drought.end(ctx.getSource().getServer().overworld(), state);
+        ctx.getSource().sendSuccess(() -> Component.translatable("commands.reikos_weather.drought.end"), true);
+        return 1;
     }
 
     private static WeatherState requireState(CommandSourceStack source) throws CommandSyntaxException {
@@ -145,6 +170,7 @@ public final class WeatherCommand {
         if (terrain != null) source.sendSuccess(() -> terrain, false);
         Component tide = WeatherReport.tide(overworld, pos);
         if (tide != null) source.sendSuccess(() -> tide, false);
+        for (Component line : WeatherReport.conditions(overworld, state, pos)) source.sendSuccess(() -> line, false);
         Component volcano = WeatherReport.volcano(overworld, pos);
         if (volcano != null) source.sendSuccess(() -> volcano, false);
         return state.type.ordinal();
@@ -243,6 +269,9 @@ public final class WeatherCommand {
                 : WeatherManager.spawnCellUpwind(overworld, state, type, pos, -1);
         if (here) {
             cell.age = 900; // already fully formed
+        }
+        if (type == WeatherType.HURRICANE) {
+            cell.power = 1.0F; // a major hurricane (it still weakens over land)
         }
         source.sendSuccess(() -> Component.translatable(here ? "commands.reikos_weather.storm_here" : "commands.reikos_weather.storm",
                 type.displayName(), (int) cell.radius), true);

@@ -18,7 +18,17 @@ public enum LandformKind implements StringRepresentable {
     SALT_FLAT(SaltFlat::plan, SaltFlat::load, () -> WeatherConfig.SALT_FLATS.get()),
     GLACIER(Glacier::plan, Glacier::load, () -> WeatherConfig.GLACIERS.get()),
     TIDAL_FLAT(TidalFlat::plan, TidalFlat::load, () -> WeatherConfig.TIDAL_FLATS.get()),
-    DUNES(Dunes::plan, Dunes::load, () -> WeatherConfig.DUNES.get());
+    DUNES(Dunes::plan, Dunes::load, () -> WeatherConfig.DUNES.get()),
+    ARROYO(Arroyo::plan, Arroyo::load, () -> WeatherConfig.ARROYOS.get()),
+    CENOTE(Cenote::plan, Cenote::load, () -> WeatherConfig.CENOTES.get()),
+    OASIS(Oasis::plan, Oasis::load, () -> WeatherConfig.OASES.get()),
+    WATERFALL(Waterfall::plan, Waterfall::load, () -> WeatherConfig.WATERFALLS.get()),
+    BASALT_COLUMNS(BasaltColumns::plan, BasaltColumns::load, () -> WeatherConfig.BASALT_COLUMNS.get()),
+    SEA_STACKS(SeaStacks::plan, SeaStacks::load, () -> WeatherConfig.SEA_STACKS.get()),
+    ATOLL(Atoll::plan, Atoll::load, () -> WeatherConfig.ATOLLS.get()),
+    FJORD(Fjord::plan, Fjord::load, () -> WeatherConfig.FJORDS.get()),
+    ERRATICS(Erratics::plan, Erratics::load, () -> WeatherConfig.ERRATICS.get()),
+    PEAT_BOG(PeatBog::plan, PeatBog::load, () -> WeatherConfig.PEAT_BOGS.get());
 
     public static final Codec<LandformKind> CODEC = StringRepresentable.fromEnum(LandformKind::values);
 

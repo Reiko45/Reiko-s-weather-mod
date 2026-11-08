@@ -58,7 +58,8 @@ public final class WeatherCreatures {
         if (local.intensity() < 0.6F) return false;
         WeatherProfile p = local.profile();
         WeatherType t = local.type();
-        return t.vanillaThunder || t.isSevere() || p.hail || p.wind >= 0.7F || p.freeze >= 0.8F || t == WeatherType.HEAVY_RAIN;
+        return t.vanillaThunder || t.isSevere() || p.hail || p.wind >= 0.7F || p.freeze >= 0.8F || t == WeatherType.HEAVY_RAIN
+                || t == WeatherType.COLD_SNAP; // animals huddle in out of the bitter cold
     }
 
     // ------------------------------------------------------------------ polar bears roam in blizzards

@@ -39,7 +39,8 @@ public class SeekShelterGoal extends Goal {
 
     private static boolean rough(LocalWeather local) {
         WeatherType type = local.type();
-        return type.vanillaThunder || type.isSevere() || type == WeatherType.HAIL || type == WeatherType.HEAVY_RAIN || type == WeatherType.SLEET;
+        return type.vanillaThunder || type.isSevere() || type == WeatherType.HAIL || type == WeatherType.HEAVY_RAIN || type == WeatherType.SLEET
+                || type == WeatherType.COLD_SNAP; // out of the bitter cold
     }
 
     @Nullable

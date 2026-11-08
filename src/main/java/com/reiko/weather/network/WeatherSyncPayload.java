@@ -24,16 +24,17 @@ import java.util.List;
  * @param forecast         upcoming background weathers
  * @param cells            regional storm cells
  * @param custom           id of the active datapack weather, or "" for none
+ * @param drought          0 to 1, how bad the drought is (0 when there's none)
  */
 public record WeatherSyncPayload(int weather, int elapsed, int remaining, float windAngle, int rainbow,
                                  int season, int dayOfSeason, int daysPerSeason, float temperatureShift,
-                                 int[] forecast, List<StormCell> cells, String custom) implements CustomPacketPayload {
+                                 int[] forecast, List<StormCell> cells, String custom, float drought) implements CustomPacketPayload {
     public static final Type<WeatherSyncPayload> TYPE = new Type<>(ReikosWeather.id("weather_sync"));
     public static final StreamCodec<FriendlyByteBuf, WeatherSyncPayload> STREAM_CODEC =
             StreamCodec.ofMember(WeatherSyncPayload::write, WeatherSyncPayload::read);
 
     public static WeatherSyncPayload unmanaged() {
-        return new WeatherSyncPayload(-1, 0, 0, 0.0F, 0, -1, -1, -1, 0.0F, new int[0], List.of(), "");
+        return new WeatherSyncPayload(-1, 0, 0, 0.0F, 0, -1, -1, -1, 0.0F, new int[0], List.of(), "", 0.0F);
     }
 
     private void write(FriendlyByteBuf buf) {
@@ -52,6 +53,7 @@ public record WeatherSyncPayload(int weather, int elapsed, int remaining, float 
             cell.write(buf);
         }
         buf.writeUtf(custom);
+        buf.writeFloat(drought);
     }
 
     private static WeatherSyncPayload read(FriendlyByteBuf buf) {
@@ -71,7 +73,8 @@ public record WeatherSyncPayload(int weather, int elapsed, int remaining, float 
             cells.add(StormCell.read(buf));
         }
         String custom = buf.readUtf();
-        return new WeatherSyncPayload(weather, elapsed, remaining, windAngle, rainbow, season, dayOfSeason, daysPerSeason, shift, forecast, cells, custom);
+        float drought = buf.readFloat();
+        return new WeatherSyncPayload(weather, elapsed, remaining, windAngle, rainbow, season, dayOfSeason, daysPerSeason, shift, forecast, cells, custom, drought);
     }
 
     @Override

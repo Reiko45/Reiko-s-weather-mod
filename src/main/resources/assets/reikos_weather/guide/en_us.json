@@ -103,7 +103,8 @@
      "title": "Hurricanes",
      "icon": "minecraft:heart_of_the_sea",
      "pages": [
-      "Hurricane-force wind that shoves players, mobs and items around, with torrential rain and flying leaves. The sea surges up onto low coasts, and branches come down. A thundersnow whiteout in the cold; a sandstorm in deserts."
+      "Hurricanes form out over warm sea and come in toward the coast on a track that curves round as they go. Warm water feeds them: watch the radio for the category climbing. Over land, or cold water, they weaken, and in the end all that's left is a big rainstorm.",
+      "Hurricane-force wind shoves players, mobs and items around, with torrential rain and flying leaves; the sea surges up onto low coasts and branches come down. Spiral bands of rain sweep round with lulls between them.\n\nIn the middle of a strong one there's a calm, clear eye. Don't be fooled: the other side of the eyewall is on its way."
      ]
     },
     {
@@ -841,6 +842,152 @@
    ]
   },
   {
+   "title": "Drought, Cold and Wind",
+   "icon": "reikos_weather:cracked_mud",
+   "entries": [
+    {
+     "title": "Droughts",
+     "icon": "reikos_weather:cracked_mud",
+     "pages": [
+      "After a dry spell, mostly in summer, the weather can turn against rain for days on end. The grass browns, crops on dry farmland wilt, and wildfires catch far more easily.\n\nShallow ponds dry up, leaving cracked mud. When the drought finally breaks, with a storm, the rain fills them up again. Water next to farmland is left alone."
+     ]
+    },
+    {
+     "title": "Cold Snaps",
+     "icon": "minecraft:blue_ice",
+     "pages": [
+      "Now and then, mostly in winter, bitterly cold, clear, still air settles in for a day or two. Lakes and rivers freeze over from the shore inward, even where they usually don't. Crops get frosted, animals huddle under cover, and everything turns white with frost overnight. It all thaws again afterwards."
+     ]
+    },
+    {
+     "title": "Föhn Winds",
+     "icon": "minecraft:feather",
+     "pages": [
+      "When a strong wind blows over a mountain range, it drops its rain on the far side and warms up as it comes down again. On the sheltered side it arrives warm and bone-dry (a föhn, or chinook), and the snow melts away astonishingly fast."
+     ]
+    },
+    {
+     "title": "Frost Hollows",
+     "icon": "minecraft:snowball",
+     "pages": [
+      "On clear, calm nights cold air slides downhill and pools in valley bottoms, which get several degrees colder than the slopes above. Frost comes earlier and harder in a hollow: don't plant tender crops there."
+     ]
+    },
+    {
+     "title": "Steam Fog",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "When the air is far colder than the water, unfrozen lakes and rivers steam on still mornings, wisps of fog rising off the water like smoke."
+     ]
+    },
+    {
+     "title": "Ice Breakup",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "In the spring thaw, river ice breaks up into floes that drift away downstream. You can ride one, like a boat. Where floes pile up against each other in a narrow stretch, an ice jam forms, and the river backs up and floods its banks until the jam melts."
+     ]
+    },
+    {
+     "title": "Dust Carried Far",
+     "icon": "reikos_weather:desert_dust",
+     "pages": [
+      "A big sandstorm lifts dust high enough for the wind to carry it far beyond the desert: a tawny haze that dims the sun. It settles on the snow, turning it pink, leaves a film of dust on rooftops and rock, and rain falling through it comes down reddish-brown."
+     ]
+    },
+    {
+     "title": "Rare Sights",
+     "icon": "minecraft:spyglass",
+     "pages": [
+      "On a dark night, watch distant thunderstorms: now and then a red sprite flickers high above the cloud tops. On some summer nights, noctilucent clouds glow electric blue low in the north long after sunset.",
+      "A squall line comes in under a shelf cloud, a long, low, dark wedge. Under the anvil of a big storm hang pouches of mammatus. After night rain under a full moon, look for a pale moonbow, and when a low sun shines through thin fog, a broad white fogbow."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "More Landforms",
+   "icon": "minecraft:pointed_dripstone",
+   "entries": [
+    {
+     "title": "Arroyos",
+     "icon": "minecraft:dead_bush",
+     "pages": [
+      "Dry, sandy riverbeds winding across deserts and badlands. They're bone-dry almost all the time, but when a real storm breaks over one, a flash flood comes racing down the channel. Don't camp in a wash."
+     ]
+    },
+    {
+     "title": "Cenotes and Sinkholes",
+     "icon": "minecraft:vine",
+     "pages": [
+      "A cenote is a sinkhole in the jungle where a cave roof fell in long ago: a sheer-sided shaft with deep, clear water at the bottom, hung with vines and stalactites.\n\nAfter a long downpour, the ground over a cave close under the surface can give way into a brand-new sinkhole."
+     ]
+    },
+    {
+     "title": "Oases",
+     "icon": "minecraft:sugar_cane",
+     "pages": [
+      "Where water comes up in a hollow among the dunes: a pool ringed with grass, reeds and palm trees. The palms have cocoa, a welcome find in the desert."
+     ]
+    },
+    {
+     "title": "Waterfalls",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "Streams pouring off cliffs into a deep plunge pool they've dug out at the foot. Spray billows up from the pool, and with the sun at your back there's a rainbow in it."
+     ]
+    },
+    {
+     "title": "Basalt Columns",
+     "icon": "minecraft:basalt",
+     "pages": [
+      "An old lava flow that cracked into columns as it cooled, worn by the sea into a pavement of polygonal stepping stones running down into the water."
+     ]
+    },
+    {
+     "title": "Sea Stacks and Arches",
+     "icon": "minecraft:stone",
+     "pages": [
+      "Pillars of layered rock standing off a rocky coast, notched at the waterline by the waves and capped with a scrap of turf. One is still an arch, with the sea running through it."
+     ]
+    },
+    {
+     "title": "Atolls",
+     "icon": "minecraft:brain_coral_block",
+     "pages": [
+      "In warm seas: a ring of coral reef round a shallow, sandy lagoon, with low islets and palms here and there along it. Outside the reef, the bottom drops away into the deep."
+     ]
+    },
+    {
+     "title": "Fjords",
+     "icon": "minecraft:cobblestone",
+     "pages": [
+      "Long, deep arms of the sea reaching into cold mountains, cut by glaciers long ago. Sheer rock walls drop straight into deep water, with a shallow sill across the mouth."
+     ]
+    },
+    {
+     "title": "Erratics and Moraines",
+     "icon": "minecraft:granite",
+     "pages": [
+      "What the ice sheets left behind: long, curving ridges of rubble (moraines), and great boulders of rock that doesn't belong anywhere near here, carried for miles on the ice. Glaciers have a moraine round their foot too."
+     ]
+    },
+    {
+     "title": "Peat Bogs",
+     "icon": "reikos_weather:peat",
+     "pages": [
+      "Wet, mossy flats over deep peat, dotted with dark pools, cotton grass and cranberries. Dig the peat and burn it in a furnace.\n\nLightning can set a bog smouldering. A peat fire creeps slowly underground for a long time, sending up smoke, and stepping on it burns. Water puts it out."
+     ]
+    },
+    {
+     "title": "Rockfall",
+     "icon": "minecraft:gravel",
+     "pages": [
+      "On mild days in spring, and whenever it thaws, water that froze in the cracks overnight lets go: rocks break off cliffs and tumble down, piling up as scree at the bottom. Don't linger under a cliff in the thaw."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [
@@ -855,7 +1002,7 @@
      "title": "Commands",
      "icon": "minecraft:command_block",
      "pages": [
-      "/rweather query: the weather where you stand.\n/rweather forecast: the next three weathers.\n/rweather storms: storm cells.\n/rweather season: the season.\n/rweather volcano: volcanoes nearby.\n\nFor operators: /rweather set, storm, next, tornado and meteor, and /rweather volcano create, wake, erupt and calm."
+      "/rweather query: the weather where you stand.\n/rweather forecast: the next three weathers.\n/rweather storms: storm cells.\n/rweather season: the season.\n/rweather volcano: volcanoes nearby.\n/rweather drought: any drought.\n\nFor operators: /rweather set, storm, next, tornado, meteor and drought start/end, and /rweather volcano create, wake, erupt and calm."
      ]
     }
    ]

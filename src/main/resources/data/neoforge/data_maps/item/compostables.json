@@ -8,6 +8,9 @@
     },
     "reikos_weather:kale": {
       "chance": 0.5
+    },
+    "reikos_weather:desert_dust": {
+      "chance": 0.3
     }
   }
 }

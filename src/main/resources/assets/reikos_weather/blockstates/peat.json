@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "smouldering=false": {
+      "model": "reikos_weather:block/peat"
+    },
+    "smouldering=true": {
+      "model": "reikos_weather:block/peat_smouldering"
+    }
+  }
+}

@@ -99,6 +99,34 @@ public final class WeatherReport {
         return Component.translatable("report.reikos_weather.microclimate", list.withStyle(ChatFormatting.AQUA));
     }
 
+    /**
+     * The things going on around here that aren't the weather type itself: a drought, a hurricane's category (and
+     * whether you're in its eye), a föhn wind, cold air pooling in a frost hollow.
+     */
+    public static java.util.List<Component> conditions(ServerLevel level, WeatherState state, BlockPos pos) {
+        java.util.List<Component> lines = new java.util.ArrayList<>();
+        Component drought = Drought.describe(state);
+        if (drought != null) lines.add(drought.copy().withStyle(ChatFormatting.GOLD));
+        for (StormCell cell : state.cells) {
+            if (cell.type != WeatherType.HURRICANE) continue;
+            double edge = cell.distanceTo(pos.getX(), pos.getZ()) - cell.radius;
+            if (edge > 1200) continue;
+            String key = cell.inEye(pos.getX(), pos.getZ()) ? "report.reikos_weather.hurricane_eye"
+                    : edge < 0 ? "report.reikos_weather.hurricane_in" : "report.reikos_weather.hurricane_near";
+            lines.add(Component.translatable(key, cell.category()).withStyle(ChatFormatting.RED));
+        }
+        Climate climate = Climate.at(level, pos);
+        LocalWeather raw = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5);
+        Microclimate.Info info = Microclimate.at(level, pos.getX(), pos.getZ(), state.windAngle);
+        if (Microclimate.foehn(info, raw.profile()) > 0.3F) {
+            lines.add(Component.translatable("report.reikos_weather.foehn").withStyle(ChatFormatting.GOLD));
+        }
+        if (Microclimate.frostHollow(level, info, raw.profile()) > 0.3F) {
+            lines.add(Component.translatable("report.reikos_weather.frost_hollow").withStyle(ChatFormatting.AQUA));
+        }
+        return lines;
+    }
+
     /** The tide, for players on or near the coast (null inland). */
     @javax.annotation.Nullable
     public static Component tide(ServerLevel level, BlockPos pos) {

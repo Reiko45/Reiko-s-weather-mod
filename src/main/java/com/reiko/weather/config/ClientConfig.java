@@ -43,6 +43,14 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue DIAMOND_DUST;
     public static final ModConfigSpec.BooleanValue STATIC_SPARKS;
     public static final ModConfigSpec.BooleanValue MIRAGES;
+    public static final ModConfigSpec.BooleanValue STEAM_FOG;
+    public static final ModConfigSpec.BooleanValue WATERFALL_SPRAY;
+    public static final ModConfigSpec.BooleanValue DUSTY_RAIN;
+    public static final ModConfigSpec.BooleanValue RED_SPRITES;
+    public static final ModConfigSpec.BooleanValue NOCTILUCENT_CLOUDS;
+    public static final ModConfigSpec.BooleanValue STORM_CLOUD_SHAPES;
+    public static final ModConfigSpec.BooleanValue MOONBOWS;
+    public static final ModConfigSpec.BooleanValue FOGBOWS;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -126,6 +134,22 @@ public final class ClientConfig {
                 .define("staticSparks", true);
         MIRAGES = b.comment("Shimmering mirages over hot desert flats and salt flats.")
                 .define("mirages", true);
+        STEAM_FOG = b.comment("Steam fog: wisps of mist rising off unfrozen lakes and rivers on bitterly cold mornings.")
+                .define("steamFog", true);
+        WATERFALL_SPRAY = b.comment("Mist billowing up at the foot of waterfalls, with a rainbow in the spray when the sun is behind you.")
+                .define("waterfallSpray", true);
+        DUSTY_RAIN = b.comment("Rain falling through a dust haze comes down reddish-brown.")
+                .define("dustyRain", true);
+        RED_SPRITES = b.comment("Rare red sprites flickering high above distant thunderstorms at night.")
+                .define("redSprites", true);
+        NOCTILUCENT_CLOUDS = b.comment("Glowing electric-blue noctilucent clouds low in the northern sky on some summer nights.")
+                .define("noctilucentClouds", true);
+        STORM_CLOUD_SHAPES = b.comment("Shelf clouds along the leading edge of cold fronts, and mammatus pouches under thunderstorm anvils.")
+                .define("stormCloudShapes", true);
+        MOONBOWS = b.comment("Faint, white moonbows after night rain when the moon is bright and low.")
+                .define("moonbows", true);
+        FOGBOWS = b.comment("Broad white fogbows opposite a low sun shining through thin fog.")
+                .define("fogbows", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

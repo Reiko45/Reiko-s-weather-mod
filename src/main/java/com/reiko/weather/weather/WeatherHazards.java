@@ -81,7 +81,18 @@ public final class WeatherHazards {
             if (WeatherConfig.SNOW_MELT.get()) {
                 melt(level, randomColumn(level, player, random));
                 melt(level, randomColumn(level, player, random));
+                if (profile.tempOffset > 4.0F) {
+                    // a föhn wind: warm, dry air pouring down off the mountains eats the snow away
+                    for (int i = 0; i < 3; i++) foehnMelt(level, randomColumn(level, player, random));
+                }
             }
+            if (local.type() == WeatherType.COLD_SNAP && climate != Climate.ARID && intensity > 0.5F && WeatherConfig.FREEZE_RIVERS.get()) {
+                for (int i = 0; i < 3; i++) snapFreeze(level, state, randomColumn(level, player, random), local);
+            }
+            if (profile.dustLayers > 0 && intensity > 0.5F && climate != Climate.ARID && WeatherConfig.DESERT_DUST.get() && random.nextFloat() < 0.4F) {
+                settleDust(level, randomColumn(level, player, random));
+            }
+            Drought.tickPlayer(level, state, player, local, climate, randomColumn(level, player, random));
             if (profile.glazeWater && WeatherConfig.GLAZE_WATER.get() && random.nextFloat() < intensity) {
                 glazeWater(level, randomColumn(level, player, random));
             }
@@ -145,6 +156,9 @@ public final class WeatherHazards {
             ExtremeWeather.tick(level, player, local, climate);
         }
         recedeFloods(level, state);
+        Drought.refill(level, state);
+        thawSnapIce(level, state);
+        com.reiko.weather.landform.Arroyo.drain(level, state);
         LightningWarnings.tick(level);
         HailGlass.tick(level);
     }
@@ -168,7 +182,11 @@ public final class WeatherHazards {
             return;
         }
         BlockState state = level.getBlockState(pos);
-        if (state.is(Blocks.SNOW)) {
+        if (state.is(ModBlocks.DUSTY_SNOW.get())) {
+            // fresh snow buries the dust
+            int layers = Math.min(8, state.getValue(SnowLayerBlock.LAYERS) + 1);
+            level.setBlockAndUpdate(pos, Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers));
+        } else if (state.is(Blocks.SNOW)) {
             int layers = state.getValue(SnowLayerBlock.LAYERS);
             if (layers < maxLayers) {
                 BlockState grown = state.setValue(SnowLayerBlock.LAYERS, layers + 1);
@@ -208,7 +226,7 @@ public final class WeatherHazards {
             return;
         }
         BlockState state = level.getBlockState(top);
-        if (state.is(Blocks.SNOW)) {
+        if (state.is(Blocks.SNOW) || state.is(ModBlocks.DUSTY_SNOW.get())) {
             int layers = state.getValue(SnowLayerBlock.LAYERS);
             if (layers > 1) {
                 level.setBlockAndUpdate(top, state.setValue(SnowLayerBlock.LAYERS, layers - 1));
@@ -220,6 +238,108 @@ public final class WeatherHazards {
         BlockPos below = top.below();
         if (level.getBlockState(below).is(Blocks.ICE) && level.getFluidState(below.below()).is(FluidTags.WATER)) {
             level.setBlockAndUpdate(below, Blocks.WATER.defaultBlockState());
+            com.reiko.weather.entity.IceFloeEntity.breakUp(level, below);
+        }
+    }
+
+    /** A föhn wind melts the snow fast, even where it would usually lie all winter. */
+    private static void foehnMelt(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null) {
+            return;
+        }
+        BlockState state = level.getBlockState(top);
+        if (state.is(Blocks.SNOW) || state.is(ModBlocks.DUSTY_SNOW.get())) {
+            int layers = state.getValue(SnowLayerBlock.LAYERS);
+            if (layers > 1) {
+                level.setBlockAndUpdate(top, state.setValue(SnowLayerBlock.LAYERS, layers - 1));
+            } else {
+                level.removeBlock(top, false);
+            }
+        }
+    }
+
+    /**
+     * A cold snap freezes lakes and rivers even where they don't usually freeze, from the shore inward. That ice
+     * is remembered, so it can thaw again afterwards.
+     */
+    private static void snapFreeze(ServerLevel level, WeatherState state, @Nullable BlockPos top, LocalWeather local) {
+        if (top == null || state.snapIce.size() >= 6000) {
+            return;
+        }
+        BlockPos pos = top.below();
+        if (!level.getFluidState(pos).isSourceOfType(Fluids.WATER) || !level.getBlockState(top).isAir() || !level.canSeeSky(top)
+                || com.reiko.weather.temperature.Temperature.ambient(level, top, local) > -3.0F) {
+            return;
+        }
+        boolean shore = false;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            if (level.getBlockState(pos.relative(d)).getFluidState().isEmpty()) {
+                shore = true; // land, or ice that's already formed
+                break;
+            }
+        }
+        if (!shore) {
+            return;
+        }
+        level.setBlockAndUpdate(pos, Blocks.ICE.defaultBlockState());
+        if (!level.getBiome(pos).value().coldEnoughToSnow(pos)) {
+            state.snapIce.add(pos.asLong());
+            state.setDirty();
+        }
+    }
+
+    /** Ice left by a cold snap thaws once the air is above freezing again. */
+    private static void thawSnapIce(ServerLevel level, WeatherState state) {
+        if (state.snapIce.isEmpty() || level.getGameTime() % 5L != 3L) {
+            return;
+        }
+        for (int i = 0; i < 4 && !state.snapIce.isEmpty(); i++) {
+            int index = level.random.nextInt(state.snapIce.size());
+            BlockPos pos = BlockPos.of(state.snapIce.getLong(index));
+            if (!level.isLoaded(pos)) continue;
+            LocalWeather local = WeatherManager.local(level, pos);
+            if (local != null && local.type() == WeatherType.COLD_SNAP
+                    || com.reiko.weather.temperature.Temperature.ambient(level, pos.above(), local) < 1.0F) {
+                continue;
+            }
+            if (level.getBlockState(pos).is(Blocks.ICE)) {
+                level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
+                com.reiko.weather.entity.IceFloeEntity.breakUp(level, pos);
+            }
+            state.snapIce.removeLong(index);
+            state.setDirty();
+        }
+    }
+
+    /** Dust settling out of a haze: it reddens the snow, and leaves a thin film on hard ground (rain washes it off). */
+    private static void settleDust(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null || !level.isLoaded(top)) {
+            return;
+        }
+        BlockState at = level.getBlockState(top);
+        if (at.is(Blocks.SNOW)) {
+            level.setBlockAndUpdate(top, ModBlocks.DUSTY_SNOW.get().defaultBlockState().setValue(SnowLayerBlock.LAYERS, at.getValue(SnowLayerBlock.LAYERS)));
+            return;
+        }
+        if (!at.isAir()) {
+            return;
+        }
+        BlockPos below = top.below();
+        BlockState ground = level.getBlockState(below);
+        if (ground.is(Blocks.SNOW_BLOCK) || ground.is(Blocks.POWDER_SNOW)) {
+            if (ModBlocks.DUSTY_SNOW.get().defaultBlockState().canSurvive(level, top)) {
+                level.setBlockAndUpdate(top, ModBlocks.DUSTY_SNOW.get().defaultBlockState());
+            }
+            return;
+        }
+        // a film of dust on rock, roofs and paths (it just disappears into grass, sand and soil)
+        if (ground.is(BlockTags.DIRT) || ground.is(BlockTags.SAND) || ground.is(BlockTags.LEAVES) || ground.is(Blocks.FARMLAND)
+                || ground.is(ModBlocks.DESERT_DUST.get()) || !ground.getFluidState().isEmpty() || level.random.nextFloat() > 0.3F) {
+            return;
+        }
+        BlockState dust = ModBlocks.DESERT_DUST.get().defaultBlockState();
+        if (dust.canSurvive(level, top)) {
+            level.setBlockAndUpdate(top, dust);
         }
     }
 
@@ -316,6 +436,32 @@ public final class WeatherHazards {
         state.setDirty();
     }
 
+    private static long lastJamMessage = -10000L;
+
+    /** An ice jam: the river backs up behind the floes and spills over its banks. */
+    public static void jamFlood(ServerLevel level, BlockPos at) {
+        WeatherState state = WeatherManager.activeState(level);
+        if (state == null || !WeatherConfig.ICE_BREAKUP.get()) {
+            return;
+        }
+        int before = state.floodBlocks.size();
+        RandomSource random = level.random;
+        for (int i = 0; i < 8; i++) {
+            BlockPos column = new BlockPos(at.getX() + random.nextInt(17) - 8, 0, at.getZ() + random.nextInt(17) - 8);
+            if (level.isLoaded(column)) {
+                flood(level, state, level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column), true); // spilling over the banks
+            }
+        }
+        if (state.floodBlocks.size() > before && level.getGameTime() - lastJamMessage > 1200L) {
+            lastJamMessage = level.getGameTime();
+            for (ServerPlayer player : level.players()) {
+                if (player.distanceToSqr(at.getX(), at.getY(), at.getZ()) < 64 * 64) {
+                    player.displayClientMessage(Component.translatable("message.reikos_weather.ice_jam").withStyle(s -> s.withColor(0x9FD4FF)), true);
+                }
+            }
+        }
+    }
+
     /** Sandbags stop flood water from being placed within two blocks of them. */
     public static boolean protectedBySandbags(Level level, BlockPos pos) {
         for (BlockPos p : BlockPos.betweenClosed(pos.offset(-2, -1, -2), pos.offset(2, 1, 2))) {
@@ -410,6 +556,10 @@ public final class WeatherHazards {
             LocalWeather local = WeatherManager.local(level, pos);
             if (local != null && (floodsOn && local.profile().floods || surgeOn && local.type() == WeatherType.HURRICANE)) {
                 continue; // still pouring
+            }
+            if (!level.getEntitiesOfClass(com.reiko.weather.entity.IceFloeEntity.class, new net.minecraft.world.phys.AABB(pos).inflate(12),
+                    com.reiko.weather.entity.IceFloeEntity::jammed).isEmpty()) {
+                continue; // the ice jam is still holding the water back
             }
             if (Tides.flooding(level) && level.getBiome(pos).is(BiomeTags.IS_BEACH)
                     || Tides.floodingFlats(level) && level.getBlockState(pos.below()).is(Blocks.MUD)

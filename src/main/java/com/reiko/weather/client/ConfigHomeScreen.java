@@ -76,7 +76,10 @@ public class ConfigHomeScreen extends Screen {
                     ClientConfig.AURORAS, ClientConfig.STORM_CLOUDS, ClientConfig.WET_GROUND, ClientConfig.MIST, ClientConfig.HEAT_LIGHTNING,
                     ClientConfig.SEASONAL_COLORS, ClientConfig.FALLING_LEAVES, ClientConfig.BREATH, ClientConfig.FOOTPRINTS, ClientConfig.SCREEN_RAINDROPS,
                     ClientConfig.HEAT_SHIMMER, ClientConfig.DRIPPING_LEAVES, ClientConfig.SHOOTING_STARS, ClientConfig.SKY_OPTICS, ClientConfig.HOARFROST,
-                    ClientConfig.FIREFLIES, ClientConfig.BLOSSOMS, ClientConfig.BIRD_FLOCKS, ClientConfig.WHITECAPS}) {
+                    ClientConfig.FIREFLIES, ClientConfig.BLOSSOMS, ClientConfig.BIRD_FLOCKS, ClientConfig.WHITECAPS,
+                    ClientConfig.TOWERING_CLOUDS, ClientConfig.FOG_BANKS, ClientConfig.SMOKE_COLUMNS, ClientConfig.DIAMOND_DUST,
+                    ClientConfig.STATIC_SPARKS, ClientConfig.MIRAGES, ClientConfig.STEAM_FOG, ClientConfig.WATERFALL_SPRAY, ClientConfig.DUSTY_RAIN,
+                    ClientConfig.RED_SPRITES, ClientConfig.NOCTILUCENT_CLOUDS, ClientConfig.STORM_CLOUD_SHAPES, ClientConfig.MOONBOWS, ClientConfig.FOGBOWS}) {
                 v.set(v.getDefault());
             }
             ClientConfig.PARTICLE_DENSITY.set(ClientConfig.PARTICLE_DENSITY.getDefault());
@@ -87,7 +90,8 @@ public class ConfigHomeScreen extends Screen {
                     ClientConfig.STORM_CLOUD_RANGE.set(480);
                     for (ModConfigSpec.BooleanValue v : new ModConfigSpec.BooleanValue[]{ClientConfig.WET_GROUND, ClientConfig.FOOTPRINTS,
                             ClientConfig.SCREEN_RAINDROPS, ClientConfig.HEAT_SHIMMER, ClientConfig.DRIPPING_LEAVES, ClientConfig.HOARFROST,
-                            ClientConfig.BLOSSOMS, ClientConfig.WHITECAPS, ClientConfig.FALLING_LEAVES, ClientConfig.BREATH}) {
+                            ClientConfig.BLOSSOMS, ClientConfig.WHITECAPS, ClientConfig.FALLING_LEAVES, ClientConfig.BREATH,
+                            ClientConfig.STEAM_FOG, ClientConfig.WATERFALL_SPRAY, ClientConfig.STORM_CLOUD_SHAPES}) {
                         v.set(false);
                     }
                 }

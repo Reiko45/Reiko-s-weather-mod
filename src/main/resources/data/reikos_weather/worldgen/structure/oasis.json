@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "oasis",
+  "biomes": "#reikos_weather:has_structure/oasis",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

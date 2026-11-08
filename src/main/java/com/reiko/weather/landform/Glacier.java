@@ -115,8 +115,11 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         for (int x = Math.max(area.minX(), b.minX()); x <= Math.min(area.maxX(), b.maxX()); x++) {
             for (int z = Math.max(area.minZ(), b.minZ()); z <= Math.min(area.maxZ(), b.maxZ()); z++) {
                 int thick = Math.round(thicknessAt(x + 0.5, z + 0.5));
-                if (thick < 1) continue;
                 float[] l = local(x + 0.5, z + 0.5);
+                if (thick < 1) {
+                    if (WeatherConfig.SPEC.isLoaded() && WeatherConfig.ERRATICS.get()) moraine(level, pos, x, z, l);
+                    continue;
+                }
                 int ground = Terrain.ground(level, pos, x, z);
                 Terrain.clearAbove(level, pos, x, ground, z, 24);
                 int top = ground + thick;
@@ -144,6 +147,36 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                     Terrain.set(level, pos, x, top + 1, z, Blocks.SNOW.defaultBlockState());
                 }
             }
+        }
+    }
+
+    /**
+     * The terminal moraine: a horseshoe-shaped ridge of rubble round the glacier's foot, bulldozed up by the ice
+     * when it reached a little further than it does now.
+     */
+    private void moraine(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z, float[] l) {
+        float half = length / 2.0F;
+        float mu = l[0] - (half + 3.5F), side = halfWidth(half) + 6.0F;
+        float lateral = Math.abs(l[1]) - (halfWidth(l[0]) + 2.5F);
+        float rise;
+        if (Math.abs(mu) < 4.5F && Math.abs(l[1]) < side) {
+            float p = Mth.cos(mu / 4.5F * Mth.HALF_PI);
+            rise = 3.5F * p * p * Terrain.smooth((side - Math.abs(l[1])) / 5.0F);
+        } else if (l[0] > half * 0.2F && l[0] < half + 2.0F && Math.abs(lateral) < 2.5F) {
+            // and lower ridges along its sides
+            float p = Mth.cos(lateral / 2.5F * Mth.HALF_PI);
+            rise = 2.0F * p * p * Terrain.smooth((l[0] - half * 0.2F) / (half * 0.3F));
+        } else {
+            return;
+        }
+        int r = Math.round(rise * (0.7F + 0.6F * Terrain.field(seed, x, z, 6.0)));
+        if (r < 1) return;
+        int ground = Terrain.ground(level, pos, x, z);
+        Terrain.clearAbove(level, pos, x, ground, z, 8);
+        for (int h = ground + 1; h <= ground + r; h++) {
+            float n = Terrain.noise(seed, x, h, z);
+            Terrain.set(level, pos, x, h, z, n < 0.45F ? Blocks.GRAVEL.defaultBlockState() : n < 0.8F ? Blocks.COBBLESTONE.defaultBlockState()
+                    : n < 0.93F ? Blocks.STONE.defaultBlockState() : Blocks.ANDESITE.defaultBlockState());
         }
     }
 

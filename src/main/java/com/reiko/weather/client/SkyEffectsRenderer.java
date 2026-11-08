@@ -48,7 +48,9 @@ public final class SkyEffectsRenderer {
         float halo = ClientWeather.halo();
         float blood = ClientWeather.bloodMoon();
         float smoke = ClientWeather.smoke(), dust = ClientWeather.diamondDust();
-        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()) {
+        float nlc = SkySights.noctilucent(), moonbow = SkySights.moonbow(), fogbow = SkySights.fogbow();
+        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+                && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F) {
             return;
         }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
@@ -72,6 +74,24 @@ public final class SkyEffectsRenderer {
             if (alpha > 0.005F) {
                 drawRainbow(pose, sun, alpha);
             }
+        }
+        if (moonbow > 0.005F) {
+            // the same bow, opposite a low moon: faint, and almost white to the eye
+            Vector3f moon = new Vector3f(sun).negate();
+            float alpha = moonbow * clearSky * 0.22F * Mth.clamp((0.62F - moon.y) * 4.0F, 0.0F, 1.0F) * Mth.clamp((moon.y + 0.02F) * 10.0F, 0.0F, 1.0F);
+            if (alpha > 0.005F) {
+                drawBow(pose, moon, 39.5F, 42.5F, 0.7F, alpha);
+            }
+        }
+        if (fogbow > 0.005F) {
+            // a fogbow: the droplets are so small the colours smear into one broad white band
+            float alpha = fogbow * 0.3F * Mth.clamp((0.6F - sun.y) * 4.0F, 0.0F, 1.0F) * Mth.clamp(sun.y * 10.0F, 0.0F, 1.0F);
+            if (alpha > 0.005F) {
+                drawBow(pose, sun, 33.0F, 42.0F, 0.85F, alpha);
+            }
+        }
+        if (nlc > 0.005F) {
+            drawNoctilucent(pose, level.getGameTime() + partialTick, nlc * 0.5F);
         }
         if (aurora > 0.005F) {
             float night = Mth.clamp((-sun.y - 0.05F) * 4.0F, 0.0F, 1.0F);
@@ -153,6 +173,72 @@ public final class SkyEffectsRenderer {
             }
         }
         draw(buffer);
+    }
+
+    /** A bow round the point opposite {@code light}, between two angles, its colours washed out toward white. */
+    private static void drawBow(Matrix4f pose, Vector3f light, float innerDeg, float outerDeg, float whiteness, float alpha) {
+        Vector3f anti = new Vector3f(light).negate().normalize();
+        Vector3f[] b = basis(anti);
+        Vector3f u = b[0], v = b[1];
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 96;
+        int bands = RAINBOW.length + 1;
+        float inner = innerDeg * Mth.DEG_TO_RAD, outer = outerDeg * Mth.DEG_TO_RAD;
+        for (int s = 0; s < segments; s++) {
+            float phi0 = s / (float) segments * Mth.TWO_PI, phi1 = (s + 1) / (float) segments * Mth.TWO_PI;
+            for (int k = 0; k < bands; k++) {
+                float rho0 = Mth.lerp(k / (float) bands, inner, outer), rho1 = Mth.lerp((k + 1) / (float) bands, inner, outer);
+                Vector3f p00 = ringPoint(anti, u, v, phi0, rho0), p10 = ringPoint(anti, u, v, phi1, rho0);
+                Vector3f p11 = ringPoint(anti, u, v, phi1, rho1), p01 = ringPoint(anti, u, v, phi0, rho1);
+                if (p00.y < -0.03F && p10.y < -0.03F) continue;
+                float[] c0 = washed(bandColor(k - 1), whiteness), c1 = washed(bandColor(k), whiteness);
+                float a0 = k == 0 ? 0.0F : alpha, a1 = k == bands - 1 ? 0.0F : alpha;
+                vertex(buffer, pose, p00, c0, a0 * horizonFade(p00));
+                vertex(buffer, pose, p10, c0, a0 * horizonFade(p10));
+                vertex(buffer, pose, p11, c1, a1 * horizonFade(p11));
+                vertex(buffer, pose, p01, c1, a1 * horizonFade(p01));
+            }
+        }
+        draw(buffer);
+    }
+
+    private static float[] washed(float[] c, float white) {
+        return new float[]{Mth.lerp(white, c[0], 1.0F), Mth.lerp(white, c[1], 1.0F), Mth.lerp(white, c[2], 1.0F)};
+    }
+
+    /**
+     * Noctilucent clouds: thin, rippled sheets of ice cloud so high they're still lit by the sun long after it
+     * has set, glowing electric blue-white low in the northern sky.
+     */
+    private static void drawNoctilucent(Matrix4f pose, float time, float alpha) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int steps = 72, rows = 6;
+        float span = 1.5F;
+        for (int i = 0; i < steps; i++) {
+            float a0 = (i / (float) steps - 0.5F) * span, a1 = ((i + 1) / (float) steps - 0.5F) * span;
+            float edge0 = Mth.sin((i / (float) steps) * Mth.PI), edge1 = Mth.sin(((i + 1) / (float) steps) * Mth.PI);
+            for (int r = 0; r < rows; r++) {
+                float e0 = (3.0F + r * 2.0F) * Mth.DEG_TO_RAD, e1 = (3.0F + (r + 1) * 2.0F) * Mth.DEG_TO_RAD;
+                float g00 = nlcGlow(a0, e0, time) * edge0, g10 = nlcGlow(a1, e0, time) * edge1;
+                float g11 = nlcGlow(a1, e1, time) * edge1, g01 = nlcGlow(a0, e1, time) * edge0;
+                // brightest low down, fading out higher up
+                float fade0 = 1.0F - r / (float) rows, fade1 = 1.0F - (r + 1) / (float) rows;
+                float[] c = {0.55F, 0.82F, 1.0F};
+                vertex(buffer, pose, sky(a0, e0), c, alpha * g00 * fade0);
+                vertex(buffer, pose, sky(a1, e0), c, alpha * g10 * fade0);
+                vertex(buffer, pose, sky(a1, e1), c, alpha * g11 * fade1);
+                vertex(buffer, pose, sky(a0, e1), c, alpha * g01 * fade1);
+            }
+        }
+        draw(buffer);
+    }
+
+    /** The fine ripples and broad bands of a noctilucent cloud sheet. */
+    private static float nlcGlow(float azimuth, float elevation, float time) {
+        float ripple = 0.55F + 0.45F * Mth.sin(azimuth * 55.0F + elevation * 90.0F + time * 0.0015F);
+        float bands = 0.5F + 0.5F * Mth.sin(azimuth * 7.0F - elevation * 25.0F + time * 0.0006F);
+        float patches = 0.5F + 0.5F * Mth.sin(azimuth * 3.1F + 1.7F) * Mth.cos(elevation * 14.0F - azimuth * 2.0F);
+        return Mth.clamp(ripple * bands * (0.4F + 0.6F * patches) * 1.4F, 0.0F, 1.0F);
     }
 
     private static float[] bandColor(int index) {
