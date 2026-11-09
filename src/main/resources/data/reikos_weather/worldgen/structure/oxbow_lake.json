@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "oxbow_lake",
+  "biomes": "#reikos_weather:has_structure/oxbow_lake",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

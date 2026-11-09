@@ -79,7 +79,8 @@ public class ConfigHomeScreen extends Screen {
                     ClientConfig.FIREFLIES, ClientConfig.BLOSSOMS, ClientConfig.BIRD_FLOCKS, ClientConfig.WHITECAPS,
                     ClientConfig.TOWERING_CLOUDS, ClientConfig.FOG_BANKS, ClientConfig.SMOKE_COLUMNS, ClientConfig.DIAMOND_DUST,
                     ClientConfig.STATIC_SPARKS, ClientConfig.MIRAGES, ClientConfig.STEAM_FOG, ClientConfig.WATERFALL_SPRAY, ClientConfig.DUSTY_RAIN,
-                    ClientConfig.RED_SPRITES, ClientConfig.NOCTILUCENT_CLOUDS, ClientConfig.STORM_CLOUD_SHAPES, ClientConfig.MOONBOWS, ClientConfig.FOGBOWS}) {
+                    ClientConfig.RED_SPRITES, ClientConfig.NOCTILUCENT_CLOUDS, ClientConfig.STORM_CLOUD_SHAPES, ClientConfig.MOONBOWS, ClientConfig.FOGBOWS,
+                    ClientConfig.VIRGA, ClientConfig.INVERSION_HAZE, ClientConfig.SINGING_ICE, ClientConfig.SEA_SPARKLE, ClientConfig.DOUBLE_RAINBOWS, ClientConfig.GLORIES, ClientConfig.LENTICULAR_CLOUDS, ClientConfig.GREEN_FLASH, ClientConfig.TWILIGHT_BANDS, ClientConfig.LIGHT_PILLARS, ClientConfig.IRIDESCENT_CLOUDS}) {
                 v.set(v.getDefault());
             }
             ClientConfig.PARTICLE_DENSITY.set(ClientConfig.PARTICLE_DENSITY.getDefault());
@@ -91,7 +92,8 @@ public class ConfigHomeScreen extends Screen {
                     for (ModConfigSpec.BooleanValue v : new ModConfigSpec.BooleanValue[]{ClientConfig.WET_GROUND, ClientConfig.FOOTPRINTS,
                             ClientConfig.SCREEN_RAINDROPS, ClientConfig.HEAT_SHIMMER, ClientConfig.DRIPPING_LEAVES, ClientConfig.HOARFROST,
                             ClientConfig.BLOSSOMS, ClientConfig.WHITECAPS, ClientConfig.FALLING_LEAVES, ClientConfig.BREATH,
-                            ClientConfig.STEAM_FOG, ClientConfig.WATERFALL_SPRAY, ClientConfig.STORM_CLOUD_SHAPES}) {
+                            ClientConfig.STEAM_FOG, ClientConfig.WATERFALL_SPRAY, ClientConfig.STORM_CLOUD_SHAPES, ClientConfig.LIGHT_PILLARS,
+                            ClientConfig.SEA_SPARKLE, ClientConfig.INVERSION_HAZE}) {
                         v.set(false);
                     }
                 }

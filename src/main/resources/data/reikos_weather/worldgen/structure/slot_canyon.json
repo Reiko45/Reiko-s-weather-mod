@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "slot_canyon",
+  "biomes": "#reikos_weather:has_structure/slot_canyon",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

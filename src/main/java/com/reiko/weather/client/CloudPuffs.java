@@ -30,12 +30,15 @@ public final class CloudPuffs {
         float daylight = level.getSkyDarken(partialTick);
         float fog = 1.0F - 0.6F * ClientWeather.fogDensity();
         float time = level.getGameTime() + partialTick;
-        Vec3 wind = Wind.direction(ClientWeather.windAngle());
+        Vec3 wind = Wind.direction(com.reiko.weather.network.SyncedWeather.windAngle()); // clouds aloft follow the prevailing wind, not the local breezes
         for (StormCell cell : SyncedWeather.cells()) {
             float strength = cell.strength();
             if (strength < 0.02F) continue;
             switch (cell.type) {
-                case THUNDERSTORM, SUPERCELL, HAIL, HURRICANE, DERECHO, COLD_FRONT -> {
+                case HABOOB -> {
+                    if (towers) haboob(level, cell, cam, maxDistance, daylight, fog, strength);
+                }
+                case THUNDERSTORM, SUPERCELL, HAIL, HURRICANE, DERECHO, COLD_FRONT, PYROCUMULUS -> {
                     if (towers) towers(level, cell, cam, maxDistance, daylight, fog, time, wind, strength);
                     if (shapes && (cell.type == WeatherType.COLD_FRONT || cell.type == WeatherType.DERECHO)) {
                         shelfCloud(level, cell, cam, maxDistance, daylight, fog, strength);
@@ -46,6 +49,129 @@ public final class CloudPuffs {
                 }
                 default -> {}
             }
+            // in dry country, rain streaks hang under the clouds and dry up before they reach the ground
+            if (ClientConfig.VIRGA.get() && ClientWeather.climate() == com.reiko.weather.weather.Climate.ARID && cell.type.vanillaRain
+                    && cell.type != WeatherType.ATMOSPHERIC_RIVER) {
+                virga(level, cell, cam, maxDistance, daylight, fog, strength);
+            }
+        }
+    }
+
+    /** Grey streaks of rain trailing down from the cloud base and fading out halfway to the ground. */
+    private static void virga(ClientLevel level, StormCell cell, Vec3 cam, float maxDistance, float daylight, float fog, float strength) {
+        if (cell.distanceTo(cam.x, cam.z) < cell.radius * 0.8F) return;
+        float base = level.getSeaLevel() + 78.0F;
+        int salt = cell.id * 6151;
+        float shade = 0.45F * (0.3F + 0.7F * daylight);
+        for (int column = 0; column < 7; column++) {
+            float a = PuffRenderer.hash(column, salt) * Mth.TWO_PI, r = Mth.sqrt(PuffRenderer.hash(column, salt + 1)) * cell.radius * 0.5F;
+            double x = cell.x + Mth.cos(a) * r, z = cell.z + Mth.sin(a) * r;
+            float length = 18.0F + 22.0F * PuffRenderer.hash(column, salt + 2);
+            for (int k = 0; k < 8; k++) {
+                float t = k / 7.0F;
+                // the streaks bend back with the wind as they fall
+                PuffRenderer.add(x + t * 6.0, base - t * length, z, 9.0F - 4.0F * t, shade, shade, shade * 1.05F,
+                        0.35F * strength * fog * (1.0F - t), false, cam, maxDistance);
+            }
+        }
+    }
+
+    /** A haboob: a wall of dust, hundreds of blocks long and taller than a mountain, rolling forward along the ground. */
+    private static void haboob(ClientLevel level, StormCell cell, Vec3 cam, float maxDistance, float daylight, float fog, float strength) {
+        double speed = Math.sqrt(cell.vx * cell.vx + cell.vz * cell.vz);
+        if (speed < 1.0E-6) return;
+        double ux = cell.vx / speed, uz = cell.vz / speed;
+        if (cell.distanceTo(cam.x, cam.z) < cell.radius * 0.7F) return; // inside it: the fog does the work
+        float ground = level.getSeaLevel() + 2.0F;
+        float halfLength = cell.radius * cell.elongation() * 0.85F;
+        int salt = cell.id * 2741;
+        float light = 0.25F + 0.75F * daylight;
+        int n = 30;
+        for (int layer = 0; layer < 4; layer++) {
+            for (int i = 0; i < n; i++) {
+                float s = (i + PuffRenderer.hash(i, salt + layer)) / n * 2.0F - 1.0F;
+                float ends = Mth.clamp((1.0F - Math.abs(s)) * 3.0F, 0.0F, 1.0F);
+                // billowing, taller in the middle, a little behind the front at the top
+                float h = (25.0F + 55.0F * ends * (0.7F + 0.3F * PuffRenderer.hash(i, salt + 9))) * layer / 3.0F;
+                double along = s * halfLength, front = cell.radius * 0.6 - layer * 8.0;
+                double x = cell.x + ux * front - uz * along, z = cell.z + uz * front + ux * along;
+                float size = 24.0F + 12.0F * PuffRenderer.hash(i, salt + layer + 5);
+                float shade = (0.55F + 0.1F * layer) * light;
+                PuffRenderer.add(x, ground + h, z, size, shade * 1.0F, shade * 0.72F, shade * 0.48F, 0.85F * strength * ends * fog, false, cam, maxDistance);
+            }
+        }
+    }
+
+    private static int peakX, peakY = Integer.MIN_VALUE, peakZ;
+    private static long peakScan = -1000;
+
+    /**
+     * Lenticular clouds: when a strong, steady wind blows over a mountain it sets up standing waves in the air
+     * downwind, and smooth, lens-shaped clouds sit in the wave crests, stacked like plates, hardly moving.
+     */
+    public static void lenticular(Camera camera) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null || level.dimension() != Level.OVERWORLD || !ClientConfig.LENTICULAR_CLOUDS.get() || !SyncedWeather.managed()) return;
+        float prevailing = com.reiko.weather.weather.CustomWeathers.backgroundProfile(SyncedWeather.type(),
+                com.reiko.weather.weather.CustomWeathers.client(SyncedWeather.custom()), ClientWeather.climate()).wind;
+        if (prevailing < 0.45F || ClientWeather.rain() > 0.2F || ClientWeather.overcast() > 0.6F) return;
+        Vec3 cam = camera.getPosition();
+        long now = level.getGameTime();
+        if (now - peakScan > 200 || now < peakScan) {
+            peakScan = now;
+            peakY = Integer.MIN_VALUE;
+            for (int i = 0; i < 24; i++) {
+                for (int r = 80; r <= 240; r += 80) {
+                    float a = i * Mth.TWO_PI / 24.0F;
+                    int x = Mth.floor(cam.x + Mth.cos(a) * r), z = Mth.floor(cam.z + Mth.sin(a) * r);
+                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    int h = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z);
+                    if (h > peakY) {
+                        peakY = h;
+                        peakX = x;
+                        peakZ = z;
+                    }
+                }
+            }
+        }
+        if (peakY < level.getSeaLevel() + 55) return;
+        float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
+        float daylight = level.getSkyDarken(1.0F);
+        Vec3 wind = Wind.direction(SyncedWeather.windAngle());
+        float strength = Mth.clamp((prevailing - 0.45F) * 4.0F, 0.0F, 1.0F) * (1.0F - ClientWeather.overcast());
+        for (int layer = 0; layer < 3; layer++) {
+            double cx = peakX + wind.x * (30 + layer * 6), cz = peakZ + wind.z * (30 + layer * 6);
+            float y = peakY + 28.0F + layer * 9.0F;
+            float length = 70.0F - layer * 14.0F;
+            int n = 11;
+            for (int i = 0; i < n; i++) {
+                float t = i / (float) (n - 1);
+                float size = 6.0F + 15.0F * Mth.sin(t * Mth.PI) * (1.0F - layer * 0.15F);
+                double along = (t - 0.5F) * length;
+                // the lens lies across the wind, so it's long side-on to the flow
+                double x = cx - wind.z * along, z = cz + wind.x * along;
+                float shade = (0.85F + 0.1F * layer) * (0.25F + 0.75F * daylight);
+                PuffRenderer.add(x, y, z, size, shade, shade, shade * 1.02F, 0.7F * strength, false, cam, maxDistance);
+            }
+        }
+    }
+
+    /** Cold air trapped in a valley under a lid of warmer air, with the morning's smoke and haze lying in a flat layer at the top of it. */
+    public static void inversion(Camera camera) {
+        float strength = SkySights.inversion();
+        if (strength < 0.02F) return;
+        Minecraft mc = Minecraft.getInstance();
+        Vec3 cam = camera.getPosition();
+        float lid = SkySights.inversionLid();
+        float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
+        float daylight = mc.level == null ? 1.0F : mc.level.getSkyDarken(1.0F);
+        float shade = 0.5F + 0.4F * daylight;
+        for (int i = 0; i < 60; i++) {
+            float a = PuffRenderer.hash(i, 911) * Mth.TWO_PI, r = 24.0F + Mth.sqrt(PuffRenderer.hash(i, 912)) * 110.0F;
+            double x = Math.floor(cam.x / 64.0) * 64.0 + Mth.cos(a) * r, z = Math.floor(cam.z / 64.0) * 64.0 + Mth.sin(a) * r;
+            PuffRenderer.add(x, lid + 1.5F * PuffRenderer.hash(i, 913), z, 16.0F + 8.0F * PuffRenderer.hash(i, 914),
+                    shade * 0.95F, shade * 0.9F, shade * 0.86F, 0.22F * strength, false, cam, maxDistance);
         }
     }
 
@@ -80,7 +206,10 @@ public final class CloudPuffs {
                 double y = base + s * height;
                 // sunlit, billowing white tops over a dark, rain-laden base
                 float shade = Mth.lerp(s, 0.42F, 0.95F) * (0.25F + 0.75F * daylight);
-                PuffRenderer.add(x, y, z, w * (0.8F + 0.4F * PuffRenderer.hash(i, salt + c + 202)), shade, shade, shade * 1.03F, alpha, false, cam, maxDistance);
+                // a fire cloud is brown with smoke low down, with a white cap of cloud on top
+                float smoky = cell.type == WeatherType.PYROCUMULUS ? Mth.clamp(1.0F - s * 1.4F, 0.0F, 1.0F) : 0.0F;
+                PuffRenderer.add(x, y, z, w * (0.8F + 0.4F * PuffRenderer.hash(i, salt + c + 202)), shade * (1.0F - 0.1F * smoky),
+                        shade * (1.0F - 0.3F * smoky), shade * (1.03F - 0.5F * smoky), alpha, false, cam, maxDistance);
             }
             if (strength > 0.6F && cell.type != WeatherType.COLD_FRONT) {
                 // the anvil, sheared out downwind

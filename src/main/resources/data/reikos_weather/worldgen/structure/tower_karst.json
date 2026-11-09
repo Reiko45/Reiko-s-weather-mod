@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "tower_karst",
+  "biomes": "#reikos_weather:has_structure/tower_karst",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

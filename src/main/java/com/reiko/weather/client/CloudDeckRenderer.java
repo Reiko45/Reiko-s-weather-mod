@@ -79,7 +79,7 @@ public final class CloudDeckRenderer {
         }
 
         float time = level.getGameTime() + partialTick;
-        Vec3 wind = Wind.direction(ClientWeather.windAngle());
+        Vec3 wind = Wind.direction(com.reiko.weather.network.SyncedWeather.windAngle()); // clouds aloft follow the prevailing wind, not the local breezes
         float drift = time * (0.03F + ClientWeather.wind() * 0.12F);
         float daylight = level.getSkyDarken(partialTick);
         float flash = level.getSkyFlashTime() > 0 ? 0.35F : 0.0F;

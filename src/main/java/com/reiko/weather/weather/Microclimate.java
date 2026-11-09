@@ -23,8 +23,13 @@ import java.util.WeakHashMap;
  * </ul>
  */
 public final class Microclimate {
-    public record Info(float valley, float peak, float rainShadow, float lakeEffect) {
-        public static final Info NONE = new Info(0, 0, 0, 0);
+    /**
+     * @param seaAngle   the way to the sea (or a big lake), radians, or NaN if there's no water nearby
+     * @param slopeAngle the way uphill, radians
+     * @param slope      how steep the ground is, 0 to 1
+     */
+    public record Info(float valley, float peak, float rainShadow, float lakeEffect, float seaAngle, float slopeAngle, float slope) {
+        public static final Info NONE = new Info(0, 0, 0, 0, Float.NaN, 0, 0);
     }
 
     private record Cached(Info info, long time, boolean complete) {}
@@ -71,12 +76,26 @@ public final class Microclimate {
         }
         int h0 = height(level, x, z, sea, missing);
         // valley or peak: compare with a ring of terrain 48 blocks out
-        float ring = 0;
+        float ring = 0, upX = 0, upZ = 0, seaX = 0, seaZ = 0;
+        int wet = 0;
         for (int i = 0; i < 12; i++) {
             float a = i * Mth.TWO_PI / 12.0F;
-            ring += height(level, x + Math.round(Mth.cos(a) * 48), z + Math.round(Mth.sin(a) * 48), h0, missing);
+            int rx = x + Math.round(Mth.cos(a) * 48), rz = z + Math.round(Mth.sin(a) * 48);
+            int h = height(level, rx, rz, h0, missing);
+            ring += h;
+            upX += (h - h0) * Mth.cos(a);
+            upZ += (h - h0) * Mth.sin(a);
+            if (h <= sea + 1 && level.isLoaded(new BlockPos(rx, 0, rz)) && level.getFluidState(new BlockPos(rx, h - 1, rz)).is(FluidTags.WATER)) {
+                wet++;
+                seaX += Mth.cos(a);
+                seaZ += Mth.sin(a);
+            }
         }
         ring /= 12.0F;
+        // open water on some sides but not all round: a coast (and which way the water is)
+        float seaAngle = wet >= 2 && wet <= 10 && h0 > sea ? (float) Mth.atan2(seaZ, seaX) : Float.NaN;
+        float slope = Mth.clamp(Mth.sqrt(upX * upX + upZ * upZ) / 288.0F / 0.5F, 0.0F, 1.0F);
+        float slopeAngle = (float) Mth.atan2(upZ, upX);
         float valley = Mth.clamp((ring - h0 - 6.0F) / 14.0F, 0.0F, 1.0F);
         float peak = Math.max(Mth.clamp((h0 - ring - 10.0F) / 20.0F, 0.0F, 1.0F), Mth.clamp((h0 - (sea + 50.0F)) / 40.0F, 0.0F, 1.0F));
 
@@ -100,7 +119,7 @@ public final class Microclimate {
         float waterFraction = samples == 0 ? 0.0F : water / (float) samples;
         float lake = level.getFluidState(new BlockPos(x, h0 - 1, z)).is(FluidTags.WATER) ? 0.0F
                 : Mth.clamp((waterFraction - 0.4F) / 0.4F, 0.0F, 1.0F);
-        return new Info(valley, peak, rainShadow, lake);
+        return new Info(valley, peak, rainShadow, lake, seaAngle, slopeAngle, slope);
     }
 
     private static int height(Level level, int x, int z, int fallback, int[] missing) {

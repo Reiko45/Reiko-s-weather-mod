@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "termite_mounds",
+  "biomes": "#reikos_weather:has_structure/termite_mounds",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

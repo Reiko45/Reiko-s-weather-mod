@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/quicksand"
+      },
+      {
+        "model": "reikos_weather:block/quicksand",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/quicksand",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/quicksand",
+        "y": 270
+      }
+    ]
+  }
+}

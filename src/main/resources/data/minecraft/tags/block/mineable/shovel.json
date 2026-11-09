@@ -7,6 +7,8 @@
     "reikos_weather:cracked_mud",
     "reikos_weather:desert_dust",
     "reikos_weather:dusty_snow",
-    "reikos_weather:peat"
+    "reikos_weather:peat",
+    "reikos_weather:quicksand",
+    "reikos_weather:snow_roller"
   ]
 }

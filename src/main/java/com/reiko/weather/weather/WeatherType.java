@@ -48,7 +48,15 @@ public enum WeatherType {
     /** A cold snap: bitterly cold, clear, still air pouring down from the north for a day or two. */
     COLD_SNAP   (false, false, 3, 12000, 30000, 1.5F, 0.8F, 0.1F),
     /** Desert dust carried far downwind of a sandstorm: a tawny haze, and reddish dust in the rain and on the snow. */
-    DUST_HAZE   (false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
+    DUST_HAZE   (false, false, 0, 2400, 4800, 1.0F, 1.0F, 1.0F),
+    /** A haboob: a towering wall of dust driven out ahead of a desert thunderstorm by its downdraft. */
+    HABOOB      (false, false, 0, 1200, 2400, 1.0F, 1.0F, 1.0F),
+    /** An atmospheric river: a long, narrow plume of tropical moisture that pours rain onto a coast for days. */
+    ATMOSPHERIC_RIVER(true, false, 0, 24000, 48000, 1.0F, 1.0F, 1.0F),
+    /** A heat burst: a sudden blast of hot, dry, gusty wind at night as a dying thunderstorm collapses. */
+    HEAT_BURST  (false, false, 0, 1200, 2400, 1.0F, 1.0F, 1.0F),
+    /** A fire cloud (pyrocumulonimbus): a thundercloud built by a huge wildfire, throwing dry lightning downwind. */
+    PYROCUMULUS (false, true, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
 
     private static final WeatherType[] VALUES = values();
 
@@ -83,7 +91,8 @@ public enum WeatherType {
 
     /** Whether the weather cycle can pick this weather by itself (volcanic ash only comes from eruptions). */
     public boolean natural() {
-        return this != VOLCANIC_ASH && this != SEA_FOG && this != WILDFIRE_SMOKE && this != VOLCANIC_SMOG && this != DUST_HAZE;
+        return this != VOLCANIC_ASH && this != SEA_FOG && this != WILDFIRE_SMOKE && this != VOLCANIC_SMOG && this != DUST_HAZE
+                && this != HABOOB && this != ATMOSPHERIC_RIVER && this != HEAT_BURST && this != PYROCUMULUS;
     }
 
     /** Weathers that only ever come as a storm cell (a front is a line, not the whole world's weather). */
@@ -101,7 +110,8 @@ public enum WeatherType {
     }
 
     public boolean isSevere() {
-        return this == SUPERCELL || this == HURRICANE || this == BLIZZARD || this == SANDSTORM || this == ICE_STORM || this == DERECHO;
+        return this == SUPERCELL || this == HURRICANE || this == BLIZZARD || this == SANDSTORM || this == ICE_STORM || this == DERECHO
+                || this == HABOOB || this == ATMOSPHERIC_RIVER;
     }
 
     /** Weathers that can also arrive as a regional storm cell drifting across the map. */
@@ -121,9 +131,9 @@ public enum WeatherType {
     public int signalCode() {
         return switch (this) {
             case CLEAR, COLD_SNAP -> 0; case OVERCAST -> 1; case FOG, SEA_FOG, WILDFIRE_SMOKE -> 2; case DRIZZLE, WARM_FRONT, VOLCANIC_SMOG -> 3; case RAIN -> 4;
-            case HEAVY_RAIN -> 5; case THUNDERSTORM, COLD_FRONT -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
-            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH, DUST_HAZE -> 14;
-            case HEATWAVE -> 15;
+            case HEAVY_RAIN, ATMOSPHERIC_RIVER -> 5; case THUNDERSTORM, COLD_FRONT, PYROCUMULUS -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
+            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH, DUST_HAZE, HABOOB -> 14;
+            case HEATWAVE, HEAT_BURST -> 15;
         };
     }
 

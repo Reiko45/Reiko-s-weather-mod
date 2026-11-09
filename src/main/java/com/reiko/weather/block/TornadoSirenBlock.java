@@ -42,7 +42,7 @@ public class TornadoSirenBlock extends Block {
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         boolean alarm = !level.getEntities(ModEntities.TORNADO.get(), new AABB(pos).inflate(RANGE, 128, RANGE),
-                t -> t.kind() != TornadoEntity.Kind.DUST_DEVIL).isEmpty();
+                t -> t.kind() == TornadoEntity.Kind.TORNADO || t.kind() == TornadoEntity.Kind.WATERSPOUT).isEmpty();
         if (alarm != state.getValue(POWERED)) {
             level.setBlock(pos, state.setValue(POWERED, alarm), Block.UPDATE_ALL);
         }

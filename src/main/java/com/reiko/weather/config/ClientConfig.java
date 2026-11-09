@@ -51,6 +51,17 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue STORM_CLOUD_SHAPES;
     public static final ModConfigSpec.BooleanValue MOONBOWS;
     public static final ModConfigSpec.BooleanValue FOGBOWS;
+    public static final ModConfigSpec.BooleanValue VIRGA;
+    public static final ModConfigSpec.BooleanValue INVERSION_HAZE;
+    public static final ModConfigSpec.BooleanValue SINGING_ICE;
+    public static final ModConfigSpec.BooleanValue SEA_SPARKLE;
+    public static final ModConfigSpec.BooleanValue DOUBLE_RAINBOWS;
+    public static final ModConfigSpec.BooleanValue GLORIES;
+    public static final ModConfigSpec.BooleanValue LENTICULAR_CLOUDS;
+    public static final ModConfigSpec.BooleanValue GREEN_FLASH;
+    public static final ModConfigSpec.BooleanValue TWILIGHT_BANDS;
+    public static final ModConfigSpec.BooleanValue LIGHT_PILLARS;
+    public static final ModConfigSpec.BooleanValue IRIDESCENT_CLOUDS;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -150,6 +161,28 @@ public final class ClientConfig {
                 .define("moonbows", true);
         FOGBOWS = b.comment("Broad white fogbows opposite a low sun shining through thin fog.")
                 .define("fogbows", true);
+        VIRGA = b.comment("Virga: in dry climates, rain streaks hanging under storm clouds that dry up before reaching the ground.")
+                .define("virga", true);
+        INVERSION_HAZE = b.comment("On cold, calm mornings, smoke and haze pool in valleys under a lid of warm air.")
+                .define("inversionHaze", true);
+        SINGING_ICE = b.comment("Lake ice booms and pings as the temperature changes.")
+                .define("singingIce", true);
+        SEA_SPARKLE = b.comment("Waves glow blue at night on warm coasts.")
+                .define("seaSparkle", true);
+        DOUBLE_RAINBOWS = b.comment("A fainter second rainbow outside the first, with a darker band of sky between them.")
+                .define("doubleRainbows", true);
+        GLORIES = b.comment("Standing above fog with the sun behind you: your shadow on the fog, ringed by a rainbow glory.")
+                .define("glories", true);
+        LENTICULAR_CLOUDS = b.comment("Smooth, lens-shaped clouds over mountains in strong wind.")
+                .define("lenticularClouds", true);
+        GREEN_FLASH = b.comment("The green flash at the moment of sunset (or sunrise) over the sea.")
+                .define("greenFlash", true);
+        TWILIGHT_BANDS = b.comment("Earth's shadow and the pink belt above it, opposite the sun at twilight.")
+                .define("twilightBands", true);
+        LIGHT_PILLARS = b.comment("Light pillars standing over lanterns and fires on frigid, clear nights.")
+                .define("lightPillars", true);
+        IRIDESCENT_CLOUDS = b.comment("Pastel colours in thin clouds near the sun.")
+                .define("iridescentClouds", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

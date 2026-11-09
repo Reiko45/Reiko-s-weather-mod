@@ -49,6 +49,7 @@ public class ReikosWeatherClient {
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.ItemTooltips::onTooltip);
 
         TornadoEntity.clientTicker = TornadoClient::tick;
+        com.reiko.weather.network.QuakePayload.clientHandler = com.reiko.weather.client.VolcanoClient::quake;
         BallLightningEntity.clientTicker = BallLightningClient::tick;
         ClientActions.Holder.instance = new ClientActions() {
             @Override

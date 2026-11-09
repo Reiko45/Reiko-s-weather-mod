@@ -63,6 +63,10 @@ public class RadarScreen extends Screen {
             case VOLCANIC_SMOG -> 0xB8B07A;
             case DUST_HAZE -> 0xC89A64;
             case COLD_SNAP -> 0xA8D8FF;
+            case HABOOB -> 0xB06A32;
+            case ATMOSPHERIC_RIVER -> 0x2E6BFF;
+            case HEAT_BURST -> 0xFF7A3C;
+            case PYROCUMULUS -> 0x9A5A3A;
             default -> 0x9AA0A6;
         };
     }

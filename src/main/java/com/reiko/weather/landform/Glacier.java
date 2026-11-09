@@ -98,6 +98,14 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         return thickness * across * ends;
     }
 
+    /** How far (u, v) is from the line of the ice cave (a big number if this glacier hasn't got one). */
+    private float caveDistance(float u, float v) {
+        float half = length / 2.0F;
+        if (Terrain.hash(seed, 11) > 0.65F || u > half - 2.0F || u < half - 34.0F) return 99.0F;
+        float centre = 3.0F * Mth.sin(u * 0.15F + Terrain.hash(seed, 12) * 6.0F);
+        return Math.abs(v - centre);
+    }
+
     /** Whether (u, v) is in a crevasse, and which one (or -1). */
     private int crevasse(float u, float v) {
         float half = length / 2.0F, spacing = 13.0F + 5.0F * Terrain.hash(seed, 7);
@@ -132,6 +140,14 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                         ice = l[0] < 0.0F ? Blocks.SNOW_BLOCK.defaultBlockState() : Blocks.PACKED_ICE.defaultBlockState();
                     }
                     Terrain.set(level, pos, x, h, z, ice);
+                }
+                // an ice cave: a blue tunnel melted up into the glacier from its foot
+                float cave = caveDistance(l[0], l[1]);
+                if (cave < 2.8F && thick >= 5) {
+                    int roof = Math.round(Mth.sqrt(Math.max(0.0F, 2.6F * 2.6F - cave * cave)) * 1.3F) + 1;
+                    for (int h = ground + 1; h <= ground + Math.min(roof, thick - 2); h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+                } else if (cave < 4.0F && thick >= 5) {
+                    for (int h = ground + 1; h <= ground + Math.min(4, thick - 1); h++) Terrain.set(level, pos, x, h, z, Blocks.BLUE_ICE.defaultBlockState());
                 }
                 if (crev >= 0) {
                     int depth = Mth.clamp(thick + 2, 5, 8);
@@ -193,6 +209,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 WeatherAdvancements.award(player, "mind_the_gap");
             }
         }
+        calve(level);
         if (!WeatherConfig.CHANGING_LANDFORMS.get() || WeatherManager.seasonInfo().season() != Season.SUMMER) {
             return;
         }
@@ -213,6 +230,30 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 boolean snout = u > half - length * 0.08F;
                 level.setBlock(top, snout && random.nextInt(4) == 0 ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             }
+        }
+    }
+
+    /** A glacier that ends in the sea (or a lake) breaks off icebergs at its front now and then. */
+    private void calve(ServerLevel level) {
+        if (!WeatherConfig.ICEBERGS.get() || level.random.nextInt(150) != 0) return;
+        float half = length / 2.0F;
+        for (int attempt = 0; attempt < 6; attempt++) {
+            float u = half + 2.0F + level.random.nextFloat() * 6.0F, v = (level.random.nextFloat() * 2.0F - 1.0F) * halfWidth(half);
+            double c = Mth.cos(angle), s = Mth.sin(angle);
+            BlockPos column = BlockPos.containing(cx + u * c - v * s, 0, cz + u * s + v * c);
+            if (!level.isLoaded(column)) continue;
+            BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column).below();
+            if (!level.getFluidState(surface).is(net.minecraft.tags.FluidTags.WATER) || !level.getFluidState(surface.below(3)).is(net.minecraft.tags.FluidTags.WATER)) continue;
+            com.reiko.weather.entity.IceFloeEntity.spawnBerg(level, surface, 1.6F + level.random.nextFloat() * 1.6F);
+            level.playSound(null, surface, net.minecraft.sounds.SoundEvents.GENERIC_SPLASH, net.minecraft.sounds.SoundSource.AMBIENT, 4.0F, 0.4F);
+            level.playSound(null, surface, com.reiko.weather.registry.ModSounds.AVALANCHE.get(), net.minecraft.sounds.SoundSource.AMBIENT, 3.0F, 0.8F);
+            for (ServerPlayer p : level.players()) {
+                if (p.distanceToSqr(surface.getX(), surface.getY(), surface.getZ()) < 128 * 128) {
+                    p.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.reikos_weather.calving")
+                            .withStyle(st -> st.withColor(0xBFE6FF)), true);
+                }
+            }
+            return;
         }
     }
 

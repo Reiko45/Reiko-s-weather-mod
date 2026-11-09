@@ -129,6 +129,11 @@ public record TidalFlat(int cx, int cz, int rx, int rz, float angle, int level, 
                     float patch = Terrain.noise(seed, x >> 2, 3, z >> 2);
                     Terrain.set(world, pos, x, surface, z, patch < 0.72F || n < 0.2F ? Blocks.MUD.defaultBlockState()
                             : patch < 0.93F ? Blocks.SAND.defaultBlockState() : Blocks.CLAY.defaultBlockState());
+                    // soft spots in the wet sand that won't take your weight
+                    if (Terrain.quicksand() && patch >= 0.72F && patch < 0.93F && Terrain.field(seed + 9, x, z, 3.0) > 0.78F) {
+                        Terrain.set(world, pos, x, surface, z, com.reiko.weather.registry.ModBlocks.QUICKSAND.get().defaultBlockState());
+                        Terrain.set(world, pos, x, surface - 1, z, com.reiko.weather.registry.ModBlocks.QUICKSAND.get().defaultBlockState());
+                    }
                     continue;
                 }
                 // a tide pool: sand at the bottom (sometimes hiding something), seagrass and sea pickles in the water

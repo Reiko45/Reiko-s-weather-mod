@@ -14,6 +14,8 @@ public final class ModNetwork {
                 (payload, context) -> OtherworldPayload.accept(payload));
         event.registrar("1").playToClient(VolcanoPayload.TYPE, VolcanoPayload.STREAM_CODEC,
                 (payload, context) -> VolcanoPayload.accept(payload, context.player().level().getGameTime()));
+        event.registrar("1").playToClient(QuakePayload.TYPE, QuakePayload.STREAM_CODEC,
+                (payload, context) -> QuakePayload.clientHandler.accept(payload.strength(), payload.ticks()));
     }
 
     private ModNetwork() {}

@@ -64,6 +64,7 @@ public final class Drought {
         }
         state.droughtCheckDay = day;
         endOfDay(level, state, cycle);
+        Coasts.weatherSilt(level, state);
         state.rainToday = 0;
         state.setDirty();
     }

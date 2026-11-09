@@ -165,5 +165,40 @@
         "attenuation_distance": 12
       }
     ]
+  },
+  "ambient.ice_sing": {
+    "subtitle": "subtitles.reikos_weather.ambient.ice_sing",
+    "sounds": [
+      {
+        "name": "reikos_weather:ambient/ice_sing_1",
+        "attenuation_distance": 96
+      },
+      {
+        "name": "reikos_weather:ambient/ice_sing_2",
+        "attenuation_distance": 96
+      },
+      {
+        "name": "reikos_weather:ambient/ice_sing_3",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "block.blowhole.spout": {
+    "subtitle": "subtitles.reikos_weather.block.blowhole.spout",
+    "sounds": [
+      {
+        "name": "reikos_weather:block/blowhole_spout",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "weather.earthquake": {
+    "subtitle": "subtitles.reikos_weather.weather.earthquake",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/earthquake",
+        "attenuation_distance": 128
+      }
+    ]
   }
 }

@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "travertine",
+  "biomes": "#reikos_weather:has_structure/travertine",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

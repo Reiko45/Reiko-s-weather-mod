@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "braided_river",
+  "biomes": "#reikos_weather:has_structure/braided_river",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

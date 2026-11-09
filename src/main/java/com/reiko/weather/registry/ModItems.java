@@ -117,6 +117,9 @@ public final class ModItems {
     public static final DeferredItem<com.reiko.weather.item.VolcanicAshItem> DESERT_DUST = REGISTER.register("desert_dust",
             () -> new com.reiko.weather.item.VolcanicAshItem(ModBlocks.DESERT_DUST.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> PEAT = REGISTER.registerSimpleBlockItem(ModBlocks.PEAT);
+    public static final DeferredItem<BlockItem> QUICKSAND = REGISTER.registerSimpleBlockItem(ModBlocks.QUICKSAND);
+    public static final DeferredItem<BlockItem> BLOWHOLE = REGISTER.registerSimpleBlockItem(ModBlocks.BLOWHOLE);
+    public static final DeferredItem<BlockItem> LIMESTONE = REGISTER.registerSimpleBlockItem(ModBlocks.LIMESTONE);
 
     private ModItems() {}
 }

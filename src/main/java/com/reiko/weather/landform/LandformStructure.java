@@ -44,8 +44,11 @@ public class LandformStructure extends Structure {
         }
         ChunkPos chunk = context.chunkPos();
         int x = chunk.getMiddleBlockX(), z = chunk.getMiddleBlockZ();
+        // working out the ground's height means running the terrain noise for a whole column, so never do a column twice
+        it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap heights = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
         PlanContext plan = new PlanContext(context.random(), x, z,
-                (px, pz) -> context.chunkGenerator().getFirstOccupiedHeight(px, pz, Heightmap.Types.OCEAN_FLOOR_WG, context.heightAccessor(), context.randomState()),
+                (px, pz) -> heights.computeIfAbsent(net.minecraft.world.level.ChunkPos.asLong(px, pz), k -> context.chunkGenerator()
+                        .getFirstOccupiedHeight(px, pz, Heightmap.Types.OCEAN_FLOOR_WG, context.heightAccessor(), context.randomState())),
                 context.chunkGenerator().getSeaLevel(), context.heightAccessor());
         Landform landform = kind.plan(plan);
         if (landform == null) {

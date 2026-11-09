@@ -80,6 +80,18 @@ public final class Terrain {
         return Mth.lerp(fz, Mth.lerp(fx, a, b), Mth.lerp(fx, c, d));
     }
 
+    /** A point's position along ({@code u}) and across ({@code v}) a direction from a centre. */
+    public static float[] uv(double x, double z, double cx, double cz, float angle) {
+        double dx = x - cx, dz = z - cz, c = Math.cos(angle), s = Math.sin(angle);
+        return new float[]{(float) (dx * c + dz * s), (float) (-dx * s + dz * c)};
+    }
+
+    /** The world position {@code u} along and {@code v} across a direction from a centre. */
+    public static double[] xz(double u, double v, double cx, double cz, float angle) {
+        double c = Math.cos(angle), s = Math.sin(angle);
+        return new double[]{cx + u * c - v * s, cz + u * s + v * c};
+    }
+
     /** A repeatable 0-1 value for a position. */
     public static float noise(long seed, int x, int y, int z) {
         long h = Mth.getSeed(x, y, z) ^ seed;
@@ -90,6 +102,11 @@ public final class Terrain {
     public static float smooth(float t) {
         t = Mth.clamp(t, 0.0F, 1.0F);
         return t * t * (3.0F - 2.0F * t);
+    }
+
+    /** Whether landforms may lay down quicksand (they do while the config is still loading, during world creation). */
+    public static boolean quicksand() {
+        return !com.reiko.weather.config.WeatherConfig.SPEC.isLoaded() || com.reiko.weather.config.WeatherConfig.QUICKSAND.get();
     }
 
     /** A repeatable 0-1 value for the i-th thing a landform places. */

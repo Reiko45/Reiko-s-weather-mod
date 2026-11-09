@@ -28,6 +28,11 @@ public class IceFloeRenderer extends EntityRenderer<IceFloeEntity> {
 
     @Override
     public void render(IceFloeEntity floe, float yaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
+        if (floe.berg()) {
+            renderBerg(floe, partialTick, poseStack, buffers, light);
+            super.render(floe, yaw, partialTick, poseStack, buffers, light);
+            return;
+        }
         float w = floe.size() * 2.0F;
         int id = floe.getId();
         // a slow bob and wobble on the water
@@ -46,6 +51,33 @@ public class IceFloeRenderer extends EntityRenderer<IceFloeEntity> {
         }
         poseStack.popPose();
         super.render(floe, yaw, partialTick, poseStack, buffers, light);
+    }
+
+    /**
+     * An iceberg: a craggy mass of old, compressed ice, white and blue, with most of it hidden under the water
+     * (you can see it going down a long way below the surface).
+     */
+    private void renderBerg(IceFloeEntity berg, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
+        float w = berg.size() * 2.0F, h = berg.bergHeight();
+        int id = berg.getId();
+        float t = berg.tickCount + partialTick;
+        poseStack.pushPose();
+        poseStack.translate(0.0, 0.05 * Mth.sin(t * 0.03F + id), 0.0);
+        poseStack.mulPose(Axis.YP.rotationDegrees((id * 47) % 360));
+        BlockState blue = Blocks.BLUE_ICE.defaultBlockState();
+        // the bulk under water, wider than what shows
+        slab(poseStack, buffers, light, ICE, 0, -h * 2.2F, 0, w * 1.15F, h * 2.2F, w * 1.1F);
+        slab(poseStack, buffers, light, ICE, 0, 0, 0, w, h * 0.55F, w * 0.92F);
+        // crags and pinnacles standing up out of it
+        for (int i = 0; i < 4; i++) {
+            float hx = ((Mth.murmurHash3Mixer(id * 13 + i) & 1023) / 1023.0F - 0.5F) * w * 0.5F;
+            float hz = ((Mth.murmurHash3Mixer(id * 29 + i) & 1023) / 1023.0F - 0.5F) * w * 0.5F;
+            float ch = h * (0.6F + 0.4F * ((Mth.murmurHash3Mixer(id * 53 + i) & 1023) / 1023.0F));
+            float cw = w * (0.25F + 0.2F * ((Mth.murmurHash3Mixer(id * 71 + i) & 1023) / 1023.0F));
+            slab(poseStack, buffers, light, i == 1 ? blue : ICE, hx, 0, hz, cw, ch, cw * 0.9F);
+            slab(poseStack, buffers, light, SNOW, hx, ch, hz, cw * 0.8F, 0.12F, cw * 0.7F);
+        }
+        poseStack.popPose();
     }
 
     /** A block model squashed into a box centred at (x, z), sitting on y. */

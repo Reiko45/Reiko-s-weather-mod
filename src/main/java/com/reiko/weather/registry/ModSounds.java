@@ -27,6 +27,9 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> STATIC_CRACKLE = register("weather.static_crackle");
     public static final DeferredHolder<SoundEvent, SoundEvent> GEYSER = register("block.geyser.erupt");
     public static final DeferredHolder<SoundEvent, SoundEvent> HOT_SPRING = register("block.hot_spring.bubble");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ICE_SING = register("ambient.ice_sing");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BLOWHOLE = register("block.blowhole.spout");
+    public static final DeferredHolder<SoundEvent, SoundEvent> EARTHQUAKE = register("weather.earthquake");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(ReikosWeather.id(name)));

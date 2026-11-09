@@ -7,6 +7,7 @@ import com.reiko.weather.weather.Season;
 import com.reiko.weather.weather.StormCell;
 import com.reiko.weather.weather.WeatherType;
 import net.minecraft.client.Camera;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
@@ -29,14 +30,16 @@ public final class SkySights {
     private record Sprite(double x, double y, double z, float size, int seed, int life, long born) {}
 
     private static final List<Sprite> SPRITES = new ArrayList<>();
-    private static float noctilucent, moonbow, fogbow;
+    private static float noctilucent, moonbow, fogbow, inversion, inversionLid;
+    /** Whether the horizon toward the low sun is open sea (for the green flash). */
+    private static boolean seaHorizon;
 
     public static void tick(Minecraft mc) {
         ClientLevel level = mc.level;
         boolean on = level != null && level.dimension() == Level.OVERWORLD && SyncedWeather.managed();
         if (!on) {
             SPRITES.clear();
-            noctilucent = moonbow = fogbow = 0.0F;
+            noctilucent = moonbow = fogbow = inversion = 0.0F;
             return;
         }
         long now = level.getGameTime();
@@ -79,6 +82,44 @@ public final class SkySights {
         float thin = Mth.clamp(1.0F - Math.abs(fog - 0.5F) / 0.5F, 0.0F, 1.0F) * 1.5F;
         float fogbowTarget = ClientConfig.FOGBOWS.get() && foggy && sun > 0.0F && sun < 0.6F && rain < 0.1F ? thin * (1.0F - overcast * 0.6F) : 0.0F;
         fogbow = approach(fogbow, Math.min(1.0F, fogbowTarget), 0.004F);
+
+        // a temperature inversion: on cold, still, clear mornings the valley air is trapped under a lid of warmer air
+        long time = Math.floorMod(level.getDayTime(), 24000L);
+        boolean morning = time > 22000L || time < 3000L;
+        float inversionTarget = 0.0F;
+        if (ClientConfig.INVERSION_HAZE.get() && morning && ClientWeather.wind() < 0.25F && overcast < 0.5F && rain < 0.05F
+                && ClientWeather.airTemperature() < 8.0F) {
+            var info = com.reiko.weather.weather.Microclimate.at(level, Mth.floor(cam.x), Mth.floor(cam.z), SyncedWeather.windAngle());
+            if (info.valley() > 0.25F) {
+                inversionTarget = Mth.clamp((info.valley() - 0.25F) * 2.0F, 0.0F, 1.0F);
+                int floor = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, Mth.floor(cam.x), Mth.floor(cam.z));
+                inversionLid = Mth.lerp(0.05F, inversionLid == 0 ? floor + 12 : inversionLid, floor + 12.0F);
+            }
+        }
+        inversion = approach(inversion, inversionTarget, 0.003F);
+
+        if (level.getGameTime() % 40L == 0L) {
+            // the sun rises and sets along the east-west line: is that horizon open sea?
+            float theta = level.getTimeOfDay(1.0F) * Mth.TWO_PI;
+            double dir = Math.signum(-Mth.sin(theta));
+            boolean open = cam.y < level.getSeaLevel() + 48 && dir != 0;
+            for (int d = 150; d <= 450 && open; d += 150) {
+                open = level.getBiome(BlockPos.containing(cam.x + dir * d, level.getSeaLevel(), cam.z)).is(net.minecraft.tags.BiomeTags.IS_OCEAN);
+            }
+            seaHorizon = open;
+        }
+    }
+
+    public static boolean seaHorizon() {
+        return seaHorizon;
+    }
+
+    public static float inversion() {
+        return inversion;
+    }
+
+    public static float inversionLid() {
+        return inversionLid;
     }
 
     public static float noctilucent() {

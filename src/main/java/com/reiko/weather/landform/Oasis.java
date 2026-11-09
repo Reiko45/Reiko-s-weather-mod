@@ -120,6 +120,12 @@ public record Oasis(int cx, int cz, int y, int radius, long seed) implements Lan
                 float green = 1.0F - Terrain.smooth((d - 0.9F) / 0.9F) + (Terrain.field(seed, x, z, 4.0) - 0.5F) * 0.6F;
                 if (green < 0.45F) {
                     Terrain.set(level, pos, x, surface, z, Blocks.SAND.defaultBlockState());
+                    // where the spring seeps out under the sand at the water's edge, it turns to quicksand
+                    if (Terrain.quicksand() && d < 0.8F && surface <= y + 1 && Terrain.field(seed + 9, x, z, 3.0) > 0.7F) {
+                        Terrain.set(level, pos, x, surface, z, com.reiko.weather.registry.ModBlocks.QUICKSAND.get().defaultBlockState());
+                        Terrain.set(level, pos, x, surface - 1, z, com.reiko.weather.registry.ModBlocks.QUICKSAND.get().defaultBlockState());
+                        continue;
+                    }
                     if (n > 0.985F) Terrain.set(level, pos, x, surface + 1, z, Blocks.DEAD_BUSH.defaultBlockState());
                     continue;
                 }

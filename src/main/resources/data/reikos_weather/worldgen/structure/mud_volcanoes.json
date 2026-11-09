@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "mud_volcanoes",
+  "biomes": "#reikos_weather:has_structure/mud_volcanoes",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

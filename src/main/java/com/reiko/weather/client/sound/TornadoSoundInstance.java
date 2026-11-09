@@ -35,6 +35,7 @@ public class TornadoSoundInstance extends AbstractTickableSoundInstance {
             case TORNADO -> { this.volume = 0.2F + 2.8F * strength; this.pitch = 0.8F + 0.2F * strength; }
             case WATERSPOUT -> { this.volume = 0.2F + 1.6F * strength; this.pitch = 1.0F + 0.15F * strength; }
             case DUST_DEVIL -> { this.volume = 0.1F + 0.35F * strength; this.pitch = 1.7F; }
+            case FIRE_WHIRL -> { this.volume = 0.3F + 1.2F * strength; this.pitch = 1.3F; }
         }
     }
 

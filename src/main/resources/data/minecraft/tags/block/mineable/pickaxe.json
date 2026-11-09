@@ -13,6 +13,8 @@
     "reikos_weather:sulfur_crust",
     "reikos_weather:seismograph",
     "reikos_weather:geyser",
-    "reikos_weather:salt_crust"
+    "reikos_weather:salt_crust",
+    "reikos_weather:blowhole",
+    "reikos_weather:limestone"
   ]
 }

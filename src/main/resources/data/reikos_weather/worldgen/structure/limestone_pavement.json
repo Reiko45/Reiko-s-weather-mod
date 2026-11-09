@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "limestone_pavement",
+  "biomes": "#reikos_weather:has_structure/limestone_pavement",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

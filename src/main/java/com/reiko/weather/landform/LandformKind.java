@@ -28,7 +28,28 @@ public enum LandformKind implements StringRepresentable {
     ATOLL(Atoll::plan, Atoll::load, () -> WeatherConfig.ATOLLS.get()),
     FJORD(Fjord::plan, Fjord::load, () -> WeatherConfig.FJORDS.get()),
     ERRATICS(Erratics::plan, Erratics::load, () -> WeatherConfig.ERRATICS.get()),
-    PEAT_BOG(PeatBog::plan, PeatBog::load, () -> WeatherConfig.PEAT_BOGS.get());
+    PEAT_BOG(PeatBog::plan, PeatBog::load, () -> WeatherConfig.PEAT_BOGS.get()),
+    TRAVERTINE(Travertine::plan, Travertine::load, () -> WeatherConfig.TRAVERTINE.get()),
+    TUFA_LAKE(TufaLake::plan, TufaLake::load, () -> WeatherConfig.TUFA_LAKES.get()),
+    HOODOOS(Hoodoos::plan, Hoodoos::load, () -> WeatherConfig.HOODOOS.get()),
+    ROCK_ARCH(RockArch::plan, RockArch::load, () -> WeatherConfig.ROCK_ARCHES.get()),
+    SLOT_CANYON(SlotCanyon::plan, SlotCanyon::load, () -> WeatherConfig.SLOT_CANYONS.get()),
+    LIMESTONE_PAVEMENT(LimestonePavement::plan, LimestonePavement::load, () -> WeatherConfig.LIMESTONE_PAVEMENT.get()),
+    TOWER_KARST(TowerKarst::plan, TowerKarst::load, () -> WeatherConfig.TOWER_KARST.get()),
+    OXBOW_LAKE(OxbowLake::plan, OxbowLake::load, () -> WeatherConfig.OXBOW_LAKES.get()),
+    BRAIDED_RIVER(BraidedRiver::plan, BraidedRiver::load, () -> WeatherConfig.BRAIDED_RIVERS.get()),
+    DELTA(Delta::plan, Delta::load, () -> WeatherConfig.DELTAS.get()),
+    CIRQUE(Cirque::plan, Cirque::load, () -> WeatherConfig.CIRQUES.get()),
+    KETTLE_LAKES(KettleLakes::plan, KettleLakes::load, () -> WeatherConfig.KETTLE_LAKES.get()),
+    DRUMLINS(Drumlins::plan, Drumlins::load, () -> WeatherConfig.DRUMLINS.get()),
+    PERMAFROST(Permafrost::plan, Permafrost::load, () -> WeatherConfig.PERMAFROST.get()),
+    CHALK_CLIFFS(ChalkCliffs::plan, ChalkCliffs::load, () -> WeatherConfig.CHALK_CLIFFS.get()),
+    BARRIER_ISLAND(BarrierIsland::plan, BarrierIsland::load, () -> WeatherConfig.BARRIER_ISLANDS.get()),
+    SALT_MARSH(SaltMarsh::plan, SaltMarsh::load, () -> WeatherConfig.SALT_MARSHES.get()),
+    CINDER_CONE(CinderCone::plan, CinderCone::load, () -> WeatherConfig.CINDER_CONES.get()),
+    MAAR(Maar::plan, Maar::load, () -> WeatherConfig.MAARS.get()),
+    MUD_VOLCANOES(MudVolcanoes::plan, MudVolcanoes::load, () -> WeatherConfig.MUD_VOLCANOES.get()),
+    TERMITE_MOUNDS(TermiteMounds::plan, TermiteMounds::load, () -> WeatherConfig.TERMITE_MOUNDS.get());
 
     public static final Codec<LandformKind> CODEC = StringRepresentable.fromEnum(LandformKind::values);
 

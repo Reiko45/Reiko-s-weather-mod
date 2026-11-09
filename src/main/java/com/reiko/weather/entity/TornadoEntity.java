@@ -48,7 +48,9 @@ public class TornadoEntity extends Entity {
         /** Forms over open water and dies when it reaches land. */
         WATERSPOUT(0.09, 0.06F, 0.6, false, true),
         /** A small, mostly harmless whirlwind of sand on hot, clear days. */
-        DUST_DEVIL(0.17, 0.35F, 0.25, false, false);
+        DUST_DEVIL(0.17, 0.35F, 0.25, false, false),
+        /** A whirl of flame and smoke spun up by a huge wildfire, spreading the fire wherever it wanders. */
+        FIRE_WHIRL(0.12, 0.4F, 0.3, false, true);
 
         public final double speed;
         public final float wander;
@@ -197,14 +199,38 @@ public class TornadoEntity extends Entity {
         }
 
         float strength = strength();
-        if (kind != Kind.DUST_DEVIL && strength > 0.3F && age % 10 == 0) {
+        if (kind != Kind.DUST_DEVIL && kind != Kind.FIRE_WHIRL && strength > 0.3F && age % 10 == 0) {
             recordProbes(level);
+        }
+        if (kind == Kind.FIRE_WHIRL && strength > 0.3F && age % 8 == 0) {
+            spreadFire(level);
         }
         if (strength > 0.05F) {
             pullEntities(level, strength);
             excusePlayers(level);
             if (kind.liftsBlocks && WeatherConfig.TORNADO_LIFTS_BLOCKS.get() && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                 liftBlocks(level, strength);
+            }
+        }
+    }
+
+    /** A fire whirl flings burning embers onto whatever it passes over, and sets alight anything it catches. */
+    private void spreadFire(ServerLevel level) {
+        for (Entity entity : level.getEntities(this, getBoundingBox().inflate(radiusAt(0) * 1.5, 2, radiusAt(0) * 1.5),
+                e -> e instanceof LivingEntity && !e.fireImmune())) {
+            entity.igniteForSeconds(4.0F);
+        }
+        if (!level.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK) || !level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            return;
+        }
+        for (int i = 0; i < 2; i++) {
+            BlockPos column = BlockPos.containing(getX() + (random.nextDouble() - 0.5) * 8, 0, getZ() + (random.nextDouble() - 0.5) * 8);
+            if (!level.isLoaded(column)) continue;
+            BlockPos top = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
+            if (level.getBlockState(top).isAir() || level.getBlockState(top).canBeReplaced() && level.getFluidState(top).isEmpty()) {
+                if (net.minecraft.world.level.block.BaseFireBlock.canBePlacedAt(level, top, net.minecraft.core.Direction.UP)) {
+                    level.setBlockAndUpdate(top, net.minecraft.world.level.block.BaseFireBlock.getState(level, top));
+                }
             }
         }
     }

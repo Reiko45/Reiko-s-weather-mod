@@ -3,6 +3,7 @@ package com.reiko.weather.landform;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelHeightAccessor;
 
+import javax.annotation.Nullable;
 import java.util.function.IntBinaryOperator;
 
 /**
@@ -47,6 +48,44 @@ public record PlanContext(RandomSource random, int x, int z, IntBinaryOperator g
         if (Float.isNaN(best) || lowest > seaLevel - 4) return Float.NaN;
         int behind = groundAt(x - (int) Math.round(Math.cos(best) * distance), z - (int) Math.round(Math.sin(best) * distance));
         return behind >= seaLevel + landAbove ? best : Float.NaN;
+    }
+
+    /** The steepest way downhill from here, {angle, drop}: how far the ground falls {@code distance} blocks out that way. */
+    public float[] downhill(int distance) {
+        int here = groundAt(x, z), drop = 0;
+        float angle = 0.0F;
+        for (int i = 0; i < 12; i++) {
+            float a = i * (float) Math.PI * 2.0F / 12.0F;
+            int h = groundAt(x + (int) Math.round(Math.cos(a) * distance), z + (int) Math.round(Math.sin(a) * distance));
+            if (here - h > drop) {
+                drop = here - h;
+                angle = a;
+            }
+        }
+        return new float[]{angle, drop};
+    }
+
+    /** The same context, moved to another column. */
+    public PlanContext at(int px, int pz) {
+        return new PlanContext(random, px, pz, ground, seaLevel, heights);
+    }
+
+    /**
+     * Tries a planner at this column and then at others round it ({@code step} apart, out to {@code reach}),
+     * nearest first, for landforms that need a particular spot (a coastline, say) a chunk's middle seldom hits.
+     */
+    @Nullable
+    public Landform search(int step, int reach, java.util.function.Function<PlanContext, Landform> planner) {
+        for (int r = 0; r <= reach; r += step) {
+            for (int dx = -r; dx <= r; dx += step) {
+                for (int dz = -r; dz <= r; dz += step) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
+                    Landform landform = planner.apply(at(x + dx, z + dz));
+                    if (landform != null) return landform;
+                }
+            }
+        }
+        return null;
     }
 
     public boolean fits(int y, int below, int above) {

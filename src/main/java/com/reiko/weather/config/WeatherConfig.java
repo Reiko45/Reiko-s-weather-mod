@@ -120,6 +120,42 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue FJORDS;
     public static final ModConfigSpec.BooleanValue ERRATICS;
     public static final ModConfigSpec.BooleanValue PEAT_BOGS;
+    public static final ModConfigSpec.BooleanValue SEA_BREEZES;
+    public static final ModConfigSpec.BooleanValue MICROBURSTS;
+    public static final ModConfigSpec.BooleanValue HABOOBS;
+    public static final ModConfigSpec.BooleanValue FIRE_WHIRLS;
+    public static final ModConfigSpec.BooleanValue ATMOSPHERIC_RIVERS;
+    public static final ModConfigSpec.BooleanValue HEAT_BURSTS;
+    public static final ModConfigSpec.BooleanValue RIME_ICE;
+    public static final ModConfigSpec.BooleanValue SNOW_ROLLERS;
+    public static final ModConfigSpec.BooleanValue LAKE_ICE;
+    public static final ModConfigSpec.BooleanValue FERTILE_FLOODS;
+    public static final ModConfigSpec.BooleanValue EARTHQUAKES;
+    public static final ModConfigSpec.BooleanValue TSUNAMIS;
+    public static final ModConfigSpec.BooleanValue COASTAL_EROSION;
+    public static final ModConfigSpec.BooleanValue ICEBERGS;
+    public static final ModConfigSpec.BooleanValue QUICKSAND;
+    public static final ModConfigSpec.BooleanValue TRAVERTINE;
+    public static final ModConfigSpec.BooleanValue TUFA_LAKES;
+    public static final ModConfigSpec.BooleanValue HOODOOS;
+    public static final ModConfigSpec.BooleanValue ROCK_ARCHES;
+    public static final ModConfigSpec.BooleanValue SLOT_CANYONS;
+    public static final ModConfigSpec.BooleanValue LIMESTONE_PAVEMENT;
+    public static final ModConfigSpec.BooleanValue TOWER_KARST;
+    public static final ModConfigSpec.BooleanValue OXBOW_LAKES;
+    public static final ModConfigSpec.BooleanValue BRAIDED_RIVERS;
+    public static final ModConfigSpec.BooleanValue DELTAS;
+    public static final ModConfigSpec.BooleanValue CIRQUES;
+    public static final ModConfigSpec.BooleanValue KETTLE_LAKES;
+    public static final ModConfigSpec.BooleanValue DRUMLINS;
+    public static final ModConfigSpec.BooleanValue PERMAFROST;
+    public static final ModConfigSpec.BooleanValue CHALK_CLIFFS;
+    public static final ModConfigSpec.BooleanValue BARRIER_ISLANDS;
+    public static final ModConfigSpec.BooleanValue SALT_MARSHES;
+    public static final ModConfigSpec.BooleanValue CINDER_CONES;
+    public static final ModConfigSpec.BooleanValue MAARS;
+    public static final ModConfigSpec.BooleanValue MUD_VOLCANOES;
+    public static final ModConfigSpec.BooleanValue TERMITE_MOUNDS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -338,6 +374,42 @@ public final class WeatherConfig {
                 .define("rockfall", true);
         PEAT_FIRES = b.comment("Lightning can set peat smouldering; peat fires creep slowly underground and send up smoke.")
                 .define("peatFires", true);
+        SEA_BREEZES = b.comment("Sea breezes blow in off the sea by day and land breezes out to sea at night; valley winds blow uphill by",
+                        "day and mountain winds downhill at night (strongest off snow and ice).")
+                .define("seaBreezes", true);
+        MICROBURSTS = b.comment("Thunderstorms can drop a microburst: a violent downdraft that flattens crops and strips leaves in a",
+                        "circle (block damage needs mobGriefing).")
+                .define("microbursts", true);
+        HABOOBS = b.comment("Desert thunderstorms drive a towering wall of dust out ahead of them.")
+                .define("haboobs", true);
+        FIRE_WHIRLS = b.comment("Huge wildfires spin up fire whirls and build fire clouds that throw dry lightning downwind.")
+                .define("fireWhirls", true);
+        ATMOSPHERIC_RIVERS = b.comment("Now and then, mostly in autumn and winter, an atmospheric river soaks a coast with days of heavy rain.")
+                .define("atmosphericRivers", true);
+        HEAT_BURSTS = b.comment("A dying thunderstorm at night can collapse into a heat burst: a sudden blast of hot, dry wind.")
+                .define("heatBursts", true);
+        RIME_ICE = b.comment("Freezing fog builds feathers of rime ice on the windward side of trees and rocks (it melts when it warms up).")
+                .define("rimeIce", true);
+        SNOW_ROLLERS = b.comment("Strong wind over fresh, wet snow rolls it up into snow rollers.")
+                .define("snowRollers", true);
+        LAKE_ICE = b.comment("Thick lake ice cracks and pushes up into pressure ridges in hard frosts.")
+                .define("lakeIce", true);
+        FERTILE_FLOODS = b.comment("Floods leave silt behind: crops on ground that was under the flood water grow faster for a few days.")
+                .define("fertileFloods", true);
+        EARTHQUAKES = b.comment("Rare earthquakes shake the ground, bring rocks down off cliffs and break the odd window (needs",
+                        "mobGriefing for block damage).")
+                .define("earthquakes", false);
+        TSUNAMIS = b.comment("A big earthquake under the sea sends a tsunami onto nearby coasts a minute or two later (needs",
+                        "earthquakes and mobGriefing).")
+                .define("tsunamis", false);
+        COASTAL_EROSION = b.comment("Storm waves slowly wear back natural cliffs and shift sand along beaches (natural blocks only; needs",
+                        "mobGriefing).")
+                .define("coastalErosion", true);
+        ICEBERGS = b.comment("Glaciers that reach the sea break off icebergs, icebergs drift in cold seas, and sea ice breaks up into",
+                        "floes in spring.")
+                .define("icebergs", true);
+        QUICKSAND = b.comment("Patches of quicksand on tidal flats, river deltas, salt marshes, oasis shores and dry washes.")
+                .define("quicksand", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -424,6 +496,48 @@ public final class WeatherConfig {
                 .define("erratics", true);
         PEAT_BOGS = b.comment("Peat bogs: wet, mossy flats over deep peat (a slow-burning fuel), dotted with dark pools.")
                 .define("peatBogs", true);
+        TRAVERTINE = b.comment("Travertine terraces: white, stepped pools of warm mineral water on hillsides.")
+                .define("travertine", true);
+        TUFA_LAKES = b.comment("Salty lakes with pale tufa towers standing in the shallows.")
+                .define("tufaLakes", true);
+        HOODOOS = b.comment("Hoodoos: banded rock spires with caprocks in the badlands and deserts.")
+                .define("hoodoos", true);
+        ROCK_ARCHES = b.comment("Natural rock arches standing in deserts and badlands.")
+                .define("rockArches", true);
+        SLOT_CANYONS = b.comment("Slot canyons: deep, narrow, twisting sandstone canyons (deadly in a flash flood).")
+                .define("slotCanyons", true);
+        LIMESTONE_PAVEMENT = b.comment("Limestone pavements: bare rock cracked into slabs, with ferns in the cracks.")
+                .define("limestonePavement", true);
+        TOWER_KARST = b.comment("Tower karst: steep limestone towers rising out of the jungle.")
+                .define("towerKarst", true);
+        OXBOW_LAKES = b.comment("Oxbow lakes: crescent-shaped lakes left by rivers changing course.")
+                .define("oxbowLakes", true);
+        BRAIDED_RIVERS = b.comment("Braided rivers: shallow channels weaving across wide gravel plains in cold lands.")
+                .define("braidedRivers", true);
+        DELTAS = b.comment("River deltas fanning out into marsh and channels where rivers meet the sea.")
+                .define("deltas", true);
+        CIRQUES = b.comment("Cirques: bowls carved into mountainsides by old glaciers, holding a small lake.")
+                .define("cirques", true);
+        KETTLE_LAKES = b.comment("Kettle lakes: deep, round ponds left where buried blocks of glacier ice melted.")
+                .define("kettleLakes", true);
+        DRUMLINS = b.comment("Drumlins and eskers: streamlined glacial hills and winding gravel ridges.")
+                .define("drumlins", true);
+        PERMAFROST = b.comment("Frozen ground: polygon-patterned tundra, ice-cored pingos and thaw lakes.")
+                .define("permafrost", true);
+        CHALK_CLIFFS = b.comment("White chalk cliffs with sea caves and a blowhole that spouts when the waves surge in.")
+                .define("chalkCliffs", true);
+        BARRIER_ISLANDS = b.comment("Barrier islands: long sandy islands with dunes, with a lagoon behind them.")
+                .define("barrierIslands", true);
+        SALT_MARSHES = b.comment("Salt marshes: flat coastal marsh threaded with tidal creeks, flooded at high tide.")
+                .define("saltMarshes", true);
+        CINDER_CONES = b.comment("Cinder cones: small, steep volcanic cones of black and red scoria.")
+                .define("cinderCones", true);
+        MAARS = b.comment("Maars: broad, flat-floored explosion craters with a lake, ringed by tuff.")
+                .define("maars", true);
+        MUD_VOLCANOES = b.comment("Mud volcanoes: little cones of grey mud with bubbling pools on top.")
+                .define("mudVolcanoes", true);
+        TERMITE_MOUNDS = b.comment("Termite mounds: tall earthen spires dotting savannas.")
+                .define("termiteMounds", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

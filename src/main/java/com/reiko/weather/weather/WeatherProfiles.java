@@ -160,6 +160,26 @@ public final class WeatherProfiles {
                 .precip(Precip.DUST, 0.3F).dustLayers(1).build();
         put(WeatherType.DUST_HAZE, haze, haze, haze);
 
+        // a haboob: a wall of dust a few hundred metres high rolling across the land, then gone in an hour
+        WeatherProfile haboob = builder().overcast(0.6F).tint(0xB06A32, 0.8F).fog(0.9F, 0xA8743F).wind(0.85F).clouds(0.0F)
+                .precip(Precip.SAND, 1.6F).precip(Precip.DUST, 1.4F).build();
+        put(WeatherType.HABOOB, haboob, haboob, haboob);
+
+        // an atmospheric river: warm, steady, soaking rain that goes on and on (deep snow on the cold mountains)
+        put(WeatherType.ATMOSPHERIC_RIVER,
+                builder().rain(1.0F).overcast(0.85F).fog(0.55F).wind(0.45F).precip(Precip.SNOW, 1.0F).snowLayers(3).build(),
+                builder().rain(1.0F).overcast(0.85F).fog(0.5F).wind(0.45F).tempOffset(3.0F).precip(Precip.DOWNPOUR, 0.9F).cropBoost().floods().build(),
+                builder().rain(1.0F).overcast(0.8F).fog(0.35F).wind(0.4F).tempOffset(3.0F).precip(Precip.DOWNPOUR, 0.6F).floods().build());
+
+        // a heat burst: hot, bone-dry gusts out of a clear night sky
+        WeatherProfile burst = builder().overcast(0.15F).wind(0.75F).clouds(0.2F).tempOffset(13.0F).precip(Precip.DUST, 0.4F).build();
+        put(WeatherType.HEAT_BURST, burst, burst, burst);
+
+        // a fire cloud: a smoky thunderhead over a huge wildfire, with dry lightning and hardly any rain
+        WeatherProfile pyro = builder().rain(0.1F).thunder(0.6F).overcast(0.7F).tint(0xA0603A, 0.45F).fog(0.45F, 0x8C705C).wind(0.55F)
+                .precip(Precip.ASH, 0.3F).precip(Precip.DUST, 0.4F).lightning(3.0F).build();
+        put(WeatherType.PYROCUMULUS, pyro, pyro, pyro);
+
         for (WeatherType type : WeatherType.values()) {
             if (!TABLE.containsKey(type)) {
                 throw new IllegalStateException("Missing weather profile for " + type);

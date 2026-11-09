@@ -152,5 +152,26 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.PeatBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.6F)
                     .sound(SoundType.ROOTED_DIRT).lightLevel(s -> s.getValue(com.reiko.weather.block.PeatBlock.SMOULDERING) ? 3 : 0)));
 
+    public static final DeferredBlock<com.reiko.weather.block.RimeBlock> RIME = REGISTER.register("rime",
+            () -> new com.reiko.weather.block.RimeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).replaceable().noCollission()
+                    .strength(0.1F).sound(SoundType.GLASS).noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY).noLootTable()));
+
+    public static final DeferredBlock<com.reiko.weather.block.SnowRollerBlock> SNOW_ROLLER = REGISTER.register("snow_roller",
+            () -> new com.reiko.weather.block.SnowRollerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.2F)
+                    .sound(SoundType.SNOW).noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY)));
+
+    public static final DeferredBlock<com.reiko.weather.block.QuicksandBlock> QUICKSAND = REGISTER.register("quicksand",
+            () -> new com.reiko.weather.block.QuicksandBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.5F)
+                    .sound(SoundType.MUD).dynamicShape().isRedstoneConductor((s, l, p) -> false)
+                    .isViewBlocking((s, l, p) -> true)));
+
+    public static final DeferredBlock<com.reiko.weather.block.BlowholeBlock> BLOWHOLE = REGISTER.register("blowhole",
+            () -> new com.reiko.weather.block.BlowholeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> LIMESTONE = REGISTER.register("limestone",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).strength(1.2F, 5.0F)
+                    .sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
     private ModBlocks() {}
 }

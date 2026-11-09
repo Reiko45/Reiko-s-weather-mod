@@ -822,7 +822,8 @@
      "title": "Glaciers",
      "icon": "minecraft:blue_ice",
      "pages": [
-      "Glaciers flow down cold mountainsides: packed ice with veins of blue ice, snowy higher up and bare lower down. Crevasses cut across them, and many hide under a thin bridge of powder snow. Watch your step.\n\nIn summer the lower end melts back a little and meltwater runs off it."
+      "Glaciers flow down cold mountainsides: packed ice with veins of blue ice, snowy higher up and bare lower down. Crevasses cut across them, and many hide under a thin bridge of powder snow. Watch your step.\n\nIn summer the lower end melts back a little and meltwater runs off it.",
+      "Some glaciers have an ice cave running into their foot, its walls glowing blue.\n\nWhere a glacier reaches the sea, great slabs break off its front now and then and float away as icebergs."
      ]
     },
     {
@@ -884,7 +885,7 @@
      "title": "Ice Breakup",
      "icon": "minecraft:packed_ice",
      "pages": [
-      "In the spring thaw, river ice breaks up into floes that drift away downstream. You can ride one, like a boat. Where floes pile up against each other in a narrow stretch, an ice jam forms, and the river backs up and floods its banks until the jam melts."
+      "In the spring thaw, river ice breaks up into floes that drift away downstream. You can ride one, like a boat. Where floes pile up against each other in a narrow stretch, an ice jam forms, and the river backs up and floods its banks until the jam melts.\n\nIn the cold seas, sea ice breaks up into floes in spring, and icebergs drift by out in open water. You can ride a berg too."
      ]
     },
     {
@@ -983,6 +984,244 @@
      "icon": "minecraft:gravel",
      "pages": [
       "On mild days in spring, and whenever it thaws, water that froze in the cracks overnight lets go: rocks break off cliffs and tumble down, piling up as scree at the bottom. Don't linger under a cliff in the thaw."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Wind, Fire and Ice",
+   "icon": "minecraft:blaze_powder",
+   "entries": [
+    {
+     "title": "Breezes",
+     "icon": "minecraft:feather",
+     "pages": [
+      "On a calm, sunny day the land warms faster than the sea, so a cool sea breeze blows in off the water in the afternoon; at night it turns round into a gentle land breeze. In the mountains, valley winds blow uphill by day, and at night cold mountain winds slide back down, strongest off snow and ice."
+     ]
+    },
+    {
+     "title": "Microbursts and Heat Bursts",
+     "icon": "minecraft:wheat",
+     "pages": [
+      "A thunderstorm can drop a microburst: a column of cold air slamming into the ground and blasting outward, flattening crops and stripping leaves in a circle. It's over in a minute.\n\nAt night, a dying storm sometimes collapses into a heat burst instead: a sudden gale of hot, bone-dry air."
+     ]
+    },
+    {
+     "title": "Haboobs",
+     "icon": "minecraft:sand",
+     "pages": [
+      "In the desert, the cold outflow from a thunderstorm picks up the dust and drives it ahead in a towering wall that swallows the sun. Inside it's dark, orange and roaring. Get under cover and wait for it to pass."
+     ]
+    },
+    {
+     "title": "Fire Whirls and Fire Clouds",
+     "icon": "minecraft:blaze_powder",
+     "pages": [
+      "A big enough wildfire makes its own weather. The rising heat spins up fire whirls, whirling columns of flame that wander about spreading the fire.\n\nOver the biggest fires a fire cloud builds: a dirty, smoke-stained thunderhead that throws dry lightning downwind, starting new fires."
+     ]
+    },
+    {
+     "title": "Atmospheric Rivers",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "Now and then, mostly in autumn and winter, a long, narrow river of moist air from the tropics comes ashore and stalls, soaking the coast with days of heavy rain (or heavy snow up in the cold). Expect floods."
+     ]
+    },
+    {
+     "title": "Virga",
+     "icon": "minecraft:light_gray_dye",
+     "pages": [
+      "In dry country you'll often see grey streaks of rain hanging under the clouds that never reach the ground: it's drying up on the way down."
+     ]
+    },
+    {
+     "title": "Rime and Snow Rollers",
+     "icon": "minecraft:snowball",
+     "pages": [
+      "In freezing fog, the droplets freeze where they touch, and rime builds up in white feathers on the windward side of everything, more of it higher up. It melts when it warms up.\n\nA strong wind over wet, sticky snow can roll it up into snow rollers, leaving a bare track behind each one."
+     ]
+    },
+    {
+     "title": "Lake Ice",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "Thick lake ice is noisy. As the temperature changes around dawn and dusk it booms, pings and sings with strange, swooping notes. In hard frosts it cracks and buckles up into pressure ridges across the lake."
+     ]
+    },
+    {
+     "title": "Valley Inversions",
+     "icon": "minecraft:campfire",
+     "pages": [
+      "On cold, still, clear mornings the coldest air sinks into the valleys, trapped under a lid of warmer air. Smoke and haze pool under the lid in a flat-topped layer; climb above it and you look down on it."
+     ]
+    },
+    {
+     "title": "Fertile Floods",
+     "icon": "minecraft:wheat_seeds",
+     "pages": [
+      "Flood water leaves a layer of silt behind when it drains away. Crops on ground that was flooded grow faster for a few days."
+     ]
+    },
+    {
+     "title": "Earthquakes and Tsunamis",
+     "icon": "minecraft:cracked_stone_bricks",
+     "pages": [
+      "These are switched off unless you turn them on in the settings.\n\nEarthquakes shake the ground, bring rocks down off cliffs and break the odd pane of glass.",
+      "A big quake under the sea sends a tsunami toward the nearest coast. The warning sign: the sea drawing back from the shore. A minute or two later the water comes surging in far over the beach. Run for high ground."
+     ]
+    },
+    {
+     "title": "The Coast",
+     "icon": "minecraft:gravel",
+     "pages": [
+      "Storm waves slowly wear back natural cliffs, cutting a notch at the foot until the rock above comes down, and drag sand off beaches to drop it again as a bar just offshore. They never touch anything you've built.\n\nOn warm coasts at night, the breaking waves glow blue, and so does the water swirling round you as you swim."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Light in the Sky",
+   "icon": "minecraft:spyglass",
+   "entries": [
+    {
+     "title": "Double Rainbows",
+     "icon": "minecraft:glass",
+     "pages": [
+      "Look outside a bright rainbow for a fainter second bow, with its colours the other way round. The sky between the two is darker than the sky around them: Alexander's dark band."
+     ]
+    },
+    {
+     "title": "Glories",
+     "icon": "minecraft:white_stained_glass",
+     "pages": [
+      "Stand on a mountain above a sea of fog with the sun low behind you, and your shadow falls on the fog, huge and ghostly (a Brocken spectre), with a little round rainbow, a glory, ringed round its head."
+     ]
+    },
+    {
+     "title": "Lenticular Clouds",
+     "icon": "minecraft:white_wool",
+     "pages": [
+      "When a strong wind blows over mountains, smooth, lens-shaped clouds can sit perfectly still above and downwind of the peaks, like stacks of saucers."
+     ]
+    },
+    {
+     "title": "Twilight",
+     "icon": "minecraft:pink_dye",
+     "pages": [
+      "Just after sunset (or before sunrise) look the other way: a dark blue band low on the horizon is the Earth's own shadow, with a pink glow above it, the Belt of Venus.\n\nAt the very moment the sun disappears into the sea on a clear evening, its last sliver can flash green."
+     ]
+    },
+    {
+     "title": "Light Pillars",
+     "icon": "minecraft:lantern",
+     "pages": [
+      "On bitterly cold, clear, still nights, tiny flat ice crystals hang in the air and catch the light of lanterns, torches and fires, standing columns of light up over them."
+     ]
+    },
+    {
+     "title": "Iridescent Clouds",
+     "icon": "minecraft:prismarine_crystals",
+     "pages": [
+      "Thin cloud passing near the sun sometimes shimmers with pastel pinks and greens."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Even More Landforms",
+   "icon": "minecraft:calcite",
+   "entries": [
+    {
+     "title": "Travertine Terraces",
+     "icon": "minecraft:calcite",
+     "pages": [
+      "Warm springs spilling down a hillside leave their minerals behind as the water cools, building white rims that hold a staircase of shallow, steaming blue pools."
+     ]
+    },
+    {
+     "title": "Tufa Lakes",
+     "icon": "minecraft:tuff",
+     "pages": [
+      "Salty lakes ringed with a crust of salt, with knobbly pale towers of tufa standing in the shallows where springs once bubbled up through the lake bed."
+     ]
+    },
+    {
+     "title": "Hoodoos and Arches",
+     "icon": "minecraft:red_sandstone",
+     "pages": [
+      "In the badlands and deserts, rain and frost have worn the soft rock into hoodoos, tall banded spires each sheltered by a hard caprock, and natural arches with the sky showing through them."
+     ]
+    },
+    {
+     "title": "Slot Canyons",
+     "icon": "minecraft:smooth_sandstone",
+     "pages": [
+      "Cracks in the sandstone barely wider than your shoulders but many times deeper, carved by flash floods into smooth, swirling walls of banded rock. Logs jammed high overhead show how deep the last flood ran. If it starts raining hard upstream, get out."
+     ]
+    },
+    {
+     "title": "Limestone Country",
+     "icon": "reikos_weather:limestone",
+     "pages": [
+      "A limestone pavement is bare rock dissolved by the rain into flat slabs split by deep cracks, with ferns growing down in them.\n\nIn the jungle, the same rock has been dissolved away until only tower karst is left: sheer towers hung with vines, tufted with trees on top."
+     ]
+    },
+    {
+     "title": "Rivers",
+     "icon": "minecraft:lily_pad",
+     "pages": [
+      "Oxbow lakes are the crescent-shaped loops of old river bends, cut off when the river took a short cut.\n\nIn cold, bare country, braided rivers weave across wide plains of gravel in a tangle of shallow channels.",
+      "Where a river meets the sea it builds a delta: a fan of low, muddy marsh split by channels, with raised banks along them and sand bars (and quicksand) at the front. The high tide creeps over it."
+     ]
+    },
+    {
+     "title": "Left by the Ice",
+     "icon": "minecraft:snow_block",
+     "pages": [
+      "Cirques are armchair-shaped hollows gouged into mountainsides by small glaciers, with a sheer headwall and a little lake, a tarn, in the floor.\n\nKettle lakes are deep, round ponds where buried blocks of ice melted out, among mounds of gravel called kames.",
+      "Drumlins are smooth, whale-backed hills all lying the same way, blunt where the ice came from. An esker, a long winding gravel ridge, is the bed of a river that ran in a tunnel under the ice."
+     ]
+    },
+    {
+     "title": "Permafrost",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "Where the ground is frozen deep down all year, it cracks into a pattern of polygons with ice in the cracks. Pingos are hills with a core of solid ice, split open at the top, and thaw lakes sit where the ice has melted and the ground has slumped."
+     ]
+    },
+    {
+     "title": "Chalk Cliffs",
+     "icon": "reikos_weather:blowhole",
+     "pages": [
+      "Sheer white cliffs of chalk banded with dark flint, standing over a flat wave-cut platform, with sea caves in their foot.\n\nLook for a blowhole on the clifftop: a hole at the top of a shaft from one of the caves. When a wave surges in it booms and blasts spray into the air, higher in rough seas and at high tide."
+     ]
+    },
+    {
+     "title": "Low Coasts",
+     "icon": "minecraft:sand",
+     "pages": [
+      "Barrier islands are long, thin islands of sand and dunes just off a low coast, with a shallow lagoon behind and an inlet the tide runs through.\n\nSalt marshes are flat coastal meadows threaded with winding creeks. The bare mud of the low marsh floods at every high tide. Watch for quicksand."
+     ]
+    },
+    {
+     "title": "Little Volcanoes",
+     "icon": "minecraft:blackstone",
+     "pages": [
+      "Cinder cones are steep cones of black and red cinders with a crater on top, breached on one side where a lava flow broke out.\n\nMaars are broad explosion craters sunk into flat ground, ringed with tuff and filled with a deep lake.\n\nMud volcanoes are little cones of grey mud with bubbling pools on top."
+     ]
+    },
+    {
+     "title": "Termite Mounds",
+     "icon": "minecraft:packed_mud",
+     "pages": [
+      "On the savanna, termites build tall towers of cemented earth over their nests, some low and domed, some steep spires taller than you are."
+     ]
+    },
+    {
+     "title": "Quicksand",
+     "icon": "reikos_weather:quicksand",
+     "pages": [
+      "Sand so full of water it can't bear any weight: darker and glossier than the sand around it. You sink in to your waist and can barely move. Thrashing about doesn't help: sneak to work your way out slowly."
      ]
     }
    ]

@@ -53,6 +53,20 @@ public final class VolcanoClient {
     private static float shake, prevShake, kick;
     private static float tremor;
     private static int tremorTicks;
+    /** An earthquake (not a volcano's): how hard, and how long it has left of how long. */
+    private static float quakeStrength;
+    private static int quakeTicks, quakeLength;
+
+    /** An earthquake starts shaking the ground here. */
+    public static void quake(float strength, int ticks) {
+        quakeStrength = Math.max(strength, quakeTicks > 0 ? quakeStrength : 0.0F);
+        quakeTicks = quakeLength = Math.max(1, ticks);
+        Minecraft mc = Minecraft.getInstance();
+        if (ClientConfig.SOUNDS.get() && mc.player != null) {
+            mc.getSoundManager().play(new SimpleSoundInstance(ModSounds.EARTHQUAKE.get().getLocation(), SoundSource.WEATHER,
+                    Math.min(1.0F, 0.4F + strength), 0.8F + RANDOM.nextFloat() * 0.2F, RANDOM, false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true));
+        }
+    }
     private static float rumbleVolume;
     private static AmbientLoop rumble;
     /** Phase of each volcano last tick, to catch an eruption starting (keyed by position). */
@@ -125,6 +139,12 @@ public final class VolcanoClient {
             if (d < 192) {
                 craterParticles(level, v, d);
             }
+        }
+        if (quakeTicks > 0) {
+            float env = Mth.sin(Mth.PI * (1.0F - quakeTicks / (float) quakeLength));
+            targetTremor = Math.max(targetTremor, quakeStrength * (0.3F + 0.7F * env));
+            volume = Math.max(volume, quakeStrength * 0.8F * env);
+            quakeTicks--;
         }
         if (tremorTicks > 0) tremorTicks--;
         tremor = Mth.lerp(0.08F, tremor, targetTremor);
@@ -321,7 +341,8 @@ public final class VolcanoClient {
     public static void reset() {
         blasts.clear();
         lastPhase.clear();
-        shake = prevShake = kick = tremor = rumbleVolume = 0.0F;
+        shake = prevShake = kick = tremor = rumbleVolume = quakeStrength = 0.0F;
+        quakeTicks = 0;
         tremorTicks = 0;
         rumble = null;
         VolcanoPayload.reset();

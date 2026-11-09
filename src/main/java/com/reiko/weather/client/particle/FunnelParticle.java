@@ -38,6 +38,13 @@ public class FunnelParticle extends TextureSheetParticle {
         switch (tornado.kind()) {
             case WATERSPOUT -> { shade = 0.78F + this.random.nextFloat() * 0.17F; this.setColor(shade * 0.96F, shade, Math.min(1.0F, shade * 1.05F)); }
             case DUST_DEVIL -> { shade = 0.8F + this.random.nextFloat() * 0.2F; this.setColor(0.86F * shade, 0.72F * shade, 0.52F * shade); }
+            case FIRE_WHIRL -> {
+                // flame low down, dark smoke higher up
+                boolean flame = height < tornado.height() * 0.35F && this.random.nextFloat() < 0.7F;
+                shade = 0.8F + this.random.nextFloat() * 0.2F;
+                if (flame) this.setColor(1.0F, 0.55F * shade, 0.15F * shade);
+                else this.setColor(0.25F * shade, 0.22F * shade, 0.2F * shade);
+            }
             default -> { shade = 0.5F + this.random.nextFloat() * 0.25F; this.setColor(shade, shade * 1.02F, shade * 1.06F); }
         }
         this.maxAlpha = (0.7F + this.random.nextFloat() * 0.25F) * (tornado.kind() == TornadoEntity.Kind.DUST_DEVIL ? 0.55F : 1.0F);

@@ -138,6 +138,8 @@ public final class WeatherManager {
         LightningWarnings.reset();
         HailGlass.reset();
         com.reiko.weather.landform.Arroyo.reset();
+        Downdrafts.reset();
+        Earthquakes.reset();
     }
 
     // ------------------------------------------------------------------ cycle
@@ -167,11 +169,14 @@ public final class WeatherManager {
         driftWind(level.random, state);
         tickCells(level, state, cycle);
         Drought.tick(level, state, cycle);
+        Earthquakes.tick(level, state);
         if (cycle && level.getGameTime() % 100L == 0L) {
             Convection.tick(level, state);
             SeaFog.tick(level, state);
             FireTracker.tick(level, state);
             DustHaze.tick(level, state);
+            Downdrafts.tick(level, state);
+            AtmosphericRivers.tick(level, state);
         }
 
         if (level.getGameTime() % 100L == 0L) {

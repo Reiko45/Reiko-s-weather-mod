@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "cirque",
+  "biomes": "#reikos_weather:has_structure/cirque",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

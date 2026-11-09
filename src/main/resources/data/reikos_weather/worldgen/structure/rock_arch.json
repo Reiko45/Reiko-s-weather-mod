@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "rock_arch",
+  "biomes": "#reikos_weather:has_structure/rock_arch",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

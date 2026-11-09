@@ -9,6 +9,7 @@ import com.reiko.weather.weather.Microclimate;
 import com.reiko.weather.weather.LocalWeather;
 import com.reiko.weather.weather.Precip;
 import com.reiko.weather.weather.SkyPhenomena;
+import com.reiko.weather.weather.Breezes;
 import com.reiko.weather.weather.StormCell;
 import com.reiko.weather.weather.WeatherProfile;
 import com.reiko.weather.weather.WeatherProfiles;
@@ -82,7 +83,9 @@ public final class ClientWeather {
         thunder = approach(thunder, target.thunder, 0.004F);
         overcast = approach(overcast, target.overcast, 0.004F);
         fog = approach(fog, target.fog, 0.004F);
-        wind = approach(wind, target.wind, 0.005F);
+        // sea breezes, valley and mountain winds take over when the prevailing wind is light
+        float[] breeze = managed ? Breezes.adjust(level, camPos.getX(), camPos.getZ(), SyncedWeather.windAngle(), target.wind) : null;
+        wind = approach(wind, breeze != null ? breeze[1] : target.wind, 0.005F);
         float skyLight = level.getBrightness(LightLayer.SKY, camPos) / 15.0F;
         exposure = approach(exposure, skyLight, 0.02F);
         float bgClouds = managed ? CustomWeathers.backgroundProfile(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), climate).clouds : 0.0F;
@@ -111,7 +114,7 @@ public final class ClientWeather {
             precipRates[p.ordinal()] = approach(precipRates[p.ordinal()], target.rateOf(p), 0.006F);
         }
 
-        float syncedAngle = SyncedWeather.windAngle();
+        float syncedAngle = breeze != null ? breeze[0] : SyncedWeather.windAngle();
         windAngle += Mth.wrapDegrees((syncedAngle - windAngle) * Mth.RAD_TO_DEG) * Mth.DEG_TO_RAD * 0.02F;
 
         float sun = SkyPhenomena.sunHeight(level, 1.0F);

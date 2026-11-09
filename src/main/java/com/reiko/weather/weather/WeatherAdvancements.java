@@ -57,6 +57,9 @@ public final class WeatherAdvancements {
                 }
                 case WATERSPOUT -> award(player, "waterspout");
                 case DUST_DEVIL -> {}
+                case FIRE_WHIRL -> {
+                    if (distance < 48) award(player, "fire_whirl");
+                }
             }
         }
 

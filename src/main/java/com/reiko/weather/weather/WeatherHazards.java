@@ -93,6 +93,9 @@ public final class WeatherHazards {
                 settleDust(level, randomColumn(level, player, random));
             }
             Drought.tickPlayer(level, state, player, local, climate, randomColumn(level, player, random));
+            Downdrafts.tickPlayer(level, player, local);
+            Frostwork.tickPlayer(level, state, player, local, climate);
+            Coasts.tickPlayer(level, player, local);
             if (profile.glazeWater && WeatherConfig.GLAZE_WATER.get() && random.nextFloat() < intensity) {
                 glazeWater(level, randomColumn(level, player, random));
             }
@@ -568,6 +571,7 @@ public final class WeatherHazards {
             }
             if (level.getFluidState(pos).isSourceOfType(Fluids.WATER)) {
                 level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                Coasts.leaveSilt(level, state, pos);
                 if (pos.getY() == level.getSeaLevel()) {
                     // a surge can leave stray sources where vanilla joined two of ours: drain those too
                     for (Direction d : Direction.Plane.HORIZONTAL) {
@@ -674,9 +678,10 @@ public final class WeatherHazards {
             case TORNADO -> tornado.configure(kind, heading, 1200 + r.nextInt(1200), 5.0F + r.nextFloat() * 4.0F, 70.0F);
             case WATERSPOUT -> tornado.configure(kind, heading, 900 + r.nextInt(900), 3.0F + r.nextFloat() * 2.0F, 55.0F);
             case DUST_DEVIL -> tornado.configure(kind, heading, 300 + r.nextInt(400), 1.2F + r.nextFloat() * 0.8F, 12.0F + r.nextFloat() * 10.0F);
+            case FIRE_WHIRL -> tornado.configure(kind, heading, 300 + r.nextInt(500), 1.6F + r.nextFloat() * 1.2F, 18.0F + r.nextFloat() * 14.0F);
         }
         level.addFreshEntity(tornado);
-        if (kind != TornadoEntity.Kind.DUST_DEVIL && WeatherConfig.TORNADO_WARNINGS.get()) {
+        if (kind != TornadoEntity.Kind.DUST_DEVIL && kind != TornadoEntity.Kind.FIRE_WHIRL && WeatherConfig.TORNADO_WARNINGS.get()) {
             for (ServerPlayer player : level.players()) {
                 if (player.distanceToSqr(pos) < 200 * 200) {
                     player.displayClientMessage(Component.translatable("message.reikos_weather." + kind.id() + "_warning")
@@ -712,7 +717,8 @@ public final class WeatherHazards {
 
         // the local player is pushed client-side for smooth movement
         if (!(entity instanceof Player) && WeatherConfig.WIND_PUSHES_ENTITIES.get()) {
-            Wind.push(entity, state.windAngle, profile.wind * intensity, level.getGameTime());
+            float[] breeze = Breezes.adjust(level, eyes.getX(), eyes.getZ(), state.windAngle, profile.wind * intensity);
+            Wind.push(entity, breeze[0], breeze[1], level.getGameTime());
         }
         if (!(entity instanceof LivingEntity living) || !living.isAlive()) {
             return;
@@ -850,6 +856,13 @@ public final class WeatherHazards {
             return;
         }
         WeatherProfile profile = local.profile();
+        WeatherState weather = WeatherManager.state(level);
+        if (!weather.silt.isEmpty() && weather.silt.contains(pos.below().asLong()) && level.random.nextFloat() < 0.3F) {
+            // fresh silt left by a flood: rich soil
+            event.setResult(CropGrowEvent.Pre.Result.GROW);
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 3, 0.3, 0.3, 0.3, 0.0);
+            return;
+        }
         if (Greenhouse.underGlass(level, pos)) {
             // no rain gets in, but the warmth keeps crops growing through winter
             if (WeatherManager.seasonInfo().season() == Season.WINTER) {

@@ -1,5 +1,7 @@
 package com.reiko.weather.client;
 
+import com.reiko.weather.config.ClientConfig;
+
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -49,14 +51,25 @@ public final class SkyEffectsRenderer {
         float blood = ClientWeather.bloodMoon();
         float smoke = ClientWeather.smoke(), dust = ClientWeather.diamondDust();
         float nlc = SkySights.noctilucent(), moonbow = SkySights.moonbow(), fogbow = SkySights.fogbow();
-        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
-                && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F) {
-            return;
-        }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
         Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
         float clearSky = (1.0F - level.getRainLevel(partialTick)) * (1.0F - Math.min(1.0F, ClientWeather.fogDensity() * 1.5F));
+        boolean overworld = level.dimension() == net.minecraft.world.level.Level.OVERWORLD && com.reiko.weather.network.SyncedWeather.managed();
+        float overcast = ClientWeather.overcast();
+        // twilight: Earth's shadow rising opposite the sun, with the pink belt above it
+        float twilight = overworld && ClientConfig.TWILIGHT_BANDS.get()
+                ? clearSky * (1.0F - overcast) * Mth.clamp(1.0F - Math.abs(sun.y + 0.05F) / 0.1F, 0.0F, 1.0F) : 0.0F;
+        // iridescence: thin cloud near a high sun shows pastel colours
+        float iridescent = overworld && ClientConfig.IRIDESCENT_CLOUDS.get() && sun.y > 0.1F
+                ? Mth.clamp(1.0F - Math.abs(overcast - 0.3F) / 0.22F, 0.0F, 1.0F) * (1.0F - ClientWeather.rain()) : 0.0F;
+        // the green flash: the last sliver of the sun over a clear sea horizon
+        float flash = overworld && ClientConfig.GREEN_FLASH.get() && SkySights.seaHorizon() && overcast < 0.2F
+                ? clearSky * Mth.clamp(1.0F - Math.abs(sun.y + 0.002F) / 0.006F, 0.0F, 1.0F) : 0.0F;
+        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+                && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F) {
+            return;
+        }
 
         Matrix4f pose = new Matrix4f(event.getModelViewMatrix());
         RenderSystem.enableBlend();
@@ -92,6 +105,15 @@ public final class SkyEffectsRenderer {
         }
         if (nlc > 0.005F) {
             drawNoctilucent(pose, level.getGameTime() + partialTick, nlc * 0.5F);
+        }
+        if (twilight > 0.005F) {
+            drawTwilightBands(pose, sun, twilight);
+        }
+        if (iridescent > 0.005F && sun.y > 0.0F) {
+            drawIridescence(pose, sun, level.getGameTime() + partialTick, iridescent);
+        }
+        if (flash > 0.005F) {
+            drawGreenFlash(pose, sun, flash);
         }
         if (aurora > 0.005F) {
             float night = Mth.clamp((-sun.y - 0.05F) * 4.0F, 0.0F, 1.0F);
@@ -172,6 +194,146 @@ public final class SkyEffectsRenderer {
                 vertex(buffer, pose, p01, c1, a1 * horizonFade(p01));
             }
         }
+        draw(buffer);
+        if (ClientConfig.DOUBLE_RAINBOWS.get()) {
+            // the secondary bow: fainter, wider, its colours the other way round (light reflected twice inside the drops)
+            drawBand(pose, anti, u, v, 50.5F, 53.8F, alpha * 0.4F, true);
+            // the sky inside the primary bow is a little brighter...
+            drawGlow(pose, anti, u, v, 0.0F, 39.5F, new float[]{1.0F, 1.0F, 1.0F}, alpha * 0.06F);
+            // ...and between the two bows, darker: Alexander's dark band
+            RenderSystem.defaultBlendFunc();
+            drawGlow(pose, anti, u, v, 42.5F, 50.5F, new float[]{0.08F, 0.1F, 0.16F}, alpha * 0.22F);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        }
+    }
+
+    /** A rainbow band between two angles round the anti-solar point; {@code reversed} puts red on the inside. */
+    private static void drawBand(Matrix4f pose, Vector3f anti, Vector3f u, Vector3f v, float innerDeg, float outerDeg, float alpha, boolean reversed) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 96, bands = RAINBOW.length + 1;
+        float inner = innerDeg * Mth.DEG_TO_RAD, outer = outerDeg * Mth.DEG_TO_RAD;
+        for (int s = 0; s < segments; s++) {
+            float phi0 = s / (float) segments * Mth.TWO_PI, phi1 = (s + 1) / (float) segments * Mth.TWO_PI;
+            for (int b = 0; b < bands; b++) {
+                float rho0 = Mth.lerp(b / (float) bands, inner, outer), rho1 = Mth.lerp((b + 1) / (float) bands, inner, outer);
+                Vector3f p00 = ringPoint(anti, u, v, phi0, rho0), p10 = ringPoint(anti, u, v, phi1, rho0);
+                Vector3f p11 = ringPoint(anti, u, v, phi1, rho1), p01 = ringPoint(anti, u, v, phi0, rho1);
+                if (p00.y < -0.03F && p10.y < -0.03F) continue;
+                float[] c0 = bandColor(reversed ? RAINBOW.length - b : b - 1), c1 = bandColor(reversed ? RAINBOW.length - 1 - b : b);
+                float a0 = b == 0 ? 0.0F : alpha, a1 = b == bands - 1 ? 0.0F : alpha;
+                vertex(buffer, pose, p00, c0, a0 * horizonFade(p00));
+                vertex(buffer, pose, p10, c0, a0 * horizonFade(p10));
+                vertex(buffer, pose, p11, c1, a1 * horizonFade(p11));
+                vertex(buffer, pose, p01, c1, a1 * horizonFade(p01));
+            }
+        }
+        draw(buffer);
+    }
+
+    /** An even wash of colour over a ring of sky round a point, fading at its edges. */
+    private static void drawGlow(Matrix4f pose, Vector3f center, Vector3f u, Vector3f v, float innerDeg, float outerDeg, float[] color, float alpha) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 64, rings = 4;
+        for (int s = 0; s < segments; s++) {
+            float phi0 = s / (float) segments * Mth.TWO_PI, phi1 = (s + 1) / (float) segments * Mth.TWO_PI;
+            for (int r = 0; r < rings; r++) {
+                float t0 = r / (float) rings, t1 = (r + 1) / (float) rings;
+                float rho0 = Mth.lerp(t0, innerDeg, outerDeg) * Mth.DEG_TO_RAD, rho1 = Mth.lerp(t1, innerDeg, outerDeg) * Mth.DEG_TO_RAD;
+                // a filled disc keeps its middle; a ring fades in and out at both edges
+                float a0 = innerDeg == 0.0F ? alpha * (1.0F - t0 * t0) : alpha * Mth.sin(t0 * Mth.PI);
+                float a1 = innerDeg == 0.0F ? alpha * (1.0F - t1 * t1) : alpha * Mth.sin(t1 * Mth.PI);
+                Vector3f p00 = ringPoint(center, u, v, phi0, rho0), p10 = ringPoint(center, u, v, phi1, rho0);
+                Vector3f p11 = ringPoint(center, u, v, phi1, rho1), p01 = ringPoint(center, u, v, phi0, rho1);
+                vertex(buffer, pose, p00, color, a0 * horizonFade(p00));
+                vertex(buffer, pose, p10, color, a0 * horizonFade(p10));
+                vertex(buffer, pose, p11, color, a1 * horizonFade(p11));
+                vertex(buffer, pose, p01, color, a1 * horizonFade(p01));
+            }
+        }
+        draw(buffer);
+    }
+
+    /**
+     * After sunset (and before sunrise), opposite the sun: the dark blue-grey shadow of the Earth itself, rising
+     * from the horizon, under a band of pink (the Belt of Venus) still lit by the low sun.
+     */
+    private static void drawTwilightBands(Matrix4f pose, Vector3f sun, float strength) {
+        float antiAz = (float) Math.atan2(-sun.x, sun.z); // azimuth of the point opposite the sun (sky() measures from -Z)
+        float rise = Mth.clamp(-sun.y * 40.0F, 0.0F, 6.0F); // the shadow climbs as the sun sinks
+        int steps = 40;
+        float span = 1.6F;
+        BufferBuilder shadow = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] dark = {0.18F, 0.22F, 0.34F}, pink = {1.0F, 0.55F, 0.62F};
+        float top = (2.0F + rise) * Mth.DEG_TO_RAD, beltTop = (9.0F + rise) * Mth.DEG_TO_RAD;
+        for (int i = 0; i < steps; i++) {
+            float t0 = i / (float) steps, t1 = (i + 1) / (float) steps;
+            float a0 = antiAz + (t0 - 0.5F) * span * 2.0F, a1 = antiAz + (t1 - 0.5F) * span * 2.0F;
+            float e0 = Mth.sin(t0 * Mth.PI), e1 = Mth.sin(t1 * Mth.PI), sa = strength * 0.35F;
+            vertexSky(shadow, pose, a0, 0.0F, dark, sa * e0);
+            vertexSky(shadow, pose, a1, 0.0F, dark, sa * e1);
+            vertexSky(shadow, pose, a1, top, dark, sa * e1 * 0.6F);
+            vertexSky(shadow, pose, a0, top, dark, sa * e0 * 0.6F);
+        }
+        RenderSystem.defaultBlendFunc();
+        draw(shadow);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        BufferBuilder belt = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        for (int i = 0; i < steps; i++) {
+            float t0 = i / (float) steps, t1 = (i + 1) / (float) steps;
+            float a0 = antiAz + (t0 - 0.5F) * span * 2.0F, a1 = antiAz + (t1 - 0.5F) * span * 2.0F;
+            float e0 = Mth.sin(t0 * Mth.PI), e1 = Mth.sin(t1 * Mth.PI), ba = strength * 0.22F;
+            vertexSky(belt, pose, a0, top, pink, ba * e0);
+            vertexSky(belt, pose, a1, top, pink, ba * e1);
+            vertexSky(belt, pose, a1, beltTop, pink, 0.0F);
+            vertexSky(belt, pose, a0, beltTop, pink, 0.0F);
+        }
+        draw(belt);
+    }
+
+    private static void vertexSky(BufferBuilder buffer, Matrix4f pose, float azimuth, float elevation, float[] color, float alpha) {
+        Vector3f p = sky(azimuth, elevation);
+        buffer.addVertex(pose, p.x, p.y, p.z).setColor(color[0], color[1], color[2], alpha);
+    }
+
+    /** Patches of pastel pink and green in thin cloud a little way from the sun, shifting as the cloud drifts. */
+    private static void drawIridescence(Matrix4f pose, Vector3f sun, float time, float strength) {
+        Vector3f[] b = basis(sun);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 48, rings = 5;
+        for (int s = 0; s < segments; s++) {
+            float phi0 = s / (float) segments * Mth.TWO_PI, phi1 = (s + 1) / (float) segments * Mth.TWO_PI;
+            for (int r = 0; r < rings; r++) {
+                float rho0 = (6.0F + r * 2.2F) * Mth.DEG_TO_RAD, rho1 = (6.0F + (r + 1) * 2.2F) * Mth.DEG_TO_RAD;
+                float patch0 = Math.max(0.0F, Mth.sin(phi0 * 3.0F + time * 0.003F) * Mth.sin(rho0 * 40.0F - time * 0.002F));
+                float patch1 = Math.max(0.0F, Mth.sin(phi1 * 3.0F + time * 0.003F) * Mth.sin(rho1 * 40.0F - time * 0.002F));
+                float hue = (r + Mth.sin(phi0 * 2.0F)) * 0.33F;
+                float[] c = {0.75F + 0.25F * Mth.sin(hue * 6.0F), 0.75F + 0.25F * Mth.sin(hue * 6.0F + 2.1F), 0.75F + 0.25F * Mth.sin(hue * 6.0F + 4.2F)};
+                float a0 = strength * 0.1F * patch0, a1 = strength * 0.1F * patch1;
+                vertex(buffer, pose, ringPoint(sun, b[0], b[1], phi0, rho0), c, a0);
+                vertex(buffer, pose, ringPoint(sun, b[0], b[1], phi1, rho0), c, a1);
+                vertex(buffer, pose, ringPoint(sun, b[0], b[1], phi1, rho1), c, a1);
+                vertex(buffer, pose, ringPoint(sun, b[0], b[1], phi0, rho1), c, a0);
+            }
+        }
+        draw(buffer);
+    }
+
+    /** A brief green spark on the top edge of the sun as the last of it slips below a clear sea horizon. */
+    private static void drawGreenFlash(Matrix4f pose, Vector3f sun, float strength) {
+        Vector3f center = new Vector3f(sun).normalize();
+        Vector3f side = new Vector3f(center).cross(new Vector3f(0.0F, 1.0F, 0.0F));
+        if (side.lengthSquared() < 1.0E-5F) return;
+        side.normalize();
+        Vector3f lift = new Vector3f(side).cross(center).normalize();
+        if (lift.y < 0) lift.negate();
+        Vector3f top = new Vector3f(center).add(new Vector3f(lift).mul(0.075F)).normalize().mul(DOME);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] green = {0.35F, 1.0F, 0.45F};
+        float w = 4.0F, h = 1.0F;
+        vertex(buffer, pose, new Vector3f(top).add(new Vector3f(side).mul(-w)).add(new Vector3f(lift).mul(-h)), green, strength * 0.9F);
+        vertex(buffer, pose, new Vector3f(top).add(new Vector3f(side).mul(w)).add(new Vector3f(lift).mul(-h)), green, strength * 0.9F);
+        vertex(buffer, pose, new Vector3f(top).add(new Vector3f(side).mul(w)).add(new Vector3f(lift).mul(h)), green, 0.0F);
+        vertex(buffer, pose, new Vector3f(top).add(new Vector3f(side).mul(-w)).add(new Vector3f(lift).mul(h)), green, 0.0F);
         draw(buffer);
     }
 

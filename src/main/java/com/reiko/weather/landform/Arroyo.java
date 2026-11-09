@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
  * floods. Bone-dry almost all the time, but when a storm breaks over it, a flash flood comes racing down the
  * channel, and drains away again soon after the rain stops.
  */
-public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long seed) implements Landform {
+public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long seed) implements Landform, FloodChannel {
     private static final int CONTROL = 16;
     /** Where each arroyo's flood has got to (upstream end first), by arroyo; and when it started. */
     private static final Long2LongOpenHashMap FLOODS = new Long2LongOpenHashMap();
@@ -104,7 +104,8 @@ public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long 
     }
 
     /** The point on the channel's centre line {@code u} blocks downstream of the middle. */
-    private double[] point(float u) {
+    @Override
+    public double[] point(float u) {
         double c = Mth.cos(angle), s = Mth.sin(angle);
         double v = wiggle(u);
         return new double[]{cx + u * c - v * s, cz + u * s + v * c};
@@ -116,18 +117,20 @@ public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long 
         return 9.0 * Mth.sin(u * 0.045F + p1) + 4.0 * Mth.sin(u * 0.11F + p2);
     }
 
-    private float halfWidth(float u) {
+    @Override
+    public float halfWidth(float u) {
         return 2.6F + 1.4F * Mth.sin(u * 0.07F + Terrain.hash(seed, 3) * 6.0F) + Math.max(0.0F, u / length) * 1.5F;
     }
 
-    private float floorAt(float u) {
+    @Override
+    public float floorAt(float u) {
         float t = Mth.clamp((u / length + 0.5F) * CONTROL, 0.0F, CONTROL);
         int i = Math.min(CONTROL - 1, (int) t);
         return Mth.lerp(t - i, floor[i], floor[i + 1]);
     }
 
-    /** Along the channel and across it (from its winding centre line). */
-    private float[] local(double x, double z) {
+    @Override
+    public float[] local(double x, double z) {
         double dx = x - cx, dz = z - cz, c = Mth.cos(angle), s = Mth.sin(angle);
         float u = (float) (dx * c + dz * s);
         return new float[]{u, (float) (-dx * s + dz * c - wiggle(u))};
@@ -168,6 +171,12 @@ public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long 
                         : red ? Blocks.RED_SAND.defaultBlockState()
                         : biome.is(net.minecraft.tags.BiomeTags.IS_SAVANNA) ? Blocks.COARSE_DIRT.defaultBlockState() : Blocks.SAND.defaultBlockState();
                 Terrain.set(level, pos, x, bed, z, floorBlock);
+                // pockets of quicksand where water lingers under the sand after a flood
+                if (Terrain.quicksand() && !floorBlock.is(Blocks.GRAVEL) && v < hw - 1.0F && Terrain.field(seed + 9, x, z, 3.0) > 0.85F) {
+                    Terrain.set(level, pos, x, bed, z, com.reiko.weather.registry.ModBlocks.QUICKSAND.get().defaultBlockState());
+                    Terrain.set(level, pos, x, bed - 1, z, com.reiko.weather.registry.ModBlocks.QUICKSAND.get().defaultBlockState());
+                    continue;
+                }
                 Terrain.set(level, pos, x, bed - 1, z, red ? Blocks.RED_SANDSTONE.defaultBlockState() : Blocks.SANDSTONE.defaultBlockState());
                 // the odd tuft of dead brush caught on the bed
                 if (Terrain.noise(seed, x, 7, z) > 0.97F && v < hw - 0.5F) {
@@ -184,6 +193,14 @@ public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long 
     /** About once a second while a player is near: a downpour here (or upstream) sends a flash flood down the channel. */
     @Override
     public void tick(ServerLevel level, ServerPlayer player) {
+        flood(level, player, this, key(), length / 2.0F, bounds(), 1);
+    }
+
+    /**
+     * Runs a flash flood down a channel: once a real storm has been raining over it for a while, a flood front
+     * races down from the top end, {@code depth} blocks deep, and the water stays as long as the rain does.
+     */
+    static void flood(ServerLevel level, ServerPlayer player, FloodChannel channel, long key, float half, BoundingBox bounds, int depth) {
         if (!WeatherConfig.CHANGING_LANDFORMS.get()) {
             return;
         }
@@ -192,22 +209,21 @@ public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long 
             return;
         }
         long now = level.getGameTime();
-        float half = length / 2.0F;
-        long flood = FLOODS.getOrDefault(key(), Long.MIN_VALUE);
+        long flood = FLOODS.getOrDefault(key, Long.MIN_VALUE);
         if (flood == Long.MIN_VALUE) {
             // it takes a real storm, raining for a while, to send a flood down a dry wash
             boolean storm = false;
             for (float u : new float[]{-half * 0.8F, 0.0F}) {
-                double[] p = point(u);
-                LocalWeather local = WeatherManager.local(level, BlockPos.containing(p[0], floorAt(u) + 1, p[1]));
+                double[] p = channel.point(u);
+                LocalWeather local = WeatherManager.local(level, BlockPos.containing(p[0], channel.floorAt(u) + 1, p[1]));
                 if (local != null && local.type().vanillaRain && local.profile().rain > 0.6F && local.intensity() > 0.8F
                         && (local.cell() == null || local.cell().age > 1200)) storm = true;
             }
             if (storm && level.random.nextInt(45) == 0) {
-                FLOODS.put(key(), now);
+                FLOODS.put(key, now);
                 level.playSound(null, player.blockPosition(), com.reiko.weather.registry.ModSounds.AVALANCHE.get(), SoundSource.WEATHER, 2.0F, 0.5F);
                 for (ServerPlayer p : level.players()) {
-                    if (bounds().isInside(p.blockPosition())) {
+                    if (bounds.isInside(p.blockPosition())) {
                         p.displayClientMessage(Component.translatable("message.reikos_weather.flash_flood").withStyle(s -> s.withColor(0x55AAFF).withBold(true)), true);
                     }
                 }
@@ -218,21 +234,23 @@ public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long 
         float front = -half + (now - flood) / 2.0F;
         float back = front - 12.0F;
         for (float u = Math.max(-half, back); u <= Math.min(half, front); u += 3.0F) {
-            double[] p = point(u);
-            BlockPos at = BlockPos.containing(p[0], Math.round(floorAt(u)) + 1, p[1]);
-            if (level.isLoaded(at) && level.getBlockState(at).isAir() && level.getBlockState(at.below()).isSolid()
-                    && BlockPos.betweenClosedStream(at.offset(-2, 0, -2), at.offset(2, 0, 2)).noneMatch(q -> level.getFluidState(q).isSource())) {
-                level.setBlock(at, Blocks.WATER.defaultBlockState(), Block.UPDATE_ALL);
-                state.flashFlood.add(at.asLong());
-                state.setDirty();
+            double[] p = channel.point(u);
+            for (int k = 0; k < depth; k++) {
+                BlockPos at = BlockPos.containing(p[0], Math.round(channel.floorAt(u)) + 1 + k, p[1]);
+                if (level.isLoaded(at) && level.getBlockState(at).isAir() && (k > 0 || level.getBlockState(at.below()).isSolid())
+                        && BlockPos.betweenClosedStream(at.offset(-2, 0, -2), at.offset(2, 0, 2)).noneMatch(q -> level.getFluidState(q).isSource())) {
+                    level.setBlock(at, Blocks.WATER.defaultBlockState(), Block.UPDATE_ALL);
+                    state.flashFlood.add(at.asLong());
+                    state.setDirty();
+                }
             }
         }
-        float[] l = local(player.getX(), player.getZ());
-        if (Math.abs(l[1]) < halfWidth(l[0]) + 1.0F && player.isInWater()) {
+        float[] l = channel.local(player.getX(), player.getZ());
+        if (Math.abs(l[1]) < channel.halfWidth(l[0]) + 1.0F && player.isInWater()) {
             WeatherAdvancements.award(player, "flash_flood");
         }
         if (front > half + 20.0F || now - flood > 2400) {
-            FLOODS.remove(key()); // the flood's passed (the water stays as long as the rain keeps coming)
+            FLOODS.remove(key); // the flood's passed (the water stays as long as the rain keeps coming)
         }
     }
 

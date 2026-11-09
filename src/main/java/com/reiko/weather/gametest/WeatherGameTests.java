@@ -483,4 +483,62 @@ public class WeatherGameTests {
         helper.assertTrue(com.reiko.weather.landform.LandformKind.FJORD.plan(at.apply((x, z) -> sea - 15)) == null, "no fjord without mountains");
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void stormCellWeathers(GameTestHelper helper) {
+        for (WeatherType t : new WeatherType[]{WeatherType.HABOOB, WeatherType.ATMOSPHERIC_RIVER, WeatherType.HEAT_BURST, WeatherType.PYROCUMULUS}) {
+            helper.assertTrue(!t.natural() && t.cellOnly(), t + " only ever arrives as a storm cell");
+        }
+        var burst = com.reiko.weather.weather.WeatherProfiles.get(WeatherType.HEAT_BURST, Climate.ARID);
+        helper.assertTrue(burst.tempOffset > 10.0F && burst.rain == 0.0F && burst.wind > 0.5F, "a heat burst is a hot, dry gale");
+        var river = com.reiko.weather.weather.WeatherProfiles.get(WeatherType.ATMOSPHERIC_RIVER, Climate.TEMPERATE);
+        helper.assertTrue(river.floods && river.rain > 0.8F && river.tempOffset > 0.0F, "an atmospheric river is heavy, mild, flooding rain");
+        var haboob = com.reiko.weather.weather.WeatherProfiles.get(WeatherType.HABOOB, Climate.ARID);
+        helper.assertTrue(haboob.fog > 0.7F && haboob.wind > 0.7F, "a haboob is a blinding, roaring wall of dust");
+        helper.assertTrue(WeatherType.PYROCUMULUS.vanillaThunder, "fire clouds throw lightning");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void moreLandformsPlanOnTheRightGround(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int sea = level.getSeaLevel();
+        java.util.function.Function<java.util.function.IntBinaryOperator, com.reiko.weather.landform.PlanContext> at = ground ->
+                new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(11), 0, 0, ground, sea, level);
+        // slot canyons cut deep into a high plateau, and only ever fall downstream
+        var slot = com.reiko.weather.landform.LandformKind.SLOT_CANYON.plan(at.apply((x, z) -> sea + 34 - x / 16));
+        helper.assertTrue(slot instanceof com.reiko.weather.landform.SlotCanyon, "a slot canyon in the plateau (" + slot + ")");
+        int[] floor = ((com.reiko.weather.landform.SlotCanyon) slot).floor();
+        for (int i = 1; i < floor.length; i++) helper.assertTrue(floor[i] <= floor[i - 1], "the slot's bed only ever falls downstream");
+        helper.assertTrue(floor[floor.length / 2] <= sea + 34 - 10, "and it's deep");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.SLOT_CANYON.plan(at.apply((x, z) -> sea + 4)) == null, "no slot canyon in low ground");
+        // the coast runs north-south with the sea to the east
+        var delta = com.reiko.weather.landform.LandformKind.DELTA.plan(at.apply((x, z) -> x < 10 ? sea + 2 : sea - 8));
+        helper.assertTrue(delta instanceof com.reiko.weather.landform.Delta d && Math.abs(d.angle()) < 0.01F && d.cx() < 0,
+                "a delta building out to sea from just inland (" + delta + ")");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.DELTA.plan(at.apply((x, z) -> sea + 20)) == null, "no delta inland");
+        var cliffs = com.reiko.weather.landform.LandformKind.CHALK_CLIFFS.plan(at.apply((x, z) -> x < 10 ? sea + 4 : sea - 8));
+        helper.assertTrue(cliffs instanceof com.reiko.weather.landform.ChalkCliffs c && Math.abs(c.angle()) < 0.01F, "chalk cliffs facing the sea (" + cliffs + ")");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.SALT_MARSH.plan(at.apply((x, z) -> x < 10 ? sea : sea - 8)) != null, "a salt marsh on the low coast");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.SALT_MARSH.plan(at.apply((x, z) -> sea)) == null, "but not away from the sea");
+        // a cirque bites into a mountainside, opening downhill (east)
+        var cirque = com.reiko.weather.landform.LandformKind.CIRQUE.plan(at.apply((x, z) -> sea + 60 - x));
+        helper.assertTrue(cirque instanceof com.reiko.weather.landform.Cirque c && Math.abs(c.angle()) < 0.01F && c.y() < sea + 60,
+                "a cirque cut into the slope (" + cirque + ")");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.CIRQUE.plan(at.apply((x, z) -> sea + 60)) == null, "no cirque on a plateau");
+        // lakes sit below the land round them
+        var maar = com.reiko.weather.landform.LandformKind.MAAR.plan(at.apply((x, z) -> sea + 10));
+        helper.assertTrue(maar instanceof com.reiko.weather.landform.Maar m && m.y() < sea + 10, "a maar's lake is sunk below the land");
+        var kettles = com.reiko.weather.landform.LandformKind.KETTLE_LAKES.plan(at.apply((x, z) -> sea + 8));
+        helper.assertTrue(kettles instanceof com.reiko.weather.landform.KettleLakes, "kettle lakes on the till plain");
+        int[] ponds = ((com.reiko.weather.landform.KettleLakes) kettles).ponds();
+        for (int i = 0; i < ponds.length; i += 4) helper.assertTrue(ponds[i + 3] < sea + 8, "each kettle's water lies below its rim");
+        var oxbow = com.reiko.weather.landform.LandformKind.OXBOW_LAKE.plan(at.apply((x, z) -> sea + 3));
+        helper.assertTrue(oxbow instanceof com.reiko.weather.landform.OxbowLake o && o.y() == sea + 2, "an oxbow lake on the floodplain");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.OXBOW_LAKE.plan(at.apply((x, z) -> sea + 3 + Math.abs(x) / 2)) == null,
+                "but not on a slope");
+        var karst = com.reiko.weather.landform.LandformKind.TOWER_KARST.plan(at.apply((x, z) -> sea + 5));
+        helper.assertTrue(karst instanceof com.reiko.weather.landform.TowerKarst t && t.towers().length >= 25, "a cluster of karst towers");
+        helper.succeed();
+    }
 }

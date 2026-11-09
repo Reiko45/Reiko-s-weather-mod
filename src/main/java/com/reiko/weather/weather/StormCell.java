@@ -80,6 +80,8 @@ public final class StormCell {
             case DERECHO -> 3.5F;
             case COLD_FRONT -> 9.0F;
             case WARM_FRONT -> 3.0F;
+            case HABOOB -> 5.0F;
+            case ATMOSPHERIC_RIVER -> 7.0F;
             default -> 1.0F;
         };
     }

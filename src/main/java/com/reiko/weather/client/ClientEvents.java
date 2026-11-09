@@ -84,6 +84,14 @@ public final class ClientEvents {
                     p.setColor((color >> 16 & 255) / 255.0F * shade, (color >> 8 & 255) / 255.0F * shade, (color & 255) / 255.0F * shade);
                     return p;
                 });
+        event.registerSpriteSet(ModParticles.SEA_SPARKLE.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    var p = new com.reiko.weather.client.particle.GlitterParticle(level, x, y, z, xd, yd, zd, sprites);
+                    p.setColor(0.25F + level.random.nextFloat() * 0.15F, 0.72F + level.random.nextFloat() * 0.2F, 1.0F);
+                    p.scale(2.6F);
+                    p.setLifetime(18 + level.random.nextInt(24));
+                    return p;
+                });
         event.registerSpriteSet(ModParticles.DIAMOND_DUST.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.GlitterParticle(level, x, y, z, xd, yd, zd, sprites));
         event.registerSpriteSet(ModParticles.ASH.get(), sprites ->
@@ -192,9 +200,12 @@ public final class ClientEvents {
             Mirage.render(event);
             VolcanoClient.collectPlumes(event.getCamera(), partialTick);
             CloudPuffs.collect(event.getCamera(), partialTick);
+            CloudPuffs.inversion(event.getCamera());
+            CloudPuffs.lenticular(event.getCamera());
             SkySights.collectSprites(event.getCamera(), partialTick);
             PuffRenderer.render(event.getCamera());
             WaterMist.renderRainbows(event);
+            GroundOptics.render(event);
             SkyEffectsRenderer.renderSunbeams(event);
             NatureEffects.renderFlocks(event.getCamera(), partialTick);
         }
@@ -228,6 +239,7 @@ public final class ClientEvents {
         Mirage.tick(mc);
         WaterMist.tick(mc);
         SkySights.tick(mc);
+        ShoreAndIce.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);

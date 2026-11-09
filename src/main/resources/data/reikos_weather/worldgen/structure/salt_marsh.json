@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "salt_marsh",
+  "biomes": "#reikos_weather:has_structure/salt_marsh",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

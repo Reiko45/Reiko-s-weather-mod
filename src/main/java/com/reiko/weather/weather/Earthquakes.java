@@ -1,0 +1,181 @@
+package com.reiko.weather.weather;
+
+import com.reiko.weather.config.WeatherConfig;
+import com.reiko.weather.network.QuakePayload;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FallingBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+import javax.annotation.Nullable;
+
+/**
+ * Earthquakes (off by default): now and then the ground shakes, from a light tremor to a quake that brings rocks
+ * down off cliffs, sets loose sand and gravel sliding and breaks windows. A big one out under the sea sends a
+ * tsunami (also off by default) onto the nearest coasts a minute or two later: the sea surges far up over the
+ * low ground for a while, then drains away.
+ */
+public final class Earthquakes {
+    private record Tsunami(double x, double z, long arrives, float height) {}
+
+    @Nullable
+    private static Tsunami pending;
+
+    static void tick(ServerLevel level, WeatherState state) {
+        tickTsunami(level, state);
+        if (!WeatherConfig.EARTHQUAKES.get() || level.getGameTime() % 20L != 0L || level.players().isEmpty()) {
+            return;
+        }
+        RandomSource random = level.random;
+        // about one a fortnight (in game days) near any one player
+        if (random.nextInt(14 * 1200) != 0) {
+            return;
+        }
+        ServerPlayer near = level.players().get(random.nextInt(level.players().size()));
+        float angle = random.nextFloat() * Mth.TWO_PI;
+        double distance = 100 + random.nextDouble() * 500;
+        float magnitude = Mth.clamp(0.25F - 0.25F * (float) Math.log(1.0 - random.nextDouble() * 0.95), 0.25F, 1.0F);
+        quake(level, near.getX() + Mth.cos(angle) * distance, near.getZ() + Mth.sin(angle) * distance, magnitude);
+    }
+
+    /** An earthquake with its epicentre at (x, z); {@code magnitude} 0 to 1. */
+    public static void quake(ServerLevel level, double x, double z, float magnitude) {
+        RandomSource random = level.random;
+        double reach = 200 + 700 * magnitude;
+        int ticks = 60 + Math.round(140 * magnitude);
+        boolean griefing = level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+        for (ServerPlayer player : level.players()) {
+            double d = Math.sqrt(player.distanceToSqr(x, player.getY(), z));
+            if (d > reach) continue;
+            float felt = magnitude * (float) (1.0 - d / reach);
+            PacketDistributor.sendToPlayer(player, new QuakePayload(Math.min(1.0F, felt * 1.4F), ticks));
+            if (felt > 0.15F) {
+                player.displayClientMessage(Component.translatable(felt > 0.45F ? "message.reikos_weather.earthquake_strong"
+                        : "message.reikos_weather.earthquake").withStyle(s -> s.withColor(0xC8A070).withBold(felt > 0.45F)), true);
+                WeatherAdvancements.award(player, "shaken");
+            }
+            if (griefing && felt > 0.3F) shakeLoose(level, player, felt, random);
+        }
+        boolean underSea = level.getBiome(BlockPos.containing(x, level.getSeaLevel(), z)).is(BiomeTags.IS_OCEAN);
+        if (underSea && magnitude > 0.55F && WeatherConfig.TSUNAMIS.get() && griefing) {
+            pending = new Tsunami(x, z, level.getGameTime() + 1200 + random.nextInt(1200), 2.0F + 3.0F * magnitude);
+            for (ServerPlayer player : level.players()) {
+                player.displayClientMessage(Component.translatable("message.reikos_weather.tsunami_warning").withStyle(s -> s.withColor(0xFF5555).withBold(true)), false);
+            }
+        }
+    }
+
+    /** Rocks off the cliffs, loose sand and gravel sliding, windows breaking. */
+    private static void shakeLoose(ServerLevel level, ServerPlayer player, float felt, RandomSource random) {
+        int tries = Math.round(60 * felt);
+        for (int i = 0; i < tries; i++) {
+            int x = player.getBlockX() + random.nextInt(65) - 32, z = player.getBlockZ() + random.nextInt(65) - 32;
+            if (!level.isLoaded(new BlockPos(x, 0, z))) continue;
+            BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z)).below();
+            BlockState s = level.getBlockState(top);
+            if (s.getBlock() instanceof FallingBlock && level.getBlockState(top.below()).isAir()) {
+                FallingBlockEntity.fall(level, top, s);
+            } else if ((s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(Blocks.GRAVEL) || s.is(BlockTags.DIRT)) && random.nextFloat() < 0.3F) {
+                // over the edge of a cliff or a steep bank
+                for (Direction d : Direction.Plane.HORIZONTAL) {
+                    if (level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x + d.getStepX(), z + d.getStepZ()) < top.getY() - 3) {
+                        FallingBlockEntity rock = FallingBlockEntity.fall(level, top, s.is(BlockTags.DIRT) ? Blocks.DIRT.defaultBlockState() : Blocks.COBBLESTONE.defaultBlockState());
+                        rock.setDeltaMovement(d.getStepX() * 0.15, 0.0, d.getStepZ() * 0.15);
+                        rock.setHurtsEntities(2.0F, 20);
+                        rock.hurtMarked = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (felt > 0.5F) {
+            // windows rattle and some give way
+            for (BlockPos p : BlockPos.randomBetweenClosed(random, Math.round(80 * felt), player.getBlockX() - 16, player.getBlockY() - 6,
+                    player.getBlockZ() - 16, player.getBlockX() + 16, player.getBlockY() + 10, player.getBlockZ() + 16)) {
+                BlockState s = level.getBlockState(p);
+                if ((s.is(Blocks.GLASS_PANE) || s.is(Blocks.GLASS)) && random.nextFloat() < 0.25F) {
+                    level.destroyBlock(p, false);
+                }
+            }
+        }
+        level.playSound(null, player.blockPosition(), SoundEvents.DEEPSLATE_BREAK, SoundSource.BLOCKS, 1.5F, 0.5F);
+    }
+
+    // ------------------------------------------------------------------ tsunamis
+
+    private static void tickTsunami(ServerLevel level, WeatherState state) {
+        long now = level.getGameTime();
+        if (pending != null && now >= pending.arrives()) {
+            Tsunami t = pending;
+            pending = null;
+            state.tsunamiUntil = now + 900;
+            state.setDirty();
+            for (ServerPlayer player : level.players()) {
+                if (Math.sqrt(player.distanceToSqr(t.x(), player.getY(), t.z())) < 2500) {
+                    player.displayClientMessage(Component.translatable("message.reikos_weather.tsunami").withStyle(s -> s.withColor(0x3399FF).withBold(true)), true);
+                    inundate(level, state, player, t.height());
+                }
+            }
+        }
+        // the wave drains back out after a while
+        if (now > state.tsunamiUntil && !state.tsunamiBlocks.isEmpty() && now % 2L == 0L) {
+            for (int i = 0; i < 12 && !state.tsunamiBlocks.isEmpty(); i++) {
+                BlockPos p = BlockPos.of(state.tsunamiBlocks.removeLong(state.tsunamiBlocks.size() - 1));
+                state.setDirty();
+                if (level.isLoaded(p) && level.getFluidState(p).isSource() && level.getFluidState(p).is(FluidTags.WATER)) {
+                    level.setBlockAndUpdate(p, Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
+    }
+
+    /** The sea surges up over all the low ground near the coast round a player, up to {@code height} blocks above sea level. */
+    private static void inundate(ServerLevel level, WeatherState state, ServerPlayer player, float height) {
+        int sea = level.getSeaLevel(), top = sea + Math.round(height);
+        for (int dx = -64; dx <= 64; dx += 3) {
+            for (int dz = -64; dz <= 64; dz += 3) {
+                int x = player.getBlockX() + dx, z = player.getBlockZ() + dz;
+                if (!level.isLoaded(new BlockPos(x, 0, z))) continue;
+                int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+                if (ground <= sea || ground > top) continue;
+                // only within reach of the sea
+                boolean coastal = false;
+                for (Direction d : Direction.Plane.HORIZONTAL) {
+                    if (level.getBiome(new BlockPos(x + d.getStepX() * 40, sea, z + d.getStepZ() * 40)).is(BiomeTags.IS_OCEAN)
+                            || level.getBiome(new BlockPos(x + d.getStepX() * 20, sea, z + d.getStepZ() * 20)).is(BiomeTags.IS_BEACH)) {
+                        coastal = true;
+                        break;
+                    }
+                }
+                BlockPos p = new BlockPos(x, ground, z);
+                if (!coastal || !level.getBlockState(p).canBeReplaced() || WeatherHazards.protectedBySandbags(level, p)) continue;
+                level.destroyBlock(p, true);
+                level.setBlockAndUpdate(p, Blocks.WATER.defaultBlockState());
+                state.tsunamiBlocks.add(p.asLong());
+                state.setDirty();
+            }
+        }
+        level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_SPLASH, SoundSource.WEATHER, 4.0F, 0.4F);
+    }
+
+    public static void reset() {
+        pending = null;
+    }
+
+    private Earthquakes() {}
+}

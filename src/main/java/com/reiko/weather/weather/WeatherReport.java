@@ -34,10 +34,10 @@ public final class WeatherReport {
     public static Component wind(ServerLevel level, WeatherState state, BlockPos pos) {
         LocalWeather local = WeatherManager.local(level, pos);
         if (local == null) local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
-        float strength = local.profile().wind * local.intensity();
+        float[] breeze = Breezes.adjust(level, pos.getX(), pos.getZ(), state.windAngle, local.profile().wind * local.intensity());
         return Component.translatable("report.reikos_weather.wind",
-                Component.literal(String.valueOf(Wind.kmh(strength))).withStyle(ChatFormatting.WHITE),
-                Component.translatable("direction.reikos_weather." + Wind.compassFrom(state.windAngle)));
+                Component.literal(String.valueOf(Wind.kmh(breeze[1]))).withStyle(ChatFormatting.WHITE),
+                Component.translatable("direction.reikos_weather." + Wind.compassFrom(breeze[0])));
     }
 
     public static Component forecast(WeatherState state) {

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "reikos_weather:block/snow_roller"
+    },
+    "facing=south": {
+      "model": "reikos_weather:block/snow_roller",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "reikos_weather:block/snow_roller",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "reikos_weather:block/snow_roller",
+      "y": 270
+    }
+  }
+}
