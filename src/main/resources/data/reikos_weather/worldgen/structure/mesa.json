@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "mesa",
+  "biomes": "#reikos_weather:has_structure/mesa",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

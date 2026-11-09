@@ -173,5 +173,32 @@ public final class ModBlocks {
             () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).strength(1.2F, 5.0F)
                     .sound(SoundType.STONE).requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> PETRIFIED_WOOD = REGISTER.register("petrified_wood",
+            () -> new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN)
+                    .strength(2.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> PUMICE = REGISTER.register("pumice",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).strength(0.6F, 1.0F)
+                    .sound(SoundType.TUFF)));
+
+    public static final DeferredBlock<com.reiko.weather.block.WhirlpoolBlock> WHIRLPOOL = REGISTER.register("whirlpool",
+            () -> new com.reiko.weather.block.WhirlpoolBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(3.0F, 6.0F)
+                    .sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<com.reiko.weather.block.ThinLayerBlock> SEA_FOAM = REGISTER.register("sea_foam",
+            () -> new com.reiko.weather.block.ThinLayerBlock(com.reiko.weather.block.ThinLayerBlock.Kind.SEA_FOAM, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SNOW).strength(0.0F).sound(SoundType.WET_SPONGE).noOcclusion().randomTicks().replaceable()
+                    .pushReaction(PushReaction.DESTROY).noLootTable()));
+
+    public static final DeferredBlock<com.reiko.weather.block.ThinLayerBlock> NEEDLE_ICE = REGISTER.register("needle_ice",
+            () -> new com.reiko.weather.block.ThinLayerBlock(com.reiko.weather.block.ThinLayerBlock.Kind.NEEDLE_ICE, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.ICE).strength(0.0F).sound(SoundType.GLASS).noOcclusion().randomTicks().replaceable()
+                    .pushReaction(PushReaction.DESTROY).noLootTable()));
+
+    public static final DeferredBlock<com.reiko.weather.block.ThinLayerBlock> FROST_FLOWERS = REGISTER.register("frost_flowers",
+            () -> new com.reiko.weather.block.ThinLayerBlock(com.reiko.weather.block.ThinLayerBlock.Kind.FROST_FLOWERS, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SNOW).strength(0.0F).sound(SoundType.POWDER_SNOW).noOcclusion().randomTicks().replaceable()
+                    .pushReaction(PushReaction.DESTROY).noLootTable()));
+
     private ModBlocks() {}
 }

@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "blue_hole",
+  "biomes": "#reikos_weather:has_structure/blue_hole",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

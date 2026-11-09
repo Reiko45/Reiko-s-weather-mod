@@ -32,7 +32,10 @@ public final class TornadoClient {
         float strength = tornado.strength();
         if (FunnelParticle.sprites != null) {
             float density = (float) Math.max(0.35, ClientConfig.PARTICLE_DENSITY.get());
-            int base = switch (tornado.kind()) { case TORNADO -> 26; case WATERSPOUT -> 20; case DUST_DEVIL -> 9; case FIRE_WHIRL -> 14; };
+            int base = switch (tornado.kind()) {
+                case TORNADO -> 26; case WATERSPOUT -> 20; case DUST_DEVIL -> 9; case FIRE_WHIRL -> 14;
+                case LANDSPOUT -> 16; case GUSTNADO -> 10; case STEAM_DEVIL -> 7; case SNOW_DEVIL -> 9;
+            };
             int count = Mth.ceil(base * density * (0.3F + 0.7F * strength));
             for (int i = 0; i < count; i++) {
                 float t = level.random.nextFloat();
@@ -75,6 +78,18 @@ public final class TornadoClient {
             if (tornado.kind() == TornadoEntity.Kind.FIRE_WHIRL) {
                 level.addParticle(level.random.nextInt(3) == 0 ? ParticleTypes.LARGE_SMOKE : ParticleTypes.FLAME, x, top + 0.2 + level.random.nextDouble() * 3, z,
                         tx * 0.3, 0.1 + level.random.nextDouble() * 0.15, tz * 0.3);
+                continue;
+            }
+            if (tornado.kind() == TornadoEntity.Kind.STEAM_DEVIL) {
+                level.addParticle(ModParticles.STEAM_FOG.get(), x, top + 0.1, z, tx * 0.2, 0.05, tz * 0.2);
+                continue;
+            }
+            if (tornado.kind() == TornadoEntity.Kind.SNOW_DEVIL) {
+                level.addParticle(ModParticles.SNOWFLAKE.get(), x, top + 0.2 + level.random.nextDouble(), z, tx * 0.5, 0.15, tz * 0.5);
+                continue;
+            }
+            if (tornado.kind() == TornadoEntity.Kind.GUSTNADO) {
+                level.addParticle(ModParticles.DUST.get(), x, top + 0.2 + level.random.nextDouble(), z, tx * 0.6, 0.12, tz * 0.6);
                 continue;
             }
             if (tornado.kind() == TornadoEntity.Kind.DUST_DEVIL) {

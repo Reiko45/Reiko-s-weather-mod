@@ -15,6 +15,9 @@
     "reikos_weather:geyser",
     "reikos_weather:salt_crust",
     "reikos_weather:blowhole",
-    "reikos_weather:limestone"
+    "reikos_weather:limestone",
+    "reikos_weather:petrified_wood",
+    "reikos_weather:pumice",
+    "reikos_weather:whirlpool"
   ]
 }

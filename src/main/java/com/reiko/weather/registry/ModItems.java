@@ -120,6 +120,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> QUICKSAND = REGISTER.registerSimpleBlockItem(ModBlocks.QUICKSAND);
     public static final DeferredItem<BlockItem> BLOWHOLE = REGISTER.registerSimpleBlockItem(ModBlocks.BLOWHOLE);
     public static final DeferredItem<BlockItem> LIMESTONE = REGISTER.registerSimpleBlockItem(ModBlocks.LIMESTONE);
+    public static final DeferredItem<BlockItem> PETRIFIED_WOOD = REGISTER.registerSimpleBlockItem(ModBlocks.PETRIFIED_WOOD);
+    public static final DeferredItem<BlockItem> PUMICE = REGISTER.registerSimpleBlockItem(ModBlocks.PUMICE);
 
     private ModItems() {}
 }

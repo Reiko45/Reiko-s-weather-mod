@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "sailing_stones",
+  "biomes": "#reikos_weather:has_structure/sailing_stones",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

@@ -50,7 +50,15 @@ public class TornadoEntity extends Entity {
         /** A small, mostly harmless whirlwind of sand on hot, clear days. */
         DUST_DEVIL(0.17, 0.35F, 0.25, false, false),
         /** A whirl of flame and smoke spun up by a huge wildfire, spreading the fire wherever it wanders. */
-        FIRE_WHIRL(0.12, 0.4F, 0.3, false, true);
+        FIRE_WHIRL(0.12, 0.4F, 0.3, false, true),
+        /** A thin, rope-like tornado that spins up under a growing storm without a big rotating updraught behind it. */
+        LANDSPOUT(0.1, 0.15F, 0.6, false, true),
+        /** A short-lived swirl of dust and debris kicked up along a storm's gust front. */
+        GUSTNADO(0.2, 0.3F, 0.4, false, false),
+        /** A wisp of steam fog twisted into a little whirl over unfrozen water in bitter cold. */
+        STEAM_DEVIL(0.08, 0.3F, 0.1, false, false),
+        /** A dust devil made of snow, on a sunny, windy snowfield. */
+        SNOW_DEVIL(0.17, 0.35F, 0.2, false, false);
 
         public final double speed;
         public final float wander;
@@ -64,6 +72,11 @@ public class TornadoEntity extends Entity {
             this.suction = suction;
             this.liftsBlocks = liftsBlocks;
             this.hurts = hurts;
+        }
+
+        /** The little whirlwinds nobody needs warning about. */
+        public boolean small() {
+            return this == DUST_DEVIL || this == GUSTNADO || this == STEAM_DEVIL || this == SNOW_DEVIL;
         }
 
         public String id() {
@@ -142,7 +155,7 @@ public class TornadoEntity extends Entity {
 
     /** Radius within which entities are pulled in. */
     public double influenceRadius() {
-        return width() * 3.5 * strength() + (kind() == Kind.DUST_DEVIL ? 1.0 : 2.0);
+        return width() * 3.5 * strength() + (kind().small() ? 1.0 : 2.0);
     }
 
     @Override
@@ -199,7 +212,7 @@ public class TornadoEntity extends Entity {
         }
 
         float strength = strength();
-        if (kind != Kind.DUST_DEVIL && kind != Kind.FIRE_WHIRL && strength > 0.3F && age % 10 == 0) {
+        if (!kind.small() && kind != Kind.FIRE_WHIRL && strength > 0.3F && age % 10 == 0) {
             recordProbes(level);
         }
         if (kind == Kind.FIRE_WHIRL && strength > 0.3F && age % 8 == 0) {

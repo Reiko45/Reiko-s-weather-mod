@@ -96,7 +96,7 @@ public final class WeatherRadio {
         }
         // tornadoes
         for (TornadoEntity tornado : level.getEntitiesOfClass(TornadoEntity.class, new AABB(pos).inflate(250, 128, 250))) {
-            if (tornado.kind() == TornadoEntity.Kind.DUST_DEVIL || tornado.kind() == TornadoEntity.Kind.FIRE_WHIRL) continue;
+            if (tornado.kind().small() || tornado.kind() == TornadoEntity.Kind.FIRE_WHIRL) continue;
             alert(player, "tornado:" + tornado.getUUID(), now, Component.translatable("radio.reikos_weather.tornado",
                     (int) Math.sqrt(tornado.distanceToSqr(player)),
                     Component.translatable("direction.reikos_weather." + WeatherReport.compass(tornado.getX() - pos.getX(), tornado.getZ() - pos.getZ()))), true);

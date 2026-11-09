@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "rock_glacier",
+  "biomes": "#reikos_weather:has_structure/rock_glacier",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

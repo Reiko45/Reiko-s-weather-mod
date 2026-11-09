@@ -541,4 +541,57 @@ public class WeatherGameTests {
         helper.assertTrue(karst instanceof com.reiko.weather.landform.TowerKarst t && t.towers().length >= 25, "a cluster of karst towers");
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void snowSkyAndSea(GameTestHelper helper) {
+        var level = helper.getLevel();
+        for (WeatherType t : new WeatherType[]{WeatherType.GRAUPEL, WeatherType.THUNDERSNOW, WeatherType.FREEZING_DRIZZLE}) {
+            helper.assertTrue(t.natural() && !t.cellOnly() && t.vanillaRain, t + " comes in the forecast and falls as precipitation");
+        }
+        helper.assertTrue(com.reiko.weather.weather.WeatherProfiles.get(WeatherType.GRAUPEL, Climate.COLD).rateOf(com.reiko.weather.weather.Precip.GRAUPEL) > 0.5F,
+                "graupel falls as snow pellets");
+        helper.assertTrue(WeatherType.THUNDERSNOW.vanillaThunder && com.reiko.weather.weather.WeatherProfiles.get(WeatherType.THUNDERSNOW, Climate.COLD).snowLayers > 0,
+                "thundersnow is a thundering snowstorm");
+        helper.assertTrue(com.reiko.weather.weather.WeatherProfiles.get(WeatherType.FREEZING_DRIZZLE, Climate.TEMPERATE).glazeGround, "freezing drizzle glazes the ground");
+        helper.assertTrue(com.reiko.weather.weather.ClimateYears.weatherMultiplier(null, WeatherType.RAIN) == 1.0F, "no world, no climate swing");
+        float l = com.reiko.weather.weather.ClimateYears.leaning(level);
+        helper.assertTrue(l >= -1.0F && l <= 1.0F, "a year leans somewhere between dry and wet (" + l + ")");
+        float tide = com.reiko.weather.block.WhirlpoolBlock.strength(level);
+        helper.assertTrue(tide >= 0.0F && tide <= 1.0F, "a whirlpool's pull is between nothing and full strength (" + tide + ")");
+        // needle ice only grows out of soil, and frost flowers only on ice
+        helper.setBlock(1, 1, 1, Blocks.DIRT);
+        helper.setBlock(3, 1, 1, Blocks.STONE);
+        helper.setBlock(5, 1, 1, Blocks.ICE);
+        var needle = ModBlocks.NEEDLE_ICE.get().defaultBlockState();
+        helper.assertTrue(needle.canSurvive(level, helper.absolutePos(new BlockPos(1, 2, 1))), "needle ice on soil");
+        helper.assertFalse(needle.canSurvive(level, helper.absolutePos(new BlockPos(3, 2, 1))), "not on bare stone");
+        helper.assertTrue(ModBlocks.FROST_FLOWERS.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(5, 2, 1))), "frost flowers on ice");
+        // the snowpack lies deeper in a cold climate than a mild one
+        BlockPos high = helper.absolutePos(new BlockPos(1, 2, 1));
+        helper.assertTrue(com.reiko.weather.weather.WinterGround.targetDepth(level, high, Climate.COLD)
+                > com.reiko.weather.weather.WinterGround.targetDepth(level, high, Climate.TEMPERATE), "deeper snow in the cold");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void stillMoreLandformsPlan(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int sea = level.getSeaLevel();
+        java.util.function.Function<java.util.function.IntBinaryOperator, com.reiko.weather.landform.PlanContext> at = ground ->
+                new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(5), 0, 0, ground, sea, level);
+        // a blue hole needs shallow sea
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.BLUE_HOLE.plan(at.apply((x, z) -> sea - 8)) != null, "a blue hole in the shallows");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.BLUE_HOLE.plan(at.apply((x, z) -> sea + 10)) == null, "no blue hole on land");
+        // a horn is carved from a summit, never from flat ground
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.HORN.plan(at.apply((x, z) -> sea + 110 - (int) Math.sqrt(x * x + z * z))) != null,
+                "a horn on a mountain top");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.HORN.plan(at.apply((x, z) -> sea + 10)) == null, "no horn on the plain");
+        // a tidal whirlpool between two shores
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.WHIRLPOOL.plan(at.apply((x, z) -> Math.abs(x) > 12 ? sea + 5 : sea - 14)) != null,
+                "a whirlpool in a strait");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.WHIRLPOOL.plan(at.apply((x, z) -> sea + 20)) == null, "no whirlpool inland");
+        // dry-country rocks stay off the sea
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.MUSHROOM_ROCKS.plan(at.apply((x, z) -> sea - 20)) == null, "no mushroom rocks at sea");
+        helper.succeed();
+    }
 }

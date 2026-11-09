@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "sinking_stream",
+  "biomes": "#reikos_weather:has_structure/sinking_stream",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

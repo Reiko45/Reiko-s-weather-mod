@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "shingle_beach",
+  "biomes": "#reikos_weather:has_structure/shingle_beach",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

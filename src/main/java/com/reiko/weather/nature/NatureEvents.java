@@ -98,6 +98,16 @@ public final class NatureEvents {
         LocalWeather local = WeatherManager.local(level, pos);
         boolean storm = local != null && local.type().vanillaThunder && level.canSeeSky(pos.above());
         boolean raining = level.isRainingAt(pos.above());
+        if (WeatherConfig.ALGAL_BLOOMS.get() && WeatherManager.state(level).bloom > 0.5F && com.reiko.weather.weather.Seas.blooming(level, pos)
+                && random.nextFloat() < 0.6F) {
+            // in an algal bloom the fish have gone: only weed comes up
+            event.setCanceled(true);
+            ItemEntity weed = new ItemEntity(level, hook.getX(), hook.getY(), hook.getZ(), new ItemStack(random.nextBoolean() ? Items.KELP : Items.SEAGRASS));
+            double dx = player.getX() - hook.getX(), dy = player.getY() - hook.getY(), dz = player.getZ() - hook.getZ();
+            weed.setDeltaMovement(dx * 0.1, dy * 0.1 + Math.sqrt(Math.sqrt(dx * dx + dy * dy + dz * dz)) * 0.08, dz * 0.1);
+            level.addFreshEntity(weed);
+            return;
+        }
         List<ItemStack> extra = new ArrayList<>();
         if (storm && random.nextFloat() < 0.4F) {
             extra.add(new ItemStack(ModItems.STORMFISH.get()));

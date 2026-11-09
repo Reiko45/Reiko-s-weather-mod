@@ -11,6 +11,10 @@ public final class ModParticles {
     public static final DeferredRegister<ParticleType<?>> REGISTER = DeferredRegister.create(Registries.PARTICLE_TYPE, ReikosWeather.MOD_ID);
 
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> HAIL = simple("hail");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GRAUPEL = simple("graupel");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> POLLEN = simple("pollen");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DEW = simple("dew");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SEA_FOAM = simple("sea_foam");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SLEET = simple("sleet");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> DOWNPOUR = simple("downpour");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SNOWFLAKE = simple("snowflake");

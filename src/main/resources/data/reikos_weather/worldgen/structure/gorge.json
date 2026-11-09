@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "gorge",
+  "biomes": "#reikos_weather:has_structure/gorge",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

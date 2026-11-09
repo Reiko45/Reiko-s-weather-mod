@@ -62,6 +62,16 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue TWILIGHT_BANDS;
     public static final ModConfigSpec.BooleanValue LIGHT_PILLARS;
     public static final ModConfigSpec.BooleanValue IRIDESCENT_CLOUDS;
+    public static final ModConfigSpec.BooleanValue DEW;
+    public static final ModConfigSpec.BooleanValue POLLEN;
+    public static final ModConfigSpec.BooleanValue MILKY_WAY;
+    public static final ModConfigSpec.BooleanValue ANTICREPUSCULAR_RAYS;
+    public static final ModConfigSpec.BooleanValue SKY_ARCS;
+    public static final ModConfigSpec.BooleanValue CLOUD_FORMS;
+    public static final ModConfigSpec.BooleanValue NACREOUS_CLOUDS;
+    public static final ModConfigSpec.BooleanValue SPIDER_LIGHTNING;
+    public static final ModConfigSpec.BooleanValue RED_SKY;
+    public static final ModConfigSpec.BooleanValue ALGAL_BLOOM_TINT;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -183,6 +193,26 @@ public final class ClientConfig {
                 .define("lightPillars", true);
         IRIDESCENT_CLOUDS = b.comment("Pastel colours in thin clouds near the sun.")
                 .define("iridescentClouds", true);
+        DEW = b.comment("Dew sparkling on the grass on clear, calm mornings.")
+                .define("dew", true);
+        POLLEN = b.comment("Yellow pollen haze drifting out of the woods on dry spring days, and films of pollen on still water.")
+                .define("pollen", true);
+        MILKY_WAY = b.comment("The Milky Way and zodiacal light on dark, moonless nights (washed out by the moon and near villages).")
+                .define("milkyWay", true);
+        ANTICREPUSCULAR_RAYS = b.comment("Sunbeams converging again on the far side of the sky, opposite the sun.")
+                .define("anticrepuscularRays", true);
+        SKY_ARCS = b.comment("The circumhorizontal arc (fire rainbow) under a high sun and the circumzenithal arc over a low one.")
+                .define("skyArcs", true);
+        CLOUD_FORMS = b.comment("Roll clouds, breaking-wave clouds, pileus caps on growing thunderheads and hole-punch clouds.")
+                .define("cloudForms", true);
+        NACREOUS_CLOUDS = b.comment("Nacreous (mother-of-pearl) clouds in polar winter twilight.")
+                .define("nacreousClouds", true);
+        SPIDER_LIGHTNING = b.comment("Spider lightning crawling along the underside of storm anvils at night.")
+                .define("spiderLightning", true);
+        RED_SKY = b.comment("Red sky at night: a fiery sunset before fair weather, and a red sunrise before rain.")
+                .define("redSky", true);
+        ALGAL_BLOOM_TINT = b.comment("Rusty-red water under an algal bloom.")
+                .define("algalBloomTint", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

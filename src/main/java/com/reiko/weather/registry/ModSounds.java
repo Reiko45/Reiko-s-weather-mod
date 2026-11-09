@@ -30,6 +30,7 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ICE_SING = register("ambient.ice_sing");
     public static final DeferredHolder<SoundEvent, SoundEvent> BLOWHOLE = register("block.blowhole.spout");
     public static final DeferredHolder<SoundEvent, SoundEvent> EARTHQUAKE = register("weather.earthquake");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TIDAL_BORE = register("weather.tidal_bore");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(ReikosWeather.id(name)));

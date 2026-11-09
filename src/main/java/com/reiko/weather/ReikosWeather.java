@@ -168,6 +168,8 @@ public class ReikosWeather {
             event.accept(ModItems.QUICKSAND.get());
             event.accept(ModItems.BLOWHOLE.get());
             event.accept(ModItems.LIMESTONE.get());
+            event.accept(ModItems.PETRIFIED_WOOD.get());
+            event.accept(ModItems.PUMICE.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

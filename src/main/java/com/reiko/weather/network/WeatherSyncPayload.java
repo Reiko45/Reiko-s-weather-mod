@@ -28,13 +28,13 @@ import java.util.List;
  */
 public record WeatherSyncPayload(int weather, int elapsed, int remaining, float windAngle, int rainbow,
                                  int season, int dayOfSeason, int daysPerSeason, float temperatureShift,
-                                 int[] forecast, List<StormCell> cells, String custom, float drought) implements CustomPacketPayload {
+                                 int[] forecast, List<StormCell> cells, String custom, float drought, float bloom) implements CustomPacketPayload {
     public static final Type<WeatherSyncPayload> TYPE = new Type<>(ReikosWeather.id("weather_sync"));
     public static final StreamCodec<FriendlyByteBuf, WeatherSyncPayload> STREAM_CODEC =
             StreamCodec.ofMember(WeatherSyncPayload::write, WeatherSyncPayload::read);
 
     public static WeatherSyncPayload unmanaged() {
-        return new WeatherSyncPayload(-1, 0, 0, 0.0F, 0, -1, -1, -1, 0.0F, new int[0], List.of(), "", 0.0F);
+        return new WeatherSyncPayload(-1, 0, 0, 0.0F, 0, -1, -1, -1, 0.0F, new int[0], List.of(), "", 0.0F, 0.0F);
     }
 
     private void write(FriendlyByteBuf buf) {
@@ -54,6 +54,7 @@ public record WeatherSyncPayload(int weather, int elapsed, int remaining, float 
         }
         buf.writeUtf(custom);
         buf.writeFloat(drought);
+        buf.writeFloat(bloom);
     }
 
     private static WeatherSyncPayload read(FriendlyByteBuf buf) {
@@ -74,7 +75,8 @@ public record WeatherSyncPayload(int weather, int elapsed, int remaining, float 
         }
         String custom = buf.readUtf();
         float drought = buf.readFloat();
-        return new WeatherSyncPayload(weather, elapsed, remaining, windAngle, rainbow, season, dayOfSeason, daysPerSeason, shift, forecast, cells, custom, drought);
+        float bloom = buf.readFloat();
+        return new WeatherSyncPayload(weather, elapsed, remaining, windAngle, rainbow, season, dayOfSeason, daysPerSeason, shift, forecast, cells, custom, drought, bloom);
     }
 
     @Override

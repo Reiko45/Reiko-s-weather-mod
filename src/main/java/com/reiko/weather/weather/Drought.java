@@ -103,6 +103,7 @@ public final class Drought {
             case SPRING, AUTUMN -> 0.03F;
             case WINTER -> 0.0F;
         };
+        chance *= ClimateYears.droughtMultiplier(level); // dry years bring more droughts, wet years fewer
         if (state.dryDays >= 1 && level.random.nextFloat() < chance * Math.min(state.dryDays, 3)) {
             start(level, state, 4 + level.random.nextInt(5));
         }

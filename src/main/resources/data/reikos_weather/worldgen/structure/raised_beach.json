@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "raised_beach",
+  "biomes": "#reikos_weather:has_structure/raised_beach",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

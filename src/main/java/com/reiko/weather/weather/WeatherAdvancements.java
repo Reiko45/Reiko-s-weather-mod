@@ -56,7 +56,10 @@ public final class WeatherAdvancements {
                     if (distance < tornado.influenceRadius() && !player.onGround() && player.getY() - ground > 10) award(player, "wizard_of_oz");
                 }
                 case WATERSPOUT -> award(player, "waterspout");
-                case DUST_DEVIL -> {}
+                case DUST_DEVIL, GUSTNADO, STEAM_DEVIL, SNOW_DEVIL -> {}
+                case LANDSPOUT -> {
+                    if (distance < 32) award(player, "storm_chaser");
+                }
                 case FIRE_WHIRL -> {
                     if (distance < 48) award(player, "fire_whirl");
                 }

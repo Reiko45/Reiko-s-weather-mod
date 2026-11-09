@@ -158,11 +158,41 @@ public final class Temperature {
         celsius += celsius < 18.0F ? Math.min(insulation, 18.0F - celsius) : insulation * 0.5F;
         if (entity.isInWater()) {
             celsius = Mth.lerp(0.6F, celsius, 12.0F);
+        } else if (celsius > 24.0F && com.reiko.weather.config.WeatherConfig.HUMIDITY.get()) {
+            // sticky, humid heat feels hotter: sweat can't cool you down
+            celsius += humidity(level, eyes, local) * (celsius - 24.0F) * 0.6F;
         }
         if (entity.hasEffect(MobEffects.FIRE_RESISTANCE)) {
             celsius = Math.min(celsius, 30.0F);
         }
         return celsius;
+    }
+
+    /**
+     * How humid the air is, 0 to 1: the biome's own dampness, more after rain and by water, and drier in hot, windy
+     * or desert air.
+     */
+    public static float humidity(Level level, BlockPos pos, @Nullable LocalWeather local) {
+        var biome = level.getBiome(pos);
+        float h = biome.value().getModifiedClimateSettings().downfall();
+        if (biome.is(net.minecraft.tags.BiomeTags.IS_JUNGLE) || biome.is(net.minecraft.world.level.biome.Biomes.SWAMP)
+                || biome.is(net.minecraft.world.level.biome.Biomes.MANGROVE_SWAMP)) {
+            h = Math.max(h, 0.9F);
+        }
+        if (local != null) {
+            WeatherProfile p = local.profile();
+            h += p.rain * 0.4F * local.intensity() + p.fog * 0.2F;
+            h -= p.wind * 0.2F * local.intensity();
+            if (p.heat) h -= 0.15F;
+        }
+        // open water close by
+        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+            if (level.getFluidState(pos.below(2).relative(d, 3)).is(net.minecraft.tags.FluidTags.WATER)) {
+                h += 0.1F;
+                break;
+            }
+        }
+        return Mth.clamp(h, 0.0F, 1.0F);
     }
 
     public static String format(float celsius, boolean fahrenheit) {

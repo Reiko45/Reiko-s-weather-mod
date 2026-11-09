@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "nunataks",
+  "biomes": "#reikos_weather:has_structure/nunataks",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

@@ -59,6 +59,9 @@ public enum Season {
                 case COLD_SNAP -> 0.5F;
                 case COLD_FRONT -> 1.6F;
                 case WARM_FRONT -> 1.5F;
+                case GRAUPEL -> 1.8F;
+                case THUNDERSNOW -> 0.4F;
+                case FREEZING_DRIZZLE -> 0.3F;
                 default -> 1.0F;
             };
             case SUMMER -> switch (type) {
@@ -73,7 +76,8 @@ public enum Season {
                 case DRIZZLE -> 0.8F;
                 case SNOW, SLEET -> 0.15F;
                 case BLIZZARD, ICE_STORM -> 0.05F;
-                case COLD_SNAP -> 0.0F;
+                case COLD_SNAP, THUNDERSNOW, FREEZING_DRIZZLE -> 0.0F;
+                case GRAUPEL -> 0.1F;
                 default -> 1.0F;
             };
             case AUTUMN -> switch (type) {
@@ -88,6 +92,8 @@ public enum Season {
                 case COLD_SNAP -> 0.8F;
                 case COLD_FRONT -> 1.8F;
                 case WARM_FRONT -> 1.2F;
+                case GRAUPEL -> 1.5F;
+                case THUNDERSNOW, FREEZING_DRIZZLE -> 0.6F;
                 default -> 1.0F;
             };
             case WINTER -> switch (type) {
@@ -104,6 +110,9 @@ public enum Season {
                 case HURRICANE -> 0.2F;
                 case SUPERCELL -> 0.1F;
                 case HEATWAVE, DERECHO -> 0.0F;
+                case THUNDERSNOW -> 2.0F;
+                case FREEZING_DRIZZLE -> 2.2F;
+                case GRAUPEL -> 0.8F;
                 default -> 1.0F;
             };
         };

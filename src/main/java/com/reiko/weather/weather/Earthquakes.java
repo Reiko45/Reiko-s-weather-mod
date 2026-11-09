@@ -72,6 +72,12 @@ public final class Earthquakes {
             if (griefing && felt > 0.3F) shakeLoose(level, player, felt, random);
         }
         boolean underSea = level.getBiome(BlockPos.containing(x, level.getSeaLevel(), z)).is(BiomeTags.IS_OCEAN);
+        if (underSea && magnitude > 0.45F) {
+            // a big quake under the sea can set off an undersea eruption, and its pumice floats up in rafts
+            for (ServerPlayer player : level.players()) {
+                if (player.distanceToSqr(x, player.getY(), z) < 600 * 600) Seas.pumiceRafts(level, player, random);
+            }
+        }
         if (underSea && magnitude > 0.55F && WeatherConfig.TSUNAMIS.get() && griefing) {
             pending = new Tsunami(x, z, level.getGameTime() + 1200 + random.nextInt(1200), 2.0F + 3.0F * magnitude);
             for (ServerPlayer player : level.players()) {

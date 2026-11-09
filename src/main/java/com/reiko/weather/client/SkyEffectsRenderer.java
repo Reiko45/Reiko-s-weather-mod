@@ -1,6 +1,7 @@
 package com.reiko.weather.client;
 
 import com.reiko.weather.config.ClientConfig;
+import com.reiko.weather.weather.WeatherType;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -66,8 +67,26 @@ public final class SkyEffectsRenderer {
         // the green flash: the last sliver of the sun over a clear sea horizon
         float flash = overworld && ClientConfig.GREEN_FLASH.get() && SkySights.seaHorizon() && overcast < 0.2F
                 ? clearSky * Mth.clamp(1.0F - Math.abs(sun.y + 0.002F) / 0.006F, 0.0F, 1.0F) : 0.0F;
+        // the Milky Way and zodiacal light: dark, clear, moonless nights well away from villages' lights
+        int phase = level.getMoonPhase();
+        float moonlight = phase == 4 ? 0.0F : phase == 3 || phase == 5 ? 0.25F : phase == 2 || phase == 6 ? 0.55F : phase == 0 ? 1.0F : 0.8F;
+        float moonUp = Mth.clamp(-sun.y * 3.0F + 0.2F, 0.0F, 1.0F); // the moon is opposite the sun
+        float dark = clearSky * (1.0F - overcast) * (1.0F - AirAndWater.lightPollution()) * (1.0F - 0.85F * moonlight * moonUp);
+        float milky = overworld && ClientConfig.MILKY_WAY.get() ? dark * Mth.clamp((-sun.y - 0.2F) * 5.0F, 0.0F, 1.0F) : 0.0F;
+        float zodiacal = overworld && ClientConfig.MILKY_WAY.get() ? dark * Mth.clamp(1.0F - Math.abs(sun.y + 0.3F) / 0.1F, 0.0F, 1.0F) : 0.0F;
+        // the circumhorizontal arc under a high sun, the circumzenithal arc over a low one, in thin ice cloud
+        float iceCloud = Math.max(halo, Mth.clamp(1.0F - Math.abs(overcast - 0.3F) / 0.2F, 0.0F, 1.0F) * (1.0F - ClientWeather.rain()));
+        float cha = overworld && ClientConfig.SKY_ARCS.get() && sun.y > 0.85F ? iceCloud * Mth.clamp((sun.y - 0.85F) * 20.0F, 0.0F, 1.0F) : 0.0F;
+        float cza = overworld && ClientConfig.SKY_ARCS.get() && sun.y > 0.03F && sun.y < 0.53F
+                ? iceCloud * Mth.clamp((0.53F - sun.y) * 8.0F, 0.0F, 1.0F) * Mth.clamp((sun.y - 0.03F) * 15.0F, 0.0F, 1.0F) : 0.0F;
+        // nacreous clouds: polar winter twilight, when the stratosphere is bitterly cold
+        float nacreous = overworld && ClientConfig.NACREOUS_CLOUDS.get() && ClientWeather.climate() == com.reiko.weather.weather.Climate.COLD
+                && com.reiko.weather.network.SyncedWeather.season() == com.reiko.weather.weather.Season.WINTER
+                ? clearSky * (1.0F - overcast) * Mth.clamp(1.0F - Math.abs(sun.y + 0.07F) / 0.08F, 0.0F, 1.0F) : 0.0F;
+        float redSky = overworld && ClientConfig.RED_SKY.get() ? redSky(level, sun) * clearSky : 0.0F;
         if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
-                && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F) {
+                && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F
+                && milky <= 0.005F && zodiacal <= 0.005F && cha <= 0.005F && cza <= 0.005F && nacreous <= 0.005F && redSky <= 0.005F) {
             return;
         }
 
@@ -105,6 +124,24 @@ public final class SkyEffectsRenderer {
         }
         if (nlc > 0.005F) {
             drawNoctilucent(pose, level.getGameTime() + partialTick, nlc * 0.5F);
+        }
+        if (milky > 0.005F) {
+            drawMilkyWay(pose, theta, milky);
+        }
+        if (zodiacal > 0.005F) {
+            drawZodiacal(pose, theta, zodiacal);
+        }
+        if (cha > 0.005F) {
+            drawArc(pose, sun, (float) Math.asin(Mth.clamp(sun.y, -1.0F, 1.0F)) - 46.0F * Mth.DEG_TO_RAD, 55.0F, false, cha * 0.35F);
+        }
+        if (cza > 0.005F) {
+            drawArc(pose, sun, (float) Math.asin(Mth.clamp(sun.y, -1.0F, 1.0F)) + 46.0F * Mth.DEG_TO_RAD, 45.0F, true, cza * 0.3F);
+        }
+        if (nacreous > 0.005F) {
+            drawNacreous(pose, sun, level.getGameTime() + partialTick, nacreous);
+        }
+        if (redSky > 0.005F) {
+            drawRedSky(pose, sun, redSky);
         }
         if (twilight > 0.005F) {
             drawTwilightBands(pose, sun, twilight);
@@ -518,6 +555,9 @@ public final class SkyEffectsRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         drawSunbeams(new Matrix4f(), sun, level.getGameTime() + partialTick, beams * Mth.clamp(sun.y * 5.0F, 0.0F, 1.0F));
+        if (ClientConfig.ANTICREPUSCULAR_RAYS.get() && sun.y < 0.35F) {
+            drawAntiBeams(new Matrix4f(), sun, level.getGameTime() + partialTick, beams * Mth.clamp((0.35F - sun.y) * 5.0F, 0.0F, 1.0F) * Mth.clamp(sun.y * 8.0F, 0.0F, 1.0F));
+        }
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
@@ -545,6 +585,186 @@ public final class SkyEffectsRenderer {
             vertex(buffer, pose, start, warm, a * horizonFade(start));
             vertex(buffer, pose, left, warm, 0.0F);
             vertex(buffer, pose, right, warm, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    /** Converging rays: the same sunbeams, meeting again at the point opposite the sun on the far horizon. */
+    private static void drawAntiBeams(Matrix4f pose, Vector3f sun, float time, float strength) {
+        Vector3f anti = new Vector3f(sun).negate();
+        Vector3f[] basis = basis(anti);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        float[] warm = {1.0F, 0.9F, 0.8F};
+        for (int i = 0; i < 12; i++) {
+            float seed = i * 7.31F + 3.0F;
+            float phi = (i + 0.5F * Mth.sin(seed)) / 12.0F * Mth.TWO_PI;
+            float width = (1.5F + 1.5F * (0.5F + 0.5F * Mth.sin(seed * 2.7F))) * Mth.DEG_TO_RAD;
+            float length = (40.0F + 25.0F * (0.5F + 0.5F * Mth.sin(seed * 1.3F))) * Mth.DEG_TO_RAD;
+            float flicker = Mth.clamp(0.5F + 0.6F * Mth.sin(time * 0.004F + seed * 2.3F), 0.0F, 1.0F);
+            float a = strength * 0.18F * flicker;
+            if (a <= 0.002F) continue;
+            Vector3f tip = ringPoint(anti, basis[0], basis[1], phi, 2.0F * Mth.DEG_TO_RAD);
+            Vector3f left = ringPoint(anti, basis[0], basis[1], phi - width / Mth.sin(length), length);
+            Vector3f right = ringPoint(anti, basis[0], basis[1], phi + width / Mth.sin(length), length);
+            vertex(buffer, pose, tip, warm, 0.0F);
+            vertex(buffer, pose, left, warm, a * horizonFade(left));
+            vertex(buffer, pose, right, warm, a * horizonFade(right));
+        }
+        draw(buffer);
+    }
+
+    /** Turns a direction fixed among the stars into where it is in the sky now (the stars wheel round with the sun). */
+    private static Vector3f celestial(Vector3f v, float theta) {
+        float c = Mth.cos(theta), s = Mth.sin(theta);
+        return new Vector3f(v.x * c - v.y * s, v.x * s + v.y * c, v.z);
+    }
+
+    /**
+     * The Milky Way: a faint, mottled band of light right across the sky, brighter and broader toward the core,
+     * split by dark dust lanes, wheeling round with the stars.
+     */
+    private static void drawMilkyWay(Matrix4f pose, float theta, float strength) {
+        Vector3f n = new Vector3f(0.35F, 0.25F, 0.9F).normalize();
+        Vector3f u = new Vector3f(n).cross(new Vector3f(0.0F, 1.0F, 0.0F)).normalize();
+        Vector3f v = new Vector3f(n).cross(u).normalize();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 120, rows = 6;
+        for (int s = 0; s < segments; s++) {
+            float p0 = s / (float) segments * Mth.TWO_PI, p1 = (s + 1) / (float) segments * Mth.TWO_PI;
+            float core0 = 0.5F + 0.5F * Mth.cos(p0 - 1.2F), core1 = 0.5F + 0.5F * Mth.cos(p1 - 1.2F);
+            float width0 = (7.0F + 9.0F * core0 * core0) * Mth.DEG_TO_RAD, width1 = (7.0F + 9.0F * core1 * core1) * Mth.DEG_TO_RAD;
+            for (int r = 0; r < rows; r++) {
+                float w0 = (r / (float) rows - 0.5F) * 2.0F, w1 = ((r + 1) / (float) rows - 0.5F) * 2.0F;
+                Vector3f[] corners = {band(u, v, n, p0, w0 * width0), band(u, v, n, p1, w0 * width1), band(u, v, n, p1, w1 * width1), band(u, v, n, p0, w1 * width0)};
+                float[] ws = {w0, w0, w1, w1};
+                float[] ps = {p0, p1, p1, p0};
+                for (int k = 0; k < 4; k++) {
+                    Vector3f p = celestial(corners[k], theta).normalize().mul(DOME);
+                    float core = 0.5F + 0.5F * Mth.cos(ps[k] - 1.2F);
+                    // mottled star clouds, with a dark rift down the middle near the core
+                    float mottle = 0.6F + 0.4F * Mth.sin(ps[k] * 17.0F + ws[k] * 5.0F) * Mth.sin(ps[k] * 7.0F - ws[k] * 3.0F);
+                    float rift = 1.0F - 0.6F * core * Math.max(0.0F, 1.0F - Math.abs(ws[k] + 0.1F * Mth.sin(ps[k] * 9.0F)) * 4.0F);
+                    float edge = 1.0F - ws[k] * ws[k];
+                    float[] c = {0.85F + 0.15F * core, 0.86F + 0.08F * core, 0.95F - 0.1F * core};
+                    vertex(buffer, pose, p, c, strength * 0.17F * (0.35F + 0.65F * core) * mottle * rift * edge * horizonFade(p));
+                }
+            }
+        }
+        draw(buffer);
+    }
+
+    private static Vector3f band(Vector3f u, Vector3f v, Vector3f n, float phi, float w) {
+        float c = Mth.cos(w);
+        return new Vector3f(u).mul(Mth.cos(phi) * c).add(new Vector3f(v).mul(Mth.sin(phi) * c)).add(new Vector3f(n).mul(Mth.sin(w)));
+    }
+
+    /** Zodiacal light: a faint, tilted cone of glow rising from where the sun went down, along the sun's path. */
+    private static void drawZodiacal(Matrix4f pose, float theta, float strength) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] c = {0.95F, 0.92F, 0.85F};
+        // the sun's own path across the sky, starting a little way from the (set) sun and climbing toward the zenith
+        float side = Mth.sin(theta) > 0 ? 1.0F : -1.0F; // which way along its path is up from the sun at dusk or dawn
+        for (int i = 0; i < 14; i++) {
+            float d0 = (18.0F + i * 4.0F) * Mth.DEG_TO_RAD, d1 = (18.0F + (i + 1) * 4.0F) * Mth.DEG_TO_RAD;
+            float w0 = (13.0F - i * 0.8F) * Mth.DEG_TO_RAD, w1 = (13.0F - (i + 1) * 0.8F) * Mth.DEG_TO_RAD;
+            Vector3f a = path(theta - side * d0, -w0), b = path(theta - side * d1, -w1), e = path(theta - side * d1, w1), f = path(theta - side * d0, w0);
+            float fade0 = strength * 0.16F * (1.0F - i / 14.0F), fade1 = strength * 0.16F * (1.0F - (i + 1) / 14.0F);
+            vertex(buffer, pose, a, c, 0.0F);
+            vertex(buffer, pose, b, c, 0.0F);
+            vertex(buffer, pose, path(theta - side * d1, 0.0F), c, fade1 * horizonFade(path(theta - side * d1, 0.0F)));
+            vertex(buffer, pose, path(theta - side * d0, 0.0F), c, fade0 * horizonFade(path(theta - side * d0, 0.0F)));
+            vertex(buffer, pose, path(theta - side * d0, 0.0F), c, fade0 * horizonFade(path(theta - side * d0, 0.0F)));
+            vertex(buffer, pose, path(theta - side * d1, 0.0F), c, fade1 * horizonFade(path(theta - side * d1, 0.0F)));
+            vertex(buffer, pose, e, c, 0.0F);
+            vertex(buffer, pose, f, c, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    /** A point on (or {@code off} radians to the side of) the sun's path, where the sun would be at angle {@code t}. */
+    private static Vector3f path(float t, float off) {
+        return new Vector3f(-Mth.sin(t) * Mth.cos(off), Mth.cos(t) * Mth.cos(off), Mth.sin(off)).mul(DOME);
+    }
+
+    /**
+     * A spectral arc of light at one elevation, centred on the sun's direction: the circumhorizontal arc (low, red
+     * on top) or circumzenithal arc (high, red on the bottom), both made by sunlight through flat ice crystals.
+     */
+    private static void drawArc(Matrix4f pose, Vector3f sun, float elevation, float spanDeg, boolean zenith, float strength) {
+        if (elevation <= 0.02F || elevation >= Mth.HALF_PI - 0.02F) return;
+        float sunAz = (float) Math.atan2(sun.x, -sun.z);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[][] colors = {{1.0F, 0.2F, 0.15F}, {1.0F, 0.6F, 0.1F}, {1.0F, 1.0F, 0.2F}, {0.25F, 1.0F, 0.35F}, {0.2F, 0.5F, 1.0F}, {0.55F, 0.25F, 1.0F}};
+        float thick = 0.45F * Mth.DEG_TO_RAD;
+        int steps = 30;
+        for (int band = 0; band < colors.length; band++) {
+            // red at the top of the circumhorizontal arc, at the bottom (nearest the sun) of the circumzenithal
+            float e0 = elevation + (zenith ? band : -band) * thick, e1 = e0 + (zenith ? thick : -thick);
+            for (int i = 0; i < steps; i++) {
+                float t0 = i / (float) steps, t1 = (i + 1) / (float) steps;
+                float a0 = sunAz + (t0 - 0.5F) * spanDeg * 2.0F * Mth.DEG_TO_RAD, a1 = sunAz + (t1 - 0.5F) * spanDeg * 2.0F * Mth.DEG_TO_RAD;
+                float f0 = Mth.sin(t0 * Mth.PI) * strength, f1 = Mth.sin(t1 * Mth.PI) * strength;
+                vertexSky(buffer, pose, a0, e0, colors[band], f0);
+                vertexSky(buffer, pose, a1, e0, colors[band], f1);
+                vertexSky(buffer, pose, a1, e1, colors[band], f1);
+                vertexSky(buffer, pose, a0, e1, colors[band], f0);
+            }
+        }
+        draw(buffer);
+    }
+
+    /** Nacreous (mother-of-pearl) clouds: brilliant pastel sheets high in the polar twilight sky, toward the sun. */
+    private static void drawNacreous(Matrix4f pose, Vector3f sun, float time, float strength) {
+        float sunAz = (float) Math.atan2(sun.x, -sun.z);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int cols = 36, rows = 6;
+        for (int i = 0; i < cols; i++) {
+            float a0 = sunAz + (i / (float) cols - 0.5F) * 1.6F, a1 = sunAz + ((i + 1) / (float) cols - 0.5F) * 1.6F;
+            for (int r = 0; r < rows; r++) {
+                float e0 = (6.0F + r * 3.0F) * Mth.DEG_TO_RAD, e1 = (6.0F + (r + 1) * 3.0F) * Mth.DEG_TO_RAD;
+                float wisp0 = Math.max(0.0F, Mth.sin(a0 * 9.0F + r * 1.3F + time * 0.0015F) * Mth.sin(a0 * 3.0F - r * 0.7F));
+                float wisp1 = Math.max(0.0F, Mth.sin(a1 * 9.0F + r * 1.3F + time * 0.0015F) * Mth.sin(a1 * 3.0F - r * 0.7F));
+                float hue = r * 0.9F + a0 * 2.0F;
+                float[] c = {0.8F + 0.2F * Mth.sin(hue), 0.8F + 0.2F * Mth.sin(hue + 2.1F), 0.85F + 0.15F * Mth.sin(hue + 4.2F)};
+                float edge = Mth.sin((i + 0.5F) / cols * Mth.PI) * Mth.sin((r + 0.5F) / rows * Mth.PI);
+                vertexSky(buffer, pose, a0, e0, c, strength * 0.3F * wisp0 * edge);
+                vertexSky(buffer, pose, a1, e0, c, strength * 0.3F * wisp1 * edge);
+                vertexSky(buffer, pose, a1, e1, c, strength * 0.3F * wisp1 * edge);
+                vertexSky(buffer, pose, a0, e1, c, strength * 0.3F * wisp0 * edge);
+            }
+        }
+        draw(buffer);
+    }
+
+    /**
+     * Red sky at night, shepherd's delight; red sky in the morning, shepherd's warning. A fiery sunset glow means the
+     * clear sky to the west (where the weather comes from) is coming this way; a red sunrise means the clear sky
+     * has passed and cloud is on its way. Here, how red it gets depends on what the forecast holds.
+     */
+    private static float redSky(ClientLevel level, Vector3f sun) {
+        WeatherType[] forecast = com.reiko.weather.network.SyncedWeather.forecast();
+        if (forecast.length == 0 || Math.abs(sun.y) > 0.12F) return 0.0F;
+        WeatherType next = forecast[0];
+        boolean evening = sun.x < 0; // the sun sets in the west (-X)
+        boolean fair = next.isCalm() || next == WeatherType.WINDY || next == WeatherType.COLD_SNAP;
+        boolean wet = next.vanillaRain;
+        float near = Mth.clamp(1.0F - Math.abs(sun.y - 0.01F) / 0.11F, 0.0F, 1.0F);
+        return (evening ? (fair ? 1.0F : 0.0F) : (wet ? 1.0F : 0.0F)) * near * (1.0F - ClientWeather.overcast() * 0.7F);
+    }
+
+    private static void drawRedSky(Matrix4f pose, Vector3f sun, float strength) {
+        float sunAz = (float) Math.atan2(sun.x, -sun.z);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] red = {1.0F, 0.32F, 0.12F}, orange = {1.0F, 0.55F, 0.2F};
+        int steps = 40;
+        for (int i = 0; i < steps; i++) {
+            float t0 = i / (float) steps, t1 = (i + 1) / (float) steps;
+            float a0 = sunAz + (t0 - 0.5F) * 2.6F, a1 = sunAz + (t1 - 0.5F) * 2.6F;
+            float f0 = Mth.sin(t0 * Mth.PI), f1 = Mth.sin(t1 * Mth.PI);
+            vertexSky(buffer, pose, a0, -0.02F, red, strength * 0.3F * f0);
+            vertexSky(buffer, pose, a1, -0.02F, red, strength * 0.3F * f1);
+            vertexSky(buffer, pose, a1, 14.0F * Mth.DEG_TO_RAD, orange, 0.0F);
+            vertexSky(buffer, pose, a0, 14.0F * Mth.DEG_TO_RAD, orange, 0.0F);
         }
         draw(buffer);
     }

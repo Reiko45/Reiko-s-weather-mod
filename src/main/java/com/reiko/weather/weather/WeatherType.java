@@ -56,7 +56,13 @@ public enum WeatherType {
     /** A heat burst: a sudden blast of hot, dry, gusty wind at night as a dying thunderstorm collapses. */
     HEAT_BURST  (false, false, 0, 1200, 2400, 1.0F, 1.0F, 1.0F),
     /** A fire cloud (pyrocumulonimbus): a thundercloud built by a huge wildfire, throwing dry lightning downwind. */
-    PYROCUMULUS (false, true, 0, 2400, 4800, 1.0F, 1.0F, 1.0F);
+    PYROCUMULUS (false, true, 0, 2400, 4800, 1.0F, 1.0F, 1.0F),
+    /** Graupel: showers of soft, white snow pellets that bounce and roll, mostly in chilly spring and autumn weather. */
+    GRAUPEL     (true, false, 3, 1800, 4200, 1.0F, 0.8F, 0.0F),
+    /** Thundersnow: a snowstorm strong enough to throw lightning, the thunder muffled by the falling snow. */
+    THUNDERSNOW (true, true, 1, 2400, 4800, 1.2F, 0.3F, 0.0F),
+    /** Freezing drizzle: fine drizzle falling through freezing air, glazing everything it lands on. */
+    FREEZING_DRIZZLE(true, false, 2, 3600, 7200, 0.8F, 0.6F, 0.0F);
 
     private static final WeatherType[] VALUES = values();
 
@@ -118,7 +124,7 @@ public enum WeatherType {
     public boolean isStorm() {
         return switch (this) {
             case RAIN, HEAVY_RAIN, THUNDERSTORM, SUPERCELL, HURRICANE, HAIL, SLEET, ICE_STORM, SNOW, BLIZZARD, SANDSTORM, DERECHO,
-                 COLD_FRONT, WARM_FRONT -> true;
+                 COLD_FRONT, WARM_FRONT, GRAUPEL, THUNDERSNOW -> true;
             default -> false;
         };
     }
@@ -131,8 +137,8 @@ public enum WeatherType {
     public int signalCode() {
         return switch (this) {
             case CLEAR, COLD_SNAP -> 0; case OVERCAST -> 1; case FOG, SEA_FOG, WILDFIRE_SMOKE -> 2; case DRIZZLE, WARM_FRONT, VOLCANIC_SMOG -> 3; case RAIN -> 4;
-            case HEAVY_RAIN, ATMOSPHERIC_RIVER -> 5; case THUNDERSTORM, COLD_FRONT, PYROCUMULUS -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL -> 9;
-            case SLEET, ICE_STORM -> 10; case SNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH, DUST_HAZE, HABOOB -> 14;
+            case HEAVY_RAIN, ATMOSPHERIC_RIVER -> 5; case THUNDERSTORM, COLD_FRONT, PYROCUMULUS -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL, GRAUPEL -> 9;
+            case SLEET, ICE_STORM, FREEZING_DRIZZLE -> 10; case SNOW, THUNDERSNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH, DUST_HAZE, HABOOB -> 14;
             case HEATWAVE, HEAT_BURST -> 15;
         };
     }

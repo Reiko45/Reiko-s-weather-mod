@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "talus_cones",
+  "biomes": "#reikos_weather:has_structure/talus_cones",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

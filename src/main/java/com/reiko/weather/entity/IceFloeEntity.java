@@ -46,6 +46,8 @@ public class IceFloeEntity extends Entity {
     private static final EntityDataAccessor<Float> DATA_SIZE = SynchedEntityData.defineId(IceFloeEntity.class, EntityDataSerializers.FLOAT);
     /** An iceberg rather than a floe: far bigger, riding high, and very slow to melt. */
     private static final EntityDataAccessor<Boolean> DATA_BERG = SynchedEntityData.defineId(IceFloeEntity.class, EntityDataSerializers.BOOLEAN);
+    /** A raft of floating pumice from an undersea eruption rather than ice: it never melts, but slowly waterlogs and sinks. */
+    private static final EntityDataAccessor<Boolean> DATA_PUMICE = SynchedEntityData.defineId(IceFloeEntity.class, EntityDataSerializers.BOOLEAN);
     private static final int MAX_NEAR = 16;
 
     private int life = 6000;
@@ -107,6 +109,24 @@ public class IceFloeEntity extends Entity {
         return entityData.get(DATA_BERG);
     }
 
+    public boolean pumice() {
+        return entityData.get(DATA_PUMICE);
+    }
+
+    /** Sets a raft of pumice adrift at a spot on open water. */
+    public static IceFloeEntity spawnPumice(ServerLevel level, BlockPos water) {
+        IceFloeEntity raft = new IceFloeEntity(ModEntities.ICE_FLOE.get(), level);
+        raft.entityData.set(DATA_PUMICE, true);
+        raft.setSize(0.8F + level.random.nextFloat() * 1.2F);
+        raft.life = raft.maxLife = 12000 + level.random.nextInt(12000);
+        raft.moveTo(water.getX() + 0.5, water.getY() + 0.7, water.getZ() + 0.5, level.random.nextFloat() * 360.0F, 0.0F);
+        Vec3 wind = Wind.direction(WeatherManager.state(level).windAngle);
+        raft.headingX = wind.x;
+        raft.headingZ = wind.z;
+        level.addFreshEntity(raft);
+        return raft;
+    }
+
     /** How high an iceberg stands out of the water. */
     public float bergHeight() {
         return 1.5F + size() * 0.7F;
@@ -130,6 +150,7 @@ public class IceFloeEntity extends Entity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(DATA_SIZE, 1.0F);
         builder.define(DATA_BERG, false);
+        builder.define(DATA_PUMICE, false);
     }
 
     @Override
@@ -239,7 +260,7 @@ public class IceFloeEntity extends Entity {
                 if (rider instanceof ServerPlayer player) WeatherAdvancements.award(player, berg() ? "iceberg_ahead" : "floe_rider");
             }
         }
-        if (!berg()) jam(level, afloat);
+        if (!berg() && !pumice()) jam(level, afloat);
         // melting: the last part of its life it shrinks away
         if (--life <= 0) {
             level.sendParticles(ParticleTypes.SPLASH, getX(), getY() + 0.3, getZ(), 20, size(), 0.1, size(), 0.1);
@@ -358,6 +379,7 @@ public class IceFloeEntity extends Entity {
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         entityData.set(DATA_BERG, tag.getBoolean("Berg"));
+        entityData.set(DATA_PUMICE, tag.getBoolean("Pumice"));
         setSize(tag.contains("Size") ? tag.getFloat("Size") : 1.0F);
         life = tag.getInt("Life");
         maxLife = Math.max(1, tag.getInt("MaxLife"));
@@ -367,6 +389,7 @@ public class IceFloeEntity extends Entity {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
+        tag.putBoolean("Pumice", pumice());
         tag.putBoolean("Berg", berg());
         tag.putFloat("Size", size());
         tag.putInt("Life", life);

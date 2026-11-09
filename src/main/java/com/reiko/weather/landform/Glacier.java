@@ -21,10 +21,23 @@ import javax.annotation.Nullable;
 
 /**
  * A tongue of ice flowing down a mountainside: packed ice with veins of blue ice, snow-covered higher up and
- * bare lower down. Crevasses cut across it, many of them hidden under a bridge of powder snow. In summer the
- * lower end melts back a little and meltwater runs off it.
+ * bare lower down. Crevasses cut across it, many of them hidden under a bridge of powder snow. Where its bed
+ * steepens, the ice is stretched until it cracks apart into an icefall, a chaos of toppling ice towers (seracs)
+ * and gaping crevasses. Lower down, meltwater streams on its surface have drilled moulins, shafts straight down
+ * through the ice to the rock. In summer the lower end melts back a little, meltwater runs off it, and pours
+ * roaring down the moulins.
+ *
+ * @param icefall where along the glacier its icefall is ({@link #NO_ICEFALL} if it hasn't one, as on glaciers from
+ *                before there were any)
+ * @param moulins whether it has moulins (not on glaciers from before there were any)
  */
-public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, long seed) implements Landform {
+public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, long seed) implements Landform {
+    public static final int NO_ICEFALL = Integer.MIN_VALUE;
+
+    public Glacier(int cx, int cz, float angle, int length, int width, int thickness, long seed) {
+        this(cx, cz, angle, length, width, thickness, NO_ICEFALL, false, seed);
+    }
+
     @Nullable
     static Landform plan(PlanContext c) {
         int ground = c.groundAt(c.x(), c.z());
@@ -45,12 +58,26 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         if (drop < 6) {
             return null;
         }
-        return new Glacier(c.x(), c.z(), best, 70 + c.random().nextInt(41), 24 + c.random().nextInt(13), 5 + c.random().nextInt(5), c.random().nextLong());
+        int length = 70 + c.random().nextInt(41), width = 24 + c.random().nextInt(13), thickness = 5 + c.random().nextInt(5);
+        long seed = c.random().nextLong();
+        // where the bed steepens most (if it steepens enough), the ice breaks up into an icefall
+        int icefall = NO_ICEFALL, steepest = 5, previous = 0;
+        float step = length * 0.8F / 6.0F;
+        for (int i = 0; i <= 6; i++) {
+            float u = -length * 0.4F + i * step;
+            int h = c.groundAt(c.x() + Math.round(Mth.cos(best) * u), c.z() + Math.round(Mth.sin(best) * u));
+            if (i > 0 && previous - h > steepest) {
+                steepest = previous - h;
+                icefall = Math.round(u - step / 2.0F);
+            }
+            previous = h;
+        }
+        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, seed);
     }
 
     static Landform load(CompoundTag tag) {
         return new Glacier(tag.getInt("x"), tag.getInt("z"), tag.getFloat("angle"), tag.getInt("length"), tag.getInt("width"),
-                tag.getInt("thick"), tag.getLong("seed"));
+                tag.getInt("thick"), tag.contains("icefall") ? tag.getInt("icefall") : NO_ICEFALL, tag.getBoolean("moulins"), tag.getLong("seed"));
     }
 
     @Override
@@ -62,6 +89,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         tag.putInt("length", length);
         tag.putInt("width", width);
         tag.putInt("thick", thickness);
+        tag.putInt("icefall", icefall);
+        tag.putBoolean("moulins", moulins);
         tag.putLong("seed", seed);
         return tag;
     }
@@ -116,10 +145,68 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         }
     }
 
+    /** How much a point is in the icefall (0-1). */
+    private float icefallAt(float u) {
+        return icefall == NO_ICEFALL ? 0.0F : Terrain.smooth((10.0F - Math.abs(u - icefall)) / 4.0F);
+    }
+
+    /**
+     * The moulins, {x, z, size, lip x, lip z}: each a shaft 1 or 2 blocks across, and the notch on one side of it
+     * where the meltwater pours in. They're only where the ice is thick and whole, clear of crevasses, the ice cave
+     * and the icefall, and above the snout that melts back in summer.
+     */
+    private int[][] moulinList() {
+        if (!moulins) return new int[0][];
+        int n = 2 + Math.round(Terrain.hash(seed, 70) * 2.0F);
+        java.util.List<int[]> list = new java.util.ArrayList<>();
+        double c = Mth.cos(angle), s = Mth.sin(angle);
+        for (int i = 0; i < 16 && list.size() < n; i++) {
+            float u = length * (-0.1F + 0.33F * Terrain.hash(seed, 71 + i)), v = (Terrain.hash(seed, 90 + i) - 0.5F) * halfWidth(u) * 0.9F;
+            int x = Mth.floor(cx + u * c - v * s), z = Mth.floor(cz + u * s + v * c);
+            int size = Terrain.hash(seed, 110 + i) < 0.5F ? 1 : 2;
+            int side = Math.min(3, (int) (Terrain.hash(seed, 130 + i) * 4.0F));
+            int lx = side == 0 ? x - 1 : side == 1 ? x + size : x, lz = side == 2 ? z - 1 : side == 3 ? z + size : z;
+            boolean ok = true;
+            for (int dx = -2; dx <= size + 1 && ok; dx++) {
+                for (int dz = -2; dz <= size + 1 && ok; dz++) {
+                    float[] l = local(x + dx + 0.5, z + dz + 0.5);
+                    ok = thicknessAt(x + dx + 0.5, z + dz + 0.5) >= 4.0F && crevasse(l[0], l[1]) < 0 && caveDistance(l[0], l[1]) > 4.5F && icefallAt(l[0]) == 0.0F;
+                }
+            }
+            if (ok) list.add(new int[]{x, z, size, lx, lz});
+        }
+        return list.toArray(new int[0][]);
+    }
+
+    private static BlockState iceMix(float n) {
+        return n < 0.35F ? Blocks.BLUE_ICE.defaultBlockState() : n < 0.75F ? Blocks.PACKED_ICE.defaultBlockState() : Blocks.ICE.defaultBlockState();
+    }
+
+    /** The icefall: the ice cracked into blocks that lean and topple into towers of bare ice, with crevasses gaping between. */
+    private void icefall(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z, float[] l, int ground, int top, float fall) {
+        float cu = (l[0] - icefall) / 4.0F;
+        int iu = Mth.floor(cu);
+        float cv = l[1] / 4.0F + 0.5F * iu; // each row of blocks staggered against the last
+        int iv = Mth.floor(cv);
+        float fu = (cu - iu) * 4.0F, fv = (cv - iv) * 4.0F;
+        long cell = seed + iu * 73428767L + iv * 912931L;
+        if (fu < 1.0F || fv < 0.9F) {
+            int floor = Math.max(ground + 1, top - 3 - Math.round(Terrain.hash(cell, 1) * 3.0F * fall));
+            for (int h = floor + 1; h <= top; h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+            Terrain.set(level, pos, x, floor, z, Terrain.noise(seed, x, floor, z) < 0.5F ? Blocks.BLUE_ICE.defaultBlockState() : Blocks.SNOW_BLOCK.defaultBlockState());
+            return;
+        }
+        // a serac, its shoulders broken off
+        int rise = Math.round(fall * (1.0F + 4.0F * Terrain.hash(cell, 2)));
+        if (fu < 1.6F || fu > 3.4F || fv < 1.5F || fv > 3.4F) rise = Math.max(0, rise - 1 - Math.round(Terrain.hash(cell, 3)));
+        for (int h = Math.max(ground + 1, top - 1); h <= top + rise; h++) Terrain.set(level, pos, x, h, z, iceMix(Terrain.noise(seed + 1, x, h, z)));
+    }
+
     @Override
     public void build(WorldGenLevel level, BoundingBox area) {
         BoundingBox b = bounds();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int[][] shafts = moulinList();
         for (int x = Math.max(area.minX(), b.minX()); x <= Math.min(area.maxX(), b.maxX()); x++) {
             for (int z = Math.max(area.minZ(), b.minZ()); z <= Math.min(area.maxZ(), b.maxZ()); z++) {
                 int thick = Math.round(thicknessAt(x + 0.5, z + 0.5));
@@ -131,8 +218,9 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 int ground = Terrain.ground(level, pos, x, z);
                 Terrain.clearAbove(level, pos, x, ground, z, 24);
                 int top = ground + thick;
-                int crev = thick >= 3 ? crevasse(l[0], l[1]) : -1;
-                boolean wall = crev < 0 && thick >= 3 && (crevasse(l[0] + 1.2F, l[1]) >= 0 || crevasse(l[0] - 1.2F, l[1]) >= 0);
+                float fall = icefallAt(l[0]);
+                int crev = thick >= 3 && fall < 0.05F ? crevasse(l[0], l[1]) : -1;
+                boolean wall = crev < 0 && thick >= 3 && fall < 0.05F && (crevasse(l[0] + 1.2F, l[1]) >= 0 || crevasse(l[0] - 1.2F, l[1]) >= 0);
                 for (int h = ground + 1; h <= top; h++) {
                     float n = Terrain.noise(seed, x, h, z);
                     BlockState ice = wall || n > 0.88F && h < top - 1 ? Blocks.BLUE_ICE.defaultBlockState() : Blocks.PACKED_ICE.defaultBlockState();
@@ -149,6 +237,11 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 } else if (cave < 4.0F && thick >= 5) {
                     for (int h = ground + 1; h <= ground + Math.min(4, thick - 1); h++) Terrain.set(level, pos, x, h, z, Blocks.BLUE_ICE.defaultBlockState());
                 }
+                if (fall >= 0.05F && thick >= 2) {
+                    icefall(level, pos, x, z, l, ground, top, fall);
+                    continue;
+                }
+                if (moulin(level, pos, shafts, x, z, ground, top)) continue;
                 if (crev >= 0) {
                     int depth = Mth.clamp(thick + 2, 5, 8);
                     for (int h = top - depth + 1; h <= top; h++) {
@@ -163,6 +256,53 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                     Terrain.set(level, pos, x, top + 1, z, Blocks.SNOW.defaultBlockState());
                 }
             }
+        }
+    }
+
+    /** A moulin's shaft, its lip, or the blue ice lining it, if this column is one; whether it was. */
+    private static boolean moulin(WorldGenLevel level, BlockPos.MutableBlockPos pos, int[][] shafts, int x, int z, int ground, int top) {
+        for (int[] m : shafts) {
+            if (x >= m[0] && x < m[0] + m[2] && z >= m[1] && z < m[1] + m[2]) {
+                // the shaft, straight down to the rock it has bored through to
+                for (int h = ground + 1; h <= top; h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+                return true;
+            }
+            if (x == m[3] && z == m[4]) {
+                // the notch at its lip the meltwater runs in by, frozen up until summer
+                Terrain.set(level, pos, x, top, z, Blocks.AIR.defaultBlockState());
+                Terrain.set(level, pos, x, top - 1, z, Blocks.ICE.defaultBlockState());
+                return true;
+            }
+            if (x >= m[0] - 1 && x <= m[0] + m[2] && z >= m[1] - 1 && z <= m[1] + m[2]) {
+                // its walls, scoured clean to blue ice
+                for (int h = ground + 1; h < top; h++) Terrain.set(level, pos, x, h, z, Blocks.BLUE_ICE.defaultBlockState());
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /** Meltwater pours into the moulins in summer; the rest of the year their lips are frozen up. */
+    private void moulinWater(ServerLevel level, boolean summer) {
+        int[][] shafts = moulinList();
+        if (shafts.length == 0) return;
+        int[] m = shafts[level.random.nextInt(shafts.length)];
+        BlockPos column = new BlockPos(m[3], 0, m[4]);
+        if (!level.isLoaded(column)) return;
+        BlockPos lip = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column).below();
+        // the shaft column beside the lip
+        int sx = Mth.clamp(m[3], m[0], m[0] + m[2] - 1), sz = Mth.clamp(m[4], m[1], m[1] + m[2] - 1);
+        BlockPos shaft = new BlockPos(sx, lip.getY(), sz);
+        BlockState state = level.getBlockState(lip);
+        if (summer && state.is(Blocks.ICE) && level.getBlockState(shaft).isAir()) {
+            // only if the water can go nowhere but down the shaft
+            for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                BlockPos side = lip.relative(d);
+                if (!side.equals(shaft) && !level.getBlockState(side).isFaceSturdy(level, side, d.getOpposite())) return;
+            }
+            level.setBlock(lip, Blocks.WATER.defaultBlockState(), Block.UPDATE_ALL);
+        } else if (!summer && state.is(Blocks.WATER) && level.getFluidState(lip).isSource()) {
+            level.setBlock(lip, Blocks.ICE.defaultBlockState(), Block.UPDATE_ALL);
         }
     }
 
@@ -210,6 +350,9 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             }
         }
         calve(level);
+        if (moulins && WeatherConfig.CHANGING_LANDFORMS.get()) {
+            moulinWater(level, WeatherManager.seasonInfo().season() == Season.SUMMER);
+        }
         if (!WeatherConfig.CHANGING_LANDFORMS.get() || WeatherManager.seasonInfo().season() != Season.SUMMER) {
             return;
         }

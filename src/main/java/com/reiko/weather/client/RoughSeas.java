@@ -34,6 +34,10 @@ public final class RoughSeas {
             return;
         }
         float stormy = Mth.clamp((ClientWeather.wind() - 0.45F) / 0.55F, 0.0F, 1.0F) * ClientWeather.exposure();
+        // the long swell rolling in ahead of a hurricane, even under a clear sky
+        if (WeatherConfig.SPEC.isLoaded() && WeatherConfig.SWELL.get()) {
+            stormy = Math.max(stormy, AirAndWater.swell(player.getX(), player.getZ()) * 1.4F);
+        }
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
         boolean open = openWater(level, BlockPos.containing(cam.x, level.getSeaLevel() - 1, cam.z));
         roughness = Mth.approach(roughness, open ? stormy : 0.0F, 0.01F);

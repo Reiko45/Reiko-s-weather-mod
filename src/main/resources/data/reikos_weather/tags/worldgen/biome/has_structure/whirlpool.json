@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:ocean",
+    "minecraft:cold_ocean",
+    "minecraft:lukewarm_ocean",
+    "minecraft:stony_shore",
+    "minecraft:beach"
+  ]
+}

@@ -98,6 +98,7 @@ public final class WeatherParticleSpawner {
             case DUST -> 4;
             case LEAVES -> 2;
             case ASH -> 22;
+            case GRAUPEL -> 12;
             case NONE -> 0;
         };
     }
@@ -105,7 +106,7 @@ public final class WeatherParticleSpawner {
     private static void spawn(ClientLevel level, Precip precip, Vec3 camera) {
         float wind = ClientWeather.wind();
         Vec3 windDir = Wind.direction(ClientWeather.windAngle());
-        boolean falling = precip == Precip.HAIL || precip == Precip.SLEET || precip == Precip.DOWNPOUR || precip == Precip.SNOW || precip == Precip.ASH;
+        boolean falling = precip == Precip.HAIL || precip == Precip.GRAUPEL || precip == Precip.SLEET || precip == Precip.DOWNPOUR || precip == Precip.SNOW || precip == Precip.ASH;
         double radius = falling ? 14.0 : 20.0;
         // spawn upwind so particles blow into view
         double upwind = falling ? wind * 6.0 : 6.0 + wind * 6.0;
@@ -138,12 +139,13 @@ public final class WeatherParticleSpawner {
         switch (precip) {
             case DOWNPOUR -> { if (columnPrecip != Biome.Precipitation.RAIN) return; }
             case SNOW, BLIZZARD -> { if (columnPrecip != Biome.Precipitation.SNOW) return; }
-            case HAIL, SLEET -> { if (columnPrecip == Biome.Precipitation.NONE) return; }
+            case HAIL, SLEET, GRAUPEL -> { if (columnPrecip == Biome.Precipitation.NONE) return; }
             default -> {}
         }
 
         SimpleParticleType type = switch (precip) {
             case HAIL -> ModParticles.HAIL.get();
+            case GRAUPEL -> ModParticles.GRAUPEL.get();
             case SLEET -> ModParticles.SLEET.get();
             case DOWNPOUR -> ModParticles.DOWNPOUR.get();
             case SNOW -> ModParticles.SNOWFLAKE.get();
@@ -161,6 +163,7 @@ public final class WeatherParticleSpawner {
         double vx = windDir.x * speed, vz = windDir.z * speed;
         double vy = switch (precip) {
             case HAIL -> -0.9 - RANDOM.nextDouble() * 0.4;
+            case GRAUPEL -> -0.55 - RANDOM.nextDouble() * 0.2;
             case SLEET -> -0.75 - RANDOM.nextDouble() * 0.2;
             case DOWNPOUR -> -1.1 - RANDOM.nextDouble() * 0.3;
             case SNOW -> -0.08;

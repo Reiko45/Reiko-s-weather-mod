@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=y": {
+      "model": "reikos_weather:block/petrified_wood"
+    },
+    "axis=z": {
+      "model": "reikos_weather:block/petrified_wood_horizontal",
+      "x": 90
+    },
+    "axis=x": {
+      "model": "reikos_weather:block/petrified_wood_horizontal",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

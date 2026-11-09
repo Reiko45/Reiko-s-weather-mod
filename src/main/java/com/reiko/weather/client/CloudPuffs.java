@@ -38,7 +38,7 @@ public final class CloudPuffs {
                 case HABOOB -> {
                     if (towers) haboob(level, cell, cam, maxDistance, daylight, fog, strength);
                 }
-                case THUNDERSTORM, SUPERCELL, HAIL, HURRICANE, DERECHO, COLD_FRONT, PYROCUMULUS -> {
+                case THUNDERSTORM, SUPERCELL, HAIL, HURRICANE, DERECHO, COLD_FRONT, PYROCUMULUS, THUNDERSNOW, GRAUPEL -> {
                     if (towers) towers(level, cell, cam, maxDistance, daylight, fog, time, wind, strength);
                     if (shapes && (cell.type == WeatherType.COLD_FRONT || cell.type == WeatherType.DERECHO)) {
                         shelfCloud(level, cell, cam, maxDistance, daylight, fog, strength);
@@ -210,6 +210,16 @@ public final class CloudPuffs {
                 float smoky = cell.type == WeatherType.PYROCUMULUS ? Mth.clamp(1.0F - s * 1.4F, 0.0F, 1.0F) : 0.0F;
                 PuffRenderer.add(x, y, z, w * (0.8F + 0.4F * PuffRenderer.hash(i, salt + c + 202)), shade * (1.0F - 0.1F * smoky),
                         shade * (1.0F - 0.3F * smoky), shade * (1.03F - 0.5F * smoky), alpha, false, cam, maxDistance);
+            }
+            if (ClientConfig.CLOUD_FORMS.get() && strength > 0.25F && strength < 0.7F && cell.age < cell.maxAge / 3) {
+                // a pileus: a smooth cap of cloud draped over the top of a fast-growing tower
+                for (int i = 0; i < 9; i++) {
+                    float t = (i / 8.0F - 0.5F) * 2.0F;
+                    double x = cx + Mth.cos(salt * 0.1F) * t * width * 0.9, z = cz + Mth.sin(salt * 0.1F) * t * width * 0.9;
+                    double y = base + height + 10.0 - 6.0 * t * t;
+                    float shade = 0.97F * (0.25F + 0.75F * daylight);
+                    PuffRenderer.add(x, y, z, width * 0.45F, shade, shade, shade, alpha * 0.45F * (1.0F - t * t * 0.5F), false, cam, maxDistance);
+                }
             }
             if (strength > 0.6F && cell.type != WeatherType.COLD_FRONT) {
                 // the anvil, sheared out downwind

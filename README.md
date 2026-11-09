@@ -45,6 +45,9 @@ New players get a **Weather Almanac**, the in-game guide to everything below (wi
 | **Atmospheric River** | Now and then, mostly in autumn and winter, a long, narrow river of tropical moisture comes ashore and stalls: days of heavy, mild rain that floods rivers (heavy snow in the cold). Arrives as a storm cell. |
 | **Heat Burst** | At night, a dying thunderstorm can collapse into a sudden gale of hot, bone-dry air, the temperature jumping 10 °C or more for a few minutes. |
 | **Fire Cloud** | Over the biggest wildfires a smoke-stained thunderhead builds (a pyrocumulonimbus) and throws dry lightning downwind, starting new fires. |
+| **Graupel** | Showers of soft, white snow pellets that bounce and roll, mostly in chilly spring and autumn weather. |
+| **Thundersnow** | A snowstorm heavy enough to throw lightning, the thunder muffled by the falling snow (sleet in milder places). |
+| **Freezing Drizzle** | Fine drizzle falling through freezing air, glazing the ground and still water with ice. |
 | **Derecho** | A long line of violent thunderstorms that races across the map several times faster than any other storm, in summer. The wind is ferocious and breaks branches off trees. On the radar it's a long orange band. |
 
 Each weather looks and plays differently in **cold**, **temperate** and **arid** climates, and the
@@ -144,6 +147,29 @@ some break into thunderstorms (even hailstorms), dying away by dusk.
   `mobGriefing`).
 - **Quicksand** lurks on tidal flats, deltas, salt marshes, oasis shores and the beds of dry washes:
   you sink in to your waist and can barely move. Sneak to work your way out.
+- **Snowpack:** over the winter, snow builds up into a deep snowpack (deepest high up, in the coldest places and
+  among trees) and melts away in spring. Rain falling on deep snow melts it fast and floods the rivers.
+- **Needle ice and frost flowers:** on frosty mornings needle ice pushes up out of bare soil (and can heave young
+  crops out of farmland), and frost flowers grow on new ice. Both melt in the sun.
+- **Cornices:** wind-blown snow builds overhanging lips on ridges, which give way under anyone who walks out on
+  them and bring the snow below down (needs `mobGriefing`). **Sastrugi:** strong wind carves open snowfields into
+  ridges and furrows.
+- **Whirlwinds:** thin **landspouts** under growing storms on the plains, **gustnadoes** along gust fronts,
+  **steam devils** over unfrozen water in bitter cold, and **snow devils** on sunny, windy snowfields.
+- **Humid heat:** sticky, humid air (jungles, swamps, after rain) makes hot days feel hotter. **Dew** sparkles on
+  the grass on clear, calm mornings, and on dry spring days **pollen** hazes the air near woods and films still
+  water.
+- **Good years and bad:** the climate swings slowly between wet and dry years, shifting the odds of rain, storms,
+  hurricanes, heatwaves and droughts. `/rweather query` says which kind of year it is.
+- **Rip currents** pull swimmers out from beaches (swim along the shore to escape). **Swell** runs far out ahead of
+  hurricanes, **rogue waves** sometimes capsize boats in a big sea, and storms throw **sea foam** up the beach.
+- **Tidal bores:** at spring tides, a breaking wave surges up rivers near the sea. Ride it in a boat.
+- **Whirlpools** spin up in some narrow straits while the tide is running, dragging boats and swimmers round and
+  down; they calm at slack water.
+- **Algal blooms:** long, hot, still summers turn the warm seas murky rust-red; the fish die off or leave and
+  fishing brings up only weed, until a storm breaks it up. **Pumice rafts** drift on the sea after big undersea
+  earthquakes.
+- **Seasonal beaches:** winter storms strip sand off beaches and calm summers build it back (needs `mobGriefing`).
 - **Puddles**, **wet-looking ground** and **raindrop ripples** on water.
 
 ## Local climates
@@ -279,6 +305,14 @@ Ways to stay comfortable:
   sun, with a pink glow above it.
 - **Light pillars** stand up over lanterns, torches and fires on frigid, clear, still nights.
 - **Iridescent clouds:** thin cloud near the sun shimmers with pastel colours.
+- **The Milky Way** arches across dark, clear, moonless skies (washed out by the moon and by village lights), and
+  faint **zodiacal light** rises after dusk where the sun went down.
+- **Converging sunbeams** meet again at the point opposite a low sun.
+- **Fire rainbows and circumzenithal arcs:** spectral bands in thin ice cloud, low under a high summer sun or high
+  over a low one. **Nacreous clouds** glow mother-of-pearl in polar winter twilight.
+- **Roll clouds**, rows of **breaking-wave clouds**, smooth **pileus caps** over growing thunderheads, and
+  **hole-punch clouds**; at night, **spider lightning** crawls along the underside of storm clouds.
+- **Red sky at night:** a fiery sunset comes before fair weather, a red sunrise before rain.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -375,6 +409,24 @@ village or a volcano.
 - **Maars:** broad explosion craters sunk into the land, ringed with tuff and holding a deep lake.
 - **Mud volcanoes:** little cones of grey mud with bubbling pools on top, among cracked mud flows.
 - **Termite mounds:** earthen spires and domes dotted across the savanna.
+- **Karst:** **tiankeng** (giant sinkholes with a forest on the floor), **blue holes** in shallow tropical seas,
+  **stone forests** of limestone pinnacles, **natural bridges** over streams, and **sinking streams** that vanish
+  into a cave mouth and come out at a spring further down.
+- **Volcanic:** **volcanic necks** of columnar basalt, **spatter cones** along a fissure in a young lava field,
+  **obsidian flows** crusted with pumice, and **pillow lava** on the sea bed.
+- **Ice and cold:** **nunataks** poking through an ice sheet, **rock glaciers**, frozen peat **palsas**, frost-sorted
+  **stone circles**, and fields of snow spikes (**penitentes**) on high peaks.
+- **Desert:** **yardangs**, **inselbergs**, **mesas and buttes**, **mushroom rocks**, **sailing stones** with their
+  tracks, **fairy circles**, and **tinajas** (rock potholes that fill after rain and dry out again). Dune fields now
+  come as rows, crescent barchans, long seif ridges or star dunes.
+- **Mountains:** **horns** with knife-edge aretes, **talus cones**, **alluvial fans**, **avalanche chutes**,
+  **landslide scars**, **hanging valleys** with waterfalls, and turquoise **glacial lakes** behind moraines that can
+  burst in summer and flood the valley below. Glaciers now have moulins and icefalls.
+- **Rivers:** **river terraces**, **rapids** with potholes, and deep **gorges**.
+- **Coasts:** **sand spits**, **tombolos**, **shingle beaches**, **raised beaches**, **rias**, and tidal
+  **whirlpools** in narrow straits.
+- **Ancient things:** **petrified forests** of stone logs (**petrified wood**), **fossil beds** with great bones
+  weathering out (brush the gravel below), and **nurse logs** and root mounds in old forests.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -494,14 +546,15 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 62 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 66 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
 crater's rim), Ring of Fire (witness an eruption), Hair-Raising, Old Faithful, Hot Tub, Mind the
 Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold, Field Geologist
 (visit five kinds of landform), Downburst, Firenado, Shaken, Not Stirred, Iceberg, Right Ahead!,
-A Sinking Feeling and Thar She Blows.
+A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom and Dam
+Busters.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at
@@ -588,7 +641,9 @@ effects (Performance, Default, Cinematic) and a button for every setting. Or edi
   and acid rain), afternoon storms, sea fog, wildfire smoke, lightning warnings, hail breaking glass,
   mudslides, droughts (and drying ponds), ice breakup, desert dust, sinkholes, rockfall, peat fires,
   breezes, microbursts, haboobs, fire whirls, atmospheric rivers, heat bursts, rime, snow rollers,
-  lake ice, fertile floods, earthquakes and tsunamis, coastal erosion, icebergs, quicksand,
+  lake ice, fertile floods, earthquakes and tsunamis, coastal erosion, icebergs, quicksand, the snowpack, humid
+  heat, wet and dry years, whirlwinds, needle ice, cornices, sastrugi, rip currents, swell and rogue waves, tidal
+  bores, algal blooms, pumice rafts, seasonal beaches, glacial outburst floods,
   each landform's generation and whether landforms change with the weather, the almanac
   on first join, and Tough As Nails.
 - `config/reikos_weather-client.toml`: particle density, fog, sky tinting, storm clouds (and how far
@@ -599,7 +654,8 @@ effects (Performance, Default, Cinematic) and a button for every setting. Or edi
   sea fog banks, smoke columns, diamond dust, St. Elmo's fire sparks, mirages, steam fog, waterfall
   spray, dusty rain, red sprites, noctilucent clouds, shelf clouds and mammatus, moonbows, fogbows,
   virga, valley inversions, singing ice, glowing waves, double rainbows, glories, lenticular clouds,
-  the green flash, twilight bands, light pillars, iridescent clouds,
+  the green flash, twilight bands, light pillars, iridescent clouds, dew, pollen, the Milky Way, converging
+  sunbeams, sky arcs, cloud forms, nacreous clouds, spider lightning, red skies, algal bloom water,
   accessibility
   (reduce flashing, screen effect strength, the radio's alert tone), Fahrenheit, and the forecast
   panel (`BAROMETER`, `ALWAYS` or `NEVER`).
@@ -629,7 +685,8 @@ src/main/java/com/reiko/weather/
               StormDebris, Fronts, Convection (afternoon storms), SeaFog, FireTracker (wildfire smoke),
               LightningWarnings (St. Elmo's fire), HailGlass, AcidRain, Breezes, Downdrafts (microbursts, haboobs,
               heat bursts), AtmosphericRivers, Frostwork (rime, snow rollers, pressure ridges), Earthquakes, Coasts
-              (erosion, icebergs, fertile floods)
+              (erosion, icebergs, fertile floods), WinterGround (snowpack, needle ice, cornices, sastrugi), Seas (rip
+              currents, swell, tidal bores, algal blooms, pumice, beaches), ClimateYears
   temperature/ Temperature (air and felt temperature), TemperatureEffects (body temperature, cold and heat)
   farming/    Greenhouses, crop frost and food spoilage
   nature/     Autumn leaf piles; wild crops, earthworms, weather fishing and leaf-pile landings (NatureEvents)
@@ -645,7 +702,7 @@ src/main/java/com/reiko/weather/
   block/      Weather station, tornado siren, rain barrel, puddles, ice glaze, icicles, radar, vane, windmill, altar,
               tent, lightning battery, forecast board, storm probe, leaf pile, fallen branch, rice, kale, icebox,
               volcanic ash, steam vent, sulfur crust, seismograph, geyser, salt crust, rime, snow roller, quicksand,
-              blowhole
+              blowhole, petrified wood, pumice, whirlpool, sea foam, needle ice, frost flowers
   item/       Barometer, umbrella, thermometer, handheld radar, rocket, drinks, salt, paraglider, weather radio,
               rake, ice saw, almanac, charged tools and gear events
   compat/     JEI, Jade and WTHIT plugins, Tough As Nails, Curios, shader detection, Distant Horizons
@@ -656,7 +713,7 @@ src/main/java/com/reiko/weather/
               shimmer, rough seas, fireflies, blossoms, worms, bird flocks, paraglider, volcano plumes and tremors,
               towering clouds and fog banks (PuffRenderer), diamond dust, mirages, St. Elmo's fire, SkySights
               (sprites, noctilucent clouds, moonbows, fogbows, inversions), GroundOptics (glories, light pillars),
-              ShoreAndIce (glowing waves, singing ice),
+              ShoreAndIce (glowing waves, singing ice), AirAndWater (dew, pollen, foam, light pollution), CloudForms,
               the almanac screen (guide/),
               config presets and accessibility
   mixin/      Sky tinting, seasonal biome temperature and colours, storm cells in vanilla rain checks, monsoon rain,

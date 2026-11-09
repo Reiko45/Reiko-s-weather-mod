@@ -104,6 +104,26 @@ public final class Terrain {
         return t * t * (3.0F - 2.0F * t);
     }
 
+    /** This mod's own biome for glacial lakes: it only exists to colour their water turquoise with rock flour. */
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> GLACIAL_LAKE_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("glacial_lake"));
+
+    /**
+     * Repaints the biome over part of the chunk being built: every 4x4x4 biome cell between {@code minY} and
+     * {@code maxY} whose middle column passes {@code inside}. Biomes set the colour of water and grass, so this is how
+     * a landform gives a lake its own colour.
+     */
+    public static void setBiome(WorldGenLevel level, BoundingBox area, int minY, int maxY, java.util.function.BiPredicate<Integer, Integer> inside,
+                                net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> key) {
+        var holder = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME).getHolder(key).orElse(null);
+        if (holder == null) return;
+        net.minecraft.world.level.chunk.ChunkAccess chunk = level.getChunk(area.minX() >> 4, area.minZ() >> 4);
+        chunk.fillBiomesFromNoise((qx, qy, qz, sampler) -> {
+            int x = net.minecraft.core.QuartPos.toBlock(qx) + 2, y = net.minecraft.core.QuartPos.toBlock(qy) + 2, z = net.minecraft.core.QuartPos.toBlock(qz) + 2;
+            return y >= minY && y <= maxY && column(area, x, z) && inside.test(x, z) ? holder : chunk.getNoiseBiome(qx, qy, qz);
+        }, null);
+    }
+
     /** Whether landforms may lay down quicksand (they do while the config is still loading, during world creation). */
     public static boolean quicksand() {
         return !com.reiko.weather.config.WeatherConfig.SPEC.isLoaded() || com.reiko.weather.config.WeatherConfig.QUICKSAND.get();

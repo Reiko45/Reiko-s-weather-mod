@@ -41,6 +41,19 @@ public class IceFloeRenderer extends EntityRenderer<IceFloeEntity> {
         poseStack.translate(0.0, 0.02 * Mth.sin(t * 0.07F + id), 0.0);
         poseStack.mulPose(Axis.XP.rotationDegrees(1.2F * Mth.sin(t * 0.05F + id * 3)));
         poseStack.mulPose(Axis.ZP.rotationDegrees(1.2F * Mth.cos(t * 0.04F + id * 7)));
+        if (floe.pumice()) {
+            // a raft of pale, frothy stone riding low in the water, in lumps
+            BlockState pumice = com.reiko.weather.registry.ModBlocks.PUMICE.get().defaultBlockState();
+            slab(poseStack, buffers, light, pumice, 0, 0, 0, w, 0.22F, w);
+            for (int i = 0; i < 4; i++) {
+                float a = (Mth.murmurHash3Mixer(id * 17 + i) & 1023) / 1023.0F * Mth.TWO_PI;
+                float r = w * 0.3F;
+                slab(poseStack, buffers, light, pumice, Mth.cos(a) * r, 0.12F, Mth.sin(a) * r, w * 0.35F, 0.16F, w * 0.3F);
+            }
+            poseStack.popPose();
+            super.render(floe, yaw, partialTick, poseStack, buffers, light);
+            return;
+        }
         slab(poseStack, buffers, light, ICE, 0, 0, 0, w, 0.36F, w);
         slab(poseStack, buffers, light, SNOW, -w * 0.08F, 0.36F, w * 0.05F, w * 0.78F, 0.08F, w * 0.72F);
         // broken-off chunks frozen onto the edges

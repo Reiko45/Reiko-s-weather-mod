@@ -107,6 +107,11 @@ public final class WeatherReport {
         java.util.List<Component> lines = new java.util.ArrayList<>();
         Component drought = Drought.describe(state);
         if (drought != null) lines.add(drought.copy().withStyle(ChatFormatting.GOLD));
+        ClimateYears.Phase year = ClimateYears.phase(level);
+        if (year != ClimateYears.Phase.NEUTRAL) {
+            lines.add(Component.translatable("report.reikos_weather.year." + year.name().toLowerCase(java.util.Locale.ROOT))
+                    .withStyle(year == ClimateYears.Phase.WET ? ChatFormatting.BLUE : ChatFormatting.GOLD));
+        }
         for (StormCell cell : state.cells) {
             if (cell.type != WeatherType.HURRICANE) continue;
             double edge = cell.distanceTo(pos.getX(), pos.getZ()) - cell.radius;

@@ -138,6 +138,7 @@ public final class WeatherManager {
         LightningWarnings.reset();
         HailGlass.reset();
         com.reiko.weather.landform.Arroyo.reset();
+        Seas.reset();
         Downdrafts.reset();
         Earthquakes.reset();
     }
@@ -286,13 +287,18 @@ public final class WeatherManager {
         }
     }
 
+    /** The overworld, while the server's running (for the year's climate leaning when picking weather). */
+    @Nullable
+    private static ServerLevel overworld;
+
     private static float seasonMultiplier(WeatherType type) {
         Season season = seasonInfo.season();
-        return season == null ? 1.0F : season.weatherMultiplier(type);
+        return (season == null ? 1.0F : season.weatherMultiplier(type)) * ClimateYears.weatherMultiplier(overworld, type);
     }
 
     /** Weighted random choice of the weather following {@code after}, biased by climate and season. */
     private static WeatherState.Forecast pick(ServerLevel level, WeatherType after) {
+        overworld = level;
         float[] mix = climateMix(level);
         boolean regional = WeatherConfig.REGIONAL_STORMS.get();
         float monsoon = Monsoon.enabled() && seasonInfo.season() == Season.SUMMER ? tropicalFraction(level) : 0.0F;
@@ -566,7 +572,7 @@ public final class WeatherManager {
         return new WeatherSyncPayload(state.type.ordinal(), state.elapsed, state.remaining, state.windAngle, state.rainbowTicks,
                 season.season() == null ? -1 : season.season().ordinal(), season.dayOfSeason(), season.daysPerSeason(),
                 season.temperatureShift(), forecast, cells, state.custom != null && CustomWeathers.of(state) != null ? state.custom : "",
-                Drought.severity(state));
+                Drought.severity(state), state.bloom);
     }
 
     public static void sync(ServerLevel level, WeatherState state) {

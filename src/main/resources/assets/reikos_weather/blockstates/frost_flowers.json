@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/frost_flowers"
+      },
+      {
+        "model": "reikos_weather:block/frost_flowers",
+        "y": 45
+      }
+    ]
+  }
+}

@@ -29,7 +29,7 @@ public final class SyncedWeather {
     private static List<StormCell> cells = List.of();
     @Nullable
     private static String custom;
-    private static float drought;
+    private static float drought, bloom;
 
     public static void accept(WeatherSyncPayload payload) {
         managed = payload.weather() >= 0;
@@ -48,6 +48,7 @@ public final class SyncedWeather {
         cells = new ArrayList<>(payload.cells());
         custom = payload.custom().isEmpty() ? null : payload.custom();
         drought = managed ? payload.drought() : 0.0F;
+        bloom = managed ? payload.bloom() : 0.0F;
         Seasons.setTemperatureShift(managed ? payload.temperatureShift() : 0.0F);
     }
 
@@ -72,12 +73,16 @@ public final class SyncedWeather {
         cells = List.of();
         custom = null;
         drought = 0.0F;
+        bloom = 0.0F;
         Seasons.setTemperatureShift(0.0F);
     }
 
     public static boolean managed() { return managed; }
     /** 0 to 1, how bad the drought is. */
     public static float drought() { return drought; }
+
+    /** 0 to 1, how far an algal bloom has spread through the warm seas. */
+    public static float bloom() { return bloom; }
     /** Id of the active datapack weather (built on {@link #type()}), or null. */
     @Nullable public static String custom() { return custom; }
     public static WeatherType type() { return type; }

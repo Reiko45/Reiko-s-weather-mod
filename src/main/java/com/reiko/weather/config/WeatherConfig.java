@@ -156,6 +156,61 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue MAARS;
     public static final ModConfigSpec.BooleanValue MUD_VOLCANOES;
     public static final ModConfigSpec.BooleanValue TERMITE_MOUNDS;
+    public static final ModConfigSpec.BooleanValue SNOWPACK;
+    public static final ModConfigSpec.BooleanValue HUMIDITY;
+    public static final ModConfigSpec.BooleanValue CLIMATE_SWINGS;
+    public static final ModConfigSpec.BooleanValue WHIRLWINDS;
+    public static final ModConfigSpec.BooleanValue FROST_HEAVE;
+    public static final ModConfigSpec.BooleanValue CORNICES;
+    public static final ModConfigSpec.BooleanValue SASTRUGI;
+    public static final ModConfigSpec.BooleanValue RIP_CURRENTS;
+    public static final ModConfigSpec.BooleanValue SWELL;
+    public static final ModConfigSpec.BooleanValue TIDAL_BORES;
+    public static final ModConfigSpec.BooleanValue ALGAL_BLOOMS;
+    public static final ModConfigSpec.BooleanValue PUMICE_RAFTS;
+    public static final ModConfigSpec.BooleanValue SEASONAL_BEACHES;
+    public static final ModConfigSpec.BooleanValue GLACIAL_OUTBURSTS;
+    public static final ModConfigSpec.BooleanValue TIANKENG;
+    public static final ModConfigSpec.BooleanValue BLUE_HOLES;
+    public static final ModConfigSpec.BooleanValue STONE_FORESTS;
+    public static final ModConfigSpec.BooleanValue NATURAL_BRIDGES;
+    public static final ModConfigSpec.BooleanValue SINKING_STREAMS;
+    public static final ModConfigSpec.BooleanValue VOLCANIC_NECKS;
+    public static final ModConfigSpec.BooleanValue SPATTER_CONES;
+    public static final ModConfigSpec.BooleanValue PILLOW_LAVA;
+    public static final ModConfigSpec.BooleanValue OBSIDIAN_FLOWS;
+    public static final ModConfigSpec.BooleanValue NUNATAKS;
+    public static final ModConfigSpec.BooleanValue ROCK_GLACIERS;
+    public static final ModConfigSpec.BooleanValue PALSAS;
+    public static final ModConfigSpec.BooleanValue STONE_CIRCLES;
+    public static final ModConfigSpec.BooleanValue TORS;
+    public static final ModConfigSpec.BooleanValue YARDANGS;
+    public static final ModConfigSpec.BooleanValue INSELBERGS;
+    public static final ModConfigSpec.BooleanValue MESAS;
+    public static final ModConfigSpec.BooleanValue MUSHROOM_ROCKS;
+    public static final ModConfigSpec.BooleanValue SAILING_STONES;
+    public static final ModConfigSpec.BooleanValue FAIRY_CIRCLES;
+    public static final ModConfigSpec.BooleanValue TINAJAS;
+    public static final ModConfigSpec.BooleanValue ALLUVIAL_FANS;
+    public static final ModConfigSpec.BooleanValue TALUS_CONES;
+    public static final ModConfigSpec.BooleanValue HORNS;
+    public static final ModConfigSpec.BooleanValue AVALANCHE_CHUTES;
+    public static final ModConfigSpec.BooleanValue LANDSLIDE_SCARS;
+    public static final ModConfigSpec.BooleanValue PETRIFIED_FORESTS;
+    public static final ModConfigSpec.BooleanValue FOSSIL_BEDS;
+    public static final ModConfigSpec.BooleanValue SPITS;
+    public static final ModConfigSpec.BooleanValue TOMBOLOS;
+    public static final ModConfigSpec.BooleanValue SHINGLE_BEACHES;
+    public static final ModConfigSpec.BooleanValue RAISED_BEACHES;
+    public static final ModConfigSpec.BooleanValue RIAS;
+    public static final ModConfigSpec.BooleanValue RIVER_TERRACES;
+    public static final ModConfigSpec.BooleanValue RAPIDS;
+    public static final ModConfigSpec.BooleanValue GORGES;
+    public static final ModConfigSpec.BooleanValue HANGING_VALLEYS;
+    public static final ModConfigSpec.BooleanValue NURSE_LOGS;
+    public static final ModConfigSpec.BooleanValue PENITENTES;
+    public static final ModConfigSpec.BooleanValue GLACIAL_LAKES;
+    public static final ModConfigSpec.BooleanValue WHIRLPOOLS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -410,6 +465,34 @@ public final class WeatherConfig {
                 .define("icebergs", true);
         QUICKSAND = b.comment("Patches of quicksand on tidal flats, river deltas, salt marshes, oasis shores and dry washes.")
                 .define("quicksand", true);
+        SNOWPACK = b.comment("Snow builds up deeper over the winter, deepest in cold, sheltered spots, and melts away in spring;", "rain on deep snow sets off floods.")
+                .define("snowpack", true);
+        HUMIDITY = b.comment("Humid air makes hot days feel hotter, and muggy nights stay warm.")
+                .define("humidity", true);
+        CLIMATE_SWINGS = b.comment("Some years run wet and others dry, shifting the odds of droughts, monsoons and hurricanes for a few seasons.")
+                .define("climateSwings", true);
+        WHIRLWINDS = b.comment("Landspouts and gustnadoes along storm outflows, steam devils over unfrozen lakes in bitter cold, and snow", "devils on sunny, windy snowfields.")
+                .define("whirlwinds", true);
+        FROST_HEAVE = b.comment("Needle ice pushes up through bare soil on frosty mornings (and can heave young crops out of farmland), and", "frost flowers grow on new ice.")
+                .define("frostHeave", true);
+        CORNICES = b.comment("Wind-blown snow builds overhanging cornices on ridges, which can break off underfoot and set off avalanches", "(needs mobGriefing).")
+                .define("cornices", true);
+        SASTRUGI = b.comment("Wind carves open snowfields into ridges and furrows.")
+                .define("sastrugi", true);
+        RIP_CURRENTS = b.comment("Rip currents pull swimmers out from beaches. Swim along the shore to get out of one.")
+                .define("ripCurrents", true);
+        SWELL = b.comment("Swell runs ahead of hurricanes, rogue waves now and then swamp boats in rough seas, and storms pile sea foam", "on beaches.")
+                .define("swell", true);
+        TIDAL_BORES = b.comment("At spring tides, a tidal bore surges up rivers near the sea.")
+                .define("tidalBores", true);
+        ALGAL_BLOOMS = b.comment("Hot, still summers set off algal blooms (red tides) in warm seas: the water turns rusty and the fish stay away.")
+                .define("algalBlooms", true);
+        PUMICE_RAFTS = b.comment("Rafts of floating pumice drift on the sea after big undersea earthquakes.")
+                .define("pumiceRafts", true);
+        SEASONAL_BEACHES = b.comment("Winter storms strip sand off beaches and calm summer weather builds it back up (natural sand only; needs", "mobGriefing).")
+                .define("seasonalBeaches", true);
+        GLACIAL_OUTBURSTS = b.comment("Glacial lakes can burst through their moraine dams in summer, sending a flood down the valley.")
+                .define("glacialOutbursts", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -538,6 +621,88 @@ public final class WeatherConfig {
                 .define("mudVolcanoes", true);
         TERMITE_MOUNDS = b.comment("Termite mounds: tall earthen spires dotting savannas.")
                 .define("termiteMounds", true);
+        TIANKENG = b.comment("Tiankeng: giant, sheer-walled sinkholes with a forest growing on the floor.")
+                .define("tiankeng", true);
+        BLUE_HOLES = b.comment("Blue holes: deep, round sinkholes in shallow tropical seas.")
+                .define("blueHoles", true);
+        STONE_FORESTS = b.comment("Stone forests: fields of tall, sharp limestone pinnacles.")
+                .define("stoneForests", true);
+        NATURAL_BRIDGES = b.comment("Natural bridges: arches of rock spanning a stream.")
+                .define("naturalBridges", true);
+        SINKING_STREAMS = b.comment("Sinking streams that vanish into a cave mouth and come out again at a spring further down.")
+                .define("sinkingStreams", true);
+        VOLCANIC_NECKS = b.comment("Volcanic necks: towers of columnar basalt left standing when an old volcano wore away.")
+                .define("volcanicNecks", true);
+        SPATTER_CONES = b.comment("Fissure vents lined with a chain of small spatter cones, with a young lava field round them.")
+                .define("spatterCones", true);
+        PILLOW_LAVA = b.comment("Pillow lava: mounds of rounded basalt pillows on the sea bed.")
+                .define("pillowLava", true);
+        OBSIDIAN_FLOWS = b.comment("Obsidian flows: thick, steep-fronted tongues of volcanic glass.")
+                .define("obsidianFlows", true);
+        NUNATAKS = b.comment("Nunataks: rocky peaks poking up through an ice sheet.")
+                .define("nunataks", true);
+        ROCK_GLACIERS = b.comment("Rock glaciers: tongues of ice-cored rubble creeping down mountain valleys.")
+                .define("rockGlaciers", true);
+        PALSAS = b.comment("Palsas: frozen peat mounds rising out of northern bogs.")
+                .define("palsas", true);
+        STONE_CIRCLES = b.comment("Stone circles: frost-sorted rings of stones on cold ground.")
+                .define("stoneCircles", true);
+        TORS = b.comment("Tors: stacks of weathered granite on hilltops, with boulder fields round them.")
+                .define("tors", true);
+        YARDANGS = b.comment("Yardangs: wind-carved ridges like upturned boats in the desert, on a pavement of stones.")
+                .define("yardangs", true);
+        INSELBERGS = b.comment("Inselbergs: huge, isolated domes of rock rising out of the plains.")
+                .define("inselbergs", true);
+        MESAS = b.comment("Mesas and buttes: flat-topped hills with banded cliffs.")
+                .define("mesas", true);
+        MUSHROOM_ROCKS = b.comment("Mushroom rocks: wide caps of rock balanced on wind-worn stems.")
+                .define("mushroomRocks", true);
+        SAILING_STONES = b.comment("Sailing stones: boulders on dry lake beds, each at the end of a long track.")
+                .define("sailingStones", true);
+        FAIRY_CIRCLES = b.comment("Fairy circles: evenly spaced bare rings in dry grassland.")
+                .define("fairyCircles", true);
+        TINAJAS = b.comment("Tinajas: potholes in bare desert rock that fill with water after rain.")
+                .define("tinajas", true);
+        ALLUVIAL_FANS = b.comment("Alluvial fans: fans of gravel spreading out where a valley meets the plain.")
+                .define("alluvialFans", true);
+        TALUS_CONES = b.comment("Talus cones: cones of scree at the foot of cliffs.")
+                .define("talusCones", true);
+        HORNS = b.comment("Horns and aretes: pyramidal peaks with knife-edge ridges.")
+                .define("horns", true);
+        AVALANCHE_CHUTES = b.comment("Avalanche chutes: strips swept clear of trees down steep, snowy slopes.")
+                .define("avalancheChutes", true);
+        LANDSLIDE_SCARS = b.comment("Landslide scars: bare scoops in hillsides with a hummocky heap of debris below.")
+                .define("landslideScars", true);
+        PETRIFIED_FORESTS = b.comment("Petrified forests: fallen logs turned to stone in the badlands.")
+                .define("petrifiedForests", true);
+        FOSSIL_BEDS = b.comment("Fossil beds: eroding banks with great bones showing in them.")
+                .define("fossilBeds", true);
+        SPITS = b.comment("Spits: long, curving fingers of sand growing out from the shore.")
+                .define("spits", true);
+        TOMBOLOS = b.comment("Tombolos: sandbars tying a small island to the shore.")
+                .define("tombolos", true);
+        SHINGLE_BEACHES = b.comment("Shingle beaches: pebble beaches stepped with storm ridges.")
+                .define("shingleBeaches", true);
+        RAISED_BEACHES = b.comment("Raised beaches: old beaches left as flat terraces above today's shore.")
+                .define("raisedBeaches", true);
+        RIAS = b.comment("Rias: drowned river valleys winding inland as branching arms of the sea.")
+                .define("rias", true);
+        RIVER_TERRACES = b.comment("River terraces: flat benches stepping up from a river.")
+                .define("riverTerraces", true);
+        RAPIDS = b.comment("Rapids: rocky stretches of river with boulders and potholes.")
+                .define("rapids", true);
+        GORGES = b.comment("Gorges: deep, narrow, rock-walled river valleys.")
+                .define("gorges", true);
+        HANGING_VALLEYS = b.comment("Hanging valleys: glacial troughs with a waterfall spilling from a side valley high on the wall.")
+                .define("hangingValleys", true);
+        NURSE_LOGS = b.comment("Nurse logs and root mounds: fallen, mossy trees with saplings growing on them.")
+                .define("nurseLogs", true);
+        PENITENTES = b.comment("Penitentes: fields of tall snow spikes on high, dry peaks.")
+                .define("penitentes", true);
+        GLACIAL_LAKES = b.comment("Glacial lakes: turquoise mountain lakes dammed by moraines.")
+                .define("glacialLakes", true);
+        WHIRLPOOLS = b.comment("Whirlpools: tidal whirlpools in narrow sea straits.")
+                .define("whirlpools", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

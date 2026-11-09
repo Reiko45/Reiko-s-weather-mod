@@ -254,6 +254,16 @@ public record Arroyo(int cx, int cz, float angle, int length, int[] floor, long 
         }
     }
 
+    /** Sends a flood down a channel straight away, whatever the weather: a dam bursting, say. */
+    static void startFlood(ServerLevel level, long key) {
+        FLOODS.putIfAbsent(key, level.getGameTime());
+    }
+
+    /** Whether a flood is running down a channel at the moment. */
+    static boolean flooding(long key) {
+        return FLOODS.containsKey(key);
+    }
+
     /** Flash-flood water drains away fast once the rain stops. */
     public static void drain(ServerLevel level, WeatherState state) {
         if (state.flashFlood.isEmpty() || level.getGameTime() % 4L != 1L) {

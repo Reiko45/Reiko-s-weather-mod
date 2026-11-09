@@ -200,5 +200,14 @@
         "attenuation_distance": 128
       }
     ]
+  },
+  "weather.tidal_bore": {
+    "subtitle": "subtitles.reikos_weather.weather.tidal_bore",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/tidal_bore",
+        "attenuation_distance": 96
+      }
+    ]
   }
 }

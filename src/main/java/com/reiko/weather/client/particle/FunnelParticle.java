@@ -38,6 +38,15 @@ public class FunnelParticle extends TextureSheetParticle {
         switch (tornado.kind()) {
             case WATERSPOUT -> { shade = 0.78F + this.random.nextFloat() * 0.17F; this.setColor(shade * 0.96F, shade, Math.min(1.0F, shade * 1.05F)); }
             case DUST_DEVIL -> { shade = 0.8F + this.random.nextFloat() * 0.2F; this.setColor(0.86F * shade, 0.72F * shade, 0.52F * shade); }
+            case GUSTNADO -> { shade = 0.65F + this.random.nextFloat() * 0.2F; this.setColor(0.8F * shade, 0.72F * shade, 0.6F * shade); }
+            case STEAM_DEVIL, SNOW_DEVIL -> { shade = 0.92F + this.random.nextFloat() * 0.08F; this.setColor(shade, shade, Math.min(1.0F, shade * 1.03F)); }
+            case LANDSPOUT -> {
+                // a pale condensation rope above, dust swirling at its foot
+                boolean dust = height < tornado.height() * 0.12F;
+                shade = 0.7F + this.random.nextFloat() * 0.2F;
+                if (dust) this.setColor(0.78F * shade, 0.68F * shade, 0.55F * shade);
+                else this.setColor(shade, shade, shade * 1.04F);
+            }
             case FIRE_WHIRL -> {
                 // flame low down, dark smoke higher up
                 boolean flame = height < tornado.height() * 0.35F && this.random.nextFloat() < 0.7F;
@@ -47,7 +56,11 @@ public class FunnelParticle extends TextureSheetParticle {
             }
             default -> { shade = 0.5F + this.random.nextFloat() * 0.25F; this.setColor(shade, shade * 1.02F, shade * 1.06F); }
         }
-        this.maxAlpha = (0.7F + this.random.nextFloat() * 0.25F) * (tornado.kind() == TornadoEntity.Kind.DUST_DEVIL ? 0.55F : 1.0F);
+        this.maxAlpha = (0.7F + this.random.nextFloat() * 0.25F) * switch (tornado.kind()) {
+            case DUST_DEVIL, GUSTNADO -> 0.55F;
+            case STEAM_DEVIL, SNOW_DEVIL -> 0.4F;
+            default -> 1.0F;
+        };
         this.alpha = 0.0F;
         updatePosition();
         this.xo = this.x;

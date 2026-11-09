@@ -12,5 +12,7 @@ public enum Precip {
     DUST,
     LEAVES,
     /** Grey volcanic ash drifting down out of an eruption cloud. */
-    ASH
+    ASH,
+    /** Soft white snow pellets (graupel), bouncing as they land. */
+    GRAUPEL
 }

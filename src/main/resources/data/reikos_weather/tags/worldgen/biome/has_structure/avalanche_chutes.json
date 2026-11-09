@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:grove",
+    "minecraft:snowy_slopes",
+    "minecraft:taiga",
+    "minecraft:snowy_taiga",
+    "minecraft:windswept_forest",
+    "minecraft:old_growth_spruce_taiga"
+  ]
+}

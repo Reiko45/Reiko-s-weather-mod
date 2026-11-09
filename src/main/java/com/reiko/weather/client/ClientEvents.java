@@ -53,6 +53,21 @@ public final class ClientEvents {
     public static void registerParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModParticles.HAIL.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new HailParticle(level, x, y, z, xd, yd, zd, sprites));
+        // graupel: hail's soft little cousin, smaller and whiter
+        event.registerSpriteSet(ModParticles.GRAUPEL.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    var p = new HailParticle(level, x, y, z, xd, yd, zd, sprites);
+                    p.scale(0.55F);
+                    p.setColor(1.0F, 1.0F, 1.0F);
+                    return p;
+                });
+        // dew glinting on the grass at dawn
+        event.registerSpriteSet(ModParticles.DEW.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    var p = new com.reiko.weather.client.particle.GlitterParticle(level, x, y, z, 0, 0, 0, sprites);
+                    p.setColor(0.85F, 0.95F, 1.0F);
+                    return p;
+                });
         event.registerSpriteSet(ModParticles.SLEET.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> {
                     StreakParticle p = new StreakParticle(level, x, y, z, xd, yd, zd, sprites, 0.45F, 0.025F, false);
@@ -74,6 +89,22 @@ public final class ClientEvents {
                     WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.SAND);
                     float shade = 0.85F + level.random.nextFloat() * 0.15F;
                     p.setColor(0.86F * shade, 0.72F * shade, 0.5F * shade);
+                    return p;
+                });
+        // pine pollen: fine yellow motes drifting on the breeze
+        event.registerSpriteSet(ModParticles.POLLEN.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.DUST);
+                    float shade = 0.9F + level.random.nextFloat() * 0.1F;
+                    p.setColor(0.95F * shade, 0.85F * shade, 0.35F * shade);
+                    p.scale(0.1F); // fine dust, not blobs: the haze comes from there being a lot of it
+                    return p;
+                });
+        // windblown sea foam: white flecks torn off the waves
+        event.registerSpriteSet(ModParticles.SEA_FOAM.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.SPRAY);
+                    p.setColor(0.97F, 0.97F, 0.94F);
                     return p;
                 });
         event.registerSpriteSet(ModParticles.DUST.get(), sprites ->
@@ -202,6 +233,7 @@ public final class ClientEvents {
             CloudPuffs.collect(event.getCamera(), partialTick);
             CloudPuffs.inversion(event.getCamera());
             CloudPuffs.lenticular(event.getCamera());
+            CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
             PuffRenderer.render(event.getCamera());
             WaterMist.renderRainbows(event);
@@ -240,6 +272,7 @@ public final class ClientEvents {
         WaterMist.tick(mc);
         SkySights.tick(mc);
         ShoreAndIce.tick(mc);
+        AirAndWater.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
@@ -321,6 +354,26 @@ public final class ClientEvents {
         if (event.getCamera().getFluidInCamera() == FogType.NONE && !blinded(event.getCamera().getEntity())
                 && OtherworldClient.applyFogColor(event)) {
             return;
+        }
+        float bloom = com.reiko.weather.network.SyncedWeather.bloom();
+        if (bloom > 0.05F && event.getCamera().getFluidInCamera() == FogType.WATER && com.reiko.weather.config.ClientConfig.ALGAL_BLOOM_TINT.get() && Minecraft.getInstance().level != null) {
+            // under an algal bloom the water goes a murky rust-red
+            var biome = Minecraft.getInstance().level.getBiome(event.getCamera().getBlockPosition());
+            if (biome.is(net.minecraft.world.level.biome.Biomes.WARM_OCEAN) || biome.is(net.minecraft.world.level.biome.Biomes.LUKEWARM_OCEAN)
+                    || biome.is(net.minecraft.world.level.biome.Biomes.DEEP_LUKEWARM_OCEAN) || biome.is(net.minecraft.tags.BiomeTags.IS_BEACH)) {
+                float k = Math.min(0.75F, bloom);
+                event.setRed(Mth.lerp(k, event.getRed(), 0.42F));
+                event.setGreen(Mth.lerp(k, event.getGreen(), 0.22F));
+                event.setBlue(Mth.lerp(k, event.getBlue(), 0.12F));
+            }
+        }
+        float pollen = AirAndWater.pollen();
+        if (pollen > 0.02F && event.getCamera().getFluidInCamera() == FogType.NONE) {
+            // a faint yellow haze of pollen in the air
+            float k = pollen * 0.12F;
+            event.setRed(Mth.lerp(k, event.getRed(), 0.95F));
+            event.setGreen(Mth.lerp(k, event.getGreen(), 0.88F));
+            event.setBlue(Mth.lerp(k, event.getBlue(), 0.5F));
         }
         float blood = ClientWeather.bloodMoon();
         if (blood > 0.01F && event.getCamera().getFluidInCamera() == FogType.NONE) {

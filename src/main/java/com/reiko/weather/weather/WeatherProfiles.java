@@ -163,6 +163,25 @@ public final class WeatherProfiles {
         // a haboob: a wall of dust a few hundred metres high rolling across the land, then gone in an hour
         WeatherProfile haboob = builder().overcast(0.6F).tint(0xB06A32, 0.8F).fog(0.9F, 0xA8743F).wind(0.85F).clouds(0.0F)
                 .precip(Precip.SAND, 1.6F).precip(Precip.DUST, 1.4F).build();
+        put(WeatherType.GRAUPEL,
+                builder().rain(0.5F).overcast(0.55F).fog(0.15F).wind(0.3F).precip(Precip.GRAUPEL, 1.0F).freeze(0.15F).build(),
+                builder().rain(0.5F).overcast(0.55F).fog(0.15F).wind(0.3F).precip(Precip.GRAUPEL, 1.0F).build(),
+                builder().rain(0.3F).overcast(0.45F).wind(0.3F).build());
+
+        // thunder and lightning in a heavy snowstorm (in milder places it falls as sleet)
+        put(WeatherType.THUNDERSNOW,
+                builder().rain(1.0F).thunder(1.0F).overcast(0.85F).tint(SNOW_WHITE, 0.3F).fog(0.6F, SNOW_WHITE).wind(0.6F)
+                        .precip(Precip.SNOW, 1.2F).freeze(0.5F).snowLayers(3).lightning(1.5F).build(),
+                builder().rain(1.0F).thunder(1.0F).overcast(0.8F).fog(0.45F).wind(0.55F).precip(Precip.SLEET, 0.8F).freeze(0.3F).lightning(1.0F).build(),
+                builder().rain(0.6F).thunder(1.0F).overcast(0.6F).wind(0.5F).precip(Precip.DUST, 0.4F).build());
+
+        put(WeatherType.FREEZING_DRIZZLE,
+                builder().rain(0.35F).overcast(0.65F).tint(0xC8D4E0, 0.15F).fog(0.35F, 0xC8D2DC).wind(0.1F).precip(Precip.SLEET, 0.25F)
+                        .freeze(0.25F).glazeWater().glazeGround().tempOffset(-2.0F).build(),
+                builder().rain(0.35F).overcast(0.65F).tint(0xC8D4E0, 0.15F).fog(0.3F, 0xC8D2DC).wind(0.1F).precip(Precip.SLEET, 0.25F)
+                        .freeze(0.25F).glazeWater().glazeGround().tempOffset(-2.0F).build(),
+                builder().rain(0.3F).overcast(0.5F).wind(0.15F).build());
+
         put(WeatherType.HABOOB, haboob, haboob, haboob);
 
         // an atmospheric river: warm, steady, soaking rain that goes on and on (deep snow on the cold mountains)

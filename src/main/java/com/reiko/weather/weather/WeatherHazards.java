@@ -52,8 +52,13 @@ public final class WeatherHazards {
 
     // ------------------------------------------------------------------ world effects, per player area
 
+    /** How much meltwater rain falling on deep snow has sent into the rivers lately (it drains away over a few minutes). */
+    static float rainOnSnow;
+
     static void tickLevel(ServerLevel level, WeatherState state) {
         RandomSource random = level.random;
+        rainOnSnow *= 0.9995F;
+        if (level.getGameTime() % 20L == 0L) Seas.tickWorld(level, state);
         boolean everySecond = level.getGameTime() % 20L == 0L;
         for (ServerPlayer player : level.players()) {
             if (player.isSpectator()) {
@@ -96,6 +101,8 @@ public final class WeatherHazards {
             Downdrafts.tickPlayer(level, player, local);
             Frostwork.tickPlayer(level, state, player, local, climate);
             Coasts.tickPlayer(level, player, local);
+            WinterGround.tickPlayer(level, state, player, local, climate);
+            Seas.tickPlayer(level, state, player, local, climate);
             if (profile.glazeWater && WeatherConfig.GLAZE_WATER.get() && random.nextFloat() < intensity) {
                 glazeWater(level, randomColumn(level, player, random));
             }
@@ -120,7 +127,7 @@ public final class WeatherHazards {
                     surge(level, state, randomColumn(level, player, random), true);
                 }
             }
-            if (snowmeltActive() && climate != Climate.ARID && random.nextFloat() < 0.35F) {
+            if ((snowmeltActive() || rainOnSnow > 0.1F) && climate != Climate.ARID && random.nextFloat() < 0.35F) {
                 BlockPos top = randomColumn(level, player, random);
                 if (top != null && level.getBiome(top).is(BiomeTags.IS_RIVER)) {
                     flood(level, state, top, false);
@@ -566,7 +573,7 @@ public final class WeatherHazards {
             }
             if (Tides.flooding(level) && level.getBiome(pos).is(BiomeTags.IS_BEACH)
                     || Tides.floodingFlats(level) && level.getBlockState(pos.below()).is(Blocks.MUD)
-                    || snowmeltActive() && level.getBiome(pos).is(BiomeTags.IS_RIVER)) {
+                    || (snowmeltActive() || rainOnSnow > 0.1F) && level.getBiome(pos).is(BiomeTags.IS_RIVER)) {
                 continue; // high tide, or the spring thaw is still running off
             }
             if (level.getFluidState(pos).isSourceOfType(Fluids.WATER)) {
@@ -629,11 +636,59 @@ public final class WeatherHazards {
                 && random.nextDouble() < WeatherConfig.TORNADO_CHANCE.get() * 1.5) {
             BlockPos water = randomGroundNear(level, player, 40, 90, true);
             if (water != null) spawnHeadingTo(level, player, water, TornadoEntity.Kind.WATERSPOUT);
+        } else if (WeatherConfig.WHIRLWINDS.get() && trySpawnMinorWhirls(level, player, local, climate)) {
+            return;
         } else if (climate == Climate.ARID && WeatherConfig.DUST_DEVILS.get() && level.isDay() && random.nextFloat() < 0.005F
                 && (local.type() == WeatherType.CLEAR || local.type() == WeatherType.HEATWAVE || local.type() == WeatherType.WINDY)) {
             BlockPos ground = randomGroundNear(level, player, 16, 48, false);
             if (ground != null && Climate.at(level, ground) == Climate.ARID) spawnHeadingTo(level, player, ground, TornadoEntity.Kind.DUST_DEVIL);
         }
+    }
+
+    /**
+     * Landspouts under growing storms on open plains, gustnadoes along a storm's gust front, steam devils over open
+     * water in bitter cold and snow devils on sunny, windy snowfields.
+     */
+    private static boolean trySpawnMinorWhirls(ServerLevel level, ServerPlayer player, LocalWeather local, Climate climate) {
+        RandomSource random = level.random;
+        WeatherType type = local.type();
+        float wind = local.profile().wind * local.intensity();
+        if (type == WeatherType.THUNDERSTORM && climate != Climate.COLD && local.intensity() > 0.5F && random.nextFloat() < 0.0012F) {
+            BlockPos ground = randomGroundNear(level, player, 40, 90, false);
+            if (ground != null && level.getBiome(ground).is(net.minecraft.tags.BiomeTags.IS_FOREST) == false) {
+                spawnHeadingTo(level, player, ground, TornadoEntity.Kind.LANDSPOUT);
+                return true;
+            }
+        }
+        if ((type == WeatherType.COLD_FRONT || type == WeatherType.DERECHO || type == WeatherType.THUNDERSTORM || type == WeatherType.HABOOB)
+                && wind > 0.5F && random.nextFloat() < 0.004F) {
+            BlockPos ground = randomGroundNear(level, player, 16, 48, false);
+            if (ground != null) {
+                spawnHeadingTo(level, player, ground, TornadoEntity.Kind.GUSTNADO);
+                return true;
+            }
+        }
+        if (random.nextFloat() < 0.004F && climate != Climate.ARID) {
+            BlockPos at = BlockPos.containing(player.position());
+            float t = com.reiko.weather.temperature.Temperature.ambient(level, at, local);
+            if (t < -12.0F && wind < 0.45F && level.getDayTime() % 24000L < 4000L) {
+                BlockPos water = randomGroundNear(level, player, 12, 40, true);
+                if (water != null && !level.getBlockState(water.below()).is(net.minecraft.world.level.block.Blocks.ICE)) {
+                    spawnHeadingTo(level, player, water, TornadoEntity.Kind.STEAM_DEVIL);
+                    return true;
+                }
+            }
+            if (climate == Climate.COLD && level.isDay() && (type == WeatherType.CLEAR || type == WeatherType.WINDY || type == WeatherType.COLD_SNAP)
+                    && wind > 0.2F) {
+                BlockPos ground = randomGroundNear(level, player, 16, 48, false);
+                if (ground != null && (level.getBlockState(ground).is(net.minecraft.world.level.block.Blocks.SNOW)
+                        || level.getBlockState(ground.below()).is(net.minecraft.world.level.block.Blocks.SNOW_BLOCK))) {
+                    spawnHeadingTo(level, player, ground, TornadoEntity.Kind.SNOW_DEVIL);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Nullable
@@ -660,7 +715,7 @@ public final class WeatherHazards {
     }
 
     private static void spawnHeadingTo(ServerLevel level, ServerPlayer player, BlockPos at, TornadoEntity.Kind kind) {
-        int limit = kind == TornadoEntity.Kind.DUST_DEVIL ? 2 : WeatherConfig.MAX_TORNADOES.get();
+        int limit = kind.small() ? 2 : WeatherConfig.MAX_TORNADOES.get();
         long existing = level.getEntities(ModEntities.TORNADO.get(), e -> e.kind() == kind).size();
         if (existing >= limit) {
             return;
@@ -679,9 +734,13 @@ public final class WeatherHazards {
             case WATERSPOUT -> tornado.configure(kind, heading, 900 + r.nextInt(900), 3.0F + r.nextFloat() * 2.0F, 55.0F);
             case DUST_DEVIL -> tornado.configure(kind, heading, 300 + r.nextInt(400), 1.2F + r.nextFloat() * 0.8F, 12.0F + r.nextFloat() * 10.0F);
             case FIRE_WHIRL -> tornado.configure(kind, heading, 300 + r.nextInt(500), 1.6F + r.nextFloat() * 1.2F, 18.0F + r.nextFloat() * 14.0F);
+            case LANDSPOUT -> tornado.configure(kind, heading, 500 + r.nextInt(700), 1.4F + r.nextFloat() * 0.8F, 55.0F + r.nextFloat() * 15.0F);
+            case GUSTNADO -> tornado.configure(kind, heading, 160 + r.nextInt(160), 2.0F + r.nextFloat() * 1.5F, 10.0F + r.nextFloat() * 8.0F);
+            case STEAM_DEVIL -> tornado.configure(kind, heading, 200 + r.nextInt(300), 0.8F + r.nextFloat() * 0.6F, 6.0F + r.nextFloat() * 8.0F);
+            case SNOW_DEVIL -> tornado.configure(kind, heading, 250 + r.nextInt(350), 1.0F + r.nextFloat() * 0.8F, 8.0F + r.nextFloat() * 8.0F);
         }
         level.addFreshEntity(tornado);
-        if (kind != TornadoEntity.Kind.DUST_DEVIL && kind != TornadoEntity.Kind.FIRE_WHIRL && WeatherConfig.TORNADO_WARNINGS.get()) {
+        if (!kind.small() && kind != TornadoEntity.Kind.FIRE_WHIRL && WeatherConfig.TORNADO_WARNINGS.get()) {
             for (ServerPlayer player : level.players()) {
                 if (player.distanceToSqr(pos) < 200 * 200) {
                     player.displayClientMessage(Component.translatable("message.reikos_weather." + kind.id() + "_warning")

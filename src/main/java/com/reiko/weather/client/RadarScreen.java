@@ -67,6 +67,9 @@ public class RadarScreen extends Screen {
             case ATMOSPHERIC_RIVER -> 0x2E6BFF;
             case HEAT_BURST -> 0xFF7A3C;
             case PYROCUMULUS -> 0x9A5A3A;
+            case GRAUPEL -> 0xE4EEF6;
+            case THUNDERSNOW -> 0xB8C8FF;
+            case FREEZING_DRIZZLE -> 0x9EC4D8;
             default -> 0x9AA0A6;
         };
     }

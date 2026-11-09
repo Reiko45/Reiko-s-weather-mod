@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "tinajas",
+  "biomes": "#reikos_weather:has_structure/tinajas",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

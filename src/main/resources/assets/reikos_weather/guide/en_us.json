@@ -823,7 +823,8 @@
      "icon": "minecraft:blue_ice",
      "pages": [
       "Glaciers flow down cold mountainsides: packed ice with veins of blue ice, snowy higher up and bare lower down. Crevasses cut across them, and many hide under a thin bridge of powder snow. Watch your step.\n\nIn summer the lower end melts back a little and meltwater runs off it.",
-      "Some glaciers have an ice cave running into their foot, its walls glowing blue.\n\nWhere a glacier reaches the sea, great slabs break off its front now and then and float away as icebergs."
+      "Some glaciers have an ice cave running into their foot, its walls glowing blue.\n\nWhere a glacier reaches the sea, great slabs break off its front now and then and float away as icebergs.",
+      "Where a glacier steepens it breaks up into an icefall of tottering seracs and crevasses. In summer, meltwater pours down moulins: shafts drilled straight down through the ice."
      ]
     },
     {
@@ -837,7 +838,8 @@
      "title": "Dune Fields",
      "icon": "minecraft:sand",
      "pages": [
-      "Dune fields are rows of tall sand dunes across the prevailing wind, each with a long, gentle slope and a steep face. In sandstorms the wind carries sand off the crests and drops it beyond, so the dunes slowly creep downwind."
+      "Dune fields are rows of tall sand dunes across the prevailing wind, each with a long, gentle slope and a steep face. In sandstorms the wind carries sand off the crests and drops it beyond, so the dunes slowly creep downwind.",
+      "Not all dune fields are alike: some are rows of dunes across the wind, some are scattered crescent barchans with their horns pointing downwind, some are long knife-edged seif ridges running with the wind, and some are great star dunes with arms reaching out every way."
      ]
     }
    ]
@@ -1227,6 +1229,178 @@
    ]
   },
   {
+   "title": "Snow, Sky and Sea",
+   "icon": "minecraft:snowball",
+   "entries": [
+    {
+     "title": "New Weathers",
+     "icon": "minecraft:snowball",
+     "pages": [
+      "Graupel: showers of soft, white snow pellets that bounce and roll, in chilly spring and autumn weather.\n\nThundersnow: a snowstorm heavy enough to throw lightning, the thunder muffled by the snow.\n\nFreezing drizzle: fine drizzle falling through freezing air, glazing everything it touches."
+     ]
+    },
+    {
+     "title": "The Snowpack",
+     "icon": "minecraft:snow_block",
+     "pages": [
+      "Over the winter, snowfall builds on snowfall into a deep snowpack, deepest high up, in the coldest places and among the trees. In spring it settles and melts away. Rain falling on deep snow melts it fast and the water runs straight into the rivers, which flood."
+     ]
+    },
+    {
+     "title": "Frozen Ground",
+     "icon": "minecraft:ice",
+     "pages": [
+      "On frosty mornings, needle ice pushes up out of bare soil in crunchy columns, and can heave young crops right out of the farmland. Frost flowers grow on new ice in bitter, still cold. Both melt once the sun gets to them."
+     ]
+    },
+    {
+     "title": "Mountain Snow",
+     "icon": "minecraft:powder_snow_bucket",
+     "pages": [
+      "Wind blowing snow over a ridge builds a cornice: a lip of snow overhanging the drop on the far side. Don't walk out on one: it can give way under you and set the slope below sliding.\n\nOn open snowfields, strong wind carves the snow into sharp ridges and furrows (sastrugi) lying across its path."
+     ]
+    },
+    {
+     "title": "Whirlwinds",
+     "icon": "minecraft:feather",
+     "pages": [
+      "Not every spinning column is a tornado from a supercell. Landspouts are thin, rope-like tornadoes that spin up under growing storms on the open plains. Gustnadoes are brief swirls of dust along a storm's gust front.\n\nIn bitter cold, steam devils twist up off unfrozen water, and on sunny, windy snowfields snow devils skitter about."
+     ]
+    },
+    {
+     "title": "Humid Heat",
+     "icon": "minecraft:lily_pad",
+     "pages": [
+      "Humid air makes heat harder to bear, because sweat can't cool you down. On sticky days in the jungle or the swamp, or after rain, it feels a good deal hotter than the thermometer says.\n\nOn clear, calm, mild mornings, dew sparkles on the grass."
+     ]
+    },
+    {
+     "title": "Good Years and Bad",
+     "icon": "minecraft:clock",
+     "pages": [
+      "The climate swings slowly between wet and dry spells a year or more long. A wet year brings more rain, storms and hurricanes and fewer droughts; a dry year, more heatwaves and droughts. Ask /rweather query which sort of year it is."
+     ]
+    },
+    {
+     "title": "Pollen",
+     "icon": "minecraft:dandelion",
+     "pages": [
+      "On dry, breezy spring days, the woods give off clouds of yellow pollen that haze the air and settle in a film on still water."
+     ]
+    },
+    {
+     "title": "Rip Currents",
+     "icon": "minecraft:heart_of_the_sea",
+     "pages": [
+      "The water the surf piles up on a beach drains back out to sea in narrow, fast channels: rip currents. One will carry a swimmer straight out, faster than you can swim against it. Don't fight it: swim along the shore until you're out of it, then swim in."
+     ]
+    },
+    {
+     "title": "Waves and Foam",
+     "icon": "minecraft:prismarine_crystals",
+     "pages": [
+      "A hurricane sends a long swell racing out ahead of it, so the sea gets rough even under a clear sky a long way from the storm. In a big sea, now and then a rogue wave far bigger than the rest comes out of nowhere and can capsize a boat. Storms whip up foam and throw it up the beach.",
+      "Beaches change with the seasons: winter storms drag the sand off, and calm summer swell carries it back up."
+     ]
+    },
+    {
+     "title": "Tidal Bores",
+     "icon": "minecraft:oak_boat",
+     "pages": [
+      "On the biggest tides, at full and new moon, the incoming tide can run up a river near the sea as a single breaking wave, roaring upstream against the current. Catch it in a boat and ride it."
+     ]
+    },
+    {
+     "title": "Whirlpools",
+     "icon": "minecraft:nautilus_shell",
+     "pages": [
+      "In some narrow straits, the tide racing through spins up a whirlpool between high and low water, strongest at spring tides. It drags boats and swimmers round and down. At slack water, around high and low tide, it's calm enough to cross."
+     ]
+    },
+    {
+     "title": "Algal Blooms and Pumice",
+     "icon": "minecraft:kelp",
+     "pages": [
+      "In a long, hot, still summer, algae can bloom across the warm seas: the water turns murky rust-red, the fish die off or leave, and all your rod brings up is weed. A good storm breaks it up.\n\nAfter a big undersea earthquake, rafts of floating pumice from an eruption on the sea bed drift across the sea."
+     ]
+    },
+    {
+     "title": "In the Sky",
+     "icon": "minecraft:spyglass",
+     "pages": [
+      "On dark, clear, moonless nights away from lights, the Milky Way arches right across the sky, and after dusk a faint cone of zodiacal light rises where the sun went down.\n\nWhen sunbeams fan out from a low sun, look the other way: they converge again on the far horizon.",
+      "Thin ice cloud makes its own rainbows: a band of colour low under a high summer sun (the circumhorizontal arc, or fire rainbow), and an upside-down arc high over a low one (the circumzenithal arc). In polar winter twilight, nacreous clouds glow mother-of-pearl.",
+      "Look out for roll clouds rolling ahead of storms, rows of breaking-wave clouds, smooth caps over growing thunderheads, and round holes punched in high cloud. At night, spider lightning crawls along the underside of storm clouds.\n\nAnd the old saying holds: red sky at night, fair weather tomorrow; red sky in the morning, rain on the way."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Still More Landforms",
+   "icon": "minecraft:obsidian",
+   "entries": [
+    {
+     "title": "Karst",
+     "icon": "reikos_weather:limestone",
+     "pages": [
+      "Tiankeng are giant sinkholes, sheer-walled and hundreds of feet deep, with a forest of their own on the floor. Blue holes are the same at sea: deep round shafts that show dark blue in the shallows.",
+      "Stone forests are fields of tall, sharp limestone pinnacles. Natural bridges arch over streams that cut beneath them, and some streams sink into a cave mouth altogether, coming out again at a spring further down."
+     ]
+    },
+    {
+     "title": "Volcanic",
+     "icon": "minecraft:basalt",
+     "pages": [
+      "A volcanic neck is the plug of an old volcano left standing as a tower of basalt columns when the rest wore away. Spatter cones line a fissure in a young lava field. Obsidian flows are thick, glassy tongues crusted with pumice. On the sea bed, lava that erupted underwater lies in mounds of rounded pillows."
+     ]
+    },
+    {
+     "title": "Ice and Cold",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "Nunataks are rocky peaks poking up through an ice sheet. Rock glaciers are tongues of ice-cored rubble creeping down mountain valleys. Palsas are mounds of frozen peat in northern bogs. Stone circles form where frost sorts the stones from the soil, and on slopes they stretch into stripes. Penitentes are fields of tall snow spikes on high, dry peaks."
+     ]
+    },
+    {
+     "title": "Desert Rocks",
+     "icon": "minecraft:red_sandstone",
+     "pages": [
+      "Yardangs are wind-carved ridges like upturned boats, all lying one way, on a pavement of stones. Inselbergs are huge isolated domes of rock. Mesas are flat-topped hills with banded cliffs, with buttes and spires nearby. Mushroom rocks balance wide caps on wind-worn stems.",
+      "On some dry lake beds, boulders sit at the end of long tracks, as though they'd sailed across. Fairy circles dot dry grassland in an even pattern. And after rain, the potholes (tinajas) in bare desert rock fill with water, until they dry out again."
+     ]
+    },
+    {
+     "title": "Mountains",
+     "icon": "minecraft:gravel",
+     "pages": [
+      "Horns are pyramidal peaks carved by glaciers on several sides, with knife-edge aretes between. Talus cones of scree pile up under cliffs, alluvial fans spread out of valleys onto the plain, and avalanche chutes are strips swept clear of trees down snowy slopes. Landslides leave bare scars in hillsides with a heap of debris below.",
+      "Hanging valleys end high on the wall of a glacial trough, their streams pouring off as waterfalls. Glacial lakes are turquoise with rock flour, dammed by moraines: in summer one may burst through and send a flood down the valley."
+     ]
+    },
+    {
+     "title": "Rivers",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "River terraces are flat benches stepping up from a river, the floors of older, higher valleys. Rapids are rocky stretches with boulders in the stream and potholes worn into the bedrock. Gorges are deep, narrow, rock-walled valleys."
+     ]
+    },
+    {
+     "title": "Coasts",
+     "icon": "minecraft:sand",
+     "pages": [
+      "Spits are long, curving fingers of sand growing out from the shore. Tombolos are sandbars tying an island to the mainland. Shingle beaches step up in storm ridges of pebbles. Raised beaches are old beaches left as flat terraces above today's shore. Rias are drowned river valleys winding inland as arms of the sea."
+     ]
+    },
+    {
+     "title": "Ancient Things",
+     "icon": "reikos_weather:petrified_wood",
+     "pages": [
+      "In the badlands, petrified forests are strewn with fallen logs turned to stone. Fossil beds show great bones weathering out of eroding banks: brush the gravel at their feet for finds.\n\nIn old forests, fallen trees become nurse logs, with saplings and fungi growing on them, beside the upturned root plates they pulled out of the ground."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [
@@ -1241,7 +1415,7 @@
      "title": "Commands",
      "icon": "minecraft:command_block",
      "pages": [
-      "/rweather query: the weather where you stand.\n/rweather forecast: the next three weathers.\n/rweather storms: storm cells.\n/rweather season: the season.\n/rweather volcano: volcanoes nearby.\n/rweather drought: any drought.\n\nFor operators: /rweather set, storm, next, tornado, meteor and drought start/end, and /rweather volcano create, wake, erupt and calm."
+      "/rweather query: the weather where you stand (and whether it's a wet or dry year).\n/rweather forecast: the next three weathers.\n/rweather storms: storm cells.\n/rweather season: the season.\n/rweather volcano: volcanoes nearby.\n/rweather drought: any drought.\n\nFor operators: /rweather set, storm, next, tornado, meteor and drought start/end, and /rweather volcano create, wake, erupt and calm."
      ]
     }
    ]
