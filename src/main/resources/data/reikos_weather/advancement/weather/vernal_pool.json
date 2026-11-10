@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:lily_pad"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.vernal_pool"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.vernal_pool.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

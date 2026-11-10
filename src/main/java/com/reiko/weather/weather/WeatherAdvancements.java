@@ -74,6 +74,11 @@ public final class WeatherAdvancements {
                 && (type == WeatherType.CLEAR || type == WeatherType.WINDY || type == WeatherType.COLD_SNAP)) {
             award(player, "northern_lights");
         }
+        if (exposed && type.isCalm() && SkyCalendar.totalityNow(level)) award(player, "totality");
+        if (exposed && sun < -0.08F && type.isCalm() && SkyCalendar.cometBrightness(level.getDayTime() / 24000L) > 0.5F) award(player, "great_comet");
+        if (exposed && type == WeatherType.SUN_SHOWER && SkyPhenomena.rainbowSunAngle(sun) && level.isRainingAt(player.blockPosition().above())) {
+            award(player, "fox_wedding");
+        }
 
         Season season = WeatherManager.seasonInfo().season();
         if (season != null) {

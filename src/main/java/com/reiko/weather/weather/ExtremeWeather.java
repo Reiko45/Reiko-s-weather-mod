@@ -38,6 +38,9 @@ public final class ExtremeWeather {
         WeatherProfile profile = local.profile();
         float intensity = local.intensity();
 
+        if (level.dimension() == net.minecraft.world.level.Level.OVERWORLD) {
+            LightningEvents.maybeBoltFromTheBlue(level, player, local);
+        }
         if (profile.heat && intensity >= 0.8F) {
             if (WeatherConfig.WILDFIRES.get() && climate == Climate.ARID && random.nextInt(2400) == 0) {
                 wildfire(level, player);

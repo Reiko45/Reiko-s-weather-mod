@@ -96,6 +96,9 @@ public final class Temperature {
                 if (sun > 0 && p.rain < 0.2F && p.overcast < 0.4F) celsius += 2.0F; // direct sunshine
             }
         }
+        // cold water welling up offshore chills the coast
+        float upwelling = com.reiko.weather.weather.Seas.upwelling(level, pos);
+        if (upwelling > 0.0F) celsius -= 5.0F * upwelling;
         if (!sky) {
             celsius = Mth.lerp(0.4F, celsius, 16.0F); // buildings and caves even things out
         } else if (Greenhouse.underGlass(level, pos)) {

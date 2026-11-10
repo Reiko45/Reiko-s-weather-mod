@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "layers=1": {
+      "model": "reikos_weather:block/hailstones_height2"
+    },
+    "layers=2": {
+      "model": "reikos_weather:block/hailstones_height4"
+    },
+    "layers=3": {
+      "model": "reikos_weather:block/hailstones_height6"
+    },
+    "layers=4": {
+      "model": "reikos_weather:block/hailstones_height8"
+    },
+    "layers=5": {
+      "model": "reikos_weather:block/hailstones_height10"
+    },
+    "layers=6": {
+      "model": "reikos_weather:block/hailstones_height12"
+    },
+    "layers=7": {
+      "model": "reikos_weather:block/hailstones_height14"
+    },
+    "layers=8": {
+      "model": "reikos_weather:block/hailstones_block"
+    }
+  }
+}

@@ -200,5 +200,30 @@ public final class ModBlocks {
                     .mapColor(MapColor.SNOW).strength(0.0F).sound(SoundType.POWDER_SNOW).noOcclusion().randomTicks().replaceable()
                     .pushReaction(PushReaction.DESTROY).noLootTable()));
 
+    public static final DeferredBlock<net.minecraft.world.level.block.ColoredFallingBlock> GYPSUM_SAND = REGISTER.register("gypsum_sand",
+            () -> new net.minecraft.world.level.block.ColoredFallingBlock(new net.minecraft.util.ColorRGBA(0xF2EFE6),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.5F).sound(SoundType.SAND)));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.ColoredFallingBlock> SHELL_SAND = REGISTER.register("shell_sand",
+            () -> new net.minecraft.world.level.block.ColoredFallingBlock(new net.minecraft.util.ColorRGBA(0xE6DCC8),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.SAND).strength(0.5F).sound(SoundType.SAND)));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.ColoredFallingBlock> OLIVINE_SAND = REGISTER.register("olivine_sand",
+            () -> new net.minecraft.world.level.block.ColoredFallingBlock(new net.minecraft.util.ColorRGBA(0x6E7F3A),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.5F).sound(SoundType.SAND)));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.ColoredFallingBlock> PINK_SAND = REGISTER.register("pink_sand",
+            () -> new net.minecraft.world.level.block.ColoredFallingBlock(new net.minecraft.util.ColorRGBA(0xE8B8B0),
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).strength(0.5F).sound(SoundType.SAND)));
+
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> ROCK_SALT = REGISTER.register("rock_salt",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).strength(1.0F, 2.0F)
+                    .sound(SoundType.CALCITE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<com.reiko.weather.block.HailstonesBlock> HAILSTONES = REGISTER.register("hailstones",
+            () -> new com.reiko.weather.block.HailstonesBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).replaceable().forceSolidOff()
+                    .strength(0.1F).sound(SoundType.POWDER_SNOW).randomTicks().pushReaction(PushReaction.DESTROY).noLootTable()
+                    .isViewBlocking((s, l, pos) -> s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) >= 8)));
+
     private ModBlocks() {}
 }

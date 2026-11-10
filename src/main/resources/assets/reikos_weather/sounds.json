@@ -209,5 +209,32 @@
         "attenuation_distance": 96
       }
     ]
+  },
+  "weather.frost_quake": {
+    "subtitle": "subtitles.reikos_weather.weather.frost_quake",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/frost_quake",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "weather.ice_shove": {
+    "subtitle": "subtitles.reikos_weather.weather.ice_shove",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/ice_shove",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "weather.tree_fall": {
+    "subtitle": "subtitles.reikos_weather.weather.tree_fall",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/tree_fall",
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

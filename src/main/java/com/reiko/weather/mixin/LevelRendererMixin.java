@@ -16,7 +16,8 @@ public abstract class LevelRendererMixin {
     @ModifyExpressionValue(method = "renderSky", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
     private float reikos_weather$cloudCover(float rainLevel) {
-        return Math.max(rainLevel, ClientWeather.sunOcclusion());
+        // in a sun shower the sun shines on through the rain
+        return Math.max(rainLevel * (1.0F - 0.9F * ClientWeather.sunShower()), ClientWeather.sunOcclusion());
     }
 
     /** Rain falling through a dust haze comes down reddish-brown. */

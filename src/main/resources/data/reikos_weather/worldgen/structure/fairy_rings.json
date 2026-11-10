@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "fairy_rings",
+  "biomes": "#reikos_weather:has_structure/fairy_rings",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

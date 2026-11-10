@@ -219,6 +219,7 @@ public final class ClientEvents {
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ForecastHud.ID, ForecastHud::render);
         event.registerAbove(ForecastHud.ID, TemperatureHud.ID, TemperatureHud::render);
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ScreenRaindrops.ID, ScreenRaindrops::render);
+        event.registerAbove(ScreenRaindrops.ID, SnowGlare.ID, SnowGlare::render);
     }
 
     public static void onRenderStage(RenderLevelStageEvent event) {
@@ -260,6 +261,7 @@ public final class ClientEvents {
         Atmosphere.tick(mc);
         Footprints.tick(mc);
         ScreenRaindrops.tick(mc);
+        SnowGlare.tick(mc);
         HeatShimmer.tick(mc);
         com.reiko.weather.client.sound.WildlifeSounds.tick(mc);
         RoughSeas.tick(mc);
@@ -374,6 +376,13 @@ public final class ClientEvents {
             event.setRed(Mth.lerp(k, event.getRed(), 0.95F));
             event.setGreen(Mth.lerp(k, event.getGreen(), 0.88F));
             event.setBlue(Mth.lerp(k, event.getBlue(), 0.5F));
+        }
+        float eclipse = ClientWeather.eclipseLoss();
+        if (eclipse > 0.01F && event.getCamera().getFluidInCamera() == FogType.NONE) {
+            // the moon's shadow darkens the haze too, to a dusky glow (lit from beyond the shadow, all round)
+            event.setRed(Mth.lerp(eclipse * 0.88F, event.getRed(), 0.17F));
+            event.setGreen(Mth.lerp(eclipse * 0.88F, event.getGreen(), 0.13F));
+            event.setBlue(Mth.lerp(eclipse * 0.88F, event.getBlue(), 0.16F));
         }
         float blood = ClientWeather.bloodMoon();
         if (blood > 0.01F && event.getCamera().getFluidInCamera() == FogType.NONE) {

@@ -48,6 +48,8 @@ New players get a **Weather Almanac**, the in-game guide to everything below (wi
 | **Graupel** | Showers of soft, white snow pellets that bounce and roll, mostly in chilly spring and autumn weather. |
 | **Thundersnow** | A snowstorm heavy enough to throw lightning, the thunder muffled by the falling snow (sleet in milder places). |
 | **Freezing Drizzle** | Fine drizzle falling through freezing air, glazing the ground and still water with ice. |
+| **Sun Shower** | A brief, light shower out of a mostly clear sky with the sun still shining (and often a rainbow). The sky stays blue and bright. |
+| **Polar Low** | A small, fierce winter storm that spins up over cold seas: gales, blinding snow and sometimes a clear eye like a hurricane's. It falls apart into an ordinary snowstorm soon after reaching land. Arrives as a storm cell. |
 | **Derecho** | A long line of violent thunderstorms that races across the map several times faster than any other storm, in summer. The wind is ferocious and breaks branches off trees. On the radar it's a long orange band. |
 
 Each weather looks and plays differently in **cold**, **temperate** and **arid** climates, and the
@@ -71,6 +73,9 @@ Seasonal life:
   south. Wade through them, land in a deep pile to soften a fall, or gather them with a **rake**. They
   rot away over the winter.
 - After rain, **frogs** croak from the water and **earthworms** come up onto the grass.
+
+**Day length** changes through the year: about 12 minutes of sun at midsummer and 8 at midwinter (10 at the
+equinoxes), with the nights the other way round. Noon and midnight stay where they are.
 
 If **Serene Seasons** is installed, its calendar is used instead (including the day of the season),
 and its own foliage colours take over.
@@ -271,6 +276,24 @@ Ways to stay comfortable:
 - **Salt** melts ice glaze, snow, icicles, powder snow and ice in a 3×3×3 area when you use it on a
   block. Smelt a water bottle to get some, and cauldrons that dry out in the sun sometimes leave salt
   behind.
+- **Hail drifts:** hail lies on the ground in drifts after a hailstorm, deepest against walls, until it melts;
+  on warm days a low fog rises off it.
+- **Soil erosion:** downpours wash bare soil and farmland off steep slopes into rills, spreading mud at the
+  foot of the slope. Grass holds the soil, and so does level (terraced) farmland. Needs `mobGriefing`.
+- **Snow-laden branches** snap under heavy, wet snow and come down with their load, and hurricane and
+  derecho winds can tear whole trees out of the ground (**blowdowns**), leaving the root plate standing on
+  end. Both need `mobGriefing`.
+- **Frost quakes:** in a hard freeze the ground can crack with a loud boom and a jolt.
+- **Lake ice:** waves spurting through the edge of shore ice build little **ice volcanoes**, and strong
+  onshore winds **shove lake ice** up onto the beach. **Ice discs** turn slowly in cold rivers, and
+  **pancake ice** forms on cold seas.
+- **Bolts from the blue:** lightning can strike well out from under a thunderstorm, from a clear sky. A
+  struck tree has a strip of bark blasted off down to the ground, and a hard strike splits its top.
+- **Snow glare:** out on a sunny snowfield without goggles the light gets dazzling.
+- **Seiches:** after a gale a lake sloshes from shore to shore, washing up each bank in turn.
+- **Longshore currents** carry swimmers, boats and flotsam slowly along beaches, the way the wind slants.
+- **Upwelling:** on some coasts, an offshore wind in spring and summer brings cold water up from the deep:
+  cooler air on the shore, more sea fog, and better fishing.
 - **Lightning-charged tools:** leave a tool or weapon lying on an anvil or a copper block in a
   thunderstorm (a lightning rod nearby helps). If lightning strikes it, it's charged for five minutes:
   it mines faster and hits harder, with a crackle of sparks.
@@ -313,6 +336,15 @@ Ways to stay comfortable:
 - **Roll clouds**, rows of **breaking-wave clouds**, smooth **pileus caps** over growing thunderheads, and
   **hole-punch clouds**; at night, **spider lightning** crawls along the underside of storm clouds.
 - **Red sky at night:** a fiery sunset comes before fair weather, a red sunrise before rain.
+- **Eclipses:** now and then at new moon the moon passes across the sun around noon. In a **total eclipse**
+  the day goes dark, stars come out, the corona springs out round the black moon and the horizon glows like
+  sunset all round; **ring** and **partial** eclipses leave a ring or a crescent of sun. At full moon a
+  **lunar eclipse** turns the moon copper red around midnight. The weather radio warns of them, and
+  `/rweather query` gives the date of the next one.
+- **Comets:** some years a bright comet hangs low in the twilight for a week, its tails pointing away from the sun.
+- **Airglow:** a faint green band of light a little above the horizon on the darkest nights.
+- **Wall clouds and funnel clouds:** a dark, turning wall cloud hangs under the back of a supercell, and now
+  and then a funnel cloud snakes down from it and draws back up.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -425,6 +457,21 @@ village or a volcano.
 - **Rivers:** **river terraces**, **rapids** with potholes, and deep **gorges**.
 - **Coasts:** **sand spits**, **tombolos**, **shingle beaches**, **raised beaches**, **rias**, and tidal
   **whirlpools** in narrow straits.
+- **Volcanic country:** **calderas** with a lake and a new cone inside, hot turquoise **acid crater lakes**
+  crusted with sulphur (their vents burn blue at night), **young lava fields** with tumuli, hornitos, lava tube
+  skylights and lava trees, and **rift valleys** stepping down between fault cliffs.
+- **More karst:** **doline fields**, jungle **cockpit karst**, and **poljes**: walled limestone basins that flood
+  into lakes in the wet seasons and drain in summer.
+- **Mountains and ice:** **paternoster lakes** stepping down a glacial valley, ice-smoothed **roches moutonnées**,
+  and needle-sharp granite **aiguilles**.
+- **Colourful deserts:** striped **rainbow mountains**, deep **canyons** streaked with desert varnish, swirling
+  sandstone **wave rocks**, white **gypsum dunes** (**gypsum sand**), **coppice dunes** held round bushes, **salt domes**
+  of **rock salt** with salt glaciers, and **crusted flats** of living desert soil crust.
+- **Coloured waters:** **pink lakes**, **spotted lakes** of many-coloured pools, and banded **acid pools**.
+- **More shores:** **shell**, **green (olivine)** and **pink** sand beaches, **Moeraki boulders**, **parabolic dunes**,
+  **ghost forests** of dead trees, and **stromatolites** in warm, salty shallows.
+- **Woods and meadows:** **fairy rings** of mushrooms, and **vernal pools** that fill in autumn, winter and spring
+  and dry out in summer.
 - **Ancient things:** **petrified forests** of stone logs (**petrified wood**), **fossil beds** with great bones
   weathering out (brush the gravel below), and **nurse logs** and root mounds in old forests.
 
@@ -527,6 +574,8 @@ Under **Accessibility** in the client settings:
 | **Geyser** | Silk Touch one from hot springs | Erupts every few minutes; comparators read 15 while it erupts. |
 | **Salt Crust** | mine it on salt flats | Drops salt. |
 | **Black Sand** | volcanic island beaches | Decorative sand; smelts into glass. |
+| **Gypsum, Shell, Olivine and Pink Sand** | gypsum dunes and coloured beaches | Decorative sands; smelt into glass. |
+| **Rock Salt** | salt domes | A pale, glassy salt rock for building. |
 
 ## Weather & mobs
 - Weather changes which monsters spawn: **strays** in blizzards and snow, **husks** in desert
@@ -546,15 +595,16 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 66 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 78 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
 crater's rim), Ring of Fire (witness an eruption), Hair-Raising, Old Faithful, Hot Tub, Mind the
 Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold, Field Geologist
 (visit five kinds of landform), Downburst, Firenado, Shaken, Not Stirred, Iceberg, Right Ahead!,
-A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom and Dam
-Busters.
+A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
+Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
+Back and Forth and Rich Waters.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

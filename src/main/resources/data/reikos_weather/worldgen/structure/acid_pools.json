@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "acid_pools",
+  "biomes": "#reikos_weather:has_structure/acid_pools",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

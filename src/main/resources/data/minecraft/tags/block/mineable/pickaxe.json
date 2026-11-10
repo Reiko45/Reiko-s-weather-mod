@@ -18,6 +18,7 @@
     "reikos_weather:limestone",
     "reikos_weather:petrified_wood",
     "reikos_weather:pumice",
-    "reikos_weather:whirlpool"
+    "reikos_weather:whirlpool",
+    "reikos_weather:rock_salt"
   ]
 }

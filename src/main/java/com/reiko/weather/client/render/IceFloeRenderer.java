@@ -54,6 +54,12 @@ public class IceFloeRenderer extends EntityRenderer<IceFloeEntity> {
             super.render(floe, yaw, partialTick, poseStack, buffers, light);
             return;
         }
+        if (floe.shape() != IceFloeEntity.FLOE) {
+            renderRound(floe, t, w, poseStack, buffers, light);
+            poseStack.popPose();
+            super.render(floe, yaw, partialTick, poseStack, buffers, light);
+            return;
+        }
         slab(poseStack, buffers, light, ICE, 0, 0, 0, w, 0.36F, w);
         slab(poseStack, buffers, light, SNOW, -w * 0.08F, 0.36F, w * 0.05F, w * 0.78F, 0.08F, w * 0.72F);
         // broken-off chunks frozen onto the edges
@@ -64,6 +70,33 @@ public class IceFloeRenderer extends EntityRenderer<IceFloeEntity> {
         }
         poseStack.popPose();
         super.render(floe, yaw, partialTick, poseStack, buffers, light);
+    }
+
+    /**
+     * Round ice: an ice disc is a smooth, thin, nearly circular plate, slowly turning; a pancake is small and
+     * slushy-white with a raised rim all round where it bumps against its neighbours.
+     */
+    private void renderRound(IceFloeEntity floe, float t, float w, PoseStack poseStack, MultiBufferSource buffers, int light) {
+        int id = floe.getId();
+        boolean disc = floe.shape() == IceFloeEntity.DISC;
+        poseStack.mulPose(Axis.YP.rotationDegrees((id * 37) % 360 + (disc ? t * (0.25F + 0.1F * (id % 3)) : 0.0F)));
+        BlockState body = disc ? ICE : SNOW;
+        float h = disc ? 0.22F : 0.14F;
+        // three squares turned against each other make a near-circle
+        for (int k = 0; k < 3; k++) {
+            poseStack.pushPose();
+            poseStack.mulPose(Axis.YP.rotationDegrees(k * 30.0F));
+            slab(poseStack, buffers, light, body, 0, 0, 0, w * 0.82F, h, w * 0.82F);
+            poseStack.popPose();
+        }
+        if (disc) {
+            slab(poseStack, buffers, light, SNOW, 0, h, 0, w * 0.4F, 0.03F, w * 0.4F);
+        } else {
+            for (int k = 0; k < 8; k++) {
+                float a = k / 8.0F * Mth.TWO_PI;
+                slab(poseStack, buffers, light, ICE, Mth.cos(a) * w * 0.38F, h * 0.6F, Mth.sin(a) * w * 0.38F, w * 0.24F, h * 0.8F, w * 0.24F);
+            }
+        }
     }
 
     /**

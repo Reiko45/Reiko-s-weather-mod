@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "wave_rock",
+  "biomes": "#reikos_weather:has_structure/wave_rock",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

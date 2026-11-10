@@ -110,11 +110,12 @@ public final class StormCell {
         }
         float t = Mth.clamp((float) ((radius - d) / (radius * 0.3)), 0.0F, 1.0F);
         float w = t * t * (3.0F - 2.0F * t) * strength();
-        return type == WeatherType.HURRICANE ? w * hurricaneStructure(px, pz, d / radius) : w;
+        return type == WeatherType.HURRICANE || type == WeatherType.POLAR_LOW ? w * hurricaneStructure(px, pz, d / radius) : w;
     }
 
     /** The calm eye of a hurricane, as a fraction of its radius (0 while it's too weak to have one). */
     public float eyeFraction() {
+        if (type == WeatherType.POLAR_LOW) return power >= 0.6F ? 0.06F : 0.0F; // the strongest polar lows clear an eye too
         return type == WeatherType.HURRICANE && power >= 0.45F ? 0.05F + 0.03F * power : 0.0F;
     }
 

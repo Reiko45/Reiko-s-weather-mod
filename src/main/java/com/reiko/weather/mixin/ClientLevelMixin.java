@@ -28,6 +28,11 @@ public abstract class ClientLevelMixin {
         }
     }
 
+    @ModifyReturnValue(method = "getStarBrightness", at = @At("RETURN"))
+    private float reikos_weather$starBrightness(float original) {
+        return ClientWeather.modifyStarBrightness(original);
+    }
+
     @ModifyReturnValue(method = "getSkyDarken", at = @At("RETURN"))
     private float reikos_weather$skyDarken(float original) {
         return ClientWeather.modifySkyDarken(original);

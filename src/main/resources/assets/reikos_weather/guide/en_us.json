@@ -1401,6 +1401,136 @@
    ]
   },
   {
+   "title": "Sky Events and Wild Weather",
+   "icon": "minecraft:ender_eye",
+   "entries": [
+    {
+     "title": "The Length of the Day",
+     "icon": "minecraft:clock",
+     "pages": [
+      "With the seasons on, the days lengthen through spring to about twelve minutes of sun at midsummer, and shorten through autumn to about eight at midwinter, with the nights the other way round. Noon and midnight stay where they are. Ask /rweather query how long today is."
+     ]
+    },
+    {
+     "title": "Eclipses",
+     "icon": "minecraft:ender_eye",
+     "pages": [
+      "Now and then, at new moon, the moon passes in front of the sun around noon. In a total eclipse the day goes dark in seconds, the brightest stars come out, the pearly corona springs out round the black moon and the horizon glows like sunset all the way round. In a ring eclipse a thin ring of sun is left; in a partial one, just a bite.",
+      "At full moon the moon can pass through the Earth's shadow around midnight, turning a dim copper red. The weather radio warns of eclipses, and /rweather query gives the date of the next one."
+     ]
+    },
+    {
+     "title": "Comets and Airglow",
+     "icon": "minecraft:firework_rocket",
+     "pages": [
+      "Some years a bright comet hangs low in the twilight for about a week, after sunset in the west or before dawn in the east, its tails streaming away from the sun.\n\nOn the darkest nights the high air itself glows faintly: a green band a little above the horizon all the way round (airglow)."
+     ]
+    },
+    {
+     "title": "New Weathers",
+     "icon": "minecraft:sunflower",
+     "pages": [
+      "Sun shower: light rain falling out of a mostly clear sky while the sun shines, the perfect weather for a rainbow.\n\nPolar low: a small, fierce winter storm that spins up over cold seas, with gales and blinding snow, sometimes with a clear eye like a hurricane's. It soon dies over land."
+     ]
+    },
+    {
+     "title": "Storm Sights",
+     "icon": "minecraft:lightning_rod",
+     "pages": [
+      "Under the back of a supercell a dark, turning wall cloud hangs down, and now and then a funnel cloud snakes down out of it and draws back up again.\n\nLightning can leap out sideways from the top of a storm and strike miles away from a clear sky: a bolt from the blue. A tree struck by lightning has a strip of bark blasted off down to the ground, and a hard strike can split its top."
+     ]
+    },
+    {
+     "title": "Wind and Snow on Trees",
+     "icon": "minecraft:oak_log",
+     "pages": [
+      "Heavy, wet snow piling up on the trees snaps branches, which come down with their load of snow. Hurricane and derecho winds can lever whole trees out of the ground: they fall downwind, leaving a clod of roots standing on end beside the hole."
+     ]
+    },
+    {
+     "title": "Hail and Soil",
+     "icon": "minecraft:snowball",
+     "pages": [
+      "Hail lies in drifts after a hailstorm, deepest against walls, until it melts; on warm days a low fog rises off it.\n\nDownpours wash bare soil and farmland off steep slopes, cutting rills into them and spreading mud at the bottom. Grass holds the soil, and so do terraces: farm the hills in level steps."
+     ]
+    },
+    {
+     "title": "Frozen Lakes and Ground",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "In a hard freeze the water in the ground can freeze all at once and crack the soil with a bang: a frost quake.\n\nWhere waves run in under the edge of shore ice, water spouts up through it and freezes into little ice volcanoes. A strong onshore wind can shove the lake ice up the beach in a jumble of slabs.",
+      "Ice discs turn slowly in eddies in cold rivers, worn almost perfectly round. On choppy cold seas the new ice forms as pancakes, little rafts with raised rims where they knock together."
+     ]
+    },
+    {
+     "title": "Lakes and Coasts",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "A seiche: after a long gale piles a lake's water up at one end, the whole lake sloshes back and forth when the wind drops, washing up each shore in turn.\n\nAlong beaches, waves coming in at an angle drive a longshore current that carries swimmers and boats slowly along the shore.",
+      "On some coasts, when the wind blows offshore in spring and summer, cold water wells up from the deep: the air turns cool, sea fog forms readily, and the fish come in shoals.\n\nFor eye protection on sunny snowfields, wear goggles: snow glare soon gets dazzling without them."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "More Landscapes",
+   "icon": "minecraft:terracotta",
+   "entries": [
+    {
+     "title": "Volcanic Country",
+     "icon": "minecraft:basalt",
+     "pages": [
+      "A caldera is the great crater left where a volcano's summit collapsed into its emptied magma chamber, often with a lake inside and a new cone rising from it. Acid crater lakes are hot and bright turquoise, crusted with sulphur; at night the vents beside them burn with a ghostly blue flame.",
+      "Young lava fields are rough black sheets of fresh rock, with pressure domes (tumuli), little spatter chimneys (hornitos), skylights down into lava tubes, and hollow lava trees where flows wrapped round trunks that burned away. Rift valleys are long troughs where the land is pulling apart, stepping down between fault cliffs."
+     ]
+    },
+    {
+     "title": "Karst",
+     "icon": "reikos_weather:limestone",
+     "pages": [
+      "Doline fields are scattered with round sinkholes where the limestone dissolved underneath. Cockpit karst is a jungle egg-box of steep, round limestone hills and deep star-shaped hollows.\n\nA polje is a big, flat-floored basin in limestone country, walled all round: in wet seasons it floods into a lake, and in summer it drains away through the holes in its floor."
+     ]
+    },
+    {
+     "title": "Mountains and Ice",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "Paternoster lakes are chains of little lakes stepping down a glacial valley like beads on a rosary. Roches moutonnées are rock knobs smoothed by the ice on the side it came from and plucked into a steep, blocky face on the other. Aiguilles are needle-sharp granite spires on high ridges."
+     ]
+    },
+    {
+     "title": "Colourful Deserts",
+     "icon": "minecraft:orange_terracotta",
+     "pages": [
+      "Rainbow mountains are hills striped in folded bands of red, orange, yellow, white and green rock. Canyons cut deep through banded rock, their walls streaked dark with desert varnish. The Wave is a sandstone bowl worn into swirling, wave-like layers.",
+      "Gypsum dunes are brilliant white, blown off a dry lake. Coppice dunes are little mounds of sand each held round a bush. Salt domes push solid rock salt up through the ground, and it flows down their sides as salt glaciers. On the flats a dark, lumpy living crust holds the desert soil together: don't trample it."
+     ]
+    },
+    {
+     "title": "Coloured Waters",
+     "icon": "minecraft:pink_dye",
+     "pages": [
+      "Pink lakes are shallow salt lakes coloured by salt-loving algae. Spotted lakes dry down in summer into dozens of little pools of different colours, separated by mineral walkways. Acid pools steam in banded rings of yellow and orange."
+     ]
+    },
+    {
+     "title": "Shores",
+     "icon": "reikos_weather:shell_sand",
+     "pages": [
+      "Some beaches are made of shells, some of green olivine worn from volcanic rock, and some are pink with crushed red shells. Moeraki boulders are huge, round concretions lying half-buried in the sand, some cracked open.",
+      "Parabolic dunes are U-shaped, their arms held down by plants while the bare nose creeps downwind. Ghost forests are stands of dead, bleached trees where the land sank and the sea came in. Stromatolites are knobbly, layered mounds built by microbes in warm, salty shallows: some of the oldest kinds of life on Earth."
+     ]
+    },
+    {
+     "title": "Woods and Meadows",
+     "icon": "minecraft:red_mushroom",
+     "pages": [
+      "Fairy rings are circles of mushrooms in the grass, with a lush green ring just outside: the fungus spreads outward underground year by year.\n\nVernal pools fill hollows in the woods in autumn, winter and spring and dry out in summer, so no fish can live in them: just frogs and insects."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

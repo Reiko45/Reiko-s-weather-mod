@@ -38,7 +38,7 @@ public final class CloudPuffs {
                 case HABOOB -> {
                     if (towers) haboob(level, cell, cam, maxDistance, daylight, fog, strength);
                 }
-                case THUNDERSTORM, SUPERCELL, HAIL, HURRICANE, DERECHO, COLD_FRONT, PYROCUMULUS, THUNDERSNOW, GRAUPEL -> {
+                case THUNDERSTORM, SUPERCELL, HAIL, HURRICANE, DERECHO, COLD_FRONT, PYROCUMULUS, THUNDERSNOW, GRAUPEL, POLAR_LOW -> {
                     if (towers) towers(level, cell, cam, maxDistance, daylight, fog, time, wind, strength);
                     if (shapes && (cell.type == WeatherType.COLD_FRONT || cell.type == WeatherType.DERECHO)) {
                         shelfCloud(level, cell, cam, maxDistance, daylight, fog, strength);

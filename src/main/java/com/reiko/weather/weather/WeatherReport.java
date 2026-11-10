@@ -129,6 +129,29 @@ public final class WeatherReport {
         if (Microclimate.frostHollow(level, info, raw.profile()) > 0.3F) {
             lines.add(Component.translatable("report.reikos_weather.frost_hollow").withStyle(ChatFormatting.AQUA));
         }
+        if (Seas.upwelling(level, pos) > 0.3F) {
+            lines.add(Component.translatable("report.reikos_weather.upwelling").withStyle(ChatFormatting.AQUA));
+        }
+        // the almanac's sky notes: how long the day is, and the next eclipse
+        Seasons.Info season = WeatherManager.seasonInfo();
+        if (com.reiko.weather.config.WeatherConfig.SEASONAL_DAY_LENGTH.get() && season.season() != null) {
+            lines.add(Component.translatable("report.reikos_weather.day_length", SkyCalendar.daylightMinutes(season, level.getDayTime()),
+                    20 - SkyCalendar.daylightMinutes(season, level.getDayTime())).withStyle(ChatFormatting.YELLOW));
+        }
+        if (SkyCalendar.eclipsesOn()) {
+            long today = level.getDayTime() / 24000L, next = SkyCalendar.nextEclipse(today);
+            if (next >= 0) {
+                SkyCalendar.Eclipse e = SkyCalendar.eclipseOn(next);
+                Component kind = Component.translatable("eclipse.reikos_weather." + e.id());
+                lines.add((next == today ? Component.translatable("report.reikos_weather.eclipse_today", kind)
+                        : Component.translatable("report.reikos_weather.eclipse_in", kind, next - today)).withStyle(ChatFormatting.LIGHT_PURPLE));
+            }
+        }
+        if (SkyCalendar.cometBrightness(level.getDayTime() / 24000L) > 0.0F) {
+            boolean evening = SkyCalendar.cometShape(level.getDayTime() / 24000L)[0] > 0.5F;
+            lines.add(Component.translatable(evening ? "report.reikos_weather.comet_evening" : "report.reikos_weather.comet_morning")
+                    .withStyle(ChatFormatting.AQUA));
+        }
         return lines;
     }
 

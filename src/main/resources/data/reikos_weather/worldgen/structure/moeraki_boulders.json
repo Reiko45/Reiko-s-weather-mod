@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "moeraki_boulders",
+  "biomes": "#reikos_weather:has_structure/moeraki_boulders",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

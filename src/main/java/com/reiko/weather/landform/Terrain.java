@@ -33,13 +33,34 @@ public final class Terrain {
         while (y > min) {
             pos.set(x, y, z);
             BlockState state = level.getBlockState(pos);
-            if (cover(state) && state.getFluidState().isEmpty()) {
+            // through plants and trees, and through any water under them (as the heightmap does where there's no canopy)
+            if (cover(state) || state.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock) {
                 y--;
             } else {
                 break;
             }
         }
         return y;
+    }
+
+    /** The top of any water standing on the ground in a column (the ground itself when there's none), up to 8 deep. */
+    public static int surface(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int ground, int z) {
+        int surface = ground;
+        for (pos.set(x, ground + 1, z); surface < ground + 8 && !level.getFluidState(pos).isEmpty(); pos.move(net.minecraft.core.Direction.UP)) surface++;
+        return surface;
+    }
+
+    /**
+     * Whether water stands at height {@code h} in a column beside (x, z) that the landform never touches, as
+     * {@code outside} says: lowering this column there would let that water out, so it should stay solid.
+     */
+    public static boolean pondBeside(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int h, int z,
+                                     java.util.function.BiPredicate<Integer, Integer> outside) {
+        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+            int nx = x + d.getStepX(), nz = z + d.getStepZ();
+            if (outside.test(nx, nz) && !level.getFluidState(pos.set(nx, h, nz)).isEmpty()) return true;
+        }
+        return false;
     }
 
     /** Clears trees, plants and snow from a column above {@code y}, up to {@code height} blocks (leaves water alone). */
@@ -107,6 +128,14 @@ public final class Terrain {
     /** This mod's own biome for glacial lakes: it only exists to colour their water turquoise with rock flour. */
     public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> GLACIAL_LAKE_BIOME =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("glacial_lake"));
+
+    /** Biomes that colour lake water: pink salt lakes, milky turquoise acid crater lakes and yellow-green acid pools. */
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> PINK_LAKE_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("pink_lake"));
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> ACID_LAKE_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("acid_lake"));
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> ACID_POOL_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("acid_pool"));
 
     /**
      * Repaints the biome over part of the chunk being built: every 4x4x4 biome cell between {@code minY} and

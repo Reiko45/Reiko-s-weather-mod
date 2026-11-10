@@ -72,6 +72,9 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue SPIDER_LIGHTNING;
     public static final ModConfigSpec.BooleanValue RED_SKY;
     public static final ModConfigSpec.BooleanValue ALGAL_BLOOM_TINT;
+    public static final ModConfigSpec.BooleanValue AIRGLOW;
+    public static final ModConfigSpec.BooleanValue FUNNEL_CLOUDS;
+    public static final ModConfigSpec.BooleanValue SNOW_GLARE;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -213,6 +216,12 @@ public final class ClientConfig {
                 .define("redSky", true);
         ALGAL_BLOOM_TINT = b.comment("Rusty-red water under an algal bloom.")
                 .define("algalBloomTint", true);
+        AIRGLOW = b.comment("Faint green airglow low in the sky on dark nights.")
+                .define("airglow", true);
+        FUNNEL_CLOUDS = b.comment("Wall clouds and funnel clouds under supercells.")
+                .define("funnelClouds", true);
+        SNOW_GLARE = b.comment("Bright sun on snow dazzles you unless you wear storm goggles.")
+                .define("snowGlare", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

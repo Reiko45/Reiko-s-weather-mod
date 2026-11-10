@@ -43,6 +43,14 @@ public final class CloudForms {
                 holePunch(level, cam, maxDistance, daylight, (int) day);
             }
         }
+        if (ClientConfig.FUNNEL_CLOUDS.get()) {
+            for (StormCell cell : SyncedWeather.cells()) {
+                if ((cell.type == WeatherType.SUPERCELL || cell.type == WeatherType.THUNDERSTORM && PuffRenderer.hash(cell.id, 313) < 0.25F)
+                        && cell.strength() > 0.35F) {
+                    wallCloud(level, cell, cam, maxDistance, daylight, time);
+                }
+            }
+        }
         if (ClientConfig.SPIDER_LIGHTNING.get() && !Accessibility.reduceFlashing()) {
             spiderLightning(level, cam, maxDistance, time);
         }
@@ -64,6 +72,53 @@ public final class CloudForms {
             float taper = Mth.sqrt(Math.max(0.0F, 1.0F - 4.0F * t * t));
             float wobble = 2.0F * Mth.sin(t * 9.0F + cell.id);
             PuffRenderer.add(x, y + wobble, z, 10.0F + 6.0F * taper, shade, shade, shade * 1.04F, 0.7F * cell.strength() * taper, false, cam, maxDistance);
+        }
+    }
+
+    /**
+     * A wall cloud: a lowered, slowly turning block of dark cloud hanging under the rain-free base at the back of
+     * a supercell, where it sucks in warm, moist air. Every so often a funnel cloud snakes down out of it, hangs
+     * there twisting, and is drawn back up without ever touching the ground.
+     */
+    private static void wallCloud(ClientLevel level, StormCell cell, Vec3 cam, float maxDistance, float daylight, float time) {
+        double speed = Math.sqrt(cell.vx * cell.vx + cell.vz * cell.vz);
+        double fx = speed > 1.0E-6 ? cell.vx / speed : 1.0, fz = speed > 1.0E-6 ? cell.vz / speed : 0.0;
+        // behind the storm's core, a little to its right
+        double cx = cell.x - fx * cell.radius * 0.35 - fz * cell.radius * 0.25, cz = cell.z - fz * cell.radius * 0.35 + fx * cell.radius * 0.25;
+        double dx = cx - cam.x, dz = cz - cam.z, far = Math.sqrt(dx * dx + dz * dz);
+        if (far < 35.0 || far > 1400.0) return;
+        float fade = Mth.clamp((float) (1400.0 - far) / 400.0F, 0.0F, 1.0F) * Mth.clamp((cell.strength() - 0.35F) * 4.0F, 0.0F, 1.0F);
+        float base = level.getSeaLevel() + 80.0F, bottom = base - 20.0F;
+        float shade = 0.3F * (0.3F + 0.7F * daylight);
+        float spin = time * 0.0035F + cell.id;
+        float radius = 26.0F + 8.0F * PuffRenderer.hash(cell.id, 7);
+        for (int ring = 0; ring < 4; ring++) {
+            float y = Mth.lerp(ring / 3.0F, bottom, base);
+            float r = radius * (0.8F + 0.25F * ring / 3.0F);
+            for (int k = 0; k < 10; k++) {
+                float a = spin * (1.2F - ring * 0.15F) + k / 10.0F * Mth.TWO_PI + ring;
+                // ragged, uneven lumps round the edge
+                float rr = r * (0.55F + 0.45F * PuffRenderer.hash(k + ring * 17, cell.id));
+                PuffRenderer.add(cx + Mth.cos(a) * rr, y + PuffRenderer.hash(k, ring + cell.id) * 3.0F, cz + Mth.sin(a) * rr, 12.0F,
+                        shade, shade, shade * 1.05F, 0.75F * fade, false, cam, maxDistance);
+            }
+        }
+        // the funnel: comes and goes, about once in two minutes, for most of a minute
+        int slot = (int) (time / 2400.0F);
+        float into = time / 2400.0F - slot;
+        if (cell.type != WeatherType.SUPERCELL || PuffRenderer.hash(slot, cell.id + 5) > 0.55F || into > 0.45F) return;
+        float grow = Mth.clamp(Math.min(into / 0.12F, (0.45F - into) / 0.1F), 0.0F, 1.0F);
+        float length = (16.0F + 16.0F * PuffRenderer.hash(slot, cell.id + 9)) * grow;
+        int n = Math.max(2, Math.round(length / 2.0F));
+        for (int k = 0; k < n; k++) {
+            float t = k / (float) (n - 1);
+            float sway = Mth.sin(t * 2.5F + time * 0.012F) * t * 4.0F;
+            float r = Mth.lerp(t, 7.0F, 1.4F);
+            for (int s = 0; s < 3; s++) {
+                float a = spin * 6.0F + s * Mth.TWO_PI / 3.0F + t * 4.0F;
+                PuffRenderer.add(cx + sway + Mth.cos(a) * r * 0.5F, bottom - t * length, cz + Mth.sin(a) * r * 0.5F + sway * 0.4F, r * 1.3F + 1.0F,
+                        shade * 1.1F, shade * 1.1F, shade * 1.15F, 0.8F * fade, false, cam, maxDistance);
+            }
         }
     }
 

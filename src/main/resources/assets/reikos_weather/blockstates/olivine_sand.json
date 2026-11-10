@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/olivine_sand"
+      },
+      {
+        "model": "reikos_weather:block/olivine_sand",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/olivine_sand",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/olivine_sand",
+        "y": 270
+      }
+    ]
+  }
+}

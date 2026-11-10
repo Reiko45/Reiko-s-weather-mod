@@ -23,6 +23,7 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -35,7 +36,9 @@ import java.util.UUID;
 /**
  * The moods of the sea: rip currents pulling swimmers out from beaches, swell and rogue waves, foam blown up the
  * beach in storms, tidal bores surging up rivers at spring tides, algal blooms in hot, still summers, rafts of
- * pumice from undersea eruptions, and beaches that winter storms strip and calm summers build back up.
+ * pumice from undersea eruptions, beaches that winter storms strip and calm summers build back up, seiches
+ * sloshing a lake from shore to shore after a gale, longshore currents carrying swimmers and flotsam along the
+ * beach, and upwelling: cold, rich water rising off some coasts when the wind blows offshore.
  */
 public final class Seas {
     /** Swimmers caught in a rip current: the way out to sea, and how hard it's pulling. */
@@ -48,12 +51,19 @@ public final class Seas {
     private static final Map<UUID, Long> RIP_WARNED = new HashMap<>();
     private static final Map<UUID, Bore> BORES = new HashMap<>();
     private static final Map<UUID, Long> LAST_BORE_TIDE = new HashMap<>();
+    /** A seiche on a lake near a player: when it started, and which way the wind had piled the water up. */
+    private record Seiche(long start, float angle) {}
+    private static final Map<UUID, Seiche> SEICHES = new HashMap<>();
+    private static final Map<UUID, Long> LAST_GALE = new HashMap<>();
+    private static final Map<UUID, Float> SHORE = new HashMap<>();
 
     static void tickPlayer(ServerLevel level, WeatherState state, ServerPlayer player, LocalWeather local, Climate climate) {
         RandomSource random = level.random;
         float wind = local.profile().wind * local.intensity();
         if (WeatherConfig.RIP_CURRENTS.get()) ripCurrent(level, player, wind);
         if (WeatherConfig.TIDAL_BORES.get()) bore(level, player);
+        if (WeatherConfig.COASTAL_CURRENTS.get()) longshore(level, state, player, wind);
+        if (WeatherConfig.SEICHES.get()) seiche(level, state, player, wind);
         if (player.tickCount % 20 != 0) return;
 
         boolean griefing = level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
@@ -80,6 +90,137 @@ public final class Seas {
                 if (random.nextInt(40) == 0) fish.hurt(level.damageSources().drown(), 2.0F);
             }
         }
+    }
+
+    // ------------------------------------------------------------------ seiches
+
+    /**
+     * A seiche: a long gale piles a lake's water up against the far shore, and when the wind drops the whole lake
+     * sloshes back and forth like water in a bath, flooding each shore in turn for a few minutes.
+     */
+    private static void seiche(ServerLevel level, WeatherState state, ServerPlayer player, float wind) {
+        long now = level.getGameTime();
+        UUID id = player.getUUID();
+        if (wind > 0.6F) LAST_GALE.put(id, now);
+        Seiche s = SEICHES.get(id);
+        if (s == null) {
+            Long gale = LAST_GALE.get(id);
+            if (gale != null && wind < 0.35F && now - gale < 1200 && now - gale > 100) {
+                LAST_GALE.remove(id);
+                if (nearLake(level, player)) {
+                    SEICHES.put(id, new Seiche(now, state.windAngle));
+                    player.displayClientMessage(Component.translatable("message.reikos_weather.seiche").withStyle(st -> st.withColor(0x88C8E8)), true);
+                }
+            }
+            return;
+        }
+        long t = now - s.start;
+        if (t > 3600) {
+            SEICHES.remove(id);
+            return;
+        }
+        if (t % 10 != 0 || !level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) return;
+        // a minute from one shore to the other and back, dying away
+        float phase = Mth.sin(t / 1200.0F * Mth.TWO_PI) * (1.0F - t / 3600.0F);
+        if (Math.abs(phase) < 0.45F) return;
+        float angle = phase > 0 ? s.angle : s.angle + Mth.PI;
+        Vec3 toShore = Wind.direction(angle);
+        RandomSource random = level.random;
+        for (int i = 0; i < 6; i++) {
+            BlockPos top = column(level, player, random, 40);
+            if (top == null) continue;
+            surge(level, player, top, toShore);
+        }
+    }
+
+    /** The lake's water running up the beach on the shore it's sloshing toward. */
+    private static void surge(ServerLevel level, ServerPlayer player, BlockPos top, Vec3 toShore) {
+        BlockState ground = level.getBlockState(top.below());
+        if (!level.getBlockState(top).isAir() || !ground.isFaceSturdy(level, top.below(), Direction.UP) || ground.getFluidState().is(FluidTags.WATER)) return;
+        // the lake has to be right there, on the side the water is coming from, one block down
+        BlockPos lake = BlockPos.containing(top.getX() - Math.round(toShore.x), top.getY() - 1, top.getZ() - Math.round(toShore.z));
+        if (!level.getFluidState(lake).isSource() || !level.getFluidState(lake).is(FluidTags.WATER) || !level.getBlockState(lake.above()).isAir()) return;
+        var biome = level.getBiome(lake);
+        if (biome.is(BiomeTags.IS_OCEAN) || biome.is(BiomeTags.IS_RIVER) || biome.is(BiomeTags.IS_BEACH)) return;
+        // a little flowing water with no source: it runs up the shore and drains away again by itself
+        level.setBlockAndUpdate(top, net.minecraft.world.level.material.Fluids.FLOWING_WATER.getFlowing(6, false).createLegacyBlock());
+        if (player.distanceToSqr(Vec3.atCenterOf(top)) < 20 * 20) WeatherAdvancements.award(player, "seiche");
+    }
+
+    private static boolean nearLake(ServerLevel level, ServerPlayer player) {
+        for (int i = 0; i < 8; i++) {
+            float a = i * Mth.TWO_PI / 8.0F;
+            for (int d = 6; d <= 30; d += 8) {
+                BlockPos c = BlockPos.containing(player.getX() + Mth.cos(a) * d, 0, player.getZ() + Mth.sin(a) * d);
+                if (!level.isLoaded(c)) continue;
+                BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, c).below();
+                if (!level.getFluidState(top).is(FluidTags.WATER)) continue;
+                var biome = level.getBiome(top);
+                if (!biome.is(BiomeTags.IS_OCEAN) && !biome.is(BiomeTags.IS_RIVER) && !biome.is(BiomeTags.IS_BEACH)) return true;
+            }
+        }
+        return false;
+    }
+
+    // ------------------------------------------------------------------ longshore currents and upwelling
+
+    /**
+     * Longshore drift: waves coming in at an angle to a beach drive a current along it, inside the surf. Swimmers,
+     * boats and anything floating in the shallows are carried slowly along the shore, the way the wind is slanting.
+     */
+    private static void longshore(ServerLevel level, WeatherState state, ServerPlayer player, float wind) {
+        if (level.dimension() != net.minecraft.world.level.Level.OVERWORLD || wind < 0.15F) return;
+        UUID id = player.getUUID();
+        if (player.tickCount % 40 == 0 || !SHORE.containsKey(id)) {
+            SHORE.put(id, level.getBiome(player.blockPosition()).is(BiomeTags.IS_BEACH) || level.getBiome(player.blockPosition()).is(BiomeTags.IS_OCEAN)
+                    ? seaward(level, player.getX(), player.getZ(), 12) : Float.NaN);
+        }
+        float sea = SHORE.get(id);
+        if (Float.isNaN(sea)) return;
+        Vec3 w = Wind.direction(state.windAngle);
+        double tx = -Mth.sin(sea), tz = Mth.cos(sea);
+        double along = w.x * tx + w.z * tz;
+        if (Math.abs(along) < 0.2) return;
+        double push = Math.signum(along) * 0.008 * (0.4 + wind) * Math.min(1.0, Math.abs(along) * 1.5);
+        int sl = level.getSeaLevel();
+        for (Entity e : level.getEntities(player, player.getBoundingBox().inflate(20, 4, 20), e -> e.isInWater() && !e.isSpectator()
+                && e.getY() > sl - 4 && e.getY() < sl + 1 && !(e instanceof com.reiko.weather.entity.IceFloeEntity))) {
+            e.setDeltaMovement(e.getDeltaMovement().add(tx * push, 0.0, tz * push));
+        }
+        // players are moved on their own side, so nudge them less often, a little harder
+        if (player.isInWater() && player.getY() > sl - 4 && player.tickCount % 4 == 0) {
+            player.setDeltaMovement(player.getDeltaMovement().add(tx * push * 4.0, 0.0, tz * push * 4.0));
+            player.hurtMarked = true;
+        }
+    }
+
+    /**
+     * Upwelling: on some coasts, when the wind blows steadily offshore in spring and summer, it pushes the warm
+     * surface water out to sea and cold, nutrient-rich water rises from the deep to replace it. The air along the
+     * shore turns cool, sea fog forms readily over the cold water, and the fishing is excellent. 0 to 1.
+     */
+    public static float upwelling(net.minecraft.world.level.Level level, BlockPos pos) {
+        if (!WeatherConfig.SPEC.isLoaded() || !WeatherConfig.UPWELLING.get() || level.dimension() != net.minecraft.world.level.Level.OVERWORLD) return 0.0F;
+        var biome = level.getBiome(pos);
+        if (!biome.is(BiomeTags.IS_BEACH) && !biome.is(BiomeTags.IS_OCEAN) || biome.is(Biomes.WARM_OCEAN) || biome.value().getBaseTemperature() < 0.2F) return 0.0F;
+        // only some stretches of coast (where the shape of the sea floor lets it happen)
+        int h = Mth.murmurHash3Mixer((pos.getX() >> 8) * 73856093 ^ (pos.getZ() >> 8) * 19349663);
+        if ((h & 1023) >= 420) return 0.0F;
+        Season season = level.isClientSide ? com.reiko.weather.network.SyncedWeather.season() : WeatherManager.seasonInfo().season();
+        if (season == Season.AUTUMN || season == Season.WINTER) return 0.0F;
+        float sea = seaward(level, pos.getX() + 0.5, pos.getZ() + 0.5, 16);
+        if (Float.isNaN(sea)) return 0.0F;
+        float angle;
+        if (level.isClientSide) {
+            angle = com.reiko.weather.network.SyncedWeather.windAngle();
+        } else {
+            WeatherState state = WeatherManager.activeState(level);
+            if (state == null) return 0.0F;
+            angle = state.windAngle;
+        }
+        Vec3 w = Wind.direction(angle);
+        double offshore = w.x * Mth.cos(sea) + w.z * Mth.sin(sea);
+        return Mth.clamp((float) (offshore - 0.3) / 0.5F, 0.0F, 1.0F);
     }
 
     /** Once a second for the world: the algal bloom spreading or dying back. */
@@ -135,7 +276,7 @@ public final class Seas {
      * Which way the open sea lies from a spot just off a beach (radians), or NaN if it isn't near a shore: some of
      * the ground round about has to be dry land and some open water.
      */
-    private static float seaward(ServerLevel level, double px, double pz, int distance) {
+    private static float seaward(net.minecraft.world.level.Level level, double px, double pz, int distance) {
         int sea = level.getSeaLevel(), wet = 0, dry = 0;
         float sx = 0, sz = 0;
         for (int i = 0; i < 8; i++) {
@@ -374,6 +515,9 @@ public final class Seas {
     }
 
     public static void reset() {
+        SEICHES.clear();
+        LAST_GALE.clear();
+        SHORE.clear();
         RIPS.clear();
         RIP_WARNED.clear();
         BORES.clear();

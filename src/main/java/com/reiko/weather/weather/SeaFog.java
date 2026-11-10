@@ -36,7 +36,8 @@ public final class SeaFog {
         };
         RandomSource random = level.random;
         for (ServerPlayer player : level.players()) {
-            if (player.isSpectator() || random.nextFloat() > chance) continue;
+            // cold upwelled water off the coast makes fog far likelier
+            if (player.isSpectator() || random.nextFloat() > chance + 0.45F * Seas.upwelling(level, player.blockPosition())) continue;
             if (state.cells.stream().anyMatch(c -> c.type == WeatherType.SEA_FOG && c.distanceTo(player.getX(), player.getZ()) < 500)) continue;
             // which way is the open sea?
             float bestAngle = 0.0F;

@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "aiguilles",
+  "biomes": "#reikos_weather:has_structure/aiguilles",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

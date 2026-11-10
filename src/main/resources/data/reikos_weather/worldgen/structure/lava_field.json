@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "lava_field",
+  "biomes": "#reikos_weather:has_structure/lava_field",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

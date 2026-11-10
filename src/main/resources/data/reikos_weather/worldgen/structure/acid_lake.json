@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "acid_lake",
+  "biomes": "#reikos_weather:has_structure/acid_lake",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

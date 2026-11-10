@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "rainbow_mountains",
+  "biomes": "#reikos_weather:has_structure/rainbow_mountains",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

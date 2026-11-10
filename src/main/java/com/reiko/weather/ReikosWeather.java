@@ -170,6 +170,11 @@ public class ReikosWeather {
             event.accept(ModItems.LIMESTONE.get());
             event.accept(ModItems.PETRIFIED_WOOD.get());
             event.accept(ModItems.PUMICE.get());
+            event.accept(ModItems.GYPSUM_SAND.get());
+            event.accept(ModItems.SHELL_SAND.get());
+            event.accept(ModItems.OLIVINE_SAND.get());
+            event.accept(ModItems.PINK_SAND.get());
+            event.accept(ModItems.ROCK_SALT.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

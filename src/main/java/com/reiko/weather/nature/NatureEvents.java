@@ -113,6 +113,11 @@ public final class NatureEvents {
             extra.add(new ItemStack(ModItems.STORMFISH.get()));
         } else if (iceHole(level, pos) && random.nextFloat() < 0.45F) {
             extra.add(new ItemStack(ModItems.ICEFISH.get()));
+        } else if (com.reiko.weather.weather.Seas.upwelling(level, pos) > 0.3F && random.nextFloat() < 0.45F) {
+            // the cold, rich water brings the fish in shoals
+            ItemStack fish = event.getDrops().stream().filter(s -> s.is(ItemTags.FISHES)).findFirst().orElse(new ItemStack(Items.COD));
+            extra.add(fish.copyWithCount(1 + random.nextInt(2)));
+            if (player instanceof ServerPlayer serverPlayer) WeatherAdvancements.award(serverPlayer, "upwelling");
         } else if (raining && random.nextFloat() < 0.3F) {
             // fish bite better in the rain: sometimes a second fish comes up
             ItemStack fish = event.getDrops().stream().filter(s -> s.is(ItemTags.FISHES)).findFirst().orElse(new ItemStack(Items.COD));

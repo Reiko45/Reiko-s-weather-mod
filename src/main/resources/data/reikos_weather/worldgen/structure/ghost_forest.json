@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "ghost_forest",
+  "biomes": "#reikos_weather:has_structure/ghost_forest",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

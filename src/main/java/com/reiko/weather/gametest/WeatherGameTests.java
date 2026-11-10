@@ -594,4 +594,75 @@ public class WeatherGameTests {
         helper.assertTrue(com.reiko.weather.landform.LandformKind.MUSHROOM_ROCKS.plan(at.apply((x, z) -> sea - 20)) == null, "no mushroom rocks at sea");
         helper.succeed();
     }
+    @GameTest(template = PLATFORM)
+    public static void skyCalendarAndWinter(GameTestHelper helper) {
+        var level = helper.getLevel();
+        helper.assertTrue(WeatherType.SUN_SHOWER.natural() && !WeatherType.SUN_SHOWER.cellOnly() && WeatherType.SUN_SHOWER.vanillaRain,
+                "a sun shower is a natural, rainy weather");
+        helper.assertTrue(com.reiko.weather.weather.WeatherProfiles.get(WeatherType.SUN_SHOWER, Climate.TEMPERATE).overcast < 0.2F, "and the sky stays clear");
+        helper.assertTrue(WeatherType.POLAR_LOW.cellOnly() && WeatherType.POLAR_LOW.isStorm() && WeatherType.POLAR_LOW.isSevere(),
+                "a polar low is a severe storm that only comes as a cell");
+        helper.assertTrue(com.reiko.weather.weather.Season.SUMMER.weatherMultiplier(WeatherType.POLAR_LOW) == 0.0F, "no polar lows in summer");
+        // eclipses only at new or full moon, never on a blood moon
+        int eclipses = 0;
+        for (long day = 0; day < 800; day++) {
+            var e = com.reiko.weather.weather.SkyCalendar.eclipseOn(day);
+            if (e.solar()) helper.assertTrue(day % 8 == 4, "a solar eclipse at new moon (day " + day + ")");
+            if (e.lunar()) {
+                helper.assertTrue(day % 8 == 0, "a lunar eclipse at full moon (day " + day + ")");
+                helper.assertFalse(com.reiko.weather.weather.SkyPhenomena.isBloodMoonNight(day * 24000L), "not on a blood moon (day " + day + ")");
+            }
+            if (e != com.reiko.weather.weather.SkyCalendar.Eclipse.NONE) eclipses++;
+            float comet = com.reiko.weather.weather.SkyCalendar.cometBrightness(day);
+            helper.assertTrue(comet >= 0.0F && comet <= 1.0F, "a comet's brightness is 0-1");
+        }
+        helper.assertTrue(eclipses > 5, "eclipses come round now and then (" + eclipses + " in 800 days)");
+        // long summer days, short winter ones
+        var summer = new com.reiko.weather.weather.Seasons.Info(com.reiko.weather.weather.Season.SUMMER, 4, 8, 0.0F);
+        var winter = new com.reiko.weather.weather.Seasons.Info(com.reiko.weather.weather.Season.WINTER, 4, 8, 0.0F);
+        float longDay = com.reiko.weather.weather.SkyCalendar.daylightFraction(summer, 0L), shortDay = com.reiko.weather.weather.SkyCalendar.daylightFraction(winter, 0L);
+        helper.assertTrue(longDay > 0.55F && longDay <= 0.61F && shortDay < 0.45F && shortDay >= 0.39F, "summer days long, winter days short ("
+                + longDay + ", " + shortDay + ")");
+        helper.assertTrue(com.reiko.weather.weather.SkyCalendar.daylightFraction(com.reiko.weather.weather.Seasons.Info.NONE, 0L) == 0.5F, "no seasons, even days");
+        // lightning strips the bark off a log
+        helper.assertTrue(com.reiko.weather.weather.LightningEvents.stripped(Blocks.OAK_LOG.defaultBlockState()).is(Blocks.STRIPPED_OAK_LOG), "a struck oak loses its bark");
+        helper.assertTrue(com.reiko.weather.weather.LightningEvents.stripped(Blocks.STRIPPED_OAK_LOG.defaultBlockState()) == null, "and there's no more to lose");
+        // hail lies on solid ground, in layers
+        helper.setBlock(1, 1, 1, Blocks.STONE);
+        helper.setBlock(1, 2, 1, ModBlocks.HAILSTONES.get());
+        helper.assertTrue(helper.getBlockState(new BlockPos(1, 2, 1)).getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) == 1, "a thin layer of hail");
+        // upwelling never happens inland
+        helper.assertTrue(com.reiko.weather.weather.Seas.upwelling(level, helper.absolutePos(new BlockPos(1, 2, 1))) >= 0.0F, "upwelling is 0 or more");
+        helper.succeed();
+    }
+    @GameTest(template = PLATFORM)
+    public static void tenthLandformsPlan(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int sea = level.getSeaLevel();
+        java.util.function.Function<java.util.function.IntBinaryOperator, com.reiko.weather.landform.PlanContext> at = ground ->
+                new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(7), 0, 0, ground, sea, level);
+        // flat, gentle country suits the meadow landforms, and they save and load as they were
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.FAIRY_RINGS,
+                com.reiko.weather.landform.LandformKind.VERNAL_POOLS, com.reiko.weather.landform.LandformKind.PARABOLIC_DUNES}) {
+            var planned = kind.plan(at.apply((x, z) -> sea + 8 + (int) (2 * Math.sin(x * 0.07))));
+            helper.assertTrue(planned != null, kind + " on gentle ground");
+            var again = kind.load(planned.save());
+            helper.assertTrue(again.bounds().equals(planned.bounds()), kind + " saves and loads");
+            var b = planned.bounds();
+            helper.assertTrue(b.getXSpan() < 230 && b.getZSpan() < 230, kind + " stays within its reach");
+        }
+        // dry-country and mountain landforms never form out at sea
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.GYPSUM_DUNES,
+                com.reiko.weather.landform.LandformKind.SALT_DOME, com.reiko.weather.landform.LandformKind.CANYON,
+                com.reiko.weather.landform.LandformKind.CALDERA, com.reiko.weather.landform.LandformKind.POLJE,
+                com.reiko.weather.landform.LandformKind.FAIRY_RINGS}) {
+            helper.assertTrue(kind.plan(at.apply((x, z) -> sea - 20)) == null, "no " + kind + " at sea");
+        }
+        // and the shore landforms need a shore
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.COLOURED_BEACH,
+                com.reiko.weather.landform.LandformKind.MOERAKI_BOULDERS, com.reiko.weather.landform.LandformKind.STROMATOLITES}) {
+            helper.assertTrue(kind.plan(at.apply((x, z) -> sea + 25)) == null, "no " + kind + " far inland");
+        }
+        helper.succeed();
+    }
 }

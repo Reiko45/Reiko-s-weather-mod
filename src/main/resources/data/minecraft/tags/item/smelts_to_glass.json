@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:black_sand"
+    "reikos_weather:black_sand",
+    "reikos_weather:gypsum_sand",
+    "reikos_weather:shell_sand",
+    "reikos_weather:olivine_sand",
+    "reikos_weather:pink_sand"
   ]
 }

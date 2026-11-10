@@ -1,5 +1,7 @@
 package com.reiko.weather.client;
 
+import com.reiko.weather.weather.SkyCalendar;
+
 import com.reiko.weather.config.ClientConfig;
 import com.reiko.weather.weather.WeatherType;
 
@@ -55,7 +57,8 @@ public final class SkyEffectsRenderer {
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
         Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
-        float clearSky = (1.0F - level.getRainLevel(partialTick)) * (1.0F - Math.min(1.0F, ClientWeather.fogDensity() * 1.5F));
+        float clearSky = (1.0F - level.getRainLevel(partialTick) * (1.0F - 0.9F * ClientWeather.sunShower()))
+                * (1.0F - Math.min(1.0F, ClientWeather.fogDensity() * 1.5F));
         boolean overworld = level.dimension() == net.minecraft.world.level.Level.OVERWORLD && com.reiko.weather.network.SyncedWeather.managed();
         float overcast = ClientWeather.overcast();
         // twilight: Earth's shadow rising opposite the sun, with the pink belt above it
@@ -84,7 +87,15 @@ public final class SkyEffectsRenderer {
                 && com.reiko.weather.network.SyncedWeather.season() == com.reiko.weather.weather.Season.WINTER
                 ? clearSky * (1.0F - overcast) * Mth.clamp(1.0F - Math.abs(sun.y + 0.07F) / 0.08F, 0.0F, 1.0F) : 0.0F;
         float redSky = overworld && ClientConfig.RED_SKY.get() ? redSky(level, sun) * clearSky : 0.0F;
-        if (rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+        // eclipses, comets and airglow
+        SkyCalendar.Eclipse eclipse = overworld ? Eclipses.today(level) : SkyCalendar.Eclipse.NONE;
+        float eclipseProgress = Eclipses.progress(level, eclipse, partialTick);
+        boolean eclipsing = eclipse != SkyCalendar.Eclipse.NONE && Math.abs(eclipseProgress) < 1.0F;
+        long day = level.getDayTime() / 24000L;
+        float comet = overworld ? SkyCalendar.cometBrightness(day) * Mth.clamp((-sun.y - 0.02F) * 7.0F, 0.0F, 1.0F) * clearSky
+                * (1.0F - overcast) * (1.0F - 0.5F * AirAndWater.lightPollution()) : 0.0F;
+        float airglow = overworld && ClientConfig.AIRGLOW.get() ? dark * Mth.clamp((-sun.y - 0.25F) * 5.0F, 0.0F, 1.0F) : 0.0F;
+        if (!eclipsing && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
                 && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F
                 && milky <= 0.005F && zodiacal <= 0.005F && cha <= 0.005F && cza <= 0.005F && nacreous <= 0.005F && redSky <= 0.005F) {
             return;
@@ -97,6 +108,19 @@ public final class SkyEffectsRenderer {
         RenderSystem.disableCull();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+        if (eclipsing && eclipse.solar() && sun.y > -0.1F) {
+            float sunAlpha = 1.0F - Math.max(level.getRainLevel(partialTick) * (1.0F - 0.9F * ClientWeather.sunShower()), ClientWeather.sunOcclusion());
+            drawSolarEclipse(pose, sun, eclipse, eclipseProgress, sunAlpha);
+        } else if (eclipsing && eclipse.lunar()) {
+            drawLunarEclipse(pose, new Vector3f(sun).negate(), eclipse, eclipseProgress);
+        }
+        if (airglow > 0.005F) {
+            drawAirglow(pose, airglow);
+        }
+        if (comet > 0.005F) {
+            drawComet(pose, sun, theta, SkyCalendar.cometShape(day), comet);
+        }
 
         if (rainbow > 0.005F) {
             // the rainbow sits 42 degrees from the anti-solar point, so it needs a low sun
@@ -901,6 +925,259 @@ public final class SkyEffectsRenderer {
         buffer.addVertex(pose, p1.x, p1.y, p1.z).setColor(r0, g0, b0, alphaB0);
         buffer.addVertex(pose, p2.x, p2.y, p2.z).setColor(r1, g1, b1, alphaB1);
         buffer.addVertex(pose, p3.x, p3.y, p3.z).setColor(r1, g1, b1, alphaA1);
+    }
+
+    // ------------------------------------------------------------------ eclipses, comets and airglow
+
+    /** Vanilla's sun and moon are square faces: one side runs north-south, the other along their path. */
+    private static Vector3f[] faceBasis(Vector3f dir) {
+        Vector3f d = new Vector3f(dir).normalize();
+        Vector3f across = new Vector3f(0.0F, 0.0F, 1.0F);
+        Vector3f along = new Vector3f(d).cross(across).normalize();
+        return new Vector3f[]{along, across};
+    }
+
+    /** A point on a sun or moon face, {@code x} degrees along its path and {@code y} across it. */
+    private static Vector3f onFace(Vector3f dir, Vector3f[] face, float x, float y) {
+        return new Vector3f(dir).normalize()
+                .add(new Vector3f(face[0]).mul((float) Math.tan(x * Mth.DEG_TO_RAD)))
+                .add(new Vector3f(face[1]).mul((float) Math.tan(y * Mth.DEG_TO_RAD)))
+                .normalize().mul(DOME);
+    }
+
+    /**
+     * An eclipse of the sun: the new moon's black disc slides across the sun's face. At totality the pearly corona
+     * springs out round it, with pink prominences at the rim and a last dazzling "diamond ring" bead of sunlight
+     * either side of it, and a sunset glow all round the horizon; in a ring eclipse a thin ring of fire is left.
+     */
+    private static void drawSolarEclipse(Matrix4f pose, Vector3f sun, SkyCalendar.Eclipse e, float progress, float sunAlpha) {
+        Vector3f[] face = faceBasis(sun);
+        float[] o = Eclipses.offset(e, progress);
+        float rm = Eclipses.moonRadius(e);
+        // the moon only shows where it's in front of the sun (against the bright sky the new moon can't be seen)
+        RenderSystem.defaultBlendFunc();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] black = {0.012F, 0.014F, 0.025F};
+        // just over the sun's square face, so the moon's disc never shows against the sky beside it
+        int n = 30;
+        float half = 4.45F, cell = 2.0F * half / n;
+        boolean any = false;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                float x0 = -half + i * cell, y0 = -half + j * cell, x1 = x0 + cell, y1 = y0 + cell;
+                float a00 = moonCover(x0, y0, o, rm), a10 = moonCover(x1, y0, o, rm), a11 = moonCover(x1, y1, o, rm), a01 = moonCover(x0, y1, o, rm);
+                if (a00 + a10 + a11 + a01 <= 0.0F) continue;
+                any = true;
+                vertex(buffer, pose, onFace(sun, face, x0, y0), black, a00 * sunAlpha);
+                vertex(buffer, pose, onFace(sun, face, x1, y0), black, a10 * sunAlpha);
+                vertex(buffer, pose, onFace(sun, face, x1, y1), black, a11 * sunAlpha);
+                vertex(buffer, pose, onFace(sun, face, x0, y1), black, a01 * sunAlpha);
+            }
+        }
+        if (any) draw(buffer);
+        else buffer.build();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+
+        float d = Mth.sqrt(o[0] * o[0] + o[1] * o[1]);
+        Vector3f moon = onFace(sun, face, o[0], o[1]).normalize();
+        Vector3f[] around = basis(moon);
+        if (e == SkyCalendar.Eclipse.TOTAL) {
+            float total = Mth.clamp((Eclipses.coverage(e, progress) - 0.985F) / 0.015F, 0.0F, 1.0F) * sunAlpha;
+            if (total > 0.005F) {
+                float[] pearl = {0.88F, 0.92F, 1.0F};
+                drawGlow(pose, moon, around[0], around[1], rm - 0.3F, 15.0F, pearl, 0.5F * total);
+                drawGlow(pose, moon, around[0], around[1], rm - 0.3F, 30.0F, pearl, 0.16F * total);
+                drawStreamers(pose, moon, around, rm, pearl, 0.22F * total);
+                float[] pink = {1.0F, 0.32F, 0.5F};
+                for (int k = 0; k < 4; k++) {
+                    Vector3f spot = ringPoint(moon, around[0], around[1], (k * 97.0F + 20.0F) * Mth.DEG_TO_RAD, (rm + 0.15F) * Mth.DEG_TO_RAD).normalize();
+                    Vector3f[] sb = basis(spot);
+                    drawGlow(pose, spot, sb[0], sb[1], 0.0F, 0.55F + 0.25F * (k % 2), pink, 0.55F * total);
+                }
+                drawHorizonGlow(pose, total);
+            }
+            // the diamond ring: the last bead of sun as totality starts, and the first as it ends
+            float contact = rm - Eclipses.SUN;
+            float bead = Mth.clamp(1.0F - Math.abs(d - contact) / 0.8F, 0.0F, 1.0F) * sunAlpha;
+            if (bead > 0.01F && d > 0.01F) {
+                Vector3f spot = onFace(sun, face, -o[0] / d * Eclipses.SUN * 0.97F, -o[1] / d * Eclipses.SUN * 0.97F).normalize();
+                Vector3f[] sb = basis(spot);
+                float[] white = {1.0F, 0.98F, 0.92F};
+                drawGlow(pose, spot, sb[0], sb[1], 0.0F, 1.6F, white, 0.95F * bead);
+                drawGlow(pose, spot, sb[0], sb[1], 0.0F, 7.0F, white, 0.3F * bead);
+            }
+        } else if (e == SkyCalendar.Eclipse.ANNULAR) {
+            float ring = Mth.clamp(1.0F - (d - (Eclipses.SUN - rm)) / 0.6F, 0.0F, 1.0F) * sunAlpha;
+            if (ring > 0.01F) {
+                drawGlow(pose, moon, around[0], around[1], rm - 0.1F, Eclipses.SUN + 0.5F, new float[]{1.0F, 0.86F, 0.55F}, 0.65F * ring);
+            }
+        }
+    }
+
+    /** How much of a point on the sun's face the moon covers (soft-edged by a fraction of a degree). */
+    private static float moonCover(float x, float y, float[] moon, float radius) {
+        float dx = x - moon[0], dy = y - moon[1];
+        return Mth.clamp((radius - Mth.sqrt(dx * dx + dy * dy)) / 0.3F + 0.5F, 0.0F, 1.0F);
+    }
+
+    /** Long, faint rays of the corona, streaming out mostly either side of the sun's equator. */
+    private static void drawStreamers(Matrix4f pose, Vector3f centre, Vector3f[] around, float radius, float[] color, float alpha) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        float[][] rays = {{8, 26, 2.4F}, {-14, 20, 1.8F}, {172, 24, 2.2F}, {196, 18, 1.6F}, {70, 13, 1.2F}, {250, 12, 1.1F}, {120, 10, 1.0F}};
+        for (float[] ray : rays) {
+            float phi = ray[0] * Mth.DEG_TO_RAD, spread = ray[2] / ray[1];
+            Vector3f base0 = ringPoint(centre, around[0], around[1], phi - spread, radius * Mth.DEG_TO_RAD);
+            Vector3f base1 = ringPoint(centre, around[0], around[1], phi + spread, radius * Mth.DEG_TO_RAD);
+            Vector3f tip = ringPoint(centre, around[0], around[1], phi, ray[1] * Mth.DEG_TO_RAD);
+            vertex(buffer, pose, base0, color, alpha);
+            vertex(buffer, pose, base1, color, alpha);
+            vertex(buffer, pose, tip, color, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    /** In totality the sky all round the horizon glows like sunset: that's sunlit air beyond the moon's shadow. */
+    private static void drawHorizonGlow(Matrix4f pose, float strength) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] low = {1.0F, 0.55F, 0.25F}, high = {0.9F, 0.6F, 0.45F};
+        int segments = 48;
+        float e0 = -2.0F * Mth.DEG_TO_RAD, e1 = 4.0F * Mth.DEG_TO_RAD, e2 = 12.0F * Mth.DEG_TO_RAD;
+        for (int i = 0; i < segments; i++) {
+            float a0 = i / (float) segments * Mth.TWO_PI, a1 = (i + 1) / (float) segments * Mth.TWO_PI;
+            vertex(buffer, pose, sky(a0, e0), low, 0.0F);
+            vertex(buffer, pose, sky(a1, e0), low, 0.0F);
+            vertex(buffer, pose, sky(a1, e1), low, 0.3F * strength);
+            vertex(buffer, pose, sky(a0, e1), low, 0.3F * strength);
+            vertex(buffer, pose, sky(a0, e1), high, 0.3F * strength);
+            vertex(buffer, pose, sky(a1, e1), high, 0.3F * strength);
+            vertex(buffer, pose, sky(a1, e2), high, 0.0F);
+            vertex(buffer, pose, sky(a0, e2), high, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    /**
+     * An eclipse of the moon: the Earth's shadow creeps across the full moon, dark at first beside the bright
+     * part, until the whole moon is in it and glows a dim copper red (lit only by every sunrise and sunset on
+     * Earth, bent round through the air).
+     */
+    private static void drawLunarEclipse(Matrix4f pose, Vector3f moon, SkyCalendar.Eclipse e, float progress) {
+        if (moon.y < -0.1F) return;
+        Vector3f[] face = faceBasis(moon);
+        float[] o = Eclipses.offset(e, progress);
+        float c = Eclipses.coverage(e, progress);
+        float[] shadow = {Mth.lerp(c, 0.2F, 0.7F), Mth.lerp(c, 0.1F, 0.3F), Mth.lerp(c, 0.08F, 0.16F)};
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.DST_COLOR, GlStateManager.DestFactor.ZERO);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int n = 20;
+        float half = 5.4F, cell = 2.0F * half / n;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                float x0 = -half + i * cell, y0 = -half + j * cell, x1 = x0 + cell, y1 = y0 + cell;
+                umbraVertex(buffer, pose, moon, face, x0, y0, o, shadow);
+                umbraVertex(buffer, pose, moon, face, x1, y0, o, shadow);
+                umbraVertex(buffer, pose, moon, face, x1, y1, o, shadow);
+                umbraVertex(buffer, pose, moon, face, x0, y1, o, shadow);
+            }
+        }
+        draw(buffer);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        float glow = c * c * c * c;
+        if (glow > 0.01F) {
+            Vector3f[] around = basis(moon);
+            drawGlow(pose, new Vector3f(moon).normalize(), around[0], around[1], 0.0F, 10.0F, new float[]{0.8F, 0.26F, 0.12F}, 0.12F * glow);
+        }
+    }
+
+    private static void umbraVertex(BufferBuilder buffer, Matrix4f pose, Vector3f moon, Vector3f[] face, float x, float y, float[] shadow, float[] color) {
+        float dx = x + shadow[0], dy = y + shadow[1]; // the shadow's centre sits at minus the offset from the moon
+        float dist = Mth.sqrt(dx * dx + dy * dy);
+        // only on the moon's round face, not the square of sky round it
+        float onMoon = Mth.clamp((Eclipses.MOON + 0.3F - Mth.sqrt(x * x + y * y)) / 0.6F, 0.0F, 1.0F);
+        float inside = Mth.clamp((Eclipses.UMBRA - dist) / 0.9F + 0.5F, 0.0F, 1.0F) * onMoon;
+        // the faint outer shadow (penumbra) dims it a little first
+        float penumbra = 1.0F - 0.25F * Mth.clamp((Eclipses.UMBRA + 4.0F - dist) / 4.0F, 0.0F, 1.0F) * onMoon;
+        Vector3f p = onFace(moon, face, x, y);
+        buffer.addVertex(pose, p.x, p.y, p.z).setColor(Mth.lerp(inside, penumbra, color[0]), Mth.lerp(inside, penumbra, color[1]),
+                Mth.lerp(inside, penumbra, color[2]), 1.0F);
+    }
+
+    /**
+     * A great comet low in the twilight: a bright fuzzy head and two tails streaming away from the sun, a broad,
+     * gently curved, creamy dust tail and a thin, straight, blue gas tail.
+     */
+    private static void drawComet(Matrix4f pose, Vector3f sun, float theta, float[] shape, float strength) {
+        boolean evening = shape[0] > 0.5F;
+        float tc = theta + (evening ? -1.0F : 1.0F) * shape[1] * Mth.DEG_TO_RAD;
+        float dec = shape[2] * Mth.DEG_TO_RAD;
+        Vector3f head = new Vector3f(-Mth.sin(tc) * Mth.cos(dec), Mth.cos(tc) * Mth.cos(dec), Mth.sin(dec)).normalize();
+        if (head.y < -0.05F) return;
+        Vector3f s = new Vector3f(sun).normalize();
+        Vector3f away = new Vector3f(head).mul(head.dot(s)).sub(s);
+        if (away.lengthSquared() < 1.0E-6F) return;
+        away.normalize();
+        Vector3f side = new Vector3f(head).cross(away).normalize();
+        float length = shape[3] * Mth.DEG_TO_RAD;
+        cometTail(pose, head, away, side, length, shape[4], 0.4F, 3.2F, new float[]{1.0F, 0.95F, 0.82F}, 0.38F * strength);
+        cometTail(pose, head, away, side, length * 1.25F, 0.0F, 0.2F, 0.7F, new float[]{0.5F, 0.72F, 1.0F}, 0.3F * strength);
+        Vector3f[] around = basis(head);
+        drawGlow(pose, head, around[0], around[1], 0.0F, 1.5F, new float[]{0.82F, 1.0F, 0.9F}, 0.55F * strength);
+        drawGlow(pose, head, around[0], around[1], 0.0F, 0.45F, new float[]{1.0F, 1.0F, 1.0F}, 0.9F * strength);
+    }
+
+    private static void cometTail(Matrix4f pose, Vector3f head, Vector3f away, Vector3f side, float length, float curve,
+                                  float widthStart, float widthEnd, float[] color, float alpha) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int steps = 24;
+        Vector3f[] left = new Vector3f[steps + 1], right = new Vector3f[steps + 1];
+        float[] fade = new float[steps + 1];
+        for (int i = 0; i <= steps; i++) {
+            float t = i / (float) steps, a = length * t;
+            Vector3f p = new Vector3f(head).mul(Mth.cos(a)).add(new Vector3f(away).mul(Mth.sin(a)))
+                    .add(new Vector3f(side).mul(curve * t * t * length)).normalize();
+            float w = Mth.lerp(t, widthStart, widthEnd) * Mth.DEG_TO_RAD;
+            left[i] = new Vector3f(p).add(new Vector3f(side).mul(w)).normalize().mul(DOME);
+            right[i] = new Vector3f(p).sub(new Vector3f(side).mul(w)).normalize().mul(DOME);
+            fade[i] = alpha * (float) Math.pow(1.0F - t, 1.6) * Mth.clamp(t * 12.0F, 0.3F, 1.0F);
+        }
+        for (int i = 0; i < steps; i++) {
+            vertex(buffer, pose, left[i], color, fade[i] * horizonFade(left[i]));
+            vertex(buffer, pose, right[i], color, fade[i] * horizonFade(right[i]));
+            vertex(buffer, pose, right[i + 1], color, fade[i + 1] * horizonFade(right[i + 1]));
+            vertex(buffer, pose, left[i + 1], color, fade[i + 1] * horizonFade(left[i + 1]));
+        }
+        draw(buffer);
+    }
+
+    /**
+     * Airglow: on the darkest nights the high air itself glows faintly, a green band (oxygen, about 100 km up)
+     * hanging a little above the horizon all the way round, with a dimmer red layer above it.
+     */
+    private static void drawAirglow(Matrix4f pose, float strength) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 64;
+        float[] green = {0.35F, 1.0F, 0.45F}, red = {1.0F, 0.3F, 0.25F};
+        float[][] layers = {{2.0F, 9.0F, 18.0F, 0.09F}, {14.0F, 22.0F, 34.0F, 0.035F}};
+        for (int l = 0; l < layers.length; l++) {
+            float[] layer = layers[l];
+            float[] color = l == 0 ? green : red;
+            float lo = layer[0] * Mth.DEG_TO_RAD, mid = layer[1] * Mth.DEG_TO_RAD, hi = layer[2] * Mth.DEG_TO_RAD;
+            for (int i = 0; i < segments; i++) {
+                float a0 = i / (float) segments * Mth.TWO_PI, a1 = (i + 1) / (float) segments * Mth.TWO_PI;
+                // patchy, like the real thing: it drifts in slow waves
+                float k0 = 0.7F + 0.3F * Mth.sin(a0 * 5.0F + l), k1 = 0.7F + 0.3F * Mth.sin(a1 * 5.0F + l);
+                float p0 = layer[3] * strength * k0, p1 = layer[3] * strength * k1;
+                vertex(buffer, pose, sky(a0, lo), color, 0.0F);
+                vertex(buffer, pose, sky(a1, lo), color, 0.0F);
+                vertex(buffer, pose, sky(a1, mid), color, p1);
+                vertex(buffer, pose, sky(a0, mid), color, p0);
+                vertex(buffer, pose, sky(a0, mid), color, p0);
+                vertex(buffer, pose, sky(a1, mid), color, p1);
+                vertex(buffer, pose, sky(a1, hi), color, 0.0F);
+                vertex(buffer, pose, sky(a0, hi), color, 0.0F);
+            }
+        }
+        draw(buffer);
     }
 
     /** A point on the sky dome; azimuth 0 is due north (-Z). */

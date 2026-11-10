@@ -51,7 +51,7 @@ public final class ClientWeather {
     private static int localRainbowTicks;
     /** Air temperature at the camera, refreshed twice a second. */
     private static float airTemperature = 15.0F;
-    private static float halo, sunbeams, bloodMoon, freezingFog, smoke, diamondDust, dustyRain;
+    private static float halo, sunbeams, bloodMoon, freezingFog, smoke, diamondDust, dustyRain, sunShower, eclipseLoss;
 
     public static void tick(Minecraft mc) {
         ClientLevel level = mc.level;
@@ -124,8 +124,13 @@ public final class ClientWeather {
         }
         if (localRainbowTicks > 0) localRainbowTicks--;
         int rainbowTicks = Math.max(SyncedWeather.rainbowTicks(), localRainbowTicks);
-        boolean rainbowWanted = managed && rainbowTicks > 0 && type.isCalm() && ClientConfig.RAINBOWS.get() && climate != Climate.ARID;
-        rainbow = approach(rainbow, rainbowWanted ? Math.min(1.0F, rainbowTicks / 600.0F) : 0.0F, 0.004F);
+        // a sun shower: rain out of a sunny sky, the very weather for a rainbow
+        sunShower = approach(sunShower, managed && type == WeatherType.SUN_SHOWER ? 1.0F : 0.0F, 0.004F);
+        // (a rainbow needs raindrops: not in a sun shower that's falling as snow)
+        boolean rainyShower = type == WeatherType.SUN_SHOWER && level.getBiome(camPos).value().getPrecipitationAt(camPos) == Biome.Precipitation.RAIN;
+        boolean rainbowWanted = managed && (rainbowTicks > 0 && type.isCalm() && climate != Climate.ARID || rainyShower)
+                && ClientConfig.RAINBOWS.get();
+        rainbow = approach(rainbow, rainbowWanted ? (type == WeatherType.SUN_SHOWER ? 1.0F : Math.min(1.0F, rainbowTicks / 600.0F)) : 0.0F, 0.004F);
 
         // in a geomagnetic storm the aurora reaches down into temperate lands too
         boolean auroraClimate = climate == Climate.COLD || climate == Climate.TEMPERATE && SkyPhenomena.isGeomagneticStormNight(level.getDayTime())
@@ -156,6 +161,7 @@ public final class ClientWeather {
         }
         updateSkyOptics(level, cam, sun);
         bloodMoon = approach(bloodMoon, SkyPhenomena.bloodMoonNow(level) ? 1.0F : 0.0F, 0.004F);
+        eclipseLoss = level.dimension() == Level.OVERWORLD ? Eclipses.daylightLoss(level, 0.0F) : 0.0F;
         // freezing fog: fog in sub-zero air, which rimes everything it touches with hoarfrost
         boolean freezing = managed && type == WeatherType.FOG && airTemperature < -1.0F;
         freezingFog = approach(freezingFog, freezing ? 1.0F : 0.0F, 0.004F);
@@ -271,7 +277,7 @@ public final class ClientWeather {
         active = false;
         local = null;
         type = previousType = WeatherType.CLEAR;
-        rain = thunder = overcast = fog = wind = tintStrength = fogColorWeight = rainbow = aurora = mist = wetness = backgroundClouds = 0.0F;
+        rain = thunder = overcast = fog = wind = tintStrength = fogColorWeight = rainbow = aurora = mist = wetness = backgroundClouds = sunShower = 0.0F;
         localRainbowTicks = 0;
         halo = sunbeams = bloodMoon = freezingFog = smoke = diamondDust = 0.0F;
         airTemperature = 15.0F;
@@ -307,6 +313,15 @@ public final class ClientWeather {
     public static float sunbeams() { return sunbeams; }
     public static float bloodMoon() { return bloodMoon; }
     public static float freezingFog() { return freezingFog; }
+    /** 0-1, how much of a sun shower is falling here (rain, but the sun still shining). */
+    public static float sunShower() { return sunShower; }
+    /** 0-1, how much daylight an eclipse of the sun is taking away right now. */
+    public static float eclipseLoss() { return eclipseLoss; }
+
+    /** In the dark of a total eclipse the brightest stars come out at midday. */
+    public static float modifyStarBrightness(float brightness) {
+        return eclipseLoss > 0.5F ? Math.max(brightness, (eclipseLoss - 0.5F) * 0.9F) : brightness;
+    }
     public static float smoke() { return smoke; }
     public static float diamondDust() { return diamondDust; }
     /** 0 to 1: how much desert dust is in the rain. */
@@ -372,10 +387,23 @@ public final class ClientWeather {
     // ------------------------------------------------------------------ sky hooks (called from mixins)
 
     public static Vec3 modifySkyColor(Vec3 color) {
-        if (!active && bloodMoon <= 0 || !ClientConfig.SKY_EFFECTS.get()) {
+        if (!active && bloodMoon <= 0 && eclipseLoss <= 0 || !ClientConfig.SKY_EFFECTS.get()) {
             return color;
         }
         double r = color.x, g = color.y, b = color.z;
+        if (eclipseLoss > 0) {
+            // the sky deepens to a twilight blue as the moon swallows the sun
+            r = Mth.lerp(eclipseLoss * 0.9, r, 0.035);
+            g = Mth.lerp(eclipseLoss * 0.9, g, 0.05);
+            b = Mth.lerp(eclipseLoss * 0.9, b, 0.13);
+        }
+        if (sunShower > 0 && rain > 0) {
+            // vanilla greys the sky in any rain; in a sun shower it stays blue, so undo that
+            double k = 1.0 - rain * 0.75, l = (r * 0.3 + g * 0.59 + b * 0.11) / (k + 0.6 * (1.0 - k)) * 0.6;
+            r = Mth.lerp(sunShower * 0.85, r, Math.max(0.0, (r - l * (1.0 - k)) / k));
+            g = Mth.lerp(sunShower * 0.85, g, Math.max(0.0, (g - l * (1.0 - k)) / k));
+            b = Mth.lerp(sunShower * 0.85, b, Math.max(0.0, (b - l * (1.0 - k)) / k));
+        }
         double lum = r * 0.3 + g * 0.59 + b * 0.11;
         if (overcast > 0) {
             double gray = lum * 0.85;
@@ -399,10 +427,11 @@ public final class ClientWeather {
     }
 
     public static Vec3 modifyCloudColor(Vec3 color) {
-        if (!active || !ClientConfig.SKY_EFFECTS.get()) {
+        if (!active && eclipseLoss <= 0 || !ClientConfig.SKY_EFFECTS.get()) {
             return color;
         }
-        double darken = 1.0 - overcast * 0.4;
+        // in the shadow of an eclipse the clouds go dark too
+        double darken = (1.0 - overcast * 0.4) * (1.0 - eclipseLoss * 0.8);
         double r = color.x * darken, g = color.y * darken, b = color.z * darken;
         if (tintStrength > 0) {
             double lum = r * 0.3 + g * 0.59 + b * 0.11;
@@ -416,8 +445,16 @@ public final class ClientWeather {
 
     /** Extra darkening of world lighting under heavy cloud (vanilla already handles rain). */
     public static float modifySkyDarken(float darken) {
+        if (eclipseLoss > 0 && ClientConfig.SKY_EFFECTS.get()) {
+            darken = Mth.lerp(eclipseLoss * 0.85F, darken, 0.2F);
+        }
         if (!active || !ClientConfig.SKY_EFFECTS.get()) {
             return darken;
+        }
+        if (sunShower > 0 && rain > 0) {
+            // and the daylight stays bright too
+            float bright = Math.min(1.0F, (darken - 0.2F) / 0.8F / (1.0F - rain * 5.0F / 16.0F)) * 0.8F + 0.2F;
+            darken = Mth.lerp(sunShower * 0.85F, darken, bright);
         }
         float extra = Math.max(0.0F, overcast - rain * 0.5F) * 0.18F + tintStrength * 0.1F;
         return darken * (1.0F - extra);

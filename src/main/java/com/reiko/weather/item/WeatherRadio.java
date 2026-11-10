@@ -112,6 +112,31 @@ public final class WeatherRadio {
             if (WeatherConfig.GEOMAGNETIC_STORMS.get() && SkyPhenomena.isGeomagneticStormNight(level.getDayTime())) {
                 alert(player, "geomagnetic:" + day, now, Component.translatable("radio.reikos_weather.geomagnetic"), false);
             }
+            com.reiko.weather.weather.SkyCalendar.Eclipse tonight = com.reiko.weather.weather.SkyCalendar.eclipseToday(level);
+            if (tonight.lunar()) {
+                alert(player, "eclipse:" + day, now, Component.translatable("radio.reikos_weather.lunar_eclipse",
+                        Component.translatable("eclipse.reikos_weather." + tonight.id())), false);
+            }
+            com.reiko.weather.weather.SkyCalendar.Eclipse tomorrow = com.reiko.weather.weather.SkyCalendar.eclipsesOn()
+                    ? com.reiko.weather.weather.SkyCalendar.eclipseOn(day + 1) : com.reiko.weather.weather.SkyCalendar.Eclipse.NONE;
+            if (tomorrow.solar()) {
+                alert(player, "eclipse:" + (day + 1), now, Component.translatable("radio.reikos_weather.eclipse_tomorrow",
+                        Component.translatable("eclipse.reikos_weather." + tomorrow.id())), false);
+            }
+            if (com.reiko.weather.weather.SkyCalendar.cometBrightness(day) > 0.3F && com.reiko.weather.weather.SkyCalendar.cometShape(day)[0] > 0.5F) {
+                alert(player, "comet:" + day, now, Component.translatable("radio.reikos_weather.comet_evening"), false);
+            }
+        }
+        if (level.dimension() == Level.OVERWORLD && time < 5000) {
+            com.reiko.weather.weather.SkyCalendar.Eclipse today = com.reiko.weather.weather.SkyCalendar.eclipseToday(level);
+            if (today.solar()) {
+                alert(player, "eclipse:" + day, now, Component.translatable("radio.reikos_weather.eclipse_today",
+                        Component.translatable("eclipse.reikos_weather." + today.id())), true);
+            }
+        }
+        if (level.dimension() == Level.OVERWORLD && time > 21000 && time < 23500 && com.reiko.weather.weather.SkyCalendar.cometBrightness(day) > 0.3F
+                && com.reiko.weather.weather.SkyCalendar.cometShape(day)[0] < 0.5F) {
+            alert(player, "comet:" + day, now, Component.translatable("radio.reikos_weather.comet_morning"), false);
         }
         // dangerous temperatures
         if (WeatherConfig.TEMPERATURE.get()) {

@@ -76,6 +76,42 @@ public final class Hurricanes {
         return null;
     }
 
+    /**
+     * Once a second: a polar low lives off the warmth of open water under bitterly cold air, so it deepens over
+     * cold seas and falls apart within a few minutes of reaching land, into an ordinary snowstorm.
+     */
+    static boolean developPolarLow(ServerLevel level, StormCell cell) {
+        Holder<Biome> biome = level.getBiome(BlockPos.containing(cell.x, level.getSeaLevel(), cell.z));
+        float change = biome.is(Biomes.FROZEN_OCEAN) || biome.is(Biomes.DEEP_FROZEN_OCEAN) ? -0.0005F // sea ice cuts off its warmth
+                : biome.is(BiomeTags.IS_OCEAN) ? 0.0015F : -0.006F;
+        cell.power = Mth.clamp(cell.power + change, 0.0F, 1.0F);
+        if (cell.power < 0.2F) {
+            cell.type = WeatherType.SNOW;
+            cell.power = 1.0F;
+            return true;
+        }
+        return false;
+    }
+
+    /** Spins up a polar low over a cold sea upwind of a player in winter, or null if there's no cold sea near. */
+    @Nullable
+    static StormCell spawnPolarLow(ServerLevel level, WeatherState state, ServerPlayer target) {
+        RandomSource random = level.random;
+        net.minecraft.world.phys.Vec3 wind = Wind.direction(state.windAngle);
+        for (int attempt = 0; attempt < 8; attempt++) {
+            double distance = 500.0 + random.nextDouble() * 300.0;
+            double spread = (random.nextDouble() - 0.5) * 0.9;
+            double wx = wind.x * Math.cos(spread) - wind.z * Math.sin(spread), wz = wind.x * Math.sin(spread) + wind.z * Math.cos(spread);
+            double x = target.getX() - wx * distance, z = target.getZ() - wz * distance;
+            if (!overSea(level, x, z, 120)) continue;
+            Holder<Biome> biome = level.getBiome(BlockPos.containing(x, level.getSeaLevel(), z));
+            if (!biome.is(Biomes.COLD_OCEAN) && !biome.is(Biomes.DEEP_COLD_OCEAN) && !biome.is(Biomes.FROZEN_OCEAN)
+                    && !biome.is(Biomes.DEEP_FROZEN_OCEAN) && !biome.is(Biomes.OCEAN) && !biome.is(Biomes.DEEP_OCEAN)) continue;
+            return WeatherManager.spawnCell(level, state, WeatherType.POLAR_LOW, x, z, -1);
+        }
+        return null;
+    }
+
     private static boolean overSea(ServerLevel level, double x, double z, double r) {
         int sea = level.getSeaLevel(), ocean = 0;
         if (!level.getBiome(BlockPos.containing(x, sea, z)).is(BiomeTags.IS_OCEAN)) return false;

@@ -184,6 +184,20 @@ public final class WeatherProfiles {
 
         put(WeatherType.HABOOB, haboob, haboob, haboob);
 
+        // a sun shower: light rain out of a nearly clear sky, the sun still shining through it
+        put(WeatherType.SUN_SHOWER,
+                builder().rain(0.4F).overcast(0.08F).wind(0.12F).clouds(0.35F).build(),
+                builder().rain(0.45F).overcast(0.08F).wind(0.12F).clouds(0.35F).cropBoost().build(),
+                builder().rain(0.3F).overcast(0.05F).wind(0.15F).clouds(0.3F).build());
+
+        // a polar low: a small, tight winter storm off a cold sea, gales and heavy snow (sleet in milder air)
+        put(WeatherType.POLAR_LOW,
+                builder().rain(1.0F).overcast(0.85F).tint(SNOW_WHITE, 0.35F).fog(0.75F, SNOW_WHITE).wind(0.85F)
+                        .precip(Precip.BLIZZARD, 1.0F).freeze(0.5F).snowLayers(3).build(),
+                builder().rain(1.0F).overcast(0.8F).tint(SNOW_WHITE, 0.25F).fog(0.55F, SNOW_WHITE).wind(0.8F)
+                        .precip(Precip.SNOW, 1.0F).precip(Precip.SLEET, 0.5F).freeze(0.35F).snowLayers(2).build(),
+                builder().rain(0.8F).overcast(0.7F).fog(0.3F).wind(0.75F).precip(Precip.SLEET, 0.6F).build());
+
         // an atmospheric river: warm, steady, soaking rain that goes on and on (deep snow on the cold mountains)
         put(WeatherType.ATMOSPHERIC_RIVER,
                 builder().rain(1.0F).overcast(0.85F).fog(0.55F).wind(0.45F).precip(Precip.SNOW, 1.0F).snowLayers(3).build(),

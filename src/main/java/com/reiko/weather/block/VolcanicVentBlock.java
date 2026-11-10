@@ -73,5 +73,23 @@ public class VolcanicVentBlock extends Block {
         if (random.nextInt(40) == 0) {
             level.playLocalSound(x, y, z, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.3F, 0.6F + random.nextFloat() * 0.3F, false);
         }
+        // blue fire: where the vent gas is rich in sulphur it burns as it meets the air, a ghostly blue only seen at night
+        if (!level.isDay() && sulphurous(level, pos)) {
+            for (int i = 0; i < 3; i++) {
+                level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, x + (random.nextDouble() - 0.5) * 0.6, y - 0.05 + random.nextDouble() * 0.2,
+                        z + (random.nextDouble() - 0.5) * 0.6, 0.0, 0.02 + random.nextDouble() * 0.03, 0.0);
+            }
+            if (random.nextInt(12) == 0) {
+                level.playLocalSound(x, y, z, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 0.5F, 0.7F, false);
+            }
+        }
+    }
+
+    /** Sulphur crusting round the vent (or on it) means the gas will burn blue. */
+    private static boolean sulphurous(Level level, BlockPos pos) {
+        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-1, 0, -1), pos.offset(1, 1, 1))) {
+            if (level.getBlockState(p).is(com.reiko.weather.registry.ModBlocks.SULFUR_CRUST.get())) return true;
+        }
+        return false;
     }
 }

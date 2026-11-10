@@ -28,7 +28,9 @@ import javax.annotation.Nullable;
  * What winter does to the ground: snow building up over the season into a deep snowpack (deepest high up and in
  * the coldest places) and melting away again in spring, rain on deep snow running straight off into the rivers,
  * needle ice pushing up out of frozen soil on frosty mornings, frost flowers on new ice, cornices overhanging
- * windswept ridges, and wind carving open snowfields into ridges and furrows (sastrugi).
+ * windswept ridges, wind carving open snowfields into ridges and furrows (sastrugi), frost quakes booming as wet
+ * ground freezes hard all at once, little ice volcanoes spouting along the edge of shore ice, and gales shoving
+ * lake ice up onto the shore.
  */
 public final class WinterGround {
     private static final int AREA = 40;
@@ -70,6 +72,114 @@ public final class WinterGround {
         }
         if (WeatherConfig.SASTRUGI.get() && wind > 0.55F && p.rain < 0.6F && climate == Climate.COLD) {
             for (int i = 0; i < 4; i++) sastrugi(level, state, column(level, player, random));
+        }
+        if (WeatherConfig.FROST_QUAKES.get() && (winter || local.type() == WeatherType.COLD_SNAP) && random.nextInt(5000) == 0
+                && (time > 16000L || time < 1000L) && Temperature.ambient(level, player.blockPosition(), local) < -12.0F) {
+            frostQuake(level, player, random);
+        }
+        if (WeatherConfig.ICE_DISCS.get() && climate == Climate.COLD && winter && random.nextInt(900) == 0) {
+            BlockPos top = column(level, player, random);
+            if (top != null) com.reiko.weather.entity.IceFloeEntity.formRoundIce(level, top.below());
+        }
+        if (WeatherConfig.LAKE_ICE_SHOVES.get() && griefing && (winter || climate == Climate.COLD)) {
+            if (wind > 0.4F) {
+                for (int i = 0; i < 3; i++) iceVolcano(level, state, column(level, player, random), random);
+            }
+            if (wind > 0.6F && random.nextInt(60) == 0) {
+                iceShove(level, state, column(level, player, random), random);
+            }
+        }
+    }
+
+    /**
+     * A frost quake (cryoseism): when a hard freeze follows a wet spell, the water in the ground freezes and swells
+     * all at once and the soil cracks open with a bang like a gunshot, loud enough to rattle the windows.
+     */
+    private static void frostQuake(ServerLevel level, ServerPlayer player, RandomSource random) {
+        float angle = random.nextFloat() * Mth.TWO_PI;
+        double distance = 8 + random.nextDouble() * 32;
+        BlockPos column = BlockPos.containing(player.getX() + Mth.cos(angle) * distance, 0, player.getZ() + Mth.sin(angle) * distance);
+        if (!level.isLoaded(column)) return;
+        BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
+        level.playSound(null, top, ModSounds.FROST_QUAKE.get(), SoundSource.WEATHER, 5.0F, 0.85F + random.nextFloat() * 0.3F);
+        // a crack runs a few blocks across the ground, splitting the snow and turf
+        Direction run = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+        if (level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            BlockPos at = top;
+            for (int i = 0; i < 3 + random.nextInt(4); i++) {
+                BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, at);
+                BlockState s = level.getBlockState(surface);
+                if (s.is(Blocks.SNOW)) level.removeBlock(surface, false);
+                BlockState ground = level.getBlockState(surface.below());
+                if (ground.is(Blocks.GRASS_BLOCK) || ground.is(Blocks.DIRT) || ground.is(Blocks.PODZOL) || ground.is(Blocks.MUD)) {
+                    level.setBlockAndUpdate(surface.below(), Blocks.COARSE_DIRT.defaultBlockState());
+                }
+                at = at.relative(random.nextInt(4) == 0 ? run.getClockWise() : run);
+            }
+        }
+        for (ServerPlayer p : level.players()) {
+            double d = Math.sqrt(p.distanceToSqr(top.getX(), p.getY(), top.getZ()));
+            if (d > 48) continue;
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(p, new com.reiko.weather.network.QuakePayload(0.35F * (float) (1.0 - d / 48.0), 20));
+            p.displayClientMessage(Component.translatable("message.reikos_weather.frost_quake").withStyle(s -> s.withColor(0xBBDDFF)), true);
+            WeatherAdvancements.award(p, "frost_quake");
+        }
+    }
+
+    /**
+     * An ice volcano: where waves run in under the edge of the shore ice, water and slush spout up through a hole
+     * in it and freeze where they land, slowly building a little cone with a vent in the top.
+     */
+    private static void iceVolcano(ServerLevel level, WeatherState state, @Nullable BlockPos top, RandomSource random) {
+        if (top == null) return;
+        BlockPos ice = level.getBlockState(top).is(Blocks.ICE) ? top : top.below();
+        if (!level.getBlockState(ice).is(Blocks.ICE) || !level.getBlockState(ice.below()).is(Blocks.WATER)) return;
+        // the waves come from upwind, so open water must be there, with more ice (the shelf) on the other side
+        Direction upwind = Direction.fromYRot(Math.toDegrees(state.windAngle) - 90.0).getOpposite();
+        if (!level.getBlockState(ice.relative(upwind)).is(Blocks.WATER) || !level.getBlockState(ice.relative(upwind.getOpposite())).is(Blocks.ICE)) return;
+        BlockPos vent = ice.relative(upwind.getOpposite());
+        int height = 0;
+        while (height < 3 && level.getBlockState(vent.above(height + 1)).is(Blocks.PACKED_ICE)) height++;
+        if (height < 2 && level.getBlockState(vent.above(height + 1)).isAir()) {
+            level.setBlockAndUpdate(vent.above(height + 1), Blocks.PACKED_ICE.defaultBlockState());
+        }
+        // slushy snow freezing round the foot of the cone
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            BlockPos side = vent.relative(d).above();
+            if (level.getBlockState(side).isAir() && level.getBlockState(side.below()).is(Blocks.ICE) && random.nextBoolean()) {
+                level.setBlockAndUpdate(side, Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, 1 + random.nextInt(3)));
+            }
+        }
+        BlockPos spout = vent.above(height + 2);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.SPLASH, spout.getX() + 0.5, spout.getY(), spout.getZ() + 0.5, 24, 0.2, 0.6, 0.2, 0.3);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, spout.getX() + 0.5, spout.getY() + 0.5, spout.getZ() + 0.5, 4, 0.2, 0.4, 0.2, 0.02);
+        level.playSound(null, spout, net.minecraft.sounds.SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.8F, 1.3F);
+    }
+
+    /**
+     * An ice shove (ivu): a strong onshore wind drives a whole sheet of lake ice up the beach, where it buckles and
+     * piles up in a jumble of slabs, sometimes metres high.
+     */
+    private static void iceShove(ServerLevel level, WeatherState state, @Nullable BlockPos top, RandomSource random) {
+        if (top == null) return;
+        BlockPos ice = level.getBlockState(top).is(Blocks.ICE) ? top : top.below();
+        if (!level.getBlockState(ice).is(Blocks.ICE) || !level.getBlockState(ice.below()).is(Blocks.WATER)) return;
+        Direction downwind = Direction.fromYRot(Math.toDegrees(state.windAngle) - 90.0);
+        BlockPos shore = ice.relative(downwind);
+        BlockState land = level.getBlockState(shore);
+        BlockPos onto = land.isAir() || land.canBeReplaced() ? shore : shore.above();
+        BlockState ground = level.getBlockState(onto.below());
+        if (!ground.isFaceSturdy(level, onto.below(), Direction.UP) || ground.is(Blocks.ICE) || ground.is(Blocks.PACKED_ICE) && random.nextInt(3) != 0
+                || onto.getY() > ice.getY() + 2 || GroundEvents.built(level, onto, 4)) return;
+        BlockState here = level.getBlockState(onto);
+        if (!(here.isAir() || here.canBeReplaced() && here.getFluidState().isEmpty())) return;
+        if (!here.isAir()) level.destroyBlock(onto, true);
+        level.setBlockAndUpdate(onto, random.nextBoolean() ? Blocks.PACKED_ICE.defaultBlockState() : Blocks.ICE.defaultBlockState());
+        // the slab came from the edge of the sheet, which is open water now
+        level.setBlockAndUpdate(ice, Blocks.WATER.defaultBlockState());
+        level.playSound(null, onto, ModSounds.ICE_SHOVE.get(), SoundSource.BLOCKS, 2.5F, 0.8F + random.nextFloat() * 0.3F);
+        for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, new net.minecraft.world.phys.AABB(onto).inflate(32))) {
+            WeatherAdvancements.award(p, "ice_shove");
         }
     }
 

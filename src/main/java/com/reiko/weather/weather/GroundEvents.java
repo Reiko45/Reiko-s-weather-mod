@@ -102,7 +102,7 @@ public final class GroundEvents {
     }
 
     /** Signs that people live here: anything with a block entity (chests, furnaces, beds...), or planks, bricks and glass. */
-    private static boolean built(ServerLevel level, BlockPos center, int r) {
+    static boolean built(ServerLevel level, BlockPos center, int r) {
         for (BlockPos p : BlockPos.betweenClosed(center.offset(-r, -6, -r), center.offset(r, 4, r))) {
             BlockState s = level.getBlockState(p);
             if (s.hasBlockEntity() || s.is(BlockTags.PLANKS) || s.is(Blocks.BRICKS) || s.is(Blocks.STONE_BRICKS) || s.is(Blocks.GLASS) || s.is(BlockTags.IMPERMEABLE) || s.is(BlockTags.WOOL)

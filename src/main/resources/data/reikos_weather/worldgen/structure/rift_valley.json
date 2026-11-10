@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "rift_valley",
+  "biomes": "#reikos_weather:has_structure/rift_valley",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

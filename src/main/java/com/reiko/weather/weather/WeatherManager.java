@@ -155,6 +155,7 @@ public final class WeatherManager {
             seasonInfo = Seasons.compute(level, state);
             Monsoon.setServerActive(Monsoon.enabled() && seasonInfo.season() == Season.SUMMER);
         }
+        SkyCalendar.tickDayLength(level, seasonInfo);
 
         state.elapsed++;
         boolean cycle = level.getGameRules().getBoolean(GameRules.RULE_WEATHER_CYCLE);
@@ -450,6 +451,9 @@ public final class WeatherManager {
             if (cell.type == WeatherType.HURRICANE && level.getGameTime() % 20L == 0L && Hurricanes.develop(level, cell)) {
                 changed = true;
             }
+            if (cell.type == WeatherType.POLAR_LOW && level.getGameTime() % 20L == 0L && Hurricanes.developPolarLow(level, cell)) {
+                changed = true;
+            }
         }
         Fronts.tick(level, state);
         if (state.cells.removeIf(StormCell::expired)) {
@@ -500,6 +504,9 @@ public final class WeatherManager {
         if (type == WeatherType.HURRICANE) {
             return Hurricanes.spawnOffshore(level, state, target); // they only form over the sea
         }
+        if (type == WeatherType.POLAR_LOW) {
+            return WeatherConfig.POLAR_LOWS.get() ? Hurricanes.spawnPolarLow(level, state, target) : null;
+        }
         return spawnCell(level, state, type, x, z, -1);
     }
 
@@ -510,6 +517,8 @@ public final class WeatherManager {
             radius = switch (type) {
                 case SUPERCELL, HAIL -> 160 + random.nextFloat() * 120;
                 case HURRICANE -> 500 + random.nextFloat() * 250;
+                case POLAR_LOW -> 170 + random.nextFloat() * 90;
+                case SUN_SHOWER -> 70 + random.nextFloat() * 60;
                 case DERECHO -> 110 + random.nextFloat() * 60;
                 case COLD_FRONT -> 70 + random.nextFloat() * 30;
                 case WARM_FRONT -> 170 + random.nextFloat() * 60;
@@ -541,6 +550,8 @@ public final class WeatherManager {
         cell.steer = steer;
         if (type == WeatherType.HURRICANE) {
             Hurricanes.setUp(cell, level.random);
+        } else if (type == WeatherType.POLAR_LOW) {
+            cell.power = 0.45F + level.random.nextFloat() * 0.25F;
         }
         state.cells.add(cell);
         state.setDirty();

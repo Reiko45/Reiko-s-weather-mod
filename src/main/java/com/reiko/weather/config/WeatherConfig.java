@@ -211,6 +211,48 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue PENITENTES;
     public static final ModConfigSpec.BooleanValue GLACIAL_LAKES;
     public static final ModConfigSpec.BooleanValue WHIRLPOOLS;
+    public static final ModConfigSpec.BooleanValue SEASONAL_DAY_LENGTH;
+    public static final ModConfigSpec.BooleanValue ECLIPSES;
+    public static final ModConfigSpec.BooleanValue COMETS;
+    public static final ModConfigSpec.BooleanValue BOLTS_FROM_THE_BLUE;
+    public static final ModConfigSpec.BooleanValue POLAR_LOWS;
+    public static final ModConfigSpec.BooleanValue FROST_QUAKES;
+    public static final ModConfigSpec.BooleanValue LAKE_ICE_SHOVES;
+    public static final ModConfigSpec.BooleanValue ICE_DISCS;
+    public static final ModConfigSpec.BooleanValue SNOW_LOAD;
+    public static final ModConfigSpec.BooleanValue BLOWDOWNS;
+    public static final ModConfigSpec.BooleanValue HAIL_DRIFTS;
+    public static final ModConfigSpec.BooleanValue SOIL_EROSION;
+    public static final ModConfigSpec.BooleanValue SEICHES;
+    public static final ModConfigSpec.BooleanValue COASTAL_CURRENTS;
+    public static final ModConfigSpec.BooleanValue UPWELLING;
+    public static final ModConfigSpec.BooleanValue CALDERAS;
+    public static final ModConfigSpec.BooleanValue ACID_LAKES;
+    public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
+    public static final ModConfigSpec.BooleanValue DOLINE_FIELDS;
+    public static final ModConfigSpec.BooleanValue COCKPIT_KARST;
+    public static final ModConfigSpec.BooleanValue POLJES;
+    public static final ModConfigSpec.BooleanValue PATERNOSTER_LAKES;
+    public static final ModConfigSpec.BooleanValue ROCHES_MOUTONNEES;
+    public static final ModConfigSpec.BooleanValue RIFT_VALLEYS;
+    public static final ModConfigSpec.BooleanValue AIGUILLES;
+    public static final ModConfigSpec.BooleanValue RAINBOW_MOUNTAINS;
+    public static final ModConfigSpec.BooleanValue CANYONS;
+    public static final ModConfigSpec.BooleanValue GYPSUM_DUNES;
+    public static final ModConfigSpec.BooleanValue COPPICE_DUNES;
+    public static final ModConfigSpec.BooleanValue SALT_DOMES;
+    public static final ModConfigSpec.BooleanValue PINK_LAKES;
+    public static final ModConfigSpec.BooleanValue SPOTTED_LAKES;
+    public static final ModConfigSpec.BooleanValue ACID_POOLS;
+    public static final ModConfigSpec.BooleanValue WAVE_ROCKS;
+    public static final ModConfigSpec.BooleanValue CRUSTED_FLATS;
+    public static final ModConfigSpec.BooleanValue PARABOLIC_DUNES;
+    public static final ModConfigSpec.BooleanValue MOERAKI_BOULDERS;
+    public static final ModConfigSpec.BooleanValue COLOURED_BEACHES;
+    public static final ModConfigSpec.BooleanValue GHOST_FORESTS;
+    public static final ModConfigSpec.BooleanValue STROMATOLITES;
+    public static final ModConfigSpec.BooleanValue FAIRY_RINGS;
+    public static final ModConfigSpec.BooleanValue VERNAL_POOLS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -493,6 +535,36 @@ public final class WeatherConfig {
                 .define("seasonalBeaches", true);
         GLACIAL_OUTBURSTS = b.comment("Glacial lakes can burst through their moraine dams in summer, sending a flood down the valley.")
                 .define("glacialOutbursts", true);
+        SEASONAL_DAY_LENGTH = b.comment("Days are longer in summer and shorter in winter, with the nights the other way round (with this mod's own", "seasons on).")
+                .define("seasonalDayLength", true);
+        ECLIPSES = b.comment("Rare solar eclipses darken the midday sky, and total lunar eclipses turn the full moon copper-red. The", "weather radio warns of them the day before.")
+                .define("eclipses", true);
+        COMETS = b.comment("Some years a bright comet hangs low in the evening sky for a week or so.")
+                .define("comets", true);
+        BOLTS_FROM_THE_BLUE = b.comment("Lightning can strike well out from under a thunderstorm, from a clear sky, and splits the trees it hits.")
+                .define("boltsFromTheBlue", true);
+        POLAR_LOWS = b.comment("Small, fierce, hurricane-like snowstorms over cold seas in winter.")
+                .define("polarLows", true);
+        FROST_QUAKES = b.comment("Frost quakes: loud booms as wet ground freezes suddenly in a hard cold snap.")
+                .define("frostQuakes", true);
+        LAKE_ICE_SHOVES = b.comment("Waves spurting through shore ice build little ice volcanoes, and strong wind shoves lake ice up onto the", "shore (needs mobGriefing).")
+                .define("lakeIceShoves", true);
+        ICE_DISCS = b.comment("Ice discs spin slowly in cold rivers, and pancake ice forms on cold seas.")
+                .define("iceDiscs", true);
+        SNOW_LOAD = b.comment("Heavy snow piling up on trees breaks branches off (needs mobGriefing).")
+                .define("snowLoad", true);
+        BLOWDOWNS = b.comment("Hurricanes and derechos can uproot whole trees (needs mobGriefing).")
+                .define("blowdowns", true);
+        HAIL_DRIFTS = b.comment("Hail piles up in drifts before it melts, and on warm days fog rises off it.")
+                .define("hailDrifts", true);
+        SOIL_EROSION = b.comment("Downpours wash bare soil and farmland down steep slopes; terraced or planted slopes are safe (needs", "mobGriefing).")
+                .define("soilErosion", true);
+        SEICHES = b.comment("After a strong wind, the water in big lakes sloshes back and forth for a while.")
+                .define("seiches", true);
+        COASTAL_CURRENTS = b.comment("Currents along the coast carry boats, swimmers and floating things along the shore.")
+                .define("coastalCurrents", true);
+        UPWELLING = b.comment("Cold water wells up off some coasts: cooler air, more sea fog and better fishing.")
+                .define("upwelling", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -703,6 +775,60 @@ public final class WeatherConfig {
                 .define("glacialLakes", true);
         WHIRLPOOLS = b.comment("Whirlpools: tidal whirlpools in narrow sea straits.")
                 .define("whirlpools", true);
+        CALDERAS = b.comment("Calderas: huge collapsed volcanoes holding a lake round a new central dome.")
+                .define("calderas", true);
+        ACID_LAKES = b.comment("Acid crater lakes: milky turquoise lakes in steaming craters, with blue sulfur fire at night.")
+                .define("acidLakes", true);
+        LAVA_FIELDS = b.comment("Young lava fields with tumuli, hornitos, lava tube skylights and lava tree moulds.")
+                .define("lavaFields", true);
+        DOLINE_FIELDS = b.comment("Doline fields: ground pocked all over with small sinkholes.")
+                .define("dolineFields", true);
+        COCKPIT_KARST = b.comment("Cockpit karst: crowded cone-shaped hills with deep hollows between them.")
+                .define("cockpitKarst", true);
+        POLJES = b.comment("Poljes: big flat-floored karst basins that flood into seasonal lakes.")
+                .define("poljes", true);
+        PATERNOSTER_LAKES = b.comment("Paternoster lakes: a chain of lakes stepping down a glacial valley.")
+                .define("paternosterLakes", true);
+        ROCHES_MOUTONNEES = b.comment("Roches moutonnees: rock knobs smoothed by ice on one side and plucked on the other.")
+                .define("rochesMoutonnees", true);
+        RIFT_VALLEYS = b.comment("Rift valleys: long, straight, steep-walled valleys holding a long, deep lake.")
+                .define("riftValleys", true);
+        AIGUILLES = b.comment("Aiguilles: thin rock needles along high mountain ridges.")
+                .define("aiguilles", true);
+        RAINBOW_MOUNTAINS = b.comment("Rainbow mountains: hills striped in bands of brightly coloured rock.")
+                .define("rainbowMountains", true);
+        CANYONS = b.comment("Canyons: broad, layered canyons stepping down in rock terraces to a river.")
+                .define("canyons", true);
+        GYPSUM_DUNES = b.comment("Gypsum dune fields: dazzling white dunes beside a dry lake.")
+                .define("gypsumDunes", true);
+        COPPICE_DUNES = b.comment("Coppice dunes: mounds of sand heaped round desert shrubs.")
+                .define("coppiceDunes", true);
+        SALT_DOMES = b.comment("Salt domes: salt pushing up through desert rock and creeping out as salt glaciers.")
+                .define("saltDomes", true);
+        PINK_LAKES = b.comment("Pink lakes: salt lakes coloured pink by salt-loving algae.")
+                .define("pinkLakes", true);
+        SPOTTED_LAKES = b.comment("Spotted lakes: dry lake beds dotted with pools of different mineral colours.")
+                .define("spottedLakes", true);
+        ACID_POOLS = b.comment("Acid pools: hot, acid springs in yellow and green, crusted with salt and sulfur.")
+                .define("acidPools", true);
+        WAVE_ROCKS = b.comment("Wave rocks: swirling, striped sandstone like frozen waves.")
+                .define("waveRocks", true);
+        CRUSTED_FLATS = b.comment("Crusted desert flats with dark soil crust and varnished rock faces.")
+                .define("crustedFlats", true);
+        PARABOLIC_DUNES = b.comment("Parabolic dunes: coastal dunes with blowouts, their arms pointing upwind.")
+                .define("parabolicDunes", true);
+        MOERAKI_BOULDERS = b.comment("Moeraki boulders: great stone spheres lying on a beach.")
+                .define("moerakiBoulders", true);
+        COLOURED_BEACHES = b.comment("Shell beaches, green olivine sand beaches and pink sand beaches.")
+                .define("colouredBeaches", true);
+        GHOST_FORESTS = b.comment("Ghost forests: dead trees standing in the water where a coast has sunk.")
+                .define("ghostForests", true);
+        STROMATOLITES = b.comment("Stromatolites: living rock mounds in salty tropical shallows.")
+                .define("stromatolites", true);
+        FAIRY_RINGS = b.comment("Fairy rings: rings of mushrooms in grassland and woods.")
+                .define("fairyRings", true);
+        VERNAL_POOLS = b.comment("Vernal pools: woodland ponds that fill in spring and dry out by summer.")
+                .define("vernalPools", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

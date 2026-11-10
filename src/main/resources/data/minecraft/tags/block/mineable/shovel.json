@@ -9,6 +9,11 @@
     "reikos_weather:dusty_snow",
     "reikos_weather:peat",
     "reikos_weather:quicksand",
-    "reikos_weather:snow_roller"
+    "reikos_weather:snow_roller",
+    "reikos_weather:gypsum_sand",
+    "reikos_weather:shell_sand",
+    "reikos_weather:olivine_sand",
+    "reikos_weather:pink_sand",
+    "reikos_weather:hailstones"
   ]
 }

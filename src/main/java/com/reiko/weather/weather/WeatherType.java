@@ -62,7 +62,14 @@ public enum WeatherType {
     /** Thundersnow: a snowstorm strong enough to throw lightning, the thunder muffled by the falling snow. */
     THUNDERSNOW (true, true, 1, 2400, 4800, 1.2F, 0.3F, 0.0F),
     /** Freezing drizzle: fine drizzle falling through freezing air, glazing everything it lands on. */
-    FREEZING_DRIZZLE(true, false, 2, 3600, 7200, 0.8F, 0.6F, 0.0F);
+    FREEZING_DRIZZLE(true, false, 2, 3600, 7200, 0.8F, 0.6F, 0.0F),
+    /** A sun shower: a brief, light shower falling out of a mostly clear sky while the sun shines, often with a rainbow. */
+    SUN_SHOWER  (true, false, 3, 1200, 3000, 0.4F, 1.0F, 0.5F),
+    /**
+     * A polar low: a small, fierce winter storm that spins up over cold seas when Arctic air pours out over open
+     * water, with gales, blinding snow and sometimes a clear eye like a hurricane's. Only ever a storm cell.
+     */
+    POLAR_LOW   (true, false, 1, 2400, 4800, 1.5F, 0.3F, 0.0F);
 
     private static final WeatherType[] VALUES = values();
 
@@ -103,7 +110,7 @@ public enum WeatherType {
 
     /** Weathers that only ever come as a storm cell (a front is a line, not the whole world's weather). */
     public boolean cellOnly() {
-        return !natural() || this == COLD_FRONT || this == WARM_FRONT;
+        return !natural() || this == COLD_FRONT || this == WARM_FRONT || this == POLAR_LOW;
     }
 
     public boolean isFront() {
@@ -117,14 +124,14 @@ public enum WeatherType {
 
     public boolean isSevere() {
         return this == SUPERCELL || this == HURRICANE || this == BLIZZARD || this == SANDSTORM || this == ICE_STORM || this == DERECHO
-                || this == HABOOB || this == ATMOSPHERIC_RIVER;
+                || this == HABOOB || this == ATMOSPHERIC_RIVER || this == POLAR_LOW;
     }
 
     /** Weathers that can also arrive as a regional storm cell drifting across the map. */
     public boolean isStorm() {
         return switch (this) {
             case RAIN, HEAVY_RAIN, THUNDERSTORM, SUPERCELL, HURRICANE, HAIL, SLEET, ICE_STORM, SNOW, BLIZZARD, SANDSTORM, DERECHO,
-                 COLD_FRONT, WARM_FRONT, GRAUPEL, THUNDERSNOW -> true;
+                 COLD_FRONT, WARM_FRONT, GRAUPEL, THUNDERSNOW, SUN_SHOWER, POLAR_LOW -> true;
             default -> false;
         };
     }
@@ -136,9 +143,9 @@ public enum WeatherType {
      */
     public int signalCode() {
         return switch (this) {
-            case CLEAR, COLD_SNAP -> 0; case OVERCAST -> 1; case FOG, SEA_FOG, WILDFIRE_SMOKE -> 2; case DRIZZLE, WARM_FRONT, VOLCANIC_SMOG -> 3; case RAIN -> 4;
+            case CLEAR, COLD_SNAP -> 0; case OVERCAST -> 1; case FOG, SEA_FOG, WILDFIRE_SMOKE -> 2; case DRIZZLE, WARM_FRONT, VOLCANIC_SMOG, SUN_SHOWER -> 3; case RAIN -> 4;
             case HEAVY_RAIN, ATMOSPHERIC_RIVER -> 5; case THUNDERSTORM, COLD_FRONT, PYROCUMULUS -> 6; case SUPERCELL -> 7; case HURRICANE -> 8; case HAIL, GRAUPEL -> 9;
-            case SLEET, ICE_STORM, FREEZING_DRIZZLE -> 10; case SNOW, THUNDERSNOW -> 11; case BLIZZARD -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH, DUST_HAZE, HABOOB -> 14;
+            case SLEET, ICE_STORM, FREEZING_DRIZZLE -> 10; case SNOW, THUNDERSNOW -> 11; case BLIZZARD, POLAR_LOW -> 12; case WINDY, DERECHO -> 13; case SANDSTORM, VOLCANIC_ASH, DUST_HAZE, HABOOB -> 14;
             case HEATWAVE, HEAT_BURST -> 15;
         };
     }

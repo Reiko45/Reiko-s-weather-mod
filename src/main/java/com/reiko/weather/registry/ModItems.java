@@ -122,6 +122,11 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> LIMESTONE = REGISTER.registerSimpleBlockItem(ModBlocks.LIMESTONE);
     public static final DeferredItem<BlockItem> PETRIFIED_WOOD = REGISTER.registerSimpleBlockItem(ModBlocks.PETRIFIED_WOOD);
     public static final DeferredItem<BlockItem> PUMICE = REGISTER.registerSimpleBlockItem(ModBlocks.PUMICE);
+    public static final DeferredItem<BlockItem> GYPSUM_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.GYPSUM_SAND);
+    public static final DeferredItem<BlockItem> SHELL_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.SHELL_SAND);
+    public static final DeferredItem<BlockItem> OLIVINE_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.OLIVINE_SAND);
+    public static final DeferredItem<BlockItem> PINK_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.PINK_SAND);
+    public static final DeferredItem<BlockItem> ROCK_SALT = REGISTER.registerSimpleBlockItem(ModBlocks.ROCK_SALT);
 
     private ModItems() {}
 }

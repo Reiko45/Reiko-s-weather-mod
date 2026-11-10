@@ -102,6 +102,7 @@ public final class WeatherHazards {
             Frostwork.tickPlayer(level, state, player, local, climate);
             Coasts.tickPlayer(level, player, local);
             WinterGround.tickPlayer(level, state, player, local, climate);
+            StormGround.tickPlayer(level, state, player, local, climate);
             Seas.tickPlayer(level, state, player, local, climate);
             if (profile.glazeWater && WeatherConfig.GLAZE_WATER.get() && random.nextFloat() < intensity) {
                 glazeWater(level, randomColumn(level, player, random));

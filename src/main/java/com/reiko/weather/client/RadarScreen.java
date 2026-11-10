@@ -70,6 +70,8 @@ public class RadarScreen extends Screen {
             case GRAUPEL -> 0xE4EEF6;
             case THUNDERSNOW -> 0xB8C8FF;
             case FREEZING_DRIZZLE -> 0x9EC4D8;
+            case SUN_SHOWER -> 0x7FD0FF;
+            case POLAR_LOW -> 0xD8E8FF;
             default -> 0x9AA0A6;
         };
     }

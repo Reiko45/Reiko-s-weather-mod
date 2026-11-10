@@ -48,6 +48,9 @@ public class IceFloeEntity extends Entity {
     private static final EntityDataAccessor<Boolean> DATA_BERG = SynchedEntityData.defineId(IceFloeEntity.class, EntityDataSerializers.BOOLEAN);
     /** A raft of floating pumice from an undersea eruption rather than ice: it never melts, but slowly waterlogs and sinks. */
     private static final EntityDataAccessor<Boolean> DATA_PUMICE = SynchedEntityData.defineId(IceFloeEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 0 a plain floe, 1 a round river ice disc turning slowly in an eddy, 2 a little pancake of sea ice with a raised rim. */
+    private static final EntityDataAccessor<Integer> DATA_SHAPE = SynchedEntityData.defineId(IceFloeEntity.class, EntityDataSerializers.INT);
+    public static final int FLOE = 0, DISC = 1, PANCAKE = 2;
     private static final int MAX_NEAR = 16;
 
     private int life = 6000;
@@ -127,6 +130,36 @@ public class IceFloeEntity extends Entity {
         return raft;
     }
 
+    /**
+     * Round ice: in a cold river an ice disc (a near-perfect circle of ice, worn round as it turns in an eddy), or
+     * on a choppy cold sea a scatter of pancake ice (little rafts of slush, their rims raised where they knock
+     * together). Only a few near any one spot.
+     */
+    public static void formRoundIce(ServerLevel level, BlockPos water) {
+        if (!level.getFluidState(water).isSource() || !level.getBlockState(water.above()).isAir()) return;
+        var biome = level.getBiome(water);
+        boolean river = biome.is(BiomeTags.IS_RIVER), sea = biome.is(BiomeTags.IS_OCEAN);
+        if (!river && !sea || level.getEntitiesOfClass(IceFloeEntity.class, new AABB(water).inflate(48)).size() >= MAX_NEAR / 2) return;
+        Vec3 wind = Wind.direction(WeatherManager.state(level).windAngle);
+        int count = river ? 1 : 4 + level.random.nextInt(5);
+        for (int i = 0; i < count; i++) {
+            BlockPos at = i == 0 ? water : water.offset(level.random.nextInt(9) - 4, 0, level.random.nextInt(9) - 4);
+            if (!level.getFluidState(at).isSource() || !level.getBlockState(at.above()).isAir()) continue;
+            IceFloeEntity ice = new IceFloeEntity(ModEntities.ICE_FLOE.get(), level);
+            ice.entityData.set(DATA_SHAPE, river ? DISC : PANCAKE);
+            ice.setSize(river ? 1.3F + level.random.nextFloat() * 0.7F : 0.35F + level.random.nextFloat() * 0.35F);
+            ice.life = ice.maxLife = 6000 + level.random.nextInt(6000);
+            ice.moveTo(at.getX() + level.random.nextDouble(), at.getY() + 0.75, at.getZ() + level.random.nextDouble(), level.random.nextFloat() * 360.0F, 0.0F);
+            ice.headingX = wind.x;
+            ice.headingZ = wind.z;
+            level.addFreshEntity(ice);
+        }
+    }
+
+    public int shape() {
+        return entityData.get(DATA_SHAPE);
+    }
+
     /** How high an iceberg stands out of the water. */
     public float bergHeight() {
         return 1.5F + size() * 0.7F;
@@ -151,6 +184,7 @@ public class IceFloeEntity extends Entity {
         builder.define(DATA_SIZE, 1.0F);
         builder.define(DATA_BERG, false);
         builder.define(DATA_PUMICE, false);
+        builder.define(DATA_SHAPE, FLOE);
     }
 
     @Override
@@ -232,7 +266,8 @@ public class IceFloeEntity extends Entity {
         if (afloat) {
             if (tickCount % 20 == 0) steer(level);
             double surface = pos.getY() + fluid.getHeight(level, pos);
-            double drift = (0.035 + 0.035 * windStrength(level, pos)) * (berg() ? 0.5 : 1.0);
+            // a disc mostly turns on the spot in its eddy
+            double drift = (0.035 + 0.035 * windStrength(level, pos)) * (berg() ? 0.5 : shape() == DISC ? 0.25 : 1.0);
             Vec3 flow = fluid.getFlow(level, pos);
             double vx = Mth.lerp(0.04, v.x, headingX * drift + flow.x * 0.06);
             double vz = Mth.lerp(0.04, v.z, headingZ * drift + flow.z * 0.06);
@@ -260,7 +295,7 @@ public class IceFloeEntity extends Entity {
                 if (rider instanceof ServerPlayer player) WeatherAdvancements.award(player, berg() ? "iceberg_ahead" : "floe_rider");
             }
         }
-        if (!berg() && !pumice()) jam(level, afloat);
+        if (!berg() && !pumice() && shape() == FLOE) jam(level, afloat);
         // melting: the last part of its life it shrinks away
         if (--life <= 0) {
             level.sendParticles(ParticleTypes.SPLASH, getX(), getY() + 0.3, getZ(), 20, size(), 0.1, size(), 0.1);
@@ -380,6 +415,7 @@ public class IceFloeEntity extends Entity {
     protected void readAdditionalSaveData(CompoundTag tag) {
         entityData.set(DATA_BERG, tag.getBoolean("Berg"));
         entityData.set(DATA_PUMICE, tag.getBoolean("Pumice"));
+        entityData.set(DATA_SHAPE, tag.getInt("Shape"));
         setSize(tag.contains("Size") ? tag.getFloat("Size") : 1.0F);
         life = tag.getInt("Life");
         maxLife = Math.max(1, tag.getInt("MaxLife"));
@@ -390,6 +426,7 @@ public class IceFloeEntity extends Entity {
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putBoolean("Pumice", pumice());
+        tag.putInt("Shape", shape());
         tag.putBoolean("Berg", berg());
         tag.putFloat("Size", size());
         tag.putInt("Life", life);
