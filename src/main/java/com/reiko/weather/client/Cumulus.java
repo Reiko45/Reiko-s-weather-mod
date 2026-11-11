@@ -55,12 +55,13 @@ public final class Cumulus {
         if (drift > 1.0E6F) drift = 0.0F;
         // is a cloud between us and the sun?
         float covered = 0.0F;
-        if (strength > 0.02F && sun > 0.05F && ClientConfig.CLOUD_SHADE.get()) {
+        if (sun > 0.05F && ClientConfig.CLOUD_SHADE.get() && DriftingClouds.cloudsWanted(mc)) {
             Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
             float theta = level.getTimeOfDay(1.0F) * Mth.TWO_PI;
             double sx = -Mth.sin(theta), sy = Mth.cos(theta);
             double t = (base(level) + 6.0 - cam.y) / Math.max(0.08, sy);
-            if (t > 0.0) covered = coverage(cam.x + sx * t, cam.z) * strength;
+            if (t > 0.0 && strength > 0.02F && ClientConfig.CLOUD_STREETS.get()) covered = coverage(cam.x + sx * t, cam.z) * strength;
+            if (DriftingClouds.replacing()) covered = Math.max(covered, DriftingClouds.coverage(level, cam.x, cam.y, cam.z, sx, sy));
         }
         shade = Mth.lerp(0.06F, shade, covered);
     }
@@ -105,7 +106,7 @@ public final class Cumulus {
     public static void collect(Camera camera, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || strength < 0.02F || !ClientConfig.CLOUD_STREETS.get()) return;
+        if (level == null || strength < 0.02F || !ClientConfig.CLOUD_STREETS.get() || !DriftingClouds.cloudsWanted(mc)) return;
         Vec3 cam = camera.getPosition();
         float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
         float daylight = level.getSkyDarken(partialTick);
@@ -113,6 +114,7 @@ public final class Cumulus {
         float d = drift + step * partialTick;
         double ca = cam.x * windX + cam.z * windZ - d, cc = -cam.x * windZ + cam.z * windX;
         float base = base(level);
+        float[] tint = DriftingClouds.sunlit(level, partialTick, daylight);
         float reach = 430.0F;
         int r0 = Mth.floor((cc - reach) / ROW), r1 = Mth.floor((cc + reach) / ROW);
         int k0 = Mth.floor((ca - reach) / SLOT), k1 = Mth.floor((ca + reach) / SLOT);
@@ -125,23 +127,20 @@ public final class Cumulus {
                 double dist = Math.sqrt((x - cam.x) * (x - cam.x) + (z - cam.z) * (z - cam.z));
                 if (dist > reach) continue;
                 float alpha = 0.85F * strength * fade * (float) Mth.clamp((reach - dist) / 120.0, 0.0, 1.0);
-                puffs(x, base + 4.0F * PuffRenderer.hash(r * 7919 + k, 5), z, c[2], daylight, alpha, cam, maxDistance);
+                puffs(x, base + 4.0F * PuffRenderer.hash(r * 7919 + k, 5), z, c[2], tint, alpha, cam, maxDistance);
             }
         }
     }
 
     /** One cumulus: a flat, greyer base and a bright, bulging top. */
-    private static void puffs(double x, float y, double z, float size, float daylight, float alpha, Vec3 cam, float maxDistance) {
-        float lit = 0.25F + 0.75F * daylight;
+    private static void puffs(double x, float y, double z, float size, float[] tint, float alpha, Vec3 cam, float maxDistance) {
         for (int i = 0; i < 3; i++) {
             double off = (i - 1) * size * 0.45;
-            float shade = 0.9F * lit;
-            PuffRenderer.add(x + windX * off, y, z + windZ * off, size * 0.7F, shade, shade, shade * 1.03F, alpha, false, cam, maxDistance);
+            PuffRenderer.add(x + windX * off, y, z + windZ * off, size * 0.7F, tint[0] * 0.9F, tint[1] * 0.9F, tint[2] * 0.92F, alpha, false, cam, maxDistance);
         }
-        float top = 1.0F * lit;
-        PuffRenderer.add(x + windZ * size * 0.1, y + size * 0.55F, z - windX * size * 0.1, size * 0.62F, top, top, top, alpha, false, cam, maxDistance);
+        PuffRenderer.add(x + windZ * size * 0.1, y + size * 0.55F, z - windX * size * 0.1, size * 0.62F, tint[0], tint[1], tint[2], alpha, false, cam, maxDistance);
         if (size > 20.0F) {
-            PuffRenderer.add(x, y + size * 0.95F, z, size * 0.45F, top, top, top, alpha * 0.9F, false, cam, maxDistance);
+            PuffRenderer.add(x, y + size * 0.95F, z, size * 0.45F, tint[0], tint[1], tint[2], alpha * 0.9F, false, cam, maxDistance);
         }
     }
 

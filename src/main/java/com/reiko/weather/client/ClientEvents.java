@@ -249,6 +249,7 @@ public final class ClientEvents {
             CloudPuffs.inversion(event.getCamera());
             CloudPuffs.lenticular(event.getCamera());
             CloudPuffs.banner(event.getCamera());
+            DriftingClouds.collect(event.getCamera(), partialTick);
             Cumulus.collect(event.getCamera(), partialTick);
             StormSkies.collect(event.getCamera(), partialTick);
             CloudForms.collect(event.getCamera(), partialTick);
@@ -294,6 +295,7 @@ public final class ClientEvents {
         SkySights.tick(mc);
         ShoreAndIce.tick(mc);
         AirAndWater.tick(mc);
+        DriftingClouds.tick(mc);
         Cumulus.tick(mc);
         StormSkies.tick(mc);
         DampAir.tick(mc);
@@ -344,6 +346,7 @@ public final class ClientEvents {
         VolcanoClient.reset();
         Mirage.reset();
         Cumulus.reset();
+        DriftingClouds.reset();
         StormSkies.reset();
         DampAir.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;

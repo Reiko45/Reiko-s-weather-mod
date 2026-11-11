@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Hides the sun, moon and stars behind cloud cover, the same way vanilla does for rain; tints dusty rain. */
+/** Hides the sun, moon and stars behind cloud cover, the same way vanilla does for rain; tints dusty rain; swaps in the mod's clouds. */
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
     @ModifyExpressionValue(method = "renderSky", at = @At(value = "INVOKE",
@@ -18,6 +18,13 @@ public abstract class LevelRendererMixin {
     private float reikos_weather$cloudCover(float rainLevel) {
         // in a sun shower the sun shines on through the rain
         return Math.max(rainLevel * (1.0F - 0.9F * ClientWeather.sunShower()), ClientWeather.sunOcclusion());
+    }
+
+    /** Minecraft's blocky clouds give way to the mod's own (see DriftingClouds), when they're turned on. */
+    @Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
+    private void reikos_weather$replaceClouds(com.mojang.blaze3d.vertex.PoseStack poseStack, org.joml.Matrix4f frustum, org.joml.Matrix4f projection,
+                                               float partialTick, double camX, double camY, double camZ, CallbackInfo ci) {
+        if (com.reiko.weather.client.DriftingClouds.replacing()) ci.cancel();
     }
 
     /** Rain falling through a dust haze comes down reddish-brown. */

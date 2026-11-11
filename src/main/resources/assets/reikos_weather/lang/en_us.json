@@ -1120,5 +1120,6 @@
   "jei.reikos_weather.smouldering_ground": "Hot, smoking ground over a burning coal seam. It hurts to stand on (sneak to cross it safely), and snow never lies on it.",
   "jei.reikos_weather.desert_gold": "A desert wildflower. Its seeds wait in the sand for a wet winter, and then the desert blooms in spring. Makes yellow dye.",
   "jei.reikos_weather.sand_verbena": "A desert wildflower with round heads of purple-pink flowers, one of the first to bloom after a wet winter. Makes magenta dye.",
-  "jei.reikos_weather.desert_poppy": "A silky orange desert poppy that carpets the desert in spring after a wet winter. Makes orange dye."
+  "jei.reikos_weather.desert_poppy": "A silky orange desert poppy that carpets the desert in spring after a wet winter. Makes orange dye.",
+  "reikos_weather.configuration.replaceVanillaClouds": "Replace Minecraft's Clouds"
 }

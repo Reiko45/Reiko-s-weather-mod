@@ -395,6 +395,9 @@ Ways to stay comfortable:
   and on still, cold mornings and evenings, smoke from fires and furnaces spreads out in a flat **woodsmoke** layer.
 - **Wall clouds and funnel clouds:** a dark, turning wall cloud hangs under the back of a supercell, and now
   and then a funnel cloud snakes down from it and draws back up.
+- **Clouds:** soft clouds drifting on the wind replace Minecraft's blocky ones, white by day, gold and pink at
+  sunrise and sunset and grey under the moon, with more or less of the sky covered as the weather changes. (Turn
+  `replaceVanillaClouds` off in the client settings for the blocky ones; Minecraft's "Clouds: Off" hides both.)
 - **Cloud streets:** on warm, sunny days, puffy fair-weather clouds build through the morning, and in a steady
   breeze they line up in long rows along the wind. When one drifts over the sun, the light dims for a moment.
 - **Asperitas:** around some thunderstorms the cloud base heaves and rolls overhead like a rough sea seen from below.

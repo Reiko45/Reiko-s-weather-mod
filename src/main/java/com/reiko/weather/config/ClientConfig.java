@@ -89,6 +89,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue BLUE_HAZE;
     public static final ModConfigSpec.BooleanValue WOODSMOKE;
     public static final ModConfigSpec.BooleanValue ALTITUDE_SEASONS;
+    public static final ModConfigSpec.BooleanValue REPLACE_VANILLA_CLOUDS;
     public static final ModConfigSpec.BooleanValue CLOUD_STREETS;
     public static final ModConfigSpec.BooleanValue CLOUD_SHADE;
     public static final ModConfigSpec.BooleanValue ASPERITAS_CLOUDS;
@@ -272,6 +273,9 @@ public final class ClientConfig {
                 .define("woodsmokeInversions", true);
         ALTITUDE_SEASONS = b.comment("High ground greens up later in spring and turns earlier in autumn.")
                 .define("altitudeSeasons", true);
+        REPLACE_VANILLA_CLOUDS = b.comment("Draw soft, drifting clouds that follow the wind and the weather instead of Minecraft's blocky ones.",
+                        "(Minecraft's own \"Clouds: Off\" video setting turns these off too.)")
+                .define("replaceVanillaClouds", true);
         CLOUD_STREETS = b.comment("On breezy summer days, fair-weather clouds line up in rows along the wind.")
                 .define("cloudStreets", true);
         CLOUD_SHADE = b.comment("On broken-cloud days the light dims and brightens as clouds cross the sun.")
