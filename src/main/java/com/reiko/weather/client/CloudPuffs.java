@@ -125,7 +125,7 @@ public final class CloudPuffs {
                 for (int r = 80; r <= 240; r += 80) {
                     float a = i * Mth.TWO_PI / 24.0F;
                     int x = Mth.floor(cam.x + Mth.cos(a) * r), z = Mth.floor(cam.z + Mth.sin(a) * r);
-                    if (!level.hasChunk(x >> 4, z >> 4)) continue;
+                    if (!SkySights.loaded(level, new net.minecraft.core.BlockPos(x, 0, z))) continue;
                     int h = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z);
                     if (h > peakY) {
                         peakY = h;

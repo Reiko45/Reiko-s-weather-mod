@@ -104,7 +104,15 @@ public final class WeatherCommand {
                         .then(Commands.literal("erupt").requires(s -> s.hasPermission(2))
                                 .executes(ctx -> VolcanoCommands.phase(ctx.getSource(), com.reiko.weather.volcano.Volcano.Phase.ERUPTING)))
                         .then(Commands.literal("calm").requires(s -> s.hasPermission(2))
-                                .executes(ctx -> VolcanoCommands.phase(ctx.getSource(), com.reiko.weather.volcano.Volcano.Phase.COOLING))))
+                                .executes(ctx -> VolcanoCommands.phase(ctx.getSource(), com.reiko.weather.volcano.Volcano.Phase.COOLING)))
+                        .then(Commands.literal("lahar").requires(s -> s.hasPermission(2))
+                                .executes(ctx -> VolcanoCommands.flow(ctx.getSource(), com.reiko.weather.volcano.MassFlows.Kind.LAHAR)))
+                        .then(Commands.literal("pyroclastic").requires(s -> s.hasPermission(2))
+                                .executes(ctx -> VolcanoCommands.flow(ctx.getSource(), com.reiko.weather.volcano.MassFlows.Kind.PYROCLASTIC))))
+                .then(Commands.literal("quake").requires(s -> s.hasPermission(2))
+                        .executes(ctx -> quake(ctx.getSource(), 0.5F))
+                        .then(Commands.argument("magnitude", com.mojang.brigadier.arguments.FloatArgumentType.floatArg(0.0F, 1.0F))
+                                .executes(ctx -> quake(ctx.getSource(), com.mojang.brigadier.arguments.FloatArgumentType.getFloat(ctx, "magnitude")))))
                 .then(Commands.literal("season").executes(WeatherCommand::querySeason)
                         .then(Commands.argument("season", StringArgumentType.word()).requires(s -> s.hasPermission(2))
                                 .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
@@ -361,4 +369,12 @@ public final class WeatherCommand {
     }
 
     private WeatherCommand() {}
+
+    /** An earthquake centred where the command runs (0 to 1: 0.5 is a strong local quake). */
+    private static int quake(CommandSourceStack source, float magnitude) {
+        net.minecraft.server.level.ServerLevel level = source.getServer().overworld();
+        com.reiko.weather.weather.Earthquakes.quake(level, source.getPosition().x, source.getPosition().z, magnitude);
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.quake", Math.round(magnitude * 100)), true);
+        return 1;
+    }
 }

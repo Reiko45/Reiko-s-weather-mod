@@ -226,6 +226,19 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue SEICHES;
     public static final ModConfigSpec.BooleanValue COASTAL_CURRENTS;
     public static final ModConfigSpec.BooleanValue UPWELLING;
+    public static final ModConfigSpec.BooleanValue LAHARS;
+    public static final ModConfigSpec.BooleanValue PYROCLASTIC_FLOWS;
+    public static final ModConfigSpec.BooleanValue LIQUEFACTION;
+    public static final ModConfigSpec.BooleanValue SNOW_CAPS;
+    public static final ModConfigSpec.BooleanValue SNOW_ALGAE;
+    public static final ModConfigSpec.BooleanValue GROUND_BLIZZARDS;
+    public static final ModConfigSpec.BooleanValue BLACK_ICE;
+    public static final ModConfigSpec.BooleanValue KATABATIC_WINDS;
+    public static final ModConfigSpec.BooleanValue FROZEN_WATERFALLS;
+    public static final ModConfigSpec.BooleanValue EMBER_SPOTTING;
+    public static final ModConfigSpec.BooleanValue HEAT_ISLANDS;
+    public static final ModConfigSpec.BooleanValue SALT_SPRAY;
+    public static final ModConfigSpec.BooleanValue MARINE_HEATWAVES;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -253,6 +266,22 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue STROMATOLITES;
     public static final ModConfigSpec.BooleanValue FAIRY_RINGS;
     public static final ModConfigSpec.BooleanValue VERNAL_POOLS;
+    public static final ModConfigSpec.BooleanValue KIPUKAS;
+    public static final ModConfigSpec.BooleanValue VOLCANIC_DIKES;
+    public static final ModConfigSpec.BooleanValue STEAMING_GROUND;
+    public static final ModConfigSpec.BooleanValue HYDROTHERMAL_VENTS;
+    public static final ModConfigSpec.BooleanValue BRINE_POOLS;
+    public static final ModConfigSpec.BooleanValue KRUMMHOLZ;
+    public static final ModConfigSpec.BooleanValue THERMOKARST;
+    public static final ModConfigSpec.BooleanValue GOOSENECKS;
+    public static final ModConfigSpec.BooleanValue FLOODPLAINS;
+    public static final ModConfigSpec.BooleanValue BEAVER_PONDS;
+    public static final ModConfigSpec.BooleanValue PATTERNED_FENS;
+    public static final ModConfigSpec.BooleanValue CYPRESS_SWAMPS;
+    public static final ModConfigSpec.BooleanValue LOESS_CLIFFS;
+    public static final ModConfigSpec.BooleanValue MIMA_MOUNDS;
+    public static final ModConfigSpec.BooleanValue TAFONI;
+    public static final ModConfigSpec.BooleanValue FRINGING_REEFS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -565,6 +594,32 @@ public final class WeatherConfig {
                 .define("coastalCurrents", true);
         UPWELLING = b.comment("Cold water wells up off some coasts: cooler air, more sea fog and better fishing.")
                 .define("upwelling", true);
+        LAHARS = b.comment("Heavy rain on a volcano's ash-covered slopes sends mudflows (lahars) down its valleys (needs mobGriefing).")
+                .define("lahars", true);
+        PYROCLASTIC_FLOWS = b.comment("Big eruptions send scalding avalanches of ash and gas pouring down the volcano's slopes.")
+                .define("pyroclasticFlows", true);
+        LIQUEFACTION = b.comment("Strong earthquakes turn wet sandy ground to quicksand for a while and throw up sand boils (needs mobGriefing).")
+                .define("liquefaction", true);
+        SNOW_CAPS = b.comment("The snowline on mountains creeps down in autumn and winter and retreats in spring and summer.")
+                .define("seasonalSnowCaps", true);
+        SNOW_ALGAE = b.comment("Old summer snowfields high in the mountains turn pink with snow algae (watermelon snow).")
+                .define("snowAlgae", true);
+        GROUND_BLIZZARDS = b.comment("Strong wind lifts loose snow off the ground into a blinding ground blizzard, even under a clear sky.")
+                .define("groundBlizzards", true);
+        BLACK_ICE = b.comment("After a thaw, a hard frost glazes stone and paths with slippery black ice by dawn.")
+                .define("blackIce", true);
+        KATABATIC_WINDS = b.comment("Bitter gales pour down off glaciers and ice sheets at night.")
+                .define("katabaticWinds", true);
+        FROZEN_WATERFALLS = b.comment("Waterfalls freeze into hanging curtains of ice in hard cold, and thaw again when it warms up.")
+                .define("frozenWaterfalls", true);
+        EMBER_SPOTTING = b.comment("Big wildfires throw embers ahead on the wind and start new fires downwind (respects doFireTick and mobGriefing).")
+                .define("emberSpotting", true);
+        HEAT_ISLANDS = b.comment("Villages are a few degrees warmer than the country round them, with less frost.")
+                .define("heatIslands", true);
+        SALT_SPRAY = b.comment("Storm spray scorches the leaves off trees along the coast (needs mobGriefing).")
+                .define("saltSpray", true);
+        MARINE_HEATWAVES = b.comment("In a long, hot summer the sea warms: fish move away and coral bleaches (needs mobGriefing).")
+                .define("marineHeatwaves", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -829,6 +884,38 @@ public final class WeatherConfig {
                 .define("fairyRings", true);
         VERNAL_POOLS = b.comment("Vernal pools: woodland ponds that fill in spring and dry out by summer.")
                 .define("vernalPools", true);
+        KIPUKAS = b.comment("Kipukas: islands of old forest left standing in a sea of younger lava.")
+                .define("kipukas", true);
+        VOLCANIC_DIKES = b.comment("Volcanic dikes: long walls of dark rock radiating out across the land.")
+                .define("volcanicDikes", true);
+        STEAMING_GROUND = b.comment("Steaming ground: warm, bare geothermal patches where snow never settles.")
+                .define("steamingGround", true);
+        HYDROTHERMAL_VENTS = b.comment("Hydrothermal vents: smoking black chimneys on the deep sea floor.")
+                .define("hydrothermalVents", true);
+        BRINE_POOLS = b.comment("Brine pools: lakes of heavy, salty water lying on the sea floor.")
+                .define("brinePools", true);
+        KRUMMHOLZ = b.comment("Krummholz: stunted, wind-bent trees at the treeline.")
+                .define("krummholz", true);
+        THERMOKARST = b.comment("Thermokarst slumps: hillsides collapsing where the permafrost under them thaws.")
+                .define("thermokarst", true);
+        GOOSENECKS = b.comment("Goosenecks: a river winding in deep loops cut down into the rock.")
+                .define("goosenecks", true);
+        FLOODPLAINS = b.comment("Floodplains: flat river meadows with natural levees and swampy backwaters.")
+                .define("floodplains", true);
+        BEAVER_PONDS = b.comment("Beaver ponds: streams dammed with sticks and mud into ponds full of drowned trees.")
+                .define("beaverPonds", true);
+        PATTERNED_FENS = b.comment("Patterned fens: bogs striped with ridges and pools across the slope.")
+                .define("patternedFens", true);
+        CYPRESS_SWAMPS = b.comment("Cypress swamps: big trees standing in still water with their knees poking up round them.")
+                .define("cypressSwamps", true);
+        LOESS_CLIFFS = b.comment("Loess cliffs: plateaus of yellow wind-blown dust cut into sheer cliffs and deep gullies.")
+                .define("loessCliffs", true);
+        MIMA_MOUNDS = b.comment("Mima mounds: fields of low, evenly spaced grassy mounds.")
+                .define("mimaMounds", true);
+        TAFONI = b.comment("Tafoni: sea cliffs weathered into honeycombs of hollows.")
+                .define("tafoni", true);
+        FRINGING_REEFS = b.comment("Fringing reefs: coral reefs along warm coasts, cut by spurs and grooves.")
+                .define("fringingReefs", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

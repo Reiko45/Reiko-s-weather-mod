@@ -41,6 +41,15 @@ public class QuicksandBlock extends Block {
         return CODEC;
     }
 
+    /**
+     * Only ground liquefied by an earthquake is given a tick (natural quicksand never is): once the shaking's over
+     * and the water drains out of it, it settles back into ordinary sand.
+     */
+    @Override
+    protected void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
+        level.setBlockAndUpdate(pos, Blocks.SAND.defaultBlockState());
+    }
+
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         if (context instanceof EntityCollisionContext ec && ec.getEntity() instanceof FallingBlockEntity) {

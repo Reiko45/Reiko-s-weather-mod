@@ -19,6 +19,7 @@
     "reikos_weather:petrified_wood",
     "reikos_weather:pumice",
     "reikos_weather:whirlpool",
-    "reikos_weather:rock_salt"
+    "reikos_weather:rock_salt",
+    "reikos_weather:frozen_waterfall"
   ]
 }

@@ -81,6 +81,8 @@ public final class Seas {
                 stripBeach(level, column(level, player, random, 32));
             }
         }
+        if (WeatherConfig.MARINE_HEATWAVES.get()) heatwaveSea(level, state, player, random);
+        if (WeatherConfig.SALT_SPRAY.get() && griefing && wind > 0.6F && local.profile().rain > 0.3F) saltSpray(level, player, wind, random);
         if (WeatherConfig.PUMICE_RAFTS.get() && random.nextInt(30000) == 0) {
             pumiceRafts(level, player, random);
         }
@@ -225,6 +227,7 @@ public final class Seas {
 
     /** Once a second for the world: the algal bloom spreading or dying back. */
     static void tickWorld(ServerLevel level, WeatherState state) {
+        marineHeat(level, state);
         if (!WeatherConfig.ALGAL_BLOOMS.get()) {
             state.bloom = 0.0F;
             return;
@@ -244,6 +247,108 @@ public final class Seas {
         if (Math.abs(state.bloom - before) > 1.0E-6F) {
             state.setDirty();
             if ((int) (state.bloom * 20) != (int) (before * 20)) WeatherManager.sync(level, state);
+        }
+    }
+
+    /**
+     * A marine heatwave: weeks of hot, calm, sunny weather in summer warm the surface of the sea several degrees
+     * above normal. Fish move off to cooler water, and corals, stressed by the heat, expel the algae that live in them
+     * and go stark white (bleached); if it lasts, they die.
+     */
+    private static void marineHeat(ServerLevel level, WeatherState state) {
+        if (!WeatherConfig.MARINE_HEATWAVES.get()) {
+            state.seaHeat = 0.0F;
+            return;
+        }
+        Season season = WeatherManager.seasonInfo().season();
+        WeatherType type = state.type;
+        float change;
+        if ((season == Season.SUMMER || season == null) && type == WeatherType.HEATWAVE) change = 0.0012F;
+        else if (season == Season.SUMMER && type == WeatherType.CLEAR) change = 0.0002F;
+        else if (type.isSevere() || type == WeatherType.WINDY || type == WeatherType.HURRICANE) change = -0.003F; // stirred up and cooled
+        else change = season == Season.SUMMER ? -0.0002F : -0.0012F;
+        float before = state.seaHeat;
+        state.seaHeat = Mth.clamp(state.seaHeat + change, 0.0F, 1.0F);
+        if (Math.abs(state.seaHeat - before) > 1.0E-6F) state.setDirty();
+    }
+
+    /** Whether the sea at a spot is warm, shallow-water sea (where coral grows and heatwaves bite hardest). */
+    public static boolean warmSea(ServerLevel level, BlockPos pos) {
+        var biome = level.getBiome(pos);
+        return biome.is(Biomes.WARM_OCEAN) || biome.is(Biomes.LUKEWARM_OCEAN) || biome.is(Biomes.DEEP_LUKEWARM_OCEAN);
+    }
+
+    /** Coral bleaching, and the fish going elsewhere. */
+    private static void heatwaveSea(ServerLevel level, WeatherState state, ServerPlayer player, RandomSource random) {
+        if (state.seaHeat < 0.5F || !warmSea(level, player.blockPosition())) return;
+        if (level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            for (int i = 0; i < 6; i++) {
+                BlockPos top = column(level, player, random, 32);
+                if (top == null) continue;
+                // down through the water to the reef
+                BlockPos.MutableBlockPos pos = top.below().mutable();
+                for (int d = 0; d < 20 && level.getFluidState(pos).is(FluidTags.WATER); d++, pos.move(Direction.DOWN)) {
+                    BlockState s = level.getBlockState(pos);
+                    BlockState dead = bleached(s);
+                    if (dead != null && random.nextFloat() < state.seaHeat - 0.4F) {
+                        level.setBlockAndUpdate(pos, dead);
+                        break;
+                    }
+                }
+                BlockState floor = level.getBlockState(pos);
+                BlockState dead = bleached(floor);
+                if (dead != null && random.nextFloat() < state.seaHeat - 0.4F) level.setBlockAndUpdate(pos, dead);
+            }
+        }
+        for (AbstractFish fish : level.getEntitiesOfClass(AbstractFish.class, player.getBoundingBox().inflate(32), f -> warmSea(level, f.blockPosition()))) {
+            if (random.nextInt(60) == 0) fish.discard();
+        }
+        if (state.seaHeat > 0.7F) WeatherAdvancements.award(player, "marine_heatwave");
+    }
+
+    /** The dead (bleached-white) form of a living coral block or fan, or null. */
+    @Nullable
+    private static BlockState bleached(BlockState s) {
+        var id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock());
+        if (!id.getNamespace().equals("minecraft") || id.getPath().startsWith("dead_") || !id.getPath().contains("coral")) return null;
+        var dead = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(id.withPath("dead_" + id.getPath())).orElse(null);
+        if (dead == null) return null;
+        BlockState out = dead.defaultBlockState();
+        for (var property : s.getProperties()) {
+            if (out.hasProperty(property)) out = copy(out, s, property);
+        }
+        return out;
+    }
+
+    private static <T extends Comparable<T>> BlockState copy(BlockState to, BlockState from, net.minecraft.world.level.block.state.properties.Property<T> property) {
+        return to.setValue(property, from.getValue(property));
+    }
+
+    /**
+     * Salt spray: a gale off the sea whips salt spray far inland, and it scorches the leaves on the seaward side of
+     * the trees along the coast brown; they drop, and the trees grow bent and bare on the side facing the sea.
+     */
+    private static void saltSpray(ServerLevel level, ServerPlayer player, float wind, RandomSource random) {
+        float sea = seaward(level, player.getX(), player.getZ(), 16);
+        if (Float.isNaN(sea)) return;
+        for (int i = 0; i < 3; i++) {
+            BlockPos top = column(level, player, random, 24);
+            if (top == null) continue;
+            BlockPos leaf = top.below();
+            if (!level.getBlockState(leaf).is(BlockTags.LEAVES)) continue;
+            // only the leaves facing the sea, close enough for the spray to reach
+            boolean exposed = false;
+            for (int d = 4; d <= 16 && !exposed; d += 4) {
+                BlockPos toward = BlockPos.containing(leaf.getX() + Mth.cos(sea) * d, level.getSeaLevel() - 1, leaf.getZ() + Mth.sin(sea) * d);
+                exposed = level.isLoaded(toward) && level.getFluidState(toward).is(FluidTags.WATER) && level.getBiome(toward).is(BiomeTags.IS_OCEAN);
+            }
+            if (!exposed || random.nextFloat() > wind - 0.4F) continue;
+            level.removeBlock(leaf, false);
+            BlockPos ground = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, leaf);
+            if (WeatherConfig.LEAF_PILES.get() && random.nextBoolean()) {
+                com.reiko.weather.block.LeafPileBlock.addLayer(level, ground, ModBlocks.LEAF_PILE.get(), 2);
+            }
+            level.sendParticles(ParticleTypes.SPLASH, leaf.getX() + 0.5, leaf.getY() + 0.5, leaf.getZ() + 0.5, 6, 0.4, 0.4, 0.4, 0.05);
         }
     }
 

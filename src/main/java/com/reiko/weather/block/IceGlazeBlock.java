@@ -48,7 +48,9 @@ public class IceGlazeBlock extends Block {
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         LocalWeather weather = WeatherManager.local(level, pos);
-        boolean stillFreezing = weather != null && weather.profile().glazeGround;
+        // freezing rain keeps it coming; black ice lasts as long as the air stays below freezing
+        boolean stillFreezing = weather != null && weather.profile().glazeGround
+                || com.reiko.weather.temperature.Temperature.ambient(level, pos, weather) < -1.0F;
         if (level.getBrightness(LightLayer.BLOCK, pos) > 11 || !stillFreezing && random.nextInt(3) == 0) {
             level.removeBlock(pos, false);
         }

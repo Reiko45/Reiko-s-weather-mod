@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "mima_mounds",
+  "biomes": "#reikos_weather:has_structure/mima_mounds",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

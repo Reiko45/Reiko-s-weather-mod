@@ -175,6 +175,7 @@ public class ReikosWeather {
             event.accept(ModItems.OLIVINE_SAND.get());
             event.accept(ModItems.PINK_SAND.get());
             event.accept(ModItems.ROCK_SALT.get());
+            event.accept(ModItems.STEAMING_GROUND.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

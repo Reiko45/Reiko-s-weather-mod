@@ -90,6 +90,7 @@ public final class VolcanoManager {
             }
             tick(level, data, v);
         }
+        MassFlows.tick(level, data);
         if (time % 40L == 0L) {
             sync(level, data);
         }
@@ -260,6 +261,7 @@ public final class VolcanoManager {
         if (random.nextFloat() < 0.012F * a) {
             volcanicLightning(level, v, random);
         }
+        MassFlows.maybePyroclastic(level, v, random);
         boolean griefing = level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
         if (WeatherConfig.LAVA_FLOWS.get() && griefing) {
             if (a > 0.5F && v.flowsStarted < MAX_FLOWS_PER_ERUPTION && v.flows.size() < 2 && random.nextFloat() < 1.0F / 600.0F) {

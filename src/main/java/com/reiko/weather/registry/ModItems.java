@@ -127,6 +127,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> OLIVINE_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.OLIVINE_SAND);
     public static final DeferredItem<BlockItem> PINK_SAND = REGISTER.registerSimpleBlockItem(ModBlocks.PINK_SAND);
     public static final DeferredItem<BlockItem> ROCK_SALT = REGISTER.registerSimpleBlockItem(ModBlocks.ROCK_SALT);
+    public static final DeferredItem<BlockItem> STEAMING_GROUND = REGISTER.registerSimpleBlockItem(ModBlocks.STEAMING_GROUND);
 
     private ModItems() {}
 }

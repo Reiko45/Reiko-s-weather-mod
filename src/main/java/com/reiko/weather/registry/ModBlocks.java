@@ -225,5 +225,21 @@ public final class ModBlocks {
                     .strength(0.1F).sound(SoundType.POWDER_SNOW).randomTicks().pushReaction(PushReaction.DESTROY).noLootTable()
                     .isViewBlocking((s, l, pos) -> s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) >= 8)));
 
+    /** Watermelon snow: old summer snow stained pink by snow algae. */
+    public static final DeferredBlock<com.reiko.weather.block.PinkSnowBlock> PINK_SNOW = REGISTER.register("pink_snow",
+            () -> new com.reiko.weather.block.PinkSnowBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.SNOW)
+                    .mapColor(MapColor.COLOR_PINK)));
+
+    /** A waterfall frozen into a hanging curtain of ice: it melts away to nothing and the water runs again. */
+    public static final DeferredBlock<com.reiko.weather.block.FrozenWaterfallBlock> FROZEN_WATERFALL = REGISTER.register("frozen_waterfall",
+            () -> new com.reiko.weather.block.FrozenWaterfallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.5F)
+                    .sound(SoundType.GLASS).noOcclusion().randomTicks().friction(0.98F).pushReaction(PushReaction.DESTROY).noLootTable()
+                    .isRedstoneConductor((s, l, p) -> false).isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** Warm geothermal ground: it steams, and snow melts off it. */
+    public static final DeferredBlock<com.reiko.weather.block.SteamingGroundBlock> STEAMING_GROUND = REGISTER.register("steaming_ground",
+            () -> new com.reiko.weather.block.SteamingGroundBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(0.6F)
+                    .sound(SoundType.GRAVEL).randomTicks()));
+
     private ModBlocks() {}
 }

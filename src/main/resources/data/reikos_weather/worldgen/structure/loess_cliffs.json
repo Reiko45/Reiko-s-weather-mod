@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "loess_cliffs",
+  "biomes": "#reikos_weather:has_structure/loess_cliffs",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

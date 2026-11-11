@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "patterned_fen",
+  "biomes": "#reikos_weather:has_structure/patterned_fen",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

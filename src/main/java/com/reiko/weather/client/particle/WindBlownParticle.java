@@ -29,7 +29,9 @@ public class WindBlownParticle extends TextureSheetParticle {
         /** Steam fog: wisps rising off water much warmer than the bitter air over it. */
         STEAM(0.15, -0.025, 0.2F),
         /** Spray billowing up from the foot of a waterfall. */
-        SPRAY(0.3, -0.035, 0.32F);
+        SPRAY(0.3, -0.035, 0.32F),
+        /** The billowing grey cloud of a pyroclastic flow: huge, dense, rising slowly as it spreads. */
+        ASH_CLOUD(0.15, -0.02, 0.8F);
 
         final double windFactor;
         final double fallSpeed;
@@ -71,6 +73,7 @@ public class WindBlownParticle extends TextureSheetParticle {
             case ASH -> { quadSize = 0.05F + random.nextFloat() * 0.07F; lifetime = 140 + random.nextInt(60); }
             case STEAM -> { quadSize = 0.7F + random.nextFloat() * 0.9F; lifetime = 50 + random.nextInt(40); hasPhysics = false; }
             case SPRAY -> { quadSize = 1.0F + random.nextFloat() * 1.4F; lifetime = 35 + random.nextInt(30); hasPhysics = false; }
+            case ASH_CLOUD -> { quadSize = 3.0F + random.nextFloat() * 4.0F; lifetime = 160 + random.nextInt(100); hasPhysics = false; }
         }
         this.targetAlpha = kind.maxAlpha * (soft() ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
         if (!soft()) {
@@ -105,7 +108,7 @@ public class WindBlownParticle extends TextureSheetParticle {
         this.yd += (targetY - this.yd) * 0.1;
         this.roll += spin;
         if (soft()) {
-            this.quadSize *= kind == Kind.STEAM || kind == Kind.SPRAY ? 1.012F : 1.004F;
+            this.quadSize *= kind == Kind.STEAM || kind == Kind.SPRAY ? 1.012F : kind == Kind.ASH_CLOUD ? 1.006F : 1.004F;
         }
         this.move(this.xd, this.yd, this.zd);
         if (this.onGround && kind != Kind.SAND && kind != Kind.LEAF) {
@@ -119,7 +122,7 @@ public class WindBlownParticle extends TextureSheetParticle {
 
     /** Big, soft clouds rather than little flakes. */
     private boolean soft() {
-        return kind == Kind.DUST || kind == Kind.MIST || kind == Kind.STEAM || kind == Kind.SPRAY;
+        return kind == Kind.DUST || kind == Kind.MIST || kind == Kind.STEAM || kind == Kind.SPRAY || kind == Kind.ASH_CLOUD;
     }
 
     @Override

@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:grove",
+    "minecraft:snowy_slopes",
+    "minecraft:windswept_forest",
+    "minecraft:windswept_hills",
+    "minecraft:meadow"
+  ]
+}

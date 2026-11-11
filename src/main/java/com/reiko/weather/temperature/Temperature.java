@@ -96,6 +96,10 @@ public final class Temperature {
                 if (sun > 0 && p.rain < 0.2F && p.overcast < 0.4F) celsius += 2.0F; // direct sunshine
             }
         }
+        // a village holds its warmth: stone, smoke and shelter keep it a few degrees up, most of all on still nights
+        if (level instanceof net.minecraft.server.level.ServerLevel server && inVillage(server, pos)) {
+            celsius += sun > 0 ? 1.5F : 3.0F;
+        }
         // cold water welling up offshore chills the coast
         float upwelling = com.reiko.weather.weather.Seas.upwelling(level, pos);
         if (upwelling > 0.0F) celsius -= 5.0F * upwelling;
@@ -144,6 +148,24 @@ public final class Temperature {
     }
 
     /** What it feels like to this entity, in °C. */
+    private static final it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap VILLAGE_CACHE = new it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap();
+
+    /** Whether a spot is inside a village (looked up once a minute per chunk; villages don't move). */
+    public static boolean inVillage(net.minecraft.server.level.ServerLevel level, BlockPos pos) {
+        if (!com.reiko.weather.config.WeatherConfig.SPEC.isLoaded() || !com.reiko.weather.config.WeatherConfig.HEAT_ISLANDS.get()
+                || level.dimension() != Level.OVERWORLD || !level.getServer().isSameThread() || !level.isLoaded(pos)) return false;
+        long chunk = net.minecraft.world.level.ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4);
+        long now = level.getGameTime();
+        synchronized (VILLAGE_CACHE) {
+            long cached = VILLAGE_CACHE.getOrDefault(chunk, Long.MIN_VALUE);
+            if (cached != Long.MIN_VALUE && now - (cached >> 1) < 1200) return (cached & 1) == 1;
+            if (VILLAGE_CACHE.size() > 4096) VILLAGE_CACHE.clear();
+            boolean village = level.structureManager().getStructureWithPieceAt(pos, net.minecraft.tags.StructureTags.VILLAGE).isValid();
+            VILLAGE_CACHE.put(chunk, now << 1 | (village ? 1 : 0));
+            return village;
+        }
+    }
+
     public static float felt(Level level, LivingEntity entity, @Nullable LocalWeather local) {
         BlockPos eyes = BlockPos.containing(entity.getEyePosition());
         float celsius = ambient(level, eyes, local) + heatSources(level, entity.blockPosition());
@@ -154,6 +176,7 @@ public final class Temperature {
         if (com.reiko.weather.compat.Compat.wearing(entity, EquipmentSlot.HEAD, ModItems.SUN_HAT.get()) && celsius > 22.0F && level.isDay() && level.canSeeSky(eyes)) {
             celsius -= Math.min(6.0F, celsius - 22.0F);
         }
+        if (entity instanceof net.minecraft.server.level.ServerPlayer sp) celsius -= com.reiko.weather.weather.Highlands.katabaticChill(sp);
         if (entity.hasEffect(ModEffects.WARMTH)) celsius += 10.0F;
         if (entity.hasEffect(ModEffects.REFRESHED)) celsius -= 10.0F;
         float insulation = insulation(entity);

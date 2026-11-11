@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/frozen_waterfall"
+      },
+      {
+        "model": "reikos_weather:block/frozen_waterfall",
+        "y": 90
+      }
+    ]
+  }
+}

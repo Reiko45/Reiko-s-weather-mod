@@ -129,6 +129,9 @@ public final class WeatherReport {
         if (Microclimate.frostHollow(level, info, raw.profile()) > 0.3F) {
             lines.add(Component.translatable("report.reikos_weather.frost_hollow").withStyle(ChatFormatting.AQUA));
         }
+        if (com.reiko.weather.config.WeatherConfig.MARINE_HEATWAVES.get() && state.seaHeat > 0.5F) {
+            lines.add(Component.translatable("report.reikos_weather.marine_heatwave").withStyle(ChatFormatting.GOLD));
+        }
         if (Seas.upwelling(level, pos) > 0.3F) {
             lines.add(Component.translatable("report.reikos_weather.upwelling").withStyle(ChatFormatting.AQUA));
         }

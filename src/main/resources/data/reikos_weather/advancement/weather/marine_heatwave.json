@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:dead_brain_coral_block"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.marine_heatwave"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.marine_heatwave.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:mud"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.lahar"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.lahar.desc"
+    },
+    "frame": "task",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

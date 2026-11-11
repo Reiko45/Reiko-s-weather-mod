@@ -665,4 +665,87 @@ public class WeatherGameTests {
         }
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void eleventhLandformsPlan(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int sea = level.getSeaLevel();
+        // (some only take on a share of the spots they're offered, so give each a few tries on suitable ground)
+        java.util.function.BiFunction<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator, com.reiko.weather.landform.Landform> plan = (kind, ground) -> {
+            for (int seed = 1; seed <= 60; seed++) {
+                var planned = kind.plan(new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(seed), 0, 0, ground, sea, level));
+                if (planned != null) return planned;
+            }
+            return null;
+        };
+        java.util.function.IntBinaryOperator gentle = (x, z) -> sea + 8 + (int) (2 * Math.sin(x * 0.07));
+        // gentle lowland suits the lava fields, dikes, mounds, loess and steaming ground, and the deep-sea floor suits
+        // vents and brine pools; each saves and loads as it was, and stays within reach
+        java.util.Map<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator> suits = new java.util.LinkedHashMap<>();
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.KIPUKA,
+                com.reiko.weather.landform.LandformKind.VOLCANIC_DIKES, com.reiko.weather.landform.LandformKind.MIMA_MOUNDS,
+                com.reiko.weather.landform.LandformKind.LOESS_CLIFFS, com.reiko.weather.landform.LandformKind.STEAMING_GROUND}) {
+            suits.put(kind, gentle);
+        }
+        suits.put(com.reiko.weather.landform.LandformKind.HYDROTHERMAL_VENTS, (x, z) -> sea - 30);
+        suits.put(com.reiko.weather.landform.LandformKind.BRINE_POOL, (x, z) -> sea - 30);
+        suits.put(com.reiko.weather.landform.LandformKind.KRUMMHOLZ, (x, z) -> sea + 60);
+        for (var e : suits.entrySet()) {
+            var planned = plan.apply(e.getKey(), e.getValue());
+            helper.assertTrue(planned != null, e.getKey() + " on suitable ground");
+            var again = e.getKey().load(planned.save());
+            helper.assertTrue(again.bounds().equals(planned.bounds()), e.getKey() + " saves and loads");
+            var b = planned.bounds();
+            helper.assertTrue(b.getXSpan() < 240 && b.getZSpan() < 240, e.getKey() + " stays within its reach");
+        }
+        // the dry-land ones never form out at sea
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.KIPUKA,
+                com.reiko.weather.landform.LandformKind.VOLCANIC_DIKES, com.reiko.weather.landform.LandformKind.KRUMMHOLZ,
+                com.reiko.weather.landform.LandformKind.LOESS_CLIFFS, com.reiko.weather.landform.LandformKind.MIMA_MOUNDS,
+                com.reiko.weather.landform.LandformKind.STEAMING_GROUND, com.reiko.weather.landform.LandformKind.GOOSENECKS,
+                com.reiko.weather.landform.LandformKind.THERMOKARST_SLUMP}) {
+            helper.assertTrue(plan.apply(kind, (x, z) -> sea - 20) == null, "no " + kind + " at sea");
+        }
+        // the sea-floor, shore and river ones never form far inland
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.HYDROTHERMAL_VENTS,
+                com.reiko.weather.landform.LandformKind.BRINE_POOL, com.reiko.weather.landform.LandformKind.TAFONI,
+                com.reiko.weather.landform.LandformKind.FRINGING_REEF, com.reiko.weather.landform.LandformKind.FLOODPLAIN}) {
+            helper.assertTrue(plan.apply(kind, (x, z) -> sea + 25) == null, "no " + kind + " far inland");
+        }
+        // and the treeline is high up
+        helper.assertTrue(plan.apply(com.reiko.weather.landform.LandformKind.KRUMMHOLZ, gentle) == null, "no krummholz in the lowlands");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void fireIceAndHighlands(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(11);
+        // the extra cold of height only starts high up, and never warms anything
+        helper.assertTrue(com.reiko.weather.weather.Highlands.lapse(new BlockPos(0, 60, 0)) == 0.0F, "no snow-cap cold down low");
+        helper.assertTrue(com.reiko.weather.weather.Highlands.lapse(new BlockPos(0, 220, 0)) >= 0.0F, "high ground is never warmer");
+        // ground liquefied by an earthquake settles back into sand
+        helper.setBlock(1, 1, 1, ModBlocks.QUICKSAND.get());
+        BlockPos quick = helper.absolutePos(new BlockPos(1, 1, 1));
+        level.getBlockState(quick).tick(level, quick, random);
+        helper.assertBlockPresent(Blocks.SAND, new BlockPos(1, 1, 1));
+        // a frozen waterfall melts away in mild air (the test platform's plains are well above freezing)
+        helper.setBlock(3, 2, 1, ModBlocks.FROZEN_WATERFALL.get());
+        BlockPos ice = helper.absolutePos(new BlockPos(3, 2, 1));
+        level.getBlockState(ice).randomTick(level, ice, random);
+        helper.assertBlockNotPresent(ModBlocks.FROZEN_WATERFALL.get(), new BlockPos(3, 2, 1));
+        // snow won't lie on steaming ground
+        helper.setBlock(5, 1, 1, ModBlocks.STEAMING_GROUND.get());
+        helper.setBlock(5, 2, 1, Blocks.SNOW);
+        BlockPos warm = helper.absolutePos(new BlockPos(5, 1, 1));
+        level.getBlockState(warm).randomTick(level, warm, random);
+        helper.assertBlockNotPresent(Blocks.SNOW, new BlockPos(5, 2, 1));
+        // watermelon snow is still snow underfoot, in layers
+        helper.setBlock(1, 1, 3, Blocks.STONE);
+        helper.setBlock(1, 2, 3, ModBlocks.PINK_SNOW.get().defaultBlockState().setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, 3));
+        helper.assertTrue(helper.getBlockState(new BlockPos(1, 2, 3)).getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) == 3, "pink snow keeps its depth");
+        // no village out here, so no heat island
+        helper.assertFalse(com.reiko.weather.temperature.Temperature.inVillage(level, helper.absolutePos(new BlockPos(1, 2, 1))), "no village on the test platform");
+        helper.succeed();
+    }
 }

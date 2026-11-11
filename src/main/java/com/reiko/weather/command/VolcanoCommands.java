@@ -75,5 +75,24 @@ final class VolcanoCommands {
         return phase.ordinal();
     }
 
+    /** Sets off a lahar or a pyroclastic flow down a random flank of the nearest volcano. */
+    static int flow(CommandSourceStack source, com.reiko.weather.volcano.MassFlows.Kind kind) throws CommandSyntaxException {
+        ServerLevel level = overworld(source);
+        Vec3 pos = source.getPosition();
+        Volcano v = VolcanoManager.nearest(level, pos.x, pos.z, 2048);
+        if (v == null) {
+            throw NONE_NEAR.create();
+        }
+        VolcanoShape s = v.shape;
+        float a = level.random.nextFloat() * net.minecraft.util.Mth.TWO_PI;
+        double r = kind == com.reiko.weather.volcano.MassFlows.Kind.LAHAR ? s.radius() * 0.4 : s.craterRadius() + 3;
+        com.reiko.weather.volcano.MassFlows.start(level, kind, s.cx() + Math.cos(a) * r, s.cz() + Math.sin(a) * r, Math.cos(a), Math.sin(a));
+        // which flank it comes down (the way it's heading, as a compass point)
+        Component flank = Component.translatable("direction.reikos_weather." + com.reiko.weather.weather.Wind.compassFrom(a + net.minecraft.util.Mth.PI));
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.volcano." + (kind == com.reiko.weather.volcano.MassFlows.Kind.LAHAR ? "lahar" : "pyroclastic"),
+                s.cx(), s.cz(), flank), true);
+        return 1;
+    }
+
     private VolcanoCommands() {}
 }

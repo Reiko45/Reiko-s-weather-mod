@@ -75,6 +75,11 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue AIRGLOW;
     public static final ModConfigSpec.BooleanValue FUNNEL_CLOUDS;
     public static final ModConfigSpec.BooleanValue SNOW_GLARE;
+    public static final ModConfigSpec.BooleanValue GROUND_STEAM;
+    public static final ModConfigSpec.BooleanValue FATA_MORGANA;
+    public static final ModConfigSpec.BooleanValue UPPER_LIGHTNING;
+    public static final ModConfigSpec.BooleanValue STEVE;
+    public static final ModConfigSpec.BooleanValue GEGENSCHEIN;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -222,6 +227,16 @@ public final class ClientConfig {
                 .define("funnelClouds", true);
         SNOW_GLARE = b.comment("Bright sun on snow dazzles you unless you wear storm goggles.")
                 .define("snowGlare", true);
+        GROUND_STEAM = b.comment("Steam rises off warm ground when the sun comes out after summer rain.")
+                .define("groundSteam", true);
+        FATA_MORGANA = b.comment("Towering, distorted mirages over cold seas.")
+                .define("fataMorgana", true);
+        UPPER_LIGHTNING = b.comment("Blue jets and elves above big thunderstorms at night.")
+                .define("blueJetsAndElves", true);
+        STEVE = b.comment("STEVE: a ribbon of purple light across the sky on some aurora nights.")
+                .define("steve", true);
+        GEGENSCHEIN = b.comment("Gegenschein: a faint glow in the sky opposite the sun on the darkest nights.")
+                .define("gegenschein", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

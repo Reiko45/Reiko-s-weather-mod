@@ -98,7 +98,8 @@ public final class NatureEvents {
         LocalWeather local = WeatherManager.local(level, pos);
         boolean storm = local != null && local.type().vanillaThunder && level.canSeeSky(pos.above());
         boolean raining = level.isRainingAt(pos.above());
-        if (WeatherConfig.ALGAL_BLOOMS.get() && WeatherManager.state(level).bloom > 0.5F && com.reiko.weather.weather.Seas.blooming(level, pos)
+        boolean heatwave = WeatherConfig.MARINE_HEATWAVES.get() && WeatherManager.state(level).seaHeat > 0.5F && com.reiko.weather.weather.Seas.warmSea(level, pos);
+        if ((WeatherConfig.ALGAL_BLOOMS.get() && WeatherManager.state(level).bloom > 0.5F && com.reiko.weather.weather.Seas.blooming(level, pos) || heatwave)
                 && random.nextFloat() < 0.6F) {
             // in an algal bloom the fish have gone: only weed comes up
             event.setCanceled(true);

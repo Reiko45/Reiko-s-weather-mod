@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "kipuka",
+  "biomes": "#reikos_weather:has_structure/kipuka",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

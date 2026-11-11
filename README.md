@@ -77,6 +77,9 @@ Seasonal life:
 **Day length** changes through the year: about 12 minutes of sun at midsummer and 8 at midwinter (10 at the
 equinoxes), with the nights the other way round. Noon and midnight stay where they are.
 
+**Snow caps:** the air cools with height, so the mountains wear snow caps whose snowline creeps down in autumn and
+winter and climbs back up in spring. In summer, old snow high up turns pink with snow algae (**watermelon snow**).
+
 If **Serene Seasons** is installed, its calendar is used instead (including the day of the season),
 and its own foliage colours take over.
 
@@ -294,6 +297,20 @@ Ways to stay comfortable:
 - **Longshore currents** carry swimmers, boats and flotsam slowly along beaches, the way the wind slants.
 - **Upwelling:** on some coasts, an offshore wind in spring and summer brings cold water up from the deep:
   cooler air on the shore, more sea fog, and better fishing.
+- **Lahars:** heavy rain on a volcano's ash-covered slopes sends rivers of mud roaring down its valleys,
+  flattening trees and burying the ground. **Pyroclastic flows:** in big eruptions, scalding avalanches of ash and
+  gas pour down the volcano's flanks, charring trees and leaving everything buried in ash. (Block changes need
+  `mobGriefing`.)
+- **Liquefaction:** strong earthquakes turn waterlogged sand near water soft as quicksand for a few minutes and
+  throw up sand boils.
+- **Black ice:** after a thaw, a hard frost glazes stone and paths with slippery ice by dawn. **Frozen waterfalls:**
+  in a long, hard freeze, waterfalls freeze into hanging curtains of ice and thaw again later.
+- **Ground blizzards:** strong wind over loose, dry snow lifts it into a blinding river a few blocks deep, even under
+  a clear sky. **Katabatic winds:** on clear nights, bitter gales pour down off glaciers and ice fields.
+- **Ember spotting:** big wildfires throw embers ahead on the wind and start new fires downwind.
+- **Village heat islands:** villages are a few degrees warmer than the country round them, with less frost.
+- **Salt spray:** gales off the sea scorch the leaves off the seaward side of coastal trees. **Marine heatwaves:**
+  in long, hot summers the sea warms, fish move away and coral bleaches.
 - **Lightning-charged tools:** leave a tool or weapon lying on an anvil or a copper block in a
   thunderstorm (a lightning rod nearby helps). If lightning strikes it, it's charged for five minutes:
   it mines faster and hits harder, with a crackle of sparks.
@@ -343,6 +360,10 @@ Ways to stay comfortable:
   `/rweather query` gives the date of the next one.
 - **Comets:** some years a bright comet hangs low in the twilight for a week, its tails pointing away from the sun.
 - **Airglow:** a faint green band of light a little above the horizon on the darkest nights.
+- **Fata Morgana:** on calm, clear days over a cold sea, the horizon stretches into towering, shifting mirages.
+- **Blue jets and elves** flash high above the biggest storms at night; **STEVE**, a mauve ribbon of light, arcs
+  across the sky on some geomagnetic storm nights; and the faint **gegenschein** glows opposite the sun on the darkest
+  nights. When the sun comes out after a summer shower, **steam** rises off warm roads and fields.
 - **Wall clouds and funnel clouds:** a dark, turning wall cloud hangs under the back of a supercell, and now
   and then a funnel cloud snakes down from it and draws back up.
 
@@ -472,6 +493,14 @@ village or a volcano.
   **ghost forests** of dead trees, and **stromatolites** in warm, salty shallows.
 - **Woods and meadows:** **fairy rings** of mushrooms, and **vernal pools** that fill in autumn, winter and spring
   and dry out in summer.
+- **More volcanic country:** **kipukas** (islands of old forest left in a lava flow), **volcanic dikes** (long walls of
+  dark rock), and **steaming ground** that snow never settles on.
+- **The deep sea:** **hydrothermal vents** (black smokers) and **brine pools**, lakes lying on the sea floor.
+- **The far north:** stunted, wind-bent **krummholz** at the treeline, and **thermokarst slumps** where permafrost thaws.
+- **Rivers and wetlands:** **goosenecks** (deep river loops cut into rock), **floodplains** with levees and backswamps,
+  **beaver ponds**, **patterned fens**, and **cypress swamps** with their knees.
+- **Dry lands and coasts:** **loess cliffs** and gullies, **Mima mounds**, honeycombed **tafoni** sea cliffs, and
+  **fringing reefs** with spurs and grooves.
 - **Ancient things:** **petrified forests** of stone logs (**petrified wood**), **fossil beds** with great bones
   weathering out (brush the gravel below), and **nurse logs** and root mounds in old forests.
 
@@ -576,6 +605,7 @@ Under **Accessibility** in the client settings:
 | **Black Sand** | volcanic island beaches | Decorative sand; smelts into glass. |
 | **Gypsum, Shell, Olivine and Pink Sand** | gypsum dunes and coloured beaches | Decorative sands; smelt into glass. |
 | **Rock Salt** | salt domes | A pale, glassy salt rock for building. |
+| **Steaming Ground** | geothermal ground | Warm, stained earth that steams and melts snow off itself. |
 
 ## Weather & mobs
 - Weather changes which monsters spawn: **strays** in blizzards and snow, **husks** in desert
@@ -595,7 +625,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 78 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 84 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -604,7 +634,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 (visit five kinds of landform), Downburst, Firenado, Shaken, Not Stirred, Iceberg, Right Ahead!,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
-Back and Forth and Rich Waters.
+Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls and Hot Water.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at
@@ -674,6 +704,8 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather volcano` | everyone | Known volcanoes within 2 km and what each is doing |
 | `/rweather volcano create [pos]` | op | Raise a volcano at a position (or where you stand); handy for worlds made before volcanoes |
 | `/rweather volcano wake\|erupt\|calm` | op | Start the nearest volcano rumbling, set it erupting, or cool it down |
+| `/rweather volcano lahar\|pyroclastic` | op | Send a lahar or a pyroclastic flow down the nearest volcano |
+| `/rweather quake [strength]` | op | An earthquake centred where you stand (0 to 1; 0.5 by default) |
 
 ## Configuration
 Open the settings from the **Mods** screen. The first page has one-click **presets** for the visual

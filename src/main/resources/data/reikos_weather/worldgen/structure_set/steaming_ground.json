@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "reikos_weather:steaming_ground",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 28,
+    "separation": 9,
+    "salt": 905731119,
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 5
+    }
+  }
+}

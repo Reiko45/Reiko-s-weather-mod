@@ -16,6 +16,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
@@ -76,6 +77,23 @@ public final class WinterGround {
         if (WeatherConfig.FROST_QUAKES.get() && (winter || local.type() == WeatherType.COLD_SNAP) && random.nextInt(5000) == 0
                 && (time > 16000L || time < 1000L) && Temperature.ambient(level, player.blockPosition(), local) < -12.0F) {
             frostQuake(level, player, random);
+        }
+        float air = Float.NaN;
+        if (player.tickCount % 20 == 0) {
+            air = Temperature.ambient(level, player.blockPosition(), local);
+            // remember the last thaw: meltwater on the ground is what freezes into black ice
+            if (air > 2.0F) LAST_THAW.put(player.getUUID(), level.getGameTime());
+        }
+        if (WeatherConfig.BLACK_ICE.get() && (time > 21000L || time < 1500L) && p.rain < 0.1F && random.nextInt(2) == 0) {
+            Long thaw = LAST_THAW.get(player.getUUID());
+            if (thaw != null && level.getGameTime() - thaw < 30000L) {
+                if (Float.isNaN(air)) air = Temperature.ambient(level, player.blockPosition(), local);
+                if (air < -1.0F) blackIce(level, column(level, player, random));
+            }
+        }
+        if (WeatherConfig.FROZEN_WATERFALLS.get() && random.nextInt(8) == 0) {
+            if (Float.isNaN(air)) air = Temperature.ambient(level, player.blockPosition(), local);
+            if (air < -6.0F) freezeWaterfall(level, player, random);
         }
         if (WeatherConfig.ICE_DISCS.get() && climate == Climate.COLD && winter && random.nextInt(900) == 0) {
             BlockPos top = column(level, player, random);
@@ -181,6 +199,51 @@ public final class WinterGround {
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, new net.minecraft.world.phys.AABB(onto).inflate(32))) {
             WeatherAdvancements.award(p, "ice_shove");
         }
+    }
+
+    private static final java.util.Map<java.util.UUID, Long> LAST_THAW = new java.util.HashMap<>();
+
+    /**
+     * Black ice: after a thaw, meltwater and puddles left on stone and paths freeze overnight into a thin, clear
+     * glaze you can hardly see, treacherous until the sun gets onto it.
+     */
+    private static void blackIce(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null || !level.canSeeSky(top) || !level.getBlockState(top).isAir()) return;
+        BlockPos below = top.below();
+        BlockState ground = level.getBlockState(below);
+        boolean hard = ground.is(BlockTags.BASE_STONE_OVERWORLD) || ground.is(Blocks.COBBLESTONE) || ground.is(Blocks.STONE_BRICKS) || ground.is(Blocks.SMOOTH_STONE)
+                || ground.is(Blocks.DIRT_PATH) || ground.is(Blocks.BRICKS) || ground.is(Blocks.POLISHED_ANDESITE) || ground.is(Blocks.POLISHED_DIORITE)
+                || ground.is(Blocks.POLISHED_GRANITE) || ground.is(Blocks.MUD_BRICKS) || ground.is(Blocks.DEEPSLATE_TILES) || ground.is(Blocks.PACKED_MUD);
+        if (!hard || !ground.isFaceSturdy(level, below, Direction.UP)) return;
+        level.setBlockAndUpdate(top, ModBlocks.ICE_GLAZE.get().defaultBlockState());
+    }
+
+    /**
+     * A frozen waterfall: in a long, hard freeze the spray and the edges of a waterfall freeze first, then the whole
+     * fall, until it hangs from the cliff as a curtain of fluted ice that climbers go up.
+     */
+    private static void freezeWaterfall(ServerLevel level, ServerPlayer player, RandomSource random) {
+        int x = player.getBlockX() + random.nextInt(65) - 32, z = player.getBlockZ() + random.nextInt(65) - 32;
+        BlockPos c = new BlockPos(x, 0, z);
+        if (!level.isLoaded(c)) return;
+        BlockPos.MutableBlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, c).below().mutable();
+        var fluid = level.getFluidState(pos);
+        if (!fluid.is(net.minecraft.tags.FluidTags.WATER) || fluid.isSource()) return;
+        // walk down the fall: it must be falling water for a good few blocks
+        java.util.List<BlockPos> fall = new java.util.ArrayList<>();
+        BlockPos lip = pos.immutable();
+        while (fall.size() < 24) {
+            var f = level.getFluidState(pos);
+            if (!f.is(net.minecraft.tags.FluidTags.WATER) || f.isSource()) break;
+            if (!f.getValue(net.minecraft.world.level.material.FlowingFluid.FALLING) && !fall.isEmpty()) break;
+            fall.add(pos.immutable());
+            pos.move(Direction.DOWN);
+        }
+        if (fall.size() < 4 || GroundEvents.built(level, lip, 3)) return;
+        BlockState ice = ModBlocks.FROZEN_WATERFALL.get().defaultBlockState();
+        for (BlockPos p : fall) level.setBlock(p, ice, Block.UPDATE_CLIENTS);
+        level.playSound(null, lip, net.minecraft.sounds.SoundEvents.GLASS_PLACE, SoundSource.BLOCKS, 1.5F, 0.5F);
+        if (player.distanceToSqr(lip.getX(), lip.getY(), lip.getZ()) < 48 * 48) WeatherAdvancements.award(player, "frozen_waterfall");
     }
 
     @Nullable

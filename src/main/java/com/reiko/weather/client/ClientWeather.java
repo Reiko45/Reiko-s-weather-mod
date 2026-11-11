@@ -359,16 +359,16 @@ public final class ClientWeather {
         if (type != WeatherType.FOG && wearingGoggles()) {
             weatherFog *= 0.45F;
         }
-        return Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure);
+        return Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog());
     }
 
     public static float fogColorWeight() {
-        return ClientConfig.FOG.get() ? Math.max(fogColorWeight, mist * 0.85F) * (0.25F + 0.75F * exposure) : 0.0F;
+        return ClientConfig.FOG.get() ? Math.max(Math.max(fogColorWeight, mist * 0.85F) * (0.25F + 0.75F * exposure), GroundAir.fog()) : 0.0F;
     }
 
     /** When morning mist dominates, fog is soft white rather than the weather's own color. */
     public static boolean mistDominates() {
-        return mist * 0.72F > fog;
+        return mist * 0.72F > fog || GroundAir.fog() > fog; // (blowing snow is white too)
     }
 
     public static boolean fogAutoGray() { return fogAutoGray; }

@@ -1,6 +1,7 @@
 package com.reiko.weather.client;
 
 import com.reiko.weather.weather.SkyCalendar;
+import com.reiko.weather.weather.SkyPhenomena;
 
 import com.reiko.weather.config.ClientConfig;
 import com.reiko.weather.weather.WeatherType;
@@ -95,7 +96,13 @@ public final class SkyEffectsRenderer {
         float comet = overworld ? SkyCalendar.cometBrightness(day) * Mth.clamp((-sun.y - 0.02F) * 7.0F, 0.0F, 1.0F) * clearSky
                 * (1.0F - overcast) * (1.0F - 0.5F * AirAndWater.lightPollution()) : 0.0F;
         float airglow = overworld && ClientConfig.AIRGLOW.get() ? dark * Mth.clamp((-sun.y - 0.25F) * 5.0F, 0.0F, 1.0F) : 0.0F;
-        if (!eclipsing && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+        // STEVE on geomagnetic storm nights (the first part of the night), the gegenschein on the darkest ones, mirages over a cold sea
+        long nightTime = Math.floorMod(level.getDayTime(), 24000L);
+        float steve = overworld && ClientConfig.STEVE.get() && SkyPhenomena.isGeomagneticStormNight(level.getDayTime()) && nightTime > 13800L && nightTime < 17500L
+                ? clearSky * (1.0F - overcast) * Mth.clamp((-sun.y - 0.2F) * 4.0F, 0.0F, 1.0F) * Mth.clamp(Math.min(nightTime - 13800L, 17500L - nightTime) / 600.0F, 0.0F, 1.0F) : 0.0F;
+        float gegenschein = overworld && ClientConfig.GEGENSCHEIN.get() ? dark * Mth.clamp((-sun.y - 0.5F) * 3.0F, 0.0F, 1.0F) : 0.0F;
+        float fata = overworld ? SkySights.fataMorgana() : 0.0F;
+        if (!eclipsing && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
                 && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F
                 && milky <= 0.005F && zodiacal <= 0.005F && cha <= 0.005F && cza <= 0.005F && nacreous <= 0.005F && redSky <= 0.005F) {
             return;
@@ -117,6 +124,15 @@ public final class SkyEffectsRenderer {
         }
         if (airglow > 0.005F) {
             drawAirglow(pose, airglow);
+        }
+        if (gegenschein > 0.005F) {
+            drawGegenschein(pose, sun, gegenschein);
+        }
+        if (steve > 0.005F) {
+            drawSteve(pose, level.getGameTime() + partialTick, steve);
+        }
+        if (fata > 0.005F) {
+            drawFataMorgana(pose, level.getGameTime() + partialTick, fata);
         }
         if (comet > 0.005F) {
             drawComet(pose, sun, theta, SkyCalendar.cometShape(day), comet);
@@ -1178,6 +1194,86 @@ public final class SkyEffectsRenderer {
             }
         }
         draw(buffer);
+    }
+
+    /**
+     * STEVE (a "strong thermal emission velocity enhancement"): on some nights of a geomagnetic storm, a narrow
+     * ribbon of mauve light arcs right across the sky from east to west, south of the aurora, sometimes with green
+     * streaks hanging under it like a picket fence. It lasts an hour or so.
+     */
+    private static void drawSteve(Matrix4f pose, float time, float strength) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        Vector3f east = new Vector3f(1.0F, 0.0F, 0.0F);
+        float top = 72.0F * Mth.DEG_TO_RAD;
+        Vector3f high = new Vector3f(0.0F, Mth.sin(top), Mth.cos(top)); // its highest point, a little to the south of overhead
+        Vector3f normal = new Vector3f(east).cross(high).normalize();
+        float[] mauve = {0.78F, 0.38F, 0.86F}, green = {0.35F, 1.0F, 0.5F};
+        int steps = 72;
+        float half = 1.1F * Mth.DEG_TO_RAD;
+        for (int i = 0; i < steps; i++) {
+            float t0 = i / (float) steps * Mth.PI, t1 = (i + 1) / (float) steps * Mth.PI;
+            Vector3f c0 = new Vector3f(east).mul(Mth.cos(t0)).add(new Vector3f(high).mul(Mth.sin(t0)));
+            Vector3f c1 = new Vector3f(east).mul(Mth.cos(t1)).add(new Vector3f(high).mul(Mth.sin(t1)));
+            float b0 = strength * (0.55F + 0.45F * Mth.sin(t0 * 7.0F + time * 0.01F)), b1 = strength * (0.55F + 0.45F * Mth.sin(t1 * 7.0F + time * 0.01F));
+            Vector3f a0 = new Vector3f(c0).add(new Vector3f(normal).mul(half)).normalize().mul(DOME), d0 = new Vector3f(c0).sub(new Vector3f(normal).mul(half)).normalize().mul(DOME);
+            Vector3f a1 = new Vector3f(c1).add(new Vector3f(normal).mul(half)).normalize().mul(DOME), d1 = new Vector3f(c1).sub(new Vector3f(normal).mul(half)).normalize().mul(DOME);
+            vertex(buffer, pose, a0, mauve, 0.0F);
+            vertex(buffer, pose, a1, mauve, 0.0F);
+            vertex(buffer, pose, c1.normalize(new Vector3f()).mul(DOME), mauve, 0.32F * b1 * horizonFade(c1.mul(DOME, new Vector3f())));
+            vertex(buffer, pose, c0.normalize(new Vector3f()).mul(DOME), mauve, 0.32F * b0 * horizonFade(c0.mul(DOME, new Vector3f())));
+            vertex(buffer, pose, c0.normalize(new Vector3f()).mul(DOME), mauve, 0.32F * b0 * horizonFade(c0.mul(DOME, new Vector3f())));
+            vertex(buffer, pose, c1.normalize(new Vector3f()).mul(DOME), mauve, 0.32F * b1 * horizonFade(c1.mul(DOME, new Vector3f())));
+            vertex(buffer, pose, d1, mauve, 0.0F);
+            vertex(buffer, pose, d0, mauve, 0.0F);
+            // the picket fence: green streaks hanging below part of it
+            if (i % 3 == 0 && Mth.sin(i * 0.35F + time * 0.003F) > 0.3F) {
+                Vector3f below0 = new Vector3f(c0).normalize().sub(new Vector3f(normal).mul(-6.0F * Mth.DEG_TO_RAD)).normalize();
+                Vector3f s0 = new Vector3f(c0).normalize().add(new Vector3f(normal).mul(1.5F * Mth.DEG_TO_RAD)).normalize();
+                Vector3f side = new Vector3f(c1).sub(c0).normalize().mul(0.25F * Mth.DEG_TO_RAD);
+                vertex(buffer, pose, new Vector3f(s0).sub(side).mul(DOME), green, 0.18F * strength);
+                vertex(buffer, pose, new Vector3f(s0).add(side).mul(DOME), green, 0.18F * strength);
+                vertex(buffer, pose, new Vector3f(below0).add(new Vector3f(normal).mul(4.0F * Mth.DEG_TO_RAD)).normalize().add(side).mul(DOME), green, 0.0F);
+                vertex(buffer, pose, new Vector3f(below0).add(new Vector3f(normal).mul(4.0F * Mth.DEG_TO_RAD)).normalize().sub(side).mul(DOME), green, 0.0F);
+            }
+        }
+        draw(buffer);
+    }
+
+    /** The gegenschein: sunlight scattered back off interplanetary dust, a faint oval glow exactly opposite the sun. */
+    private static void drawGegenschein(Matrix4f pose, Vector3f sun, float strength) {
+        Vector3f anti = new Vector3f(sun).negate().normalize();
+        if (anti.y < 0.0F) return;
+        Vector3f[] around = basis(anti);
+        drawGlow(pose, anti, around[0], around[1], 0.0F, 11.0F, new float[]{1.0F, 0.95F, 0.85F}, 0.06F * strength);
+    }
+
+    /**
+     * A Fata Morgana: over a cold sea, a layer of warm air bends light so the far horizon stretches up into towering
+     * walls and pillars (ships and distant coasts become castles in the air) that grow, merge and shrink as you watch.
+     */
+    private static void drawFataMorgana(Matrix4f pose, float time, float strength) {
+        RenderSystem.defaultBlendFunc();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[] wall = {0.72F, 0.77F, 0.82F}, glint = {0.92F, 0.95F, 0.98F};
+        int columns = 240;
+        for (int i = 0; i < columns; i++) {
+            float a0 = i / (float) columns * Mth.TWO_PI, a1 = (i + 1) / (float) columns * Mth.TWO_PI;
+            float sector = a0 / Mth.TWO_PI * 16.0F;
+            int s0 = (int) sector;
+            float sea = Mth.lerp(sector - s0, SkySights.sea(s0), SkySights.sea(s0 + 1));
+            if (sea < 0.5F) continue;
+            // a skyline of stretched shapes along the horizon, rising and falling slowly
+            float h = Mth.sin(i * 0.37F + time * 0.004F) * Mth.sin(i * 0.11F - time * 0.0023F) + 0.35F * Mth.sin(i * 1.3F + time * 0.011F);
+            if (h < 0.15F) continue;
+            float top = (0.25F + 2.4F * h) * Mth.DEG_TO_RAD, bottom = -0.3F * Mth.DEG_TO_RAD;
+            float alpha = 0.5F * strength * (sea - 0.5F) * 2.0F;
+            vertex(buffer, pose, sky(a0, bottom), wall, alpha);
+            vertex(buffer, pose, sky(a1, bottom), wall, alpha);
+            vertex(buffer, pose, sky(a1, top), glint, alpha * 0.6F);
+            vertex(buffer, pose, sky(a0, top), glint, alpha * 0.6F);
+        }
+        draw(buffer);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
     }
 
     /** A point on the sky dome; azimuth 0 is due north (-Z). */

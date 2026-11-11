@@ -4,6 +4,7 @@ import com.reiko.weather.config.WeatherConfig;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -79,8 +80,47 @@ public final class FireTracker {
                 }
             }
         }
+        if (WeatherConfig.EMBER_SPOTTING.get() && level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)
+                && level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING)) {
+            for (Long2IntMap.Entry e : COUNTS.long2IntEntrySet()) {
+                if (e.getIntValue() >= BIG_FIRE && BURNING.containsKey(e.getLongKey())) spot(level, state, BlockPos.of(BURNING.get(e.getLongKey())));
+            }
+        }
         COUNTS.clear();
         BURNING.clear();
+    }
+
+    /**
+     * Spotting: a big fire's updraft lifts burning embers and the wind carries them on ahead, sometimes hundreds of
+     * metres, so the fire jumps rivers and firebreaks and new fires spring up downwind of the main one.
+     */
+    private static void spot(ServerLevel level, WeatherState state, BlockPos fire) {
+        RandomSource random = level.random;
+        LocalWeather local = WeatherManager.local(level, fire);
+        float wind = local == null ? 0.3F : local.profile().wind * local.intensity();
+        if (wind < 0.25F || local != null && local.profile().rain > 0.2F || random.nextFloat() > 0.5F) return;
+        Vec3 dir = Wind.direction(state.windAngle);
+        double distance = 10 + random.nextDouble() * (20 + 50 * wind);
+        double spread = (random.nextDouble() - 0.5) * 0.6;
+        double x = fire.getX() + (dir.x - dir.z * spread) * distance, z = fire.getZ() + (dir.z + dir.x * spread) * distance;
+        BlockPos column = BlockPos.containing(x, 0, z);
+        if (!level.isLoaded(column)) return;
+        BlockPos top = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, column);
+        // a trail of embers in the air between them
+        for (int k = 1; k <= 6; k++) {
+            double t = k / 7.0;
+            level.sendParticles(com.reiko.weather.registry.ModParticles.EMBER.get(), Mth.lerp(t, fire.getX(), x), Mth.lerp(t, fire.getY() + 6, top.getY() + 2) + 6 * Math.sin(t * Math.PI),
+                    Mth.lerp(t, fire.getZ(), z), 3, 1.0, 1.0, 1.0, 0.02);
+        }
+        // it only catches on something dry that burns
+        BlockState at = level.getBlockState(top);
+        BlockState under = level.getBlockState(top.below());
+        if (at.isAir() && under.isFlammable(level, top.below(), net.minecraft.core.Direction.UP)
+                || at.canBeReplaced() && at.isFlammable(level, top, net.minecraft.core.Direction.UP)) {
+            if (net.minecraft.world.level.block.BaseFireBlock.canBePlacedAt(level, top, net.minecraft.core.Direction.UP)) {
+                level.setBlockAndUpdate(top, net.minecraft.world.level.block.BaseFireBlock.getState(level, top));
+            }
+        }
     }
 
     public static void reset() {

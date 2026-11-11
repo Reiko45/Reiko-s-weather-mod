@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "cypress_swamp",
+  "biomes": "#reikos_weather:has_structure/cypress_swamp",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

@@ -14,6 +14,13 @@ public abstract class BiomeMixin {
         return temperature + Seasons.temperatureShiftForCurrentThread();
     }
 
+    /** Snow caps: high ground is colder, so the snowline climbs and falls with the seasons. */
+    @org.spongepowered.asm.mixin.injection.Inject(method = "getTemperature", at = @At("RETURN"), cancellable = true)
+    private void reikos_weather$snowCaps(net.minecraft.core.BlockPos pos, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Float> cir) {
+        float lapse = com.reiko.weather.weather.Highlands.lapse(pos);
+        if (lapse != 0.0F) cir.setReturnValue(cir.getReturnValue() - lapse);
+    }
+
     /** The monsoon brings rain to savannas in summer. */
     @ModifyReturnValue(method = "hasPrecipitation", at = @At("RETURN"))
     private boolean reikos_weather$monsoon(boolean precipitation) {

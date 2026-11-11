@@ -59,6 +59,8 @@ public class WeatherState extends SavedData {
     public int droughtDaysLeft, droughtLength;
     /** 0 to 1, how far an algal bloom (red tide) has spread through the warm seas. */
     public float bloom;
+    /** 0 to 1, how far a marine heatwave has warmed the sea. */
+    public float seaHeat;
     /** Shallow pond water a drought dried up (the bed turned to cracked mud), refilled when the rain comes back. */
     public final LongArrayList driedPonds = new LongArrayList();
     /** Water a cold snap froze where it normally wouldn't, thawed again when it warms up. */
@@ -115,6 +117,7 @@ public class WeatherState extends SavedData {
         tag.putInt("droughtDaysLeft", droughtDaysLeft);
         tag.putInt("droughtLength", droughtLength);
         tag.putFloat("bloom", bloom);
+        tag.putFloat("seaHeat", seaHeat);
         tag.putLong("altarReadyAt", altarReadyAt);
         tag.putLong("convectionDay", convectionDay);
         tag.putLong("seaFogDay", seaFogDay);
@@ -178,6 +181,7 @@ public class WeatherState extends SavedData {
         state.droughtDaysLeft = tag.getInt("droughtDaysLeft");
         state.droughtLength = tag.getInt("droughtLength");
         state.bloom = tag.getFloat("bloom");
+        state.seaHeat = tag.getFloat("seaHeat");
         return state;
     }
 }

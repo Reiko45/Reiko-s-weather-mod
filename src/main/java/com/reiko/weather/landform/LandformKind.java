@@ -117,7 +117,23 @@ public enum LandformKind implements StringRepresentable {
     GHOST_FOREST(GhostForest::plan, GhostForest::load, () -> WeatherConfig.GHOST_FORESTS.get()),
     STROMATOLITES(Stromatolites::plan, Stromatolites::load, () -> WeatherConfig.STROMATOLITES.get()),
     FAIRY_RINGS(FairyRings::plan, FairyRings::load, () -> WeatherConfig.FAIRY_RINGS.get()),
-    VERNAL_POOLS(VernalPools::plan, VernalPools::load, () -> WeatherConfig.VERNAL_POOLS.get());
+    VERNAL_POOLS(VernalPools::plan, VernalPools::load, () -> WeatherConfig.VERNAL_POOLS.get()),
+    KIPUKA(Kipuka::plan, Kipuka::load, () -> WeatherConfig.KIPUKAS.get()),
+    VOLCANIC_DIKES(VolcanicDikes::plan, VolcanicDikes::load, () -> WeatherConfig.VOLCANIC_DIKES.get()),
+    STEAMING_GROUND(SteamingGround::plan, SteamingGround::load, () -> WeatherConfig.STEAMING_GROUND.get()),
+    HYDROTHERMAL_VENTS(HydrothermalVents::plan, HydrothermalVents::load, () -> WeatherConfig.HYDROTHERMAL_VENTS.get()),
+    BRINE_POOL(BrinePool::plan, BrinePool::load, () -> WeatherConfig.BRINE_POOLS.get()),
+    KRUMMHOLZ(Krummholz::plan, Krummholz::load, () -> WeatherConfig.KRUMMHOLZ.get()),
+    THERMOKARST_SLUMP(ThermokarstSlump::plan, ThermokarstSlump::load, () -> WeatherConfig.THERMOKARST.get()),
+    GOOSENECKS(Goosenecks::plan, Goosenecks::load, () -> WeatherConfig.GOOSENECKS.get()),
+    FLOODPLAIN(Floodplain::plan, Floodplain::load, () -> WeatherConfig.FLOODPLAINS.get()),
+    BEAVER_POND(BeaverPond::plan, BeaverPond::load, () -> WeatherConfig.BEAVER_PONDS.get()),
+    PATTERNED_FEN(PatternedFen::plan, PatternedFen::load, () -> WeatherConfig.PATTERNED_FENS.get()),
+    CYPRESS_SWAMP(CypressSwamp::plan, CypressSwamp::load, () -> WeatherConfig.CYPRESS_SWAMPS.get()),
+    LOESS_CLIFFS(LoessCliffs::plan, LoessCliffs::load, () -> WeatherConfig.LOESS_CLIFFS.get()),
+    MIMA_MOUNDS(MimaMounds::plan, MimaMounds::load, () -> WeatherConfig.MIMA_MOUNDS.get()),
+    TAFONI(Tafoni::plan, Tafoni::load, () -> WeatherConfig.TAFONI.get()),
+    FRINGING_REEF(FringingReef::plan, FringingReef::load, () -> WeatherConfig.FRINGING_REEFS.get());
 
     public static final Codec<LandformKind> CODEC = StringRepresentable.fromEnum(LandformKind::values);
 

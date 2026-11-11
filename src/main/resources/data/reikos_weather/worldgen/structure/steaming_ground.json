@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "steaming_ground",
+  "biomes": "#reikos_weather:has_structure/steaming_ground",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

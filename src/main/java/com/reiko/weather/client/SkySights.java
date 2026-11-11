@@ -30,6 +30,12 @@ public final class SkySights {
     private record Sprite(double x, double y, double z, float size, int seed, int life, long born) {}
 
     private static final List<Sprite> SPRITES = new ArrayList<>();
+    /** A blue jet (a narrow blue cone shooting up out of the top of a storm) or an elf (a vast red ring flashing out high above it). */
+    private record Upper(boolean jet, double x, double y, double z, float size, int seed, int life, long born) {}
+    private static final List<Upper> UPPER = new ArrayList<>();
+    /** How much of the horizon in each of 16 directions (from north, clockwise) is open sea, for mirages. */
+    private static final float[] SEA = new float[16];
+    private static float fataMorgana;
     private static float noctilucent, moonbow, fogbow, inversion, inversionLid;
     /** Whether the horizon toward the low sun is open sea (for the green flash). */
     private static boolean seaHorizon;
@@ -39,11 +45,13 @@ public final class SkySights {
         boolean on = level != null && level.dimension() == Level.OVERWORLD && SyncedWeather.managed();
         if (!on) {
             SPRITES.clear();
-            noctilucent = moonbow = fogbow = inversion = 0.0F;
+            UPPER.clear();
+            noctilucent = moonbow = fogbow = inversion = fataMorgana = 0.0F;
             return;
         }
         long now = level.getGameTime();
         SPRITES.removeIf(s -> now - s.born() > s.life());
+        UPPER.removeIf(s -> now - s.born() > s.life());
         float sun = com.reiko.weather.weather.SkyPhenomena.sunHeight(level, 1.0F);
         Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
         boolean night = sun < -0.15F;
@@ -57,6 +65,20 @@ public final class SkySights {
                 double x = cell.x + (RANDOM.nextDouble() - 0.5) * cell.radius * 0.6, z = cell.z + (RANDOM.nextDouble() - 0.5) * cell.radius * 0.6;
                 double y = level.getSeaLevel() + 80.0 + 230.0 + RANDOM.nextDouble() * 60.0;
                 SPRITES.add(new Sprite(x, y, z, 40.0F + RANDOM.nextFloat() * 30.0F, RANDOM.nextInt(), 3 + RANDOM.nextInt(4), now));
+            }
+        }
+
+        // blue jets and elves: rarer still, over the biggest storms
+        if (night && ClientConfig.UPPER_LIGHTNING.get() && !Accessibility.reduceFlashing()) {
+            for (StormCell cell : SyncedWeather.cells()) {
+                if (!cell.type.vanillaThunder || cell.strength() < 0.7F) continue;
+                double edge = cell.distanceTo(cam.x, cam.z) - cell.radius;
+                if (edge < 200 || edge > 1600 || RANDOM.nextInt(cell.type == WeatherType.SUPERCELL ? 700 : 1400) != 0) continue;
+                double x = cell.x + (RANDOM.nextDouble() - 0.5) * cell.radius * 0.5, z = cell.z + (RANDOM.nextDouble() - 0.5) * cell.radius * 0.5;
+                boolean jet = RANDOM.nextBoolean();
+                double y = level.getSeaLevel() + (jet ? 240.0 : 420.0);
+                UPPER.add(new Upper(jet, x, y, z, jet ? 18.0F + RANDOM.nextFloat() * 10.0F : 160.0F + RANDOM.nextFloat() * 80.0F, RANDOM.nextInt(),
+                        jet ? 8 + RANDOM.nextInt(6) : 2 + RANDOM.nextInt(2), now));
             }
         }
 
@@ -103,10 +125,88 @@ public final class SkySights {
             float theta = level.getTimeOfDay(1.0F) * Mth.TWO_PI;
             double dir = Math.signum(-Mth.sin(theta));
             boolean open = cam.y < level.getSeaLevel() + 48 && dir != 0;
-            for (int d = 150; d <= 450 && open; d += 150) {
-                open = level.getBiome(BlockPos.containing(cam.x + dir * d, level.getSeaLevel(), cam.z)).is(net.minecraft.tags.BiomeTags.IS_OCEAN);
+            int seen = 0;
+            for (int d = 50; d <= 450 && open; d += 50) {
+                BlockPos p = BlockPos.containing(cam.x + dir * d, level.getSeaLevel(), cam.z);
+                // only the chunks this client has: anything further off would read as plains
+                if (!loaded(level, p)) break;
+                open = level.getBiome(p).is(net.minecraft.tags.BiomeTags.IS_OCEAN);
+                seen++;
             }
-            seaHorizon = open;
+            seaHorizon = open && seen >= 2;
+        }
+        if (level.getGameTime() % 100L == 0L) {
+            // which way the open sea lies, all round the horizon
+            for (int i = 0; i < 16; i++) {
+                float a = i * Mth.TWO_PI / 16.0F;
+                int sea = 0, seen = 0;
+                for (int d = 40; d <= 360; d += 40) {
+                    BlockPos p = BlockPos.containing(cam.x + Mth.sin(a) * d, level.getSeaLevel(), cam.z - Mth.cos(a) * d);
+                    // only the chunks this client has: anything further off would read as plains
+                    if (!loaded(level, p)) break;
+                    if (level.getBiome(p).is(net.minecraft.tags.BiomeTags.IS_OCEAN)) sea++;
+                    seen++;
+                }
+                SEA[i] = seen >= 2 ? sea / (float) seen : 0.0F;
+            }
+        }
+        // a Fata Morgana: calm, clear days over a cold sea, when warm air lies over the chilled surface layer
+        var seaBiome = level.getBiome(BlockPos.containing(cam.x, level.getSeaLevel(), cam.z));
+        boolean coldSea = climate == Climate.COLD || seaBiome.value().getBaseTemperature() < 0.4F
+                || seaBiome.is(net.minecraft.world.level.biome.Biomes.COLD_OCEAN) || seaBiome.is(net.minecraft.world.level.biome.Biomes.DEEP_COLD_OCEAN)
+                || seaBiome.is(net.minecraft.world.level.biome.Biomes.DEEP_FROZEN_OCEAN);
+        float fataTarget = ClientConfig.FATA_MORGANA.get() && sun > 0.08F && coldSea && cam.y < level.getSeaLevel() + 30 && ClientWeather.wind() < 0.35F
+                && overcast < 0.4F && rain < 0.02F ? 1.0F - fog : 0.0F;
+        fataMorgana = approach(fataMorgana, fataTarget, 0.003F);
+    }
+
+    /**
+     * Whether this client actually holds the chunk at a position. (A client's hasChunk says yes even for chunks it
+     * was never sent: those come back as an empty stand-in whose biome reads as plains.)
+     */
+    public static boolean loaded(net.minecraft.world.level.Level level, BlockPos pos) {
+        return !(level.getChunk(pos.getX() >> 4, pos.getZ() >> 4) instanceof net.minecraft.world.level.chunk.EmptyLevelChunk);
+    }
+
+    /** 0-1, how strongly a Fata Morgana is showing over the sea horizon. */
+    public static float fataMorgana() {
+        return fataMorgana;
+    }
+
+    /** How much of the horizon in a direction (0-15, clockwise from north) is open sea. */
+    public static float sea(int sector) {
+        return SEA[Math.floorMod(sector, 16)];
+    }
+
+    /** Adds this frame's blue jets and elves to the puff renderer. */
+    public static void collectUpper(Camera camera, float partialTick) {
+        if (UPPER.isEmpty()) return;
+        Minecraft mc = Minecraft.getInstance();
+        Vec3 cam = camera.getPosition();
+        float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
+        long now = mc.level == null ? 0 : mc.level.getGameTime();
+        for (Upper u : UPPER) {
+            float age = (now - u.born() + partialTick) / Math.max(1, u.life());
+            float flash = Mth.clamp(1.0F - age, 0.0F, 1.0F);
+            if (flash <= 0.01F) continue;
+            if (u.jet()) {
+                // a narrow blue cone climbing out of the cloud top, fanning out as it rises
+                int n = 10;
+                float reach = Math.min(1.0F, age * 2.5F);
+                for (int k = 0; k < n; k++) {
+                    float f = k / (float) (n - 1) * reach;
+                    float wobble = (PuffRenderer.hash(k, u.seed()) - 0.5F) * u.size() * 0.3F * f;
+                    PuffRenderer.add(u.x() + wobble, u.y() + f * u.size() * 5.0F, u.z() - wobble, u.size() * (0.25F + 0.6F * f),
+                            0.35F, 0.55F, 1.0F, 0.55F * flash * (1.0F - f * 0.5F), true, cam, maxDistance);
+                }
+            } else {
+                // an elf: a huge, faint red ring spreading out in a few thousandths of a second (here, a couple of ticks)
+                float r = u.size() * (0.4F + 0.6F * age);
+                for (int k = 0; k < 28; k++) {
+                    float a = k / 28.0F * Mth.TWO_PI;
+                    PuffRenderer.add(u.x() + Mth.cos(a) * r, u.y(), u.z() + Mth.sin(a) * r, u.size() * 0.18F, 1.0F, 0.3F, 0.25F, 0.4F * flash, true, cam, maxDistance);
+                }
+            }
         }
     }
 

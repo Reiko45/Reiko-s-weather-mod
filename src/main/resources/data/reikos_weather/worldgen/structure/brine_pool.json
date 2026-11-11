@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "brine_pool",
+  "biomes": "#reikos_weather:has_structure/brine_pool",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

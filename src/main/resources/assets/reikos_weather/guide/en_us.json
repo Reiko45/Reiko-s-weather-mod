@@ -1531,6 +1531,108 @@
    ]
   },
   {
+   "title": "Fire, Ice and the High Country",
+   "icon": "minecraft:blue_ice",
+   "entries": [
+    {
+     "title": "Volcanic Hazards",
+     "icon": "minecraft:mud",
+     "pages": [
+      "Heavy rain on a volcano soaks the loose ash on its slopes until it gives way: a lahar, a river of mud like wet concrete, roars down the valleys, flattening trees and burying everything. Stay out of valley floors below a volcano in a downpour.",
+      "In a big eruption part of the ash column can collapse and pour down the mountain as a pyroclastic flow: a scalding avalanche of ash and gas, faster than you can run. It chars the trees it passes and leaves everything buried in grey ash."
+     ]
+    },
+    {
+     "title": "Shaken Ground",
+     "icon": "minecraft:sand",
+     "pages": [
+      "In a strong earthquake, waterlogged sand near rivers, lakes and the sea turns to a slurry: the ground goes soft as quicksand for a few minutes, and sand boils spout muddy water up through the surface."
+     ]
+    },
+    {
+     "title": "Mountains",
+     "icon": "minecraft:snow_block",
+     "pages": [
+      "The air cools as you climb, so the mountains wear snow caps: the snowline creeps down the slopes in autumn and winter and climbs back up in spring. In summer, old snow high up turns pink with snow algae (watermelon snow).",
+      "On clear nights, cold air over glaciers and ice fields grows heavy and pours down the slopes as a katabatic wind: a bitter gale out of a still sky."
+     ]
+    },
+    {
+     "title": "Winter",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "After a thaw, a hard frost glazes stone and paths with black ice by dawn: thin, clear and slippery, gone once the sun warms it.\n\nIn a long, hard freeze, waterfalls freeze into hanging curtains of ice, and thaw again when it warms up.",
+      "A strong wind over loose, dry snow lifts it into a ground blizzard: a blinding river of snow a few blocks deep, even under a blue sky. Climb onto a rock and your head's out of it."
+     ]
+    },
+    {
+     "title": "Fire and Towns",
+     "icon": "minecraft:campfire",
+     "pages": [
+      "A big wildfire throws embers ahead on the wind, starting new fires downwind: it can jump rivers and firebreaks.\n\nVillages hold their warmth: they're a few degrees warmer than the country round them, especially on still nights, with less frost."
+     ]
+    },
+    {
+     "title": "Coasts and Seas",
+     "icon": "minecraft:dead_brain_coral_block",
+     "pages": [
+      "A gale off the sea throws salt spray far inland, and it scorches the leaves off the seaward side of the trees along the coast.\n\nIn a long, hot summer, a marine heatwave warms the sea: the fish move off to cooler water and the coral bleaches white."
+     ]
+    },
+    {
+     "title": "Sky Sights",
+     "icon": "minecraft:spyglass",
+     "pages": [
+      "On calm, clear days over a cold sea, the Fata Morgana stretches the horizon into towering walls and pillars that grow and shrink as you watch. When the sun comes out after a summer shower, steam rises off the warm roads and fields.",
+      "High above the biggest storms, blue jets shoot up out of the cloud tops and huge red rings (elves) flash out for an instant. On some geomagnetic storm nights a mauve ribbon called STEVE arcs across the sky south of the aurora, and on the darkest nights a faint glow (the gegenschein) sits exactly opposite the sun."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Wild Places",
+   "icon": "minecraft:mangrove_roots",
+   "entries": [
+    {
+     "title": "Volcanic",
+     "icon": "minecraft:basalt",
+     "pages": [
+      "Kipukas are islands of old forest left standing where a lava flow divided round them. Volcanic dikes are long walls of dark rock where magma squeezed up through cracks, left standing when the softer rock round them wore away. Steaming ground is warm, stained earth over hot rock, where snow never lies for long."
+     ]
+    },
+    {
+     "title": "The Deep Sea",
+     "icon": "minecraft:blackstone",
+     "pages": [
+      "On the deep sea floor, hydrothermal vents (black smokers) build chimneys of minerals out of the scalding water pouring up through them. Brine pools are lakes on the sea floor: water so salty and heavy it lies in hollows under the sea, with a shore of its own."
+     ]
+    },
+    {
+     "title": "The Far North",
+     "icon": "minecraft:spruce_sapling",
+     "pages": [
+      "At the treeline the spruces grow stunted and bent: low mats of krummholz and flag trees with branches only on the downwind side. Where permafrost thaws, hillsides slump away in thermokarst scars, with a headwall of exposed ice and a 'drunken forest' of toppled trees below."
+     ]
+    },
+    {
+     "title": "Rivers and Wetlands",
+     "icon": "minecraft:lily_pad",
+     "pages": [
+      "Goosenecks are tight river loops cut deep into flat rock. Floodplains are broad, flat river meadows with low natural levees along the banks and swampy backwaters behind them. Beavers dam streams with sticks and mud into ponds full of drowned trees, with a lodge in the middle.",
+      "Patterned fens are bogs striped with ridges of moss and peat lying across the slope, with long pools between them. In cypress swamps, big trees stand in still water with their knees poking up round them."
+     ]
+    },
+    {
+     "title": "Dry Lands and Coasts",
+     "icon": "minecraft:sandstone",
+     "pages": [
+      "Loess is fine yellow dust blown in by the wind over thousands of years: it stands in sheer cliffs and is cut by deep gullies. Mima mounds are low, round, evenly spaced mounds dotted across grassland, and nobody is quite sure how they form.",
+      "Tafoni are honeycombs of hollows weathered into sandstone sea cliffs by salt. Fringing reefs run along warm coasts just offshore, with a shallow reef flat and a reef front cut into spurs and grooves."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

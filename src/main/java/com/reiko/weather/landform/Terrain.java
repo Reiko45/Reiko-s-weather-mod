@@ -136,6 +136,8 @@ public final class Terrain {
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("acid_lake"));
     public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> ACID_POOL_BIOME =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("acid_pool"));
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> BRINE_POOL_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("brine_pool"));
 
     /**
      * Repaints the biome over part of the chunk being built: every 4x4x4 biome cell between {@code minY} and

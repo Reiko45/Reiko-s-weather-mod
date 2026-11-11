@@ -140,6 +140,13 @@ public final class ClientEvents {
                     p.setColor(Math.min(1, (color >> 16 & 255) / 255.0F * shade), Math.min(1, (color >> 8 & 255) / 255.0F * shade), Math.min(1, (color & 255) / 255.0F * shade));
                     return p;
                 });
+        event.registerSpriteSet(ModParticles.ASH_CLOUD.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.ASH_CLOUD);
+                    float shade = 0.42F + level.random.nextFloat() * 0.2F;
+                    p.setColor(shade, shade * 0.97F, shade * 0.93F);
+                    return p;
+                });
         event.registerSpriteSet(ModParticles.MIST.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> {
                     WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.MIST);
@@ -236,6 +243,7 @@ public final class ClientEvents {
             CloudPuffs.lenticular(event.getCamera());
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
+            SkySights.collectUpper(event.getCamera(), partialTick);
             PuffRenderer.render(event.getCamera());
             WaterMist.renderRainbows(event);
             GroundOptics.render(event);
@@ -262,6 +270,7 @@ public final class ClientEvents {
         Footprints.tick(mc);
         ScreenRaindrops.tick(mc);
         SnowGlare.tick(mc);
+        GroundAir.tick(mc);
         HeatShimmer.tick(mc);
         com.reiko.weather.client.sound.WildlifeSounds.tick(mc);
         RoughSeas.tick(mc);

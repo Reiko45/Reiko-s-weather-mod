@@ -6,7 +6,7 @@
       },
       {
         "model": "reikos_weather:block/frost_flowers",
-        "y": 45
+        "y": 90
       }
     ]
   }

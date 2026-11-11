@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -70,6 +71,7 @@ public final class Earthquakes {
                 WeatherAdvancements.award(player, "shaken");
             }
             if (griefing && felt > 0.3F) shakeLoose(level, player, felt, random);
+            if (griefing && felt > 0.35F && WeatherConfig.LIQUEFACTION.get()) liquefy(level, player, felt, random);
         }
         boolean underSea = level.getBiome(BlockPos.containing(x, level.getSeaLevel(), z)).is(BiomeTags.IS_OCEAN);
         if (underSea && magnitude > 0.45F) {
@@ -84,6 +86,59 @@ public final class Earthquakes {
                 player.displayClientMessage(Component.translatable("message.reikos_weather.tsunami_warning").withStyle(s -> s.withColor(0xFF5555).withBold(true)), false);
             }
         }
+    }
+
+    /**
+     * Liquefaction: shaking turns waterlogged sand into a slurry. The ground near water goes soft as quicksand for a
+     * few minutes, and the water squeezed out of it spouts up through the surface in sand boils, little cones of
+     * sand with a spring in the middle.
+     */
+    private static void liquefy(ServerLevel level, ServerPlayer player, float felt, RandomSource random) {
+        int soft = 0, boils = 0;
+        for (int i = 0; i < Math.round(120 * felt) && soft < 40; i++) {
+            int x = player.getBlockX() + random.nextInt(49) - 24, z = player.getBlockZ() + random.nextInt(49) - 24;
+            if (!level.isLoaded(new BlockPos(x, 0, z))) continue;
+            BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z)).below();
+            BlockState s = level.getBlockState(top);
+            if (!(s.is(BlockTags.SAND) || s.is(Blocks.GRAVEL) || s.is(Blocks.MUD)) || top.getY() > level.getSeaLevel() + 4 || !nearWater(level, top)) continue;
+            if (GroundEvents.built(level, top, 3)) continue;
+            // a patch of soft ground, settling again in a few minutes
+            for (BlockPos p : BlockPos.betweenClosed(top.offset(-1, -1, -1), top.offset(1, 0, 1))) {
+                BlockState there = level.getBlockState(p);
+                if ((there.is(BlockTags.SAND) || there.is(Blocks.GRAVEL) || there.is(Blocks.MUD)) && random.nextFloat() < 0.6F
+                        && level.getBlockState(p.above()).getFluidState().isEmpty()) {
+                    level.setBlockAndUpdate(p, com.reiko.weather.registry.ModBlocks.QUICKSAND.get().defaultBlockState());
+                    level.scheduleTick(p.immutable(), com.reiko.weather.registry.ModBlocks.QUICKSAND.get(), 2400 + random.nextInt(2400));
+                    soft++;
+                }
+            }
+            if (boils < 6 && random.nextInt(3) == 0) {
+                // a sand boil: a low cone of sand thrown up round a spout of muddy water
+                BlockPos vent = top.above();
+                for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                    BlockPos rim = vent.relative(d);
+                    if (level.getBlockState(rim).canBeReplaced() && level.getBlockState(rim).getFluidState().isEmpty()
+                            && level.getBlockState(rim.below()).isFaceSturdy(level, rim.below(), net.minecraft.core.Direction.UP)) {
+                        level.setBlockAndUpdate(rim, Blocks.SAND.defaultBlockState());
+                    }
+                }
+                level.sendParticles(ParticleTypes.SPLASH, vent.getX() + 0.5, vent.getY() + 0.3, vent.getZ() + 0.5, 40, 0.15, 0.8, 0.15, 0.4);
+                level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK, Blocks.SAND.defaultBlockState()),
+                        vent.getX() + 0.5, vent.getY() + 0.5, vent.getZ() + 0.5, 20, 0.2, 0.6, 0.2, 0.2);
+                boils++;
+            }
+        }
+        if (soft > 0) {
+            player.displayClientMessage(Component.translatable("message.reikos_weather.liquefaction").withStyle(st -> st.withColor(0xC8A070)), false);
+            WeatherAdvancements.award(player, "liquefaction");
+        }
+    }
+
+    private static boolean nearWater(ServerLevel level, BlockPos pos) {
+        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 1, 3))) {
+            if (level.getFluidState(p).is(net.minecraft.tags.FluidTags.WATER)) return true;
+        }
+        return false;
     }
 
     /** Rocks off the cliffs, loose sand and gravel sliding, windows breaking. */
