@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
@@ -43,18 +45,65 @@ public record LandslideLake(int cx, int cz, float angle, int floor, int crest, i
     private static final float RING = 1.3F, BANK = 1.15F;
     /** How wide the dam's crest is, and how far down the valley the rubble runs. */
     private static final int CREST = 5, DOWN = 30;
+    /** How many 4-block steps up and across the valley the plan looks behind the dam, and the least lake (in blocks of its surface) worth a dam. */
+    private static final int GRID = 13, LAKE = 224;
+    /** How many 8-block steps across the plan looks for a valley to dam, and the ways a valley can run across them. */
+    private static final int SURVEY = 13;
+    /** How far a valley's sides must stand above its floor for a dam across it to hold a lake. */
+    private static final int DEEP = 6;
+    private static final int[][] AXES = {{1, 0}, {0, 1}, {1, 1}, {1, -1}};
 
     @Nullable
     static Landform plan(PlanContext c) {
-        int ground = c.groundAt(c.x(), c.z());
-        if (ground < c.seaLevel() + 4 || !c.fits(ground, 30, 50)) {
-            return null;
+        // the lie of the land round about, every 8 blocks out to 48 each way
+        int mid = SURVEY / 2;
+        int[][] g = new int[SURVEY][SURVEY];
+        for (int i = 0; i < SURVEY; i++) {
+            for (int j = 0; j < SURVEY; j++) g[i][j] = c.groundAt(c.x() + 8 * (i - mid), c.z() + 8 * (j - mid));
         }
-        // the ground all round, 16 blocks out
+        // the likeliest places for the dam: on a valley's floor, with its sides standing well above it both ways across,
+        // best where the valley is deepest and its floor climbs most gently behind the dam (where the lake will reach furthest)
+        List<int[]> sites = new ArrayList<>();
+        for (int i = 2; i < SURVEY - 2; i++) {
+            for (int j = 2; j < SURVEY - 2; j++) {
+                int floor = g[i][j];
+                if (Mth.square(i - mid) + Mth.square(j - mid) > 16 || floor < c.seaLevel() + 4 || !c.fits(floor, 30, 50)) continue;
+                int best = Integer.MIN_VALUE;
+                for (int[] s : AXES) {
+                    // (its sides 16 blocks out either way, or for a broader valley, 24)
+                    int sides = Math.min(g[i - 2 * s[1]][j + 2 * s[0]], g[i + 2 * s[1]][j - 2 * s[0]]);
+                    if (i >= 3 && j >= 3 && i < SURVEY - 3 && j < SURVEY - 3) sides = Math.max(sides, Math.min(g[i - 3 * s[1]][j + 3 * s[0]], g[i + 3 * s[1]][j - 3 * s[0]]));
+                    int up = Math.max(g[i + 2 * s[0]][j + 2 * s[1]], g[i - 2 * s[0]][j - 2 * s[1]]);
+                    if (sides - floor >= DEEP && up < sides) best = Math.max(best, Math.min(sides - floor, 16) - Math.max(0, up - floor) / 2);
+                }
+                if (best > Integer.MIN_VALUE) sites.add(new int[]{best, i, j});
+            }
+        }
+        sites.sort((p, q) -> q[0] != p[0] ? q[0] - p[0] : p[1] != q[1] ? p[1] - q[1] : p[2] - q[2]);
+        for (int k = 0; k < Math.min(3, sites.size()); k++) {
+            int[] s = sites.get(k);
+            Landform lake = dam(c, c.x() + 8 * (s[1] - mid), c.z() + 8 * (s[2] - mid));
+            if (lake != null) return lake;
+        }
+        return null;
+    }
+
+    /** A landslide lake with its dam across the valley at a spot (or none, if the valley there won't hold one). */
+    @Nullable
+    private static Landform dam(PlanContext c, int dx, int dz) {
+        Landform lake = dam(c, dx, dz, 16);
+        return lake != null ? lake : dam(c, dx, dz, 24);
+    }
+
+    /** The same, looking for the valley's sides {@code r} blocks out from the spot. */
+    @Nullable
+    private static Landform dam(PlanContext c, int dx, int dz, int r) {
+        int floor = c.groundAt(dx, dz);
+        // the ground all round
         int[] ring = new int[12];
         for (int i = 0; i < 12; i++) {
-            float a = i * (float) Math.PI * 2.0F / 12.0F;
-            ring[i] = c.groundAt(c.x() + (int) Math.round(Math.cos(a) * 16), c.z() + (int) Math.round(Math.sin(a) * 16));
+            float t = i * (float) Math.PI * 2.0F / 12.0F;
+            ring[i] = c.groundAt(dx + (int) Math.round(Math.cos(t) * r), dz + (int) Math.round(Math.sin(t) * r));
         }
         // the valley runs along the lowest line through here, and both its sides should stand well above its floor
         int axis = 0;
@@ -63,74 +112,71 @@ public record LandslideLake(int cx, int cz, float angle, int floor, int crest, i
         }
         // (downstream is the lower end, and "left" is the side across from it a quarter turn round)
         int along = ring[axis] <= ring[axis + 6] ? axis : axis + 6;
-        int dx = c.x(), dz = c.z(), floor = ground, left = ring[(along + 3) % 12], right = ring[(along + 9) % 12];
+        int left = ring[(along + 3) % 12], right = ring[(along + 9) % 12], fall = Math.abs(ring[axis] - ring[axis + 6]);
         float a = along * Mth.TWO_PI / 12.0F;
-        int fall = Math.abs(ring[axis] - ring[axis + 6]);
-        if (Math.min(left, right) < ground + 7) {
-            // here is on the valley's side: look on down the slope for its floor, and the far side rising beyond it
-            int low = 0;
-            for (int i = 1; i < 12; i++) {
-                if (ring[i] < ring[low]) low = i;
-            }
-            float b = low * Mth.TWO_PI / 12.0F;
-            int[] line = new int[7]; // every 8 blocks out that way (the first two the ground here and on the ring)
-            line[0] = ground;
-            line[2] = ring[low];
-            for (int k = 3; k < 7; k++) line[k] = c.groundAt(c.x() + (int) Math.round(Math.cos(b) * 8 * k), c.z() + (int) Math.round(Math.sin(b) * 8 * k));
-            int bottom = 2;
-            for (int k = 3; k < 6; k++) {
-                if (line[k] < line[bottom]) bottom = k;
-            }
-            dx = c.x() + (int) Math.round(Math.cos(b) * 8 * bottom);
-            dz = c.z() + (int) Math.round(Math.sin(b) * 8 * bottom);
-            floor = line[bottom];
-            int near = bottom >= 4 ? Math.max(line[bottom - 1], line[bottom - 2]) : bottom == 3 ? Math.max(line[2], ground) : ground;
-            int across = bottom + 2 < 7 ? Math.max(line[bottom + 1], line[bottom + 2]) : line[bottom + 1];
-            int up = c.groundAt(dx - Math.round(Mth.sin(b) * 14), dz + Math.round(Mth.cos(b) * 14));
-            int on = c.groundAt(dx + Math.round(Mth.sin(b) * 14), dz - Math.round(Mth.cos(b) * 14));
-            // the valley runs across the slope, down toward the lower of those two
-            a = b + (up >= on ? -Mth.HALF_PI : Mth.HALF_PI);
-            left = up >= on ? across : near;
-            right = up >= on ? near : across;
-            fall = Math.abs(up - on);
-            if (Math.min(left, right) < floor + 7 || floor < c.seaLevel() + 4) return null;
-        }
-        if (fall < 1) {
-            return null; // a basin, not a valley
+        if (Math.min(left, right) < floor + DEEP || fall < 1) {
+            return null; // on a valley's side, or in a basin
         }
         PlanContext d = c.at(dx, dz);
+        // the valley behind where the dam will lie, every 4 blocks up it and across it
+        int[][] behind = new int[GRID][GRID];
+        for (int i = 0; i < GRID; i++) {
+            for (int j = 0; j < GRID; j++) behind[i][j] = at(d, a, -4 * i, 4 * (j - GRID / 2));
+        }
         // the dam, and the lake a block or two below its crest (and below the valley sides)
-        int crest = floor + 7 + c.random().nextInt(7);
-        int water = Math.min(crest - 1 - c.random().nextInt(2), Math.min(left, right) - 2);
-        // the lake reaches up the valley until the floor rises out of it
-        int length = 0;
-        for (int k = 16; k <= 46; k += 10) {
-            if (at(d, a, -k, 0) > water) {
-                length = k;
-                break;
+        int sides = Math.min(left, right) - 2;
+        int water = Math.min(floor + 6 + c.random().nextInt(7) - c.random().nextInt(2), sides);
+        int over = 1 + c.random().nextInt(2), length, width, crest;
+        // where the valley floor climbs steeply behind the dam, the dam has to stand higher before the river drowns any
+        // real stretch of it (it can't stand higher than the valley's sides, though, or the lake would find a way round)
+        for (int tries = 0; ; tries++) {
+            // the lake reaches up the valley until the floor rises out of it
+            length = 0;
+            for (int i = 4; i < GRID; i++) {
+                if (behind[i][GRID / 2] > water) {
+                    length = 4 * i;
+                    break;
+                }
             }
+            if (length == 0) {
+                water = Math.min(water, behind[GRID - 1][GRID / 2] - 1);
+                length = 4 * (GRID - 1);
+            }
+            crest = water + over;
+            // how wide the valley is at the dam: where its sides rise above the crest
+            width = 0;
+            for (int s = -1; s <= 1; s += 2) {
+                int far = s > 0 ? left : right;
+                width = Math.max(width, at(d, a, 0, 10 * s) >= crest ? 10 : far >= crest ? 16 : 22);
+            }
+            width += 2;
+            if (water - floor >= 4 && water >= c.seaLevel() + 1 && flooded(behind, water, length, width) >= LAKE) break;
+            if (water >= sides || tries >= 8) return null;
+            water++;
         }
-        if (length == 0) {
-            water = Math.min(water, at(d, a, -46, 0) - 1);
-            length = 46;
-        }
-        if (water - floor < 4 || water < c.seaLevel() + 1) {
-            return null;
-        }
-        crest = water + 1 + c.random().nextInt(2);
-        // how wide the valley is at the dam: where its sides rise above the crest
-        int width = 0;
-        for (int s = -1; s <= 1; s += 2) {
-            int far = s > 0 ? left : right;
-            width = Math.max(width, at(d, a, 0, 10 * s) >= crest ? 10 : far >= crest ? 16 : 22);
-        }
-        width += 2;
         // the slide came down the higher side
         int side = left >= right ? 1 : -1, scar = 12 + c.random().nextInt(9);
         int head = at(d, a, 2, side * (width * 1.45F + 3.0F + scar));
-        int low = Math.min(floor - fall * 2 - 6, water - 17);
+        // (and the bounds reach down as far as the valley falls away under the rubble below the dam)
+        int below = Math.min(at(d, a, DOWN * 0.5F, 0), at(d, a, DOWN, 0));
+        int low = Math.min(Math.min(floor - fall * 2 - 6, water - 17), below - 6);
         int high = Math.max(Math.max(left, right), Math.max(head, crest + 6));
         return new LandslideLake(dx, dz, a, floor, crest, water, length + 4, width, side, scar, low, high, c.random().nextLong());
+    }
+
+    /**
+     * About how many blocks of the lake's surface would lie over drowned ground rather than ground standing out of it,
+     * from the valley floor sampled every 4 blocks behind the dam.
+     */
+    private static int flooded(int[][] behind, int water, int length, int width) {
+        int wet = 0;
+        for (int i = 1; i < GRID; i++) {
+            for (int j = 0; j < GRID; j++) {
+                float along = 4.0F * i / length, across = 4.0F * (j - GRID / 2) / width;
+                if (along * along + across * across < 0.8F && behind[i][j] < water) wet++;
+            }
+        }
+        return wet * 16;
     }
 
     /** The ground {@code u} blocks down the valley and {@code v} across it from the dam. */
@@ -409,7 +455,7 @@ public record LandslideLake(int cx, int cz, float angle, int floor, int crest, i
                     shore(level, pos, x, top, z, n, was);
                     continue;
                 }
-                if (rubble && bump == 0) litter(level, pos, x, z, solid, biome, logs, n);
+                if (rubble && bump == 0 && solid >= b.minY()) litter(level, pos, x, z, solid, biome, logs, n);
             }
         }
     }

@@ -524,8 +524,9 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
 - **Bent and broken rock:** **hogbacks and flatirons**, **folded cliffs** with their layers bent into arches, **rift
   fissures** full of crystal-clear water, **inverted channels** (old riverbeds left standing as ridges), and the
   stepped **ancient shorelines** of a long-gone lake.
-- **Water in the hills:** **hanging gardens** on seeping canyon walls, **landslide lakes** behind old rockslide dams,
-  and **fairy pools** stepping down a mountain stream.
+- **Water in the hills:** **hanging gardens** on seeping canyon walls, **landslide lakes** drowning mountain valleys
+  behind old rockslide dams, and **fairy pools** stepping down a mountain stream, with little waterfalls pouring from
+  one clear pool into the next.
 - **Ancient things:** **petrified forests** of stone logs (**petrified wood**), **fossil beds** with great bones
   weathering out (brush the gravel below), and **nurse logs** and root mounds in old forests.
 

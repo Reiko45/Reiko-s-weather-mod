@@ -42,6 +42,8 @@ public final class LandformSpacing {
     static final int REACH = 128;
     /** Every landform structure set keeps this many chunks clear of villages (see the structure_set files). */
     private static final int VILLAGE_KEEPOUT = 5;
+    /** How far a village's houses can spread from the middle of the chunk it starts in. */
+    private static final int VILLAGE_SPREAD = 80;
     private static final ResourceKey<StructureSet> VILLAGES = ResourceKey.create(Registries.STRUCTURE_SET, ResourceLocation.withDefaultNamespace("villages"));
     private static final int MAX_CACHED = 16384;
 
@@ -136,6 +138,8 @@ public final class LandformSpacing {
         // never on (or half-buried by) a volcano
         BoundingBox b = landform.bounds();
         if (LandformStructure.nearVolcano(context, x, z, 125 + Math.max(b.getXSpan(), b.getZSpan()) / 2)) return null;
+        // nor where a village's houses could spread onto it
+        if (villageReaches(context, b)) return null;
         return new Candidate(landform, Math.max(plan.groundAt(x, z), plan.seaLevel() - 1));
     }
 
@@ -217,6 +221,26 @@ public final class LandformSpacing {
             STARTS.put(key, known);
         }
         return known;
+    }
+
+    /**
+     * Whether a village would start close enough to a landform's bounds for its houses to spread onto it: the landform
+     * sets only keep their starts a few chunks from a village's, but a big village reaches out further than that.
+     */
+    private static boolean villageReaches(Structure.GenerationContext context, BoundingBox b) {
+        StructureSet villages = context.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(VILLAGES);
+        if (villages == null || !(villages.placement() instanceof RandomSpreadStructurePlacement placement)) return false;
+        int spacing = placement.spacing();
+        int minX = (b.minX() - VILLAGE_SPREAD) >> 4, maxX = (b.maxX() + VILLAGE_SPREAD) >> 4, minZ = (b.minZ() - VILLAGE_SPREAD) >> 4, maxZ = (b.maxZ() + VILLAGE_SPREAD) >> 4;
+        for (int rx = Math.floorDiv(minX, spacing); rx <= Math.floorDiv(maxX, spacing); rx++) {
+            for (int rz = Math.floorDiv(minZ, spacing); rz <= Math.floorDiv(maxZ, spacing); rz++) {
+                ChunkPos v = placement.getPotentialStructureChunk(context.seed(), rx * spacing, rz * spacing);
+                if (v.x < minX || v.x > maxX || v.z < minZ || v.z > maxZ) continue;
+                // (only where the biome would let one start there)
+                if (inBiome(context, biome -> villages.structures().stream().anyMatch(s -> s.structure().value().biomes().contains(biome)), v)) return true;
+            }
+        }
+        return false;
     }
 
     /** Whether a village could start within the landform sets' keep-out of this chunk (so nothing is laid out there). */

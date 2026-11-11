@@ -10,6 +10,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.material.Fluids;
 
 import javax.annotation.Nullable;
 import java.util.function.BiPredicate;
@@ -176,24 +177,27 @@ public record FairyPools(int cx, int cz, float angle, int[] pools, int top, int 
         return Mth.sqrt(du * du + dv * dv) / (radius(i) * (0.88F + 0.24F * Terrain.field(seed + 5 + i, x, z, 2.5)));
     }
 
+    /** How far the water drops from the pool above into pool {@code i}. */
+    private int fall(int i) {
+        return i <= 0 || i >= count() ? 0 : water(i - 1) - water(i);
+    }
+
     /**
-     * The stream's level at a point along it: a pool's water across its whole length, and between pools a little cascade,
-     * {lip of rock, basin of water, lip, basin..., lip}, stepping down from one pool's level toward the next. Returns
-     * {level, whether it's a basin (1), a pool (2) or a lip (0)}; it never rises going downstream.
+     * The stream's level at a point along it: {level, what it is (0 a lip, 1 a basin, 2 within a pool's reach), the pool}.
+     * Where the next pool lies a block below, the stream steps down to it over a lip of rock; where it lies further below,
+     * the stream runs on level from the pool above in a little channel and pours over the end of it, a small waterfall
+     * into the next. It never rises going downstream.
      */
     private int[] step(float u) {
         int n = count();
         for (int i = 0; i < n; i++) {
             if (u > pu(i) + reach(i)) continue;
-            if (u >= pu(i) - reach(i)) return new int[]{water(i), 2};
-            if (i == 0) return new int[]{water(i), 0};
-            float ua = pu(i - 1) + reach(i - 1), ub = pu(i) - reach(i), gap = Math.max(ub - ua, 0.01F);
-            int hi = water(i - 1), fall = hi - water(i);
-            int k = Math.max(0, Math.min(fall - 1, (int) ((gap - 1.0F) / 2.0F)));
-            int segs = 2 * k + 1, j = Mth.clamp((int) ((u - ua) / (gap / segs)), 0, segs - 1);
-            return j % 2 == 0 ? new int[]{hi - j / 2, 0} : new int[]{hi - (j + 1) / 2, 1};
+            if (u >= pu(i) - reach(i)) return new int[]{water(i), 2, i};
+            if (i == 0) return new int[]{water(i), 0, -1};
+            int hi = water(i - 1);
+            return fall(i) >= 2 ? new int[]{hi, 1, -1} : new int[]{hi, 0, -1};
         }
-        return new int[]{water(n - 1), 0};
+        return new int[]{water(n - 1), 0, -1};
     }
 
     /** The highest water that can be beside a column of the banks, {@code u} along the stream (or far below, if none can). */
@@ -231,7 +235,15 @@ public record FairyPools(int cx, int cz, float angle, int[] pools, int top, int 
         float off = Math.abs(v - meander(u));
         if (off < CHANNEL && onStream(u, 0.0F)) {
             int[] s = step(u);
-            return new int[]{s[1] == 1 ? BASIN : LIP, s[0], -1}; // (in a pool's reach but outside the pool itself, a lip)
+            if (s[1] == 2) {
+                // in a pool's reach but outside the pool itself: where a fall comes down into it, the head of the pool
+                // reaches up the channel to meet it; where the stream runs on level to a fall, the channel leads out of it
+                int i = s[2];
+                if (u < pu(i) && fall(i) >= 2) return new int[]{POOL, s[0], i};
+                if (u >= pu(i) && fall(i + 1) >= 2) return new int[]{BASIN, s[0], -1};
+                return new int[]{LIP, s[0], -1};
+            }
+            return new int[]{s[1] == 1 ? BASIN : LIP, s[0], -1};
         }
         if (nearest >= 0 && near < BANKS || off < CHANNEL + BANKS && onStream(u, BANKS)) {
             return new int[]{BANK, waterNear(u) + 1, -1};
@@ -245,9 +257,27 @@ public record FairyPools(int cx, int cz, float angle, int[] pools, int top, int 
     }
 
     /**
+     * Whether water standing in a column that can't hold it pours over the edge instead: where every column beside it is
+     * solid or water at its level, except for at least one that is a pool's water two or more blocks below, which the
+     * water spilling over will fall straight down into.
+     */
+    private boolean spout(int x, int z, int level) {
+        boolean pours = false;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            int nx = x + d.getStepX(), nz = z + d.getStepZ();
+            int[] k = classify(nx, nz);
+            if (k[0] == NONE) return false;
+            if (k[1] >= level) continue;
+            if (k[0] != POOL || k[1] > level - 2 || !held(nx, nz, k[1])) return false;
+            pours = true;
+        }
+        return pours;
+    }
+
+    /**
      * Whether a pool or basin's water can stand in a column: only where every column beside it is certain to be solid or
      * water at its level (a bank or lip at least as high, or water at least as high, which, if higher, will itself be a lip).
-     * Where it can't, the column is a lip of rock instead.
+     * Where it can't, the column is a lip of rock instead (or, at the head of a fall, it pours over).
      */
     private boolean held(int x, int z, int level) {
         for (Direction d : Direction.Plane.HORIZONTAL) {
@@ -295,13 +325,17 @@ public record FairyPools(int cx, int cz, float angle, int[] pools, int top, int 
                     arch(level, pos, x, z, u, v, Math.max(ground, lvl));
                     continue;
                 }
-                boolean wet = k[0] >= BASIN && held(x, z, lvl);
+                boolean wet = k[0] >= BASIN && held(x, z, lvl), pour = k[0] >= BASIN && !wet && spout(x, z, lvl);
                 int depth = 0;
-                if (wet) {
+                if (pour) {
+                    wet = true;
+                    depth = 1;
+                } else if (wet) {
                     depth = 1;
                     if (k[0] == POOL) {
+                        // (the head of a pool, where a fall comes down into it, is scoured out a little deeper)
                         float d = inPool(k[2], x, z, u, v);
-                        depth = 1 + Math.round((pools[k[2] * 4 + 2] - 1) * Mth.sqrt(Math.max(0.0F, 1.0F - d * d)));
+                        depth = d >= 1.0F ? 2 : 1 + Math.round((pools[k[2] * 4 + 2] - 1) * Mth.sqrt(Math.max(0.0F, 1.0F - d * d)));
                     }
                 }
                 int bed = lvl - depth, open = lvl;
@@ -316,6 +350,7 @@ public record FairyPools(int cx, int cz, float angle, int[] pools, int top, int 
                 if (wet) {
                     wetAny = true;
                     for (int h = bed + 1; h <= lvl; h++) Terrain.set(level, pos, x, h, z, Blocks.WATER.defaultBlockState());
+                    if (pour) level.scheduleTick(pos.set(x, lvl, z).immutable(), Fluids.WATER, 1); // set it pouring over the edge
                 }
                 arch(level, pos, x, z, u, v, lvl);
             }
