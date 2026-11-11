@@ -247,6 +247,13 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue POLYNYAS;
     public static final ModConfigSpec.BooleanValue FRAZIL_ICE;
     public static final ModConfigSpec.BooleanValue WRACK_LINES;
+    public static final ModConfigSpec.BooleanValue RAIN_ON_SNOW;
+    public static final ModConfigSpec.BooleanValue DUSTY_SNOWFALL;
+    public static final ModConfigSpec.BooleanValue HAIR_ICE;
+    public static final ModConfigSpec.BooleanValue FOG_DRIP;
+    public static final ModConfigSpec.BooleanValue CAVE_BREATH;
+    public static final ModConfigSpec.BooleanValue SUPERBLOOMS;
+    public static final ModConfigSpec.BooleanValue FROZEN_BUBBLES;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -301,6 +308,14 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue ICE_TOWERS;
     public static final ModConfigSpec.BooleanValue INVERTED_CHANNELS;
     public static final ModConfigSpec.BooleanValue FAIRY_POOLS;
+    public static final ModConfigSpec.BooleanValue CLOUD_FORESTS;
+    public static final ModConfigSpec.BooleanValue BLUE_SPRINGS;
+    public static final ModConfigSpec.BooleanValue SEA_CLIFF_FALLS;
+    public static final ModConfigSpec.BooleanValue COAL_SEAM_FIRES;
+    public static final ModConfigSpec.BooleanValue DRY_FALLS;
+    public static final ModConfigSpec.BooleanValue SKERRIES;
+    public static final ModConfigSpec.BooleanValue DUNE_SLACKS;
+    public static final ModConfigSpec.BooleanValue FROST_SHATTERED_SUMMITS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -655,6 +670,20 @@ public final class WeatherConfig {
                 .define("frazilIce", true);
         WRACK_LINES = b.comment("Storms wash kelp and seagrass up onto beaches along the high-tide line.")
                 .define("wrackLines", true);
+        RAIN_ON_SNOW = b.comment("Rain falling on snow soaks it into slush, which freezes into a slippery icy crust overnight.")
+                .define("rainOnSnow", true);
+        DUSTY_SNOWFALL = b.comment("Snow that falls while desert dust is still in the air comes down tinted, and dusty snow melts faster in the sun.")
+                .define("dustySnowfall", true);
+        HAIR_ICE = b.comment("On damp nights just below freezing, fine white hair ice grows on fallen logs, and melts away by mid-morning.")
+                .define("hairIce", true);
+        FOG_DRIP = b.comment("In fog, trees comb water out of the air: crops and farmland under them stay watered.")
+                .define("fogDrip", true);
+        CAVE_BREATH = b.comment("Cave mouths breathe: a cool draught blows out of them on hot days (and they steam in the cold).")
+                .define("caveBreath", true);
+        SUPERBLOOMS = b.comment("After an unusually wet winter, deserts burst into wildflowers in spring.")
+                .define("superblooms", true);
+        FROZEN_BUBBLES = b.comment("Bubbles of marsh gas freeze into the ice of boggy lakes in white stacks.")
+                .define("frozenBubbles", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -973,6 +1002,22 @@ public final class WeatherConfig {
                 .define("invertedChannels", true);
         FAIRY_POOLS = b.comment("Fairy pools: a chain of clear blue plunge pools and little falls down a mountain stream.")
                 .define("fairyPools", true);
+        CLOUD_FORESTS = b.comment("Cloud forests: misty jungle mountainsides with trees thick with moss, ferns and vines.")
+                .define("cloudForests", true);
+        BLUE_SPRINGS = b.comment("Blue springs: deep, vivid blue springs welling out of a cave at the foot of a cliff.")
+                .define("blueSprings", true);
+        SEA_CLIFF_FALLS = b.comment("Sea-cliff waterfalls: streams pouring straight off coastal cliffs onto the beach or into the sea.")
+                .define("seaCliffFalls", true);
+        COAL_SEAM_FIRES = b.comment("Burning coal seams: ground baked red over a coal seam that has smouldered for centuries, smoking from its cracks.")
+                .define("coalSeamFires", true);
+        DRY_FALLS = b.comment("Dry falls: the dry horseshoe cliff of a giant ancient waterfall, with lakes in its old plunge pools.")
+                .define("dryFalls", true);
+        SKERRIES = b.comment("Skerries: swarms of low, ice-smoothed rocky islets off cold coasts.")
+                .define("skerries", true);
+        DUNE_SLACKS = b.comment("Dune slacks: damp hollows between coastal dunes, with shallow pools, reeds and wildflowers.")
+                .define("duneSlacks", true);
+        FROST_SHATTERED_SUMMITS = b.comment("Frost-shattered summits: high, flat mountaintops strewn with boulders split by frost.")
+                .define("frostShatteredSummits", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

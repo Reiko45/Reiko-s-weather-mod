@@ -144,7 +144,15 @@ public enum LandformKind implements StringRepresentable {
     LANDSLIDE_LAKE(LandslideLake::plan, LandslideLake::load, () -> WeatherConfig.LANDSLIDE_LAKES.get()),
     ICE_TOWERS(IceTowers::plan, IceTowers::load, () -> WeatherConfig.ICE_TOWERS.get()),
     INVERTED_CHANNEL(InvertedChannel::plan, InvertedChannel::load, () -> WeatherConfig.INVERTED_CHANNELS.get()),
-    FAIRY_POOLS(FairyPools::plan, FairyPools::load, () -> WeatherConfig.FAIRY_POOLS.get());
+    FAIRY_POOLS(FairyPools::plan, FairyPools::load, () -> WeatherConfig.FAIRY_POOLS.get()),
+    CLOUD_FOREST(CloudForest::plan, CloudForest::load, () -> WeatherConfig.CLOUD_FORESTS.get()),
+    BLUE_SPRING(BlueSpring::plan, BlueSpring::load, () -> WeatherConfig.BLUE_SPRINGS.get()),
+    SEA_CLIFF_FALLS(SeaCliffFalls::plan, SeaCliffFalls::load, () -> WeatherConfig.SEA_CLIFF_FALLS.get()),
+    COAL_SEAM_FIRE(CoalSeamFire::plan, CoalSeamFire::load, () -> WeatherConfig.COAL_SEAM_FIRES.get()),
+    DRY_FALLS(DryFalls::plan, DryFalls::load, () -> WeatherConfig.DRY_FALLS.get()),
+    SKERRIES(Skerries::plan, Skerries::load, () -> WeatherConfig.SKERRIES.get()),
+    DUNE_SLACKS(DuneSlacks::plan, DuneSlacks::load, () -> WeatherConfig.DUNE_SLACKS.get()),
+    FROST_SHATTERED_SUMMIT(FrostShatteredSummit::plan, FrostShatteredSummit::load, () -> WeatherConfig.FROST_SHATTERED_SUMMITS.get());
 
     public static final Codec<LandformKind> CODEC = StringRepresentable.fromEnum(LandformKind::values);
 

@@ -21,6 +21,9 @@
     "reikos_weather:whirlpool",
     "reikos_weather:rock_salt",
     "reikos_weather:frozen_waterfall",
-    "reikos_weather:brinicle"
+    "reikos_weather:brinicle",
+    "reikos_weather:clinker",
+    "reikos_weather:smouldering_ground",
+    "reikos_weather:bubble_ice"
   ]
 }

@@ -1706,6 +1706,72 @@
    ]
   },
   {
+   "title": "Clouds, Fog and Thaw",
+   "icon": "minecraft:white_wool",
+   "entries": [
+    {
+     "title": "Clouds",
+     "icon": "minecraft:white_wool",
+     "pages": [
+      "On warm, sunny days, puffy fair-weather clouds build through the morning. In a steady breeze they line up in long rows along the wind: cloud streets. When one drifts over the sun the light dims for a moment, then brightens again.",
+      "Around some thunderstorms the cloud base heaves and rolls overhead like a rough sea seen from below: asperitas. When a foehn wind pours down off the mountains, a band of clear blue sky arches over them under a sharp-edged deck of cloud: the Chinook arch."
+     ]
+    },
+    {
+     "title": "Fog and Damp",
+     "icon": "minecraft:moss_block",
+     "pages": [
+      "In fog, trees comb water out of the air, so their leaves drip and the crops and farmland under them stay watered. Cloud forests, high on jungle mountains, are wrapped in drifting mist most of the time.",
+      "Cave mouths breathe. In cold weather the cave air is the warm side, and it steams out of the entrance; on a hot day a cool draught blows out of the cave, and standing in the mouth cools you down. Thunder echoes back off the mountains and valley sides round you."
+     ]
+    },
+    {
+     "title": "Thaw and Frost",
+     "icon": "minecraft:snowball",
+     "pages": [
+      "Rain on lying snow soaks it into heavy grey slush that drags at your feet. If the night turns cold again the slush freezes into a glassy, slippery crust, until fresh snow buries it or it thaws.",
+      "On damp nights just below freezing, fine white hair ice grows on fallen logs, and melts away by mid-morning. Bubbles of marsh gas freeze into the ice of boggy lakes in white stacks. Snow that falls while desert dust is still in the air comes down tinted, and dusty snow melts fast in the sun."
+     ]
+    },
+    {
+     "title": "Superblooms",
+     "icon": "reikos_weather:desert_poppy",
+     "pages": [
+      "In a wet year, the desert flowers in spring: desert gold, sand verbena and desert poppies come up in drifts of colour across the sand, and die back again in the summer heat. Pick them for dye, or keep one going in a flower pot."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Springs, Coasts and Summits",
+   "icon": "minecraft:prismarine_crystals",
+   "entries": [
+    {
+     "title": "Water",
+     "icon": "minecraft:water_bucket",
+     "pages": [
+      "Blue springs are deep, startlingly blue pools at the foot of a cliff, where an underground river wells up out of a cave and flows away as a stream. On high coasts, streams run to the edge of the sea cliffs and pour straight off them.",
+      "Dry falls are the horseshoe cliffs of giant waterfalls from long ago, with still lakes in their old plunge pools. Among coastal dunes, damp hollows called slacks hold shallow pools, reeds and wildflowers."
+     ]
+    },
+    {
+     "title": "Fire and Ice",
+     "icon": "reikos_weather:clinker",
+     "pages": [
+      "Over a coal seam that has burned underground for centuries, the rock is baked brick-red into clinker, and smoke seeps from hot cracks in the ground. Off cold, rocky coasts, swarms of low, ice-smoothed islets called skerries stand out of the sea.",
+      "High, broad mountaintops are strewn with boulders split by the frost: frost-shattered summits. Glaciers carry boulders on pedestals of ice, where the rock has shaded the ice beneath it from the sun."
+     ]
+    },
+    {
+     "title": "Cloud Forests",
+     "icon": "minecraft:vine",
+     "pages": [
+      "High on jungle mountains, where the clouds settle most days, the cloud forest drips with moisture: trees thick with moss, ferns and vines, spore blossoms under the canopy, and mist drifting between the trunks."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

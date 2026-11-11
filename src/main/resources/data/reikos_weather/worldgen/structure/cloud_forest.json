@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "cloud_forest",
+  "biomes": "#reikos_weather:has_structure/cloud_forest",
+  "step": "top_layer_modification",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

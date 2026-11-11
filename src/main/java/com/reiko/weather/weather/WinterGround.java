@@ -56,6 +56,10 @@ public final class WinterGround {
             if (local.type().vanillaRain && !snowing && p.rain > 0.5F && intensity > 0.6F) {
                 for (int i = 0; i < 3; i++) rainOnSnow(level, column(level, player, random));
             }
+            // any rain on snow soaks it to slush (which freezes into a crust if the night turns cold)
+            if (WeatherConfig.RAIN_ON_SNOW.get() && local.type().vanillaRain && !snowing && p.rain > 0.2F && intensity > 0.3F) {
+                for (int i = 0; i < 4; i++) soak(level, column(level, player, random));
+            }
         }
         long time = Math.floorMod(level.getDayTime(), 24000L);
         boolean frostyMorning = (time > 22500L || time < 1500L) && p.rain < 0.1F && p.wind * intensity < 0.4F;
@@ -304,6 +308,16 @@ public final class WinterGround {
         int layers = s.getValue(SnowLayerBlock.LAYERS);
         level.setBlockAndUpdate(top, s.setValue(SnowLayerBlock.LAYERS, Math.max(1, layers - 2)));
         WeatherHazards.rainOnSnow = Math.min(WeatherHazards.rainOnSnow + 0.02F, 1.0F);
+    }
+
+    /** Rain soaking into lying snow turns it to grey, heavy slush. */
+    private static void soak(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null || level.getBiome(top).value().coldEnoughToSnow(top) || !level.isRainingAt(top)) return;
+        BlockState s = level.getBlockState(top);
+        if (s.is(Blocks.SNOW) || s.is(com.reiko.weather.registry.ModBlocks.DUSTY_SNOW.get()) || s.is(com.reiko.weather.registry.ModBlocks.SNOW_CRUST.get())) {
+            int layers = s.getValue(SnowLayerBlock.LAYERS);
+            level.setBlockAndUpdate(top, com.reiko.weather.registry.ModBlocks.SLUSH.get().defaultBlockState().setValue(SnowLayerBlock.LAYERS, Math.max(1, layers - 1)));
+        }
     }
 
     /** Needle ice: columns of ice crystals pushing up out of bare, damp soil on a frosty morning. */

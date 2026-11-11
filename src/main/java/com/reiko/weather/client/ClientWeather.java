@@ -359,7 +359,8 @@ public final class ClientWeather {
         if (type != WeatherType.FOG && wearingGoggles()) {
             weatherFog *= 0.45F;
         }
-        return Math.max(Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog()), AirAndWater.blueHaze() * 0.16F);
+        float cloudForest = DampAir.cloudMist() * (0.5F + 0.08F * Mth.sin(Minecraft.getInstance().level == null ? 0.0F : Minecraft.getInstance().level.getGameTime() * 0.004F));
+        return Math.max(Math.max(Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog()), AirAndWater.blueHaze() * 0.16F), cloudForest);
     }
 
     public static float fogColorWeight() {
@@ -457,6 +458,8 @@ public final class ClientWeather {
             darken = Mth.lerp(sunShower * 0.85F, darken, bright);
         }
         float extra = Math.max(0.0F, overcast - rain * 0.5F) * 0.18F + tintStrength * 0.1F;
+        // a fair-weather cloud passing over the sun
+        extra += 0.2F * Cumulus.shade();
         return darken * (1.0F - extra);
     }
 

@@ -1,0 +1,34 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:desert_poppy"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.superbloom"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.superbloom.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "flower": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "reikos_weather:desert_gold",
+              "reikos_weather:sand_verbena",
+              "reikos_weather:desert_poppy"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

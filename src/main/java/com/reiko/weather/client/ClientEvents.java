@@ -249,6 +249,8 @@ public final class ClientEvents {
             CloudPuffs.inversion(event.getCamera());
             CloudPuffs.lenticular(event.getCamera());
             CloudPuffs.banner(event.getCamera());
+            Cumulus.collect(event.getCamera(), partialTick);
+            StormSkies.collect(event.getCamera(), partialTick);
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
             SkySights.collectUpper(event.getCamera(), partialTick);
@@ -292,6 +294,9 @@ public final class ClientEvents {
         SkySights.tick(mc);
         ShoreAndIce.tick(mc);
         AirAndWater.tick(mc);
+        Cumulus.tick(mc);
+        StormSkies.tick(mc);
+        DampAir.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
@@ -338,6 +343,9 @@ public final class ClientEvents {
         NatureEffects.reset();
         VolcanoClient.reset();
         Mirage.reset();
+        Cumulus.reset();
+        StormSkies.reset();
+        DampAir.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();
@@ -393,6 +401,15 @@ public final class ClientEvents {
             event.setRed(Mth.lerp(k, event.getRed(), 0.95F));
             event.setGreen(Mth.lerp(k, event.getGreen(), 0.88F));
             event.setBlue(Mth.lerp(k, event.getBlue(), 0.5F));
+        }
+        float cloudMist = DampAir.cloudMist();
+        if (cloudMist > 0.02F && event.getCamera().getFluidInCamera() == FogType.NONE && Minecraft.getInstance().level != null) {
+            // the cloud forest's mist: soft, pale grey, as bright as the day
+            float light = Minecraft.getInstance().level.getSkyDarken(1.0F);
+            float k = cloudMist * 0.7F;
+            event.setRed(Mth.lerp(k, event.getRed(), 0.8F * light));
+            event.setGreen(Mth.lerp(k, event.getGreen(), 0.83F * light));
+            event.setBlue(Mth.lerp(k, event.getBlue(), 0.85F * light));
         }
         float haze = AirAndWater.blueHaze();
         if (haze > 0.02F && event.getCamera().getFluidInCamera() == FogType.NONE) {

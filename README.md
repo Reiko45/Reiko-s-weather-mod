@@ -321,6 +321,18 @@ Ways to stay comfortable:
 - **Icy waters:** gales over a freezing sea glaze the shore in **freezing spray**; under the sea ice in bitter cold,
   **brinicles** grow down to the sea floor; **polynyas**, patches of open water, never freeze over all winter; and
   fast rivers clog with slushy **frazil ice**, with anchor ice on their beds. (Block changes need `mobGriefing`.)
+- **Slush and snow crust:** rain on lying snow soaks it into heavy grey **slush** that drags at your feet; if the
+  night turns cold again it freezes into a glassy, slippery **crust**, until fresh snow buries it.
+- **Dusty snowfall:** snow that falls while desert dust is still in the air comes down tinted, and dust-darkened
+  snow melts fast in the sun.
+- **Hair ice:** on damp nights just below freezing, fine white hair ice grows on fallen logs, gone by mid-morning.
+  **Frozen bubbles:** marsh gas freezes into the ice of boggy lakes in stacks of white discs (**bubble ice**).
+- **Fog drip:** in fog, trees comb water out of the air: their leaves drip, and crops and farmland under them stay
+  watered.
+- **Cave breath:** cave mouths steam in cold weather, and on hot days a cool draught blows out of them (standing in
+  a cave mouth cools you down).
+- **Superblooms:** in a wet year, the desert flowers in spring, with drifts of **desert gold**, **sand verbena** and
+  **desert poppies** across the sand that die back in the summer heat.
 - **Lightning-charged tools:** leave a tool or weapon lying on an anvil or a copper block in a
   thunderstorm (a lightning rod nearby helps). If lightning strikes it, it's charged for five minutes:
   it mines faster and hits harder, with a crackle of sparks.
@@ -383,6 +395,12 @@ Ways to stay comfortable:
   and on still, cold mornings and evenings, smoke from fires and furnaces spreads out in a flat **woodsmoke** layer.
 - **Wall clouds and funnel clouds:** a dark, turning wall cloud hangs under the back of a supercell, and now
   and then a funnel cloud snakes down from it and draws back up.
+- **Cloud streets:** on warm, sunny days, puffy fair-weather clouds build through the morning, and in a steady
+  breeze they line up in long rows along the wind. When one drifts over the sun, the light dims for a moment.
+- **Asperitas:** around some thunderstorms the cloud base heaves and rolls overhead like a rough sea seen from below.
+- **Chinook arch:** when a föhn wind pours down off the mountains, a band of clear sky arches over them under a
+  sharp-edged deck of cloud.
+- **Echoing thunder:** among mountains and valleys, thunder comes rolling back off the slopes round you.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -529,6 +547,14 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
   one clear pool into the next.
 - **Ancient things:** **petrified forests** of stone logs (**petrified wood**), **fossil beds** with great bones
   weathering out (brush the gravel below), and **nurse logs** and root mounds in old forests.
+- **Springs and coasts:** deep, vivid **blue springs** welling out of a cave at the foot of a cliff, streams pouring
+  straight off **sea cliffs**, swarms of low, ice-smoothed **skerries** off cold coasts, and **dune slacks**: damp,
+  green hollows with pools between coastal dunes.
+- **Fire, cloud and frost:** **burning coal seams** that have smouldered underground for centuries, baking the rock
+  into red **clinker**, with smoke seeping from hot cracks in the **smouldering ground**; misty **cloud forests**
+  high on jungle mountains, dripping with moss, ferns and vines; the horseshoe cliffs of ancient **dry falls**, with
+  lakes in their old plunge pools; and boulder-strewn **frost-shattered summits**. Glaciers now carry **glacier
+  tables**: boulders on pedestals of ice.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -654,7 +680,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 87 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 91 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -664,7 +690,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
 Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
-A Lake in the Desert and Finger of Death.
+A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds and True Blue.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

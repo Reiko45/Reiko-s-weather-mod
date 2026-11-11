@@ -177,6 +177,10 @@ public final class Temperature {
             celsius -= Math.min(6.0F, celsius - 22.0F);
         }
         if (entity instanceof net.minecraft.server.level.ServerPlayer sp) celsius -= com.reiko.weather.weather.Highlands.katabaticChill(sp);
+        // in a cave mouth on a hot day, a cool draught blows out of the cave
+        if (celsius > 22.0F && level instanceof net.minecraft.server.level.ServerLevel server && com.reiko.weather.weather.LocalTouches.caveDraught(server, eyes)) {
+            celsius = Mth.lerp(0.5F, celsius, 15.0F);
+        }
         if (entity.hasEffect(ModEffects.WARMTH)) celsius += 10.0F;
         if (entity.hasEffect(ModEffects.REFRESHED)) celsius -= 10.0F;
         float insulation = insulation(entity);

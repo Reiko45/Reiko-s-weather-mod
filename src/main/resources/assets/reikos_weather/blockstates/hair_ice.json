@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/hair_ice",
+        "y": 0
+      },
+      {
+        "model": "reikos_weather:block/hair_ice",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/hair_ice",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/hair_ice",
+        "y": 270
+      }
+    ]
+  }
+}

@@ -840,6 +840,109 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void thirteenthLandformsPlan(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int s = level.getSeaLevel();
+        // (plans try a spread of spots, as the structure sets would)
+        java.util.function.BiFunction<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator, com.reiko.weather.landform.Landform> plan = (kind, ground) -> {
+            for (int i = 0; i < 80; i++) {
+                int x = Math.floorMod(i * 37, 400) - 200, z = Math.floorMod(i * 53, 400) - 200;
+                var planned = kind.plan(new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(i + 1), x, z, ground, s, level));
+                if (planned != null) return planned;
+            }
+            return null;
+        };
+        java.util.Map<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator> suits = new java.util.LinkedHashMap<>();
+        suits.put(com.reiko.weather.landform.LandformKind.CLOUD_FOREST, (x, z) -> s + 7 + (int) Math.round(55 * (0.5 + 0.5 * Math.sin(x * 0.021)) * (0.5 + 0.5 * Math.cos(z * 0.018))
+                + 5 * Math.sin(x * 0.09 + z * 0.07) + 2 * Math.cos(z * 0.13 - x * 0.05)));
+        suits.put(com.reiko.weather.landform.LandformKind.BLUE_SPRING, (x, z) -> {
+            double e = x - 18 * Math.sin(z * 0.025);
+            return s + 7 + (int) Math.round(16 / (1 + Math.exp(e * 0.5)) - 0.08 * Math.max(-40, Math.min(60, e)) + 1.5 * Math.sin(x * 0.07 + z * 0.05));
+        });
+        suits.put(com.reiko.weather.landform.LandformKind.SEA_CLIFF_FALLS, (x, z) -> {
+            double e = x - 30 - 14 * Math.sin(z * 0.03);
+            return s - 9 + (int) Math.round(26 / (1 + Math.exp(e * 0.6)) + 2 * Math.sin(x * 0.06 + z * 0.08) * (e < 0 ? 1 : 0.3) - 0.03 * Math.min(0, e));
+        });
+        suits.put(com.reiko.weather.landform.LandformKind.COAL_SEAM_FIRE, (x, z) -> (int) Math.round(s + 33 - 0.28 * x + 3 * Math.sin(z * 0.05) + 1.5 * Math.sin((x + z) * 0.09)));
+        suits.put(com.reiko.weather.landform.LandformKind.DRY_FALLS, (x, z) -> {
+            double xc = Math.floorMod(x + 100, 200) - 100;
+            return s + 13 + (int) Math.round(26 / (1 + Math.exp((Math.abs(xc) - 50 - 8 * Math.sin(z * 0.03)) * 0.35)) + 1.5 * Math.sin(x * 0.07 + z * 0.05));
+        });
+        suits.put(com.reiko.weather.landform.LandformKind.FROST_SHATTERED_SUMMIT, (x, z) -> s + 57 + (int) Math.round(6 * Math.sin(x * 0.03) * Math.cos(z * 0.035) + 2 * Math.sin((x + z) * 0.09)));
+        suits.put(com.reiko.weather.landform.LandformKind.SKERRIES, (x, z) -> {
+            double q = Math.floorMod(x + (int) Math.round(25 * Math.sin(z * 0.021)), 240) - 120, u = Math.abs(q) - 60;
+            double h = u < 0 ? s + 1 + Math.min(14, -u * 0.3) : s - 1 - (1 + u * 0.2 + Math.max(0, u - 40) * 0.6);
+            return (int) Math.round(h + 1.5 * Math.sin(x * 0.11 + z * 0.07) + 1.2 * Math.cos(z * 0.13 - x * 0.05));
+        });
+        suits.put(com.reiko.weather.landform.LandformKind.DUNE_SLACKS, (x, z) -> {
+            double q = Math.floorMod(x + (int) Math.round(18 * Math.sin(z * 0.017)), 240) - 120, u = Math.abs(q) - 60;
+            double h = u < 0 ? s + Math.min(6, -u * 0.09) : s - 1 - (0.5 + u * 0.25);
+            return (int) Math.round(h + 0.8 * Math.sin(x * 0.09 + z * 0.05) + 0.6 * Math.cos(z * 0.11 - x * 0.07));
+        });
+        for (var e : suits.entrySet()) {
+            var planned = plan.apply(e.getKey(), e.getValue());
+            helper.assertTrue(planned != null, e.getKey() + " on suitable ground");
+            var again = e.getKey().load(planned.save());
+            helper.assertTrue(again.bounds().equals(planned.bounds()), e.getKey() + " saves and loads");
+            var b = planned.bounds();
+            helper.assertTrue(b.getXSpan() < 256 && b.getZSpan() < 256, e.getKey() + " stays within its reach");
+        }
+        // none of them where they don't belong: out at sea, or on flat land
+        for (var kind : suits.keySet()) {
+            helper.assertTrue(plan.apply(kind, (x, z) -> s - 20) == null, "no " + kind + " out at sea");
+            helper.assertTrue(plan.apply(kind, (x, z) -> s + 25) == null, "no " + kind + " on flat land");
+        }
+        // glaciers now carry glacier tables, and keep them through a save
+        var glacier = plan.apply(com.reiko.weather.landform.LandformKind.GLACIER, (x, z) -> s + 37 + (int) Math.round(-0.12 * x + 4 * Math.sin(z * 0.04) + 2 * Math.sin((x + z) * 0.07)));
+        helper.assertTrue(glacier instanceof com.reiko.weather.landform.Glacier g && g.tables(), "glaciers have tables");
+        helper.assertTrue(com.reiko.weather.landform.LandformKind.GLACIER.load(glacier.save()) instanceof com.reiko.weather.landform.Glacier g2 && g2.tables(), "tables are saved");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void thawFrostAndBloom(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(13);
+        // slush melts away in mild air (the test platform's plains are well above freezing)
+        helper.setBlock(1, 1, 1, ModBlocks.SLUSH.get().defaultBlockState().setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, 3));
+        BlockPos slush = helper.absolutePos(new BlockPos(1, 1, 1));
+        for (int i = 0; i < 200 && level.getBlockState(slush).is(ModBlocks.SLUSH.get()); i++) level.getBlockState(slush).randomTick(level, slush, random);
+        helper.assertBlockNotPresent(ModBlocks.SLUSH.get(), new BlockPos(1, 1, 1));
+        // and crusted snow thaws back to slush
+        helper.setBlock(3, 1, 1, ModBlocks.SNOW_CRUST.get().defaultBlockState().setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, 2));
+        BlockPos crust = helper.absolutePos(new BlockPos(3, 1, 1));
+        for (int i = 0; i < 50 && level.getBlockState(crust).is(ModBlocks.SNOW_CRUST.get()); i++) level.getBlockState(crust).randomTick(level, crust, random);
+        helper.assertBlockNotPresent(ModBlocks.SNOW_CRUST.get(), new BlockPos(3, 1, 1));
+        // snow won't lie on the smouldering ground over a burning coal seam
+        helper.setBlock(5, 1, 1, ModBlocks.SMOULDERING_GROUND.get());
+        helper.setBlock(5, 2, 1, Blocks.SNOW);
+        BlockPos hot = helper.absolutePos(new BlockPos(5, 1, 1));
+        level.getBlockState(hot).randomTick(level, hot, random);
+        helper.assertBlockPresent(Blocks.AIR, new BlockPos(5, 2, 1));
+        // hair ice grows only on wood
+        helper.setBlock(1, 1, 4, Blocks.OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, net.minecraft.core.Direction.Axis.X));
+        helper.assertTrue(ModBlocks.HAIR_ICE.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(1, 2, 4))), "hair ice on a log");
+        helper.setBlock(3, 1, 4, Blocks.STONE);
+        helper.assertFalse(ModBlocks.HAIR_ICE.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(3, 2, 4))), "no hair ice on stone");
+        // desert wildflowers grow in sand, and go in flower pots
+        helper.setBlock(5, 1, 4, Blocks.SAND);
+        helper.assertTrue(ModBlocks.DESERT_POPPY.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(5, 2, 4))), "poppies grow in sand");
+        helper.assertFalse(ModBlocks.DESERT_GOLD.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(3, 2, 4))), "not on bare stone");
+        var pots = ((net.minecraft.world.level.block.FlowerPotBlock) Blocks.FLOWER_POT).getFullPotsView();
+        helper.assertTrue(pots.containsKey(ModBlocks.DESERT_GOLD.getId()) && pots.containsKey(ModBlocks.SAND_VERBENA.getId()) && pots.containsKey(ModBlocks.DESERT_POPPY.getId()),
+                "desert flowers can be potted");
+        // bubble ice melts like lake ice
+        helper.setBlock(1, 1, 6, Blocks.STONE);
+        helper.setBlock(1, 2, 6, ModBlocks.BUBBLE_ICE.get());
+        BlockPos bubbles = helper.absolutePos(new BlockPos(1, 2, 6));
+        for (int i = 0; i < 50 && level.getBlockState(bubbles).is(ModBlocks.BUBBLE_ICE.get()); i++) level.getBlockState(bubbles).randomTick(level, bubbles, random);
+        helper.assertBlockNotPresent(ModBlocks.BUBBLE_ICE.get(), new BlockPos(1, 2, 6));
+        // out in the open there's no cave draught
+        helper.assertFalse(com.reiko.weather.weather.LocalTouches.caveDraught(level, helper.absolutePos(new BlockPos(4, 3, 6))), "no cave draught in the open");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
     public static void fireIceAndHighlands(GameTestHelper helper) {
         var level = helper.getLevel();
         var random = net.minecraft.util.RandomSource.create(11);

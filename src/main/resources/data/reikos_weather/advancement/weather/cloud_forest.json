@@ -1,0 +1,36 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:moss_block"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.cloud_forest"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.cloud_forest.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "mist": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "location": {
+                "biomes": "reikos_weather:cloud_forest"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

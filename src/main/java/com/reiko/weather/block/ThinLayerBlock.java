@@ -18,11 +18,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A short-lived skin on the ground left by the weather: sea foam blown up the beach in a storm, needle ice pushed
- * up out of frozen soil on a frosty morning, or frost flowers on new ice. Each goes again before long: foam dries
- * up, and needle ice and frost flowers melt once the sun's on them (or it warms up).
+ * up out of frozen soil on a frosty morning, frost flowers on new ice, or hair ice combed out of a rotting log on a
+ * damp, frosty night. Each goes again before long: foam dries up, and the ice melts once the sun's on it (or it warms up).
  */
 public class ThinLayerBlock extends Block {
-    public enum Kind { SEA_FOAM, NEEDLE_ICE, FROST_FLOWERS }
+    public enum Kind { SEA_FOAM, NEEDLE_ICE, FROST_FLOWERS, HAIR_ICE }
 
     private final Kind kind;
     private final VoxelShape shape;
@@ -30,7 +30,7 @@ public class ThinLayerBlock extends Block {
     public ThinLayerBlock(Kind kind, Properties properties) {
         super(properties);
         this.kind = kind;
-        this.shape = Block.box(0, 0, 0, 16, kind == Kind.NEEDLE_ICE ? 3 : kind == Kind.SEA_FOAM ? 2 : 4, 16);
+        this.shape = Block.box(0, 0, 0, 16, kind == Kind.NEEDLE_ICE || kind == Kind.HAIR_ICE ? 3 : kind == Kind.SEA_FOAM ? 2 : 4, 16);
     }
 
     @Override
@@ -55,6 +55,7 @@ public class ThinLayerBlock extends Block {
             case SEA_FOAM -> below.is(BlockTags.SAND) || below.is(Blocks.GRAVEL) || below.isFaceSturdy(level, pos.below(), Direction.UP);
             case NEEDLE_ICE -> below.is(BlockTags.DIRT) || below.is(Blocks.FARMLAND);
             case FROST_FLOWERS -> below.is(BlockTags.ICE);
+            case HAIR_ICE -> below.is(BlockTags.LOGS);
         };
     }
 
@@ -74,7 +75,7 @@ public class ThinLayerBlock extends Block {
         boolean sunny = level.isDay() && level.getBrightness(LightLayer.SKY, pos) >= 12;
         boolean gone = switch (kind) {
             case SEA_FOAM -> random.nextInt(3) == 0; // it dries and blows away within a few minutes
-            case NEEDLE_ICE, FROST_FLOWERS -> sunny && level.getDayTime() % 24000L > 1500L && random.nextInt(2) == 0
+            case NEEDLE_ICE, FROST_FLOWERS, HAIR_ICE -> sunny && level.getDayTime() % 24000L > 1500L && random.nextInt(2) == 0
                     || warm && random.nextInt(4) == 0 || level.getBrightness(LightLayer.BLOCK, pos) > 11;
         };
         if (gone) level.removeBlock(pos, false);

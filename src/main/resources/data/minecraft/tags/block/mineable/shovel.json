@@ -18,6 +18,8 @@
     "reikos_weather:steaming_ground",
     "reikos_weather:pink_snow",
     "reikos_weather:charred_soil",
-    "reikos_weather:frazil_ice"
+    "reikos_weather:frazil_ice",
+    "reikos_weather:slush",
+    "reikos_weather:snow_crust"
   ]
 }

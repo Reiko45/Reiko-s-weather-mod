@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:potted_fireweed"
+    "reikos_weather:potted_fireweed",
+    "reikos_weather:potted_desert_gold",
+    "reikos_weather:potted_sand_verbena",
+    "reikos_weather:potted_desert_poppy"
   ]
 }

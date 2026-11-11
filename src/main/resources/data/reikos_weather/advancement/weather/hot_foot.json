@@ -1,0 +1,38 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:smouldering_ground"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.hot_foot"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.hot_foot.desc"
+    },
+    "frame": "task",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "step": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "stepping_on": {
+                "block": {
+                  "blocks": "reikos_weather:smouldering_ground"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

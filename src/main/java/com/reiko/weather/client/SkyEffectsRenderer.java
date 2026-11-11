@@ -115,7 +115,9 @@ public final class SkyEffectsRenderer {
                 ? clearSky * Mth.clamp(1.0F - moonDir.y / (harvest ? 0.6F : 0.35F), 0.0F, 1.0F) * (harvest ? 1.0F : 0.65F) : 0.0F;
         float sprayBow = overworld && ClientConfig.SPRAY_BOWS.get() && sun.y > 0.02F && sun.y < 0.65F
                 ? clearSky * (1.0F - overcast) * Mth.clamp((RoughSeas.roughness() - 0.2F) * 2.5F, 0.0F, 1.0F) : 0.0F;
-        if (!eclipsing && planets <= 0.005F && earthshine <= 0.005F && moonTint <= 0.005F && sprayBow <= 0.005F && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+        // the Chinook arch over the mountains upwind, in a föhn
+        float chinook = overworld && ClientConfig.CHINOOK_ARCH.get() ? StormSkies.chinook() : 0.0F;
+        if (!eclipsing && chinook <= 0.005F && planets <= 0.005F && earthshine <= 0.005F && moonTint <= 0.005F && sprayBow <= 0.005F && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
                 && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F
                 && milky <= 0.005F && zodiacal <= 0.005F && cha <= 0.005F && cza <= 0.005F && nacreous <= 0.005F && redSky <= 0.005F) {
             return;
@@ -134,6 +136,12 @@ public final class SkyEffectsRenderer {
             drawSolarEclipse(pose, sun, eclipse, eclipseProgress, sunAlpha);
         } else if (eclipsing && eclipse.lunar()) {
             drawLunarEclipse(pose, new Vector3f(sun).negate(), eclipse, eclipseProgress);
+        }
+        if (chinook > 0.005F) {
+            // a grey deck of cloud, so blended normally rather than added as light
+            RenderSystem.defaultBlendFunc();
+            drawChinookArch(pose, StormSkies.chinookAzimuth(), level.getSkyDarken(partialTick), chinook);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         }
         if (airglow > 0.005F) {
             drawAirglow(pose, airglow);
@@ -818,6 +826,42 @@ public final class SkyEffectsRenderer {
         boolean wet = next.vanillaRain;
         float near = Mth.clamp(1.0F - Math.abs(sun.y - 0.01F) / 0.11F, 0.0F, 1.0F);
         return (evening ? (fair ? 1.0F : 0.0F) : (wet ? 1.0F : 0.0F)) * near * (1.0F - ClientWeather.overcast() * 0.7F);
+    }
+
+    /**
+     * The Chinook arch: a deck of grey cloud over the whole sky except for a clear band over the mountains upwind,
+     * bounded by the deck's sharp, bowed edge.
+     */
+    private static void drawChinookArch(Matrix4f pose, float upAz, float daylight, float strength) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float lit = 0.3F + 0.7F * daylight;
+        float[] deck = {0.46F * lit, 0.48F * lit, 0.53F * lit}, rim = {0.86F * lit, 0.84F * lit, 0.8F * lit};
+        float opaque = Math.min(1.0F, strength * 1.4F) * 0.93F;
+        int around = 96, rows = 12;
+        for (int i = 0; i < around; i++) {
+            float a0 = i * Mth.TWO_PI / around, a1 = (i + 1) * Mth.TWO_PI / around;
+            float e0 = archEdge(a0, upAz), e1 = archEdge(a1, upAz);
+            for (int j = 0; j < rows; j++) {
+                // rows crowd together at the edge, so it stays crisp
+                float q0 = Mth.square(j / (float) rows), q1 = Mth.square((j + 1) / (float) rows);
+                float b0 = e0 + (Mth.HALF_PI - e0) * q0, b1 = e1 + (Mth.HALF_PI - e1) * q0;
+                float c0 = e0 + (Mth.HALF_PI - e0) * q1, c1 = e1 + (Mth.HALF_PI - e1) * q1;
+                float f0 = j == 0 ? 0.0F : opaque, f1 = opaque;
+                float[] lower = j <= 1 ? rim : deck, upper = j == 0 ? rim : deck;
+                vertexSky(buffer, pose, a0, b0, lower, f0);
+                vertexSky(buffer, pose, a1, b1, lower, f0);
+                vertexSky(buffer, pose, a1, c1, upper, f1);
+                vertexSky(buffer, pose, a0, c0, upper, f1);
+            }
+        }
+        draw(buffer);
+    }
+
+    /** The elevation of the arch's edge at an azimuth: highest over the mountains, down near the horizon elsewhere. */
+    private static float archEdge(float azimuth, float upAz) {
+        float d = Mth.wrapDegrees((azimuth - upAz) * Mth.RAD_TO_DEG) * Mth.DEG_TO_RAD;
+        float c = Mth.cos(d);
+        return (2.0F + 22.0F * (float) Math.pow(Math.max(0.0F, c), 0.8F)) * Mth.DEG_TO_RAD;
     }
 
     private static void drawRedSky(Matrix4f pose, Vector3f sun, float strength) {

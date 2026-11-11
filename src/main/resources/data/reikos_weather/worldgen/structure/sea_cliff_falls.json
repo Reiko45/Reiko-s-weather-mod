@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "sea_cliff_falls",
+  "biomes": "#reikos_weather:has_structure/sea_cliff_falls",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

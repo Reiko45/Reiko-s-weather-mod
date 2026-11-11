@@ -70,6 +70,11 @@ public final class AmbientSounds {
             return;
         }
         boolean thunder = id.equals(THUNDER);
+        if (thunder && !sound.isRelative() && ClientConfig.THUNDER_ECHOES.get()) {
+            Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
+            double distance = Math.sqrt(cam.distanceToSqr(sound.getX(), sound.getY(), sound.getZ()));
+            echo(mc.level, cam, ClientConfig.THUNDER_DELAY.get() ? (int) Math.min(MAX_DELAY, distance / SOUND_SPEED) : 0);
+        }
         if (ClientConfig.THUNDER_DELAY.get() && (thunder || id.equals(IMPACT)) && !sound.isRelative()) {
             Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
             double distance = Math.sqrt(cam.distanceToSqr(sound.getX(), sound.getY(), sound.getZ()));
@@ -92,6 +97,38 @@ public final class AmbientSounds {
             return sound;
         }
         return new MuffledSound(sound, 1.0F - 0.6F * indoors, 1.0F - 0.15F * indoors, global);
+    }
+
+    /**
+     * Thunder echoing back off the mountains: where high ground stands round you, the thunder comes rolling back off
+     * each slope in turn, later and fainter the further away it is. Out on open plains there's nothing to send it back.
+     */
+    private static void echo(net.minecraft.client.multiplayer.ClientLevel level, Vec3 cam, int delay) {
+        List<double[]> walls = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            float a = i * Mth.TWO_PI / 12.0F;
+            for (int r = 40; r <= 160; r += 40) {
+                int x = Mth.floor(cam.x + Mth.cos(a) * r), z = Mth.floor(cam.z + Mth.sin(a) * r);
+                if (!com.reiko.weather.client.SkySights.loaded(level, new BlockPos(x, 0, z))) break;
+                int h = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z);
+                if (h > cam.y + 14) {
+                    walls.add(new double[]{r, h - cam.y});
+                    break;
+                }
+            }
+        }
+        if (walls.size() < 3) return;
+        // the highest slopes answer loudest
+        walls.sort((p, q) -> Double.compare(q[1], p[1]));
+        float enclosed = Math.min(1.0F, walls.size() / 8.0F);
+        for (int i = 0; i < Math.min(3, walls.size()); i++) {
+            double[] w = walls.get(i);
+            float volume = (0.42F - 0.11F * i) * enclosed;
+            int back = delay + 12 + (int) (2.0 * w[0] / SOUND_SPEED) + i * 9;
+            SoundInstance echo = new SimpleSoundInstance(THUNDER, SoundSource.WEATHER, volume, 0.8F + RANDOM.nextFloat() * 0.1F, RANDOM, false, 0,
+                    SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+            PENDING.add(new Pending(echo, ticks + Math.min(back, MAX_DELAY + 60)));
+        }
     }
 
     /** A low rumble from a storm on the horizon, heard a while after its flash. */

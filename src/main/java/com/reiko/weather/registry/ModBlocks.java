@@ -143,7 +143,7 @@ public final class ModBlocks {
 
     /** Snow reddened by desert dust settling out of a haze (fresh snow buries it again). */
     public static final DeferredBlock<net.minecraft.world.level.block.SnowLayerBlock> DUSTY_SNOW = REGISTER.register("dusty_snow",
-            () -> new net.minecraft.world.level.block.SnowLayerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_PINK).replaceable()
+            () -> new com.reiko.weather.block.DustySnowBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_PINK).replaceable()
                     .forceSolidOff().randomTicks().strength(0.1F).requiresCorrectToolForDrops().sound(SoundType.SNOW)
                     .isViewBlocking((s, l, p) -> s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) >= 8)
                     .pushReaction(PushReaction.DESTROY)));
@@ -270,6 +270,59 @@ public final class ModBlocks {
     public static final DeferredBlock<com.reiko.weather.block.CharredSoilBlock> CHARRED_SOIL = REGISTER.register("charred_soil",
             () -> new com.reiko.weather.block.CharredSoilBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F)
                     .sound(SoundType.GRAVEL).randomTicks()));
+
+    /** Hair ice: fine white hair combed out of a rotting log on a damp, frosty night. */
+    public static final DeferredBlock<com.reiko.weather.block.ThinLayerBlock> HAIR_ICE = REGISTER.register("hair_ice",
+            () -> new com.reiko.weather.block.ThinLayerBlock(com.reiko.weather.block.ThinLayerBlock.Kind.HAIR_ICE, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SNOW).strength(0.0F).sound(SoundType.POWDER_SNOW).noOcclusion().randomTicks().replaceable()
+                    .pushReaction(PushReaction.DESTROY).noLootTable()));
+
+    /** Slush: snow soaked through by rain. */
+    public static final DeferredBlock<com.reiko.weather.block.SlushBlock> SLUSH = REGISTER.register("slush",
+            () -> new com.reiko.weather.block.SlushBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).replaceable()
+                    .forceSolidOff().randomTicks().strength(0.1F).sound(SoundType.WET_GRASS).pushReaction(PushReaction.DESTROY).noLootTable()
+                    .isViewBlocking((s, l, p) -> s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) >= 8)));
+
+    /** Crusted snow: slush frozen hard and glassy overnight. */
+    public static final DeferredBlock<com.reiko.weather.block.SnowCrustBlock> SNOW_CRUST = REGISTER.register("snow_crust",
+            () -> new com.reiko.weather.block.SnowCrustBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).replaceable()
+                    .forceSolidOff().randomTicks().strength(0.3F).friction(0.98F).sound(SoundType.GLASS).requiresCorrectToolForDrops()
+                    .pushReaction(PushReaction.DESTROY)
+                    .isViewBlocking((s, l, p) -> s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) >= 8)));
+
+    /** Lake ice with stacks of marsh-gas bubbles frozen into it. */
+    public static final DeferredBlock<com.reiko.weather.block.BubbleIceBlock> BUBBLE_ICE = REGISTER.register("bubble_ice",
+            () -> new com.reiko.weather.block.BubbleIceBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.ICE)));
+
+    /** Clinker: shale and sandstone baked hard and brick-red by a coal seam burning underneath. */
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> CLINKER = REGISTER.register("clinker",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_RED).strength(1.5F, 6.0F)
+                    .sound(SoundType.DEEPSLATE_BRICKS).requiresCorrectToolForDrops()));
+
+    /** Smouldering ground over a burning coal seam: hot, smoking and bare. */
+    public static final DeferredBlock<com.reiko.weather.block.SmoulderingGroundBlock> SMOULDERING_GROUND = REGISTER.register("smouldering_ground",
+            () -> new com.reiko.weather.block.SmoulderingGroundBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GRAY).strength(0.8F)
+                    .sound(SoundType.GRAVEL).randomTicks().lightLevel(s -> 3)));
+
+    /** Desert wildflowers, which only flower after a wet winter. */
+    public static final DeferredBlock<com.reiko.weather.block.DesertFlowerBlock> DESERT_GOLD = REGISTER.register("desert_gold",
+            () -> new com.reiko.weather.block.DesertFlowerBlock(net.minecraft.world.effect.MobEffects.SATURATION, 0.35F,
+                    BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.DANDELION).mapColor(MapColor.COLOR_YELLOW).randomTicks()));
+    public static final DeferredBlock<com.reiko.weather.block.DesertFlowerBlock> SAND_VERBENA = REGISTER.register("sand_verbena",
+            () -> new com.reiko.weather.block.DesertFlowerBlock(net.minecraft.world.effect.MobEffects.NIGHT_VISION, 5.0F,
+                    BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.ALLIUM).mapColor(MapColor.COLOR_PURPLE).randomTicks()));
+    public static final DeferredBlock<com.reiko.weather.block.DesertFlowerBlock> DESERT_POPPY = REGISTER.register("desert_poppy",
+            () -> new com.reiko.weather.block.DesertFlowerBlock(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 4.0F,
+                    BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.POPPY).mapColor(MapColor.COLOR_ORANGE).randomTicks()));
+    public static final DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> POTTED_DESERT_GOLD = potted("potted_desert_gold", DESERT_GOLD);
+    public static final DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> POTTED_SAND_VERBENA = potted("potted_sand_verbena", SAND_VERBENA);
+    public static final DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> POTTED_DESERT_POPPY = potted("potted_desert_poppy", DESERT_POPPY);
+
+    private static DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> potted(String name, DeferredBlock<? extends net.minecraft.world.level.block.Block> flower) {
+        return REGISTER.register(name, () -> new net.minecraft.world.level.block.FlowerPotBlock(
+                () -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT, flower,
+                BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.POTTED_ALLIUM)));
+    }
 
     private ModBlocks() {}
 }

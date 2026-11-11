@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:beach",
+    "minecraft:stony_shore",
+    "minecraft:plains",
+    "minecraft:meadow",
+    "minecraft:windswept_hills",
+    "minecraft:taiga",
+    "minecraft:forest",
+    "minecraft:snowy_beach"
+  ]
+}

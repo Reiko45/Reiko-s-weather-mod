@@ -24,18 +24,25 @@ import javax.annotation.Nullable;
  * bare lower down. Crevasses cut across it, many of them hidden under a bridge of powder snow. Where its bed
  * steepens, the ice is stretched until it cracks apart into an icefall, a chaos of toppling ice towers (seracs)
  * and gaping crevasses. Lower down, meltwater streams on its surface have drilled moulins, shafts straight down
- * through the ice to the rock. In summer the lower end melts back a little, meltwater runs off it, and pours
- * roaring down the moulins.
+ * through the ice to the rock. Here and there on the melting lower half stand glacier tables: boulders that fell onto
+ * the ice from the valley sides, each perched on a pillar of ice. The rock shades the ice under it from the sun, so as
+ * the surface melts down all round, the ice beneath the boulder is left standing. In summer the lower end melts back a
+ * little, meltwater runs off it, and pours roaring down the moulins, and the tables' pedestals melt back with the ice
+ * round them, letting their boulders down.
  *
  * @param icefall where along the glacier its icefall is ({@link #NO_ICEFALL} if it hasn't one, as on glaciers from
  *                before there were any)
  * @param moulins whether it has moulins (not on glaciers from before there were any)
+ * @param tables  whether it has glacier tables (not on glaciers from before there were any)
  */
-public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, long seed) implements Landform {
+public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
+                      long seed) implements Landform {
     public static final int NO_ICEFALL = Integer.MIN_VALUE;
+    /** The most a table's pedestal stands above the ice round it before it melts down with it. */
+    private static final int PEDESTAL = 5;
 
     public Glacier(int cx, int cz, float angle, int length, int width, int thickness, long seed) {
-        this(cx, cz, angle, length, width, thickness, NO_ICEFALL, false, seed);
+        this(cx, cz, angle, length, width, thickness, NO_ICEFALL, false, false, seed);
     }
 
     @Nullable
@@ -72,12 +79,13 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             }
             previous = h;
         }
-        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, seed);
+        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, seed);
     }
 
     static Landform load(CompoundTag tag) {
         return new Glacier(tag.getInt("x"), tag.getInt("z"), tag.getFloat("angle"), tag.getInt("length"), tag.getInt("width"),
-                tag.getInt("thick"), tag.contains("icefall") ? tag.getInt("icefall") : NO_ICEFALL, tag.getBoolean("moulins"), tag.getLong("seed"));
+                tag.getInt("thick"), tag.contains("icefall") ? tag.getInt("icefall") : NO_ICEFALL, tag.getBoolean("moulins"), tag.getBoolean("tables"),
+                tag.getLong("seed"));
     }
 
     @Override
@@ -91,6 +99,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         tag.putInt("thick", thickness);
         tag.putInt("icefall", icefall);
         tag.putBoolean("moulins", moulins);
+        tag.putBoolean("tables", tables);
         tag.putLong("seed", seed);
         return tag;
     }
@@ -102,6 +111,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
 
     @Override
     public BoundingBox bounds() {
+        // (this takes in the glacier tables too: they all stand on the ice, which lies well within it)
         int r = length / 2 + width / 2 + 3;
         return new BoundingBox(cx - r, -64, cz - r, cx + r, 319, cz + r);
     }
@@ -178,6 +188,132 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         return list.toArray(new int[0][]);
     }
 
+    /**
+     * The glacier tables, {x, z, the boulder's size, the pedestal's x, its z, its size, its height, the boulder's height,
+     * kind of rock}: each a boulder 2 or 3 blocks across (x and z its corner) on a narrower pillar of ice. They stand out
+     * on the lower, melting half of the glacier, where the ice is whole (clear of crevasses, moulins and the icefall; the
+     * ice cave runs under a roof of ice that bears them) but above the snout, where the meltwater runs. Each lies wholly
+     * in one chunk, so it's built all at once.
+     */
+    int[][] tableList() {
+        if (!tables) return new int[0][];
+        int n = 3 + Math.round(Terrain.hash(seed, 150) * 5.0F);
+        java.util.List<int[]> list = new java.util.ArrayList<>();
+        int[][] shafts = moulinList();
+        double c = Mth.cos(angle), s = Mth.sin(angle);
+        for (int i = 0; i < 128 && list.size() < n; i++) {
+            long ts = seed + 7919L * (i + 1);
+            float u = length * 0.42F * Terrain.hash(ts, 1), v = (Terrain.hash(ts, 2) - 0.5F) * halfWidth(u) * 1.6F;
+            int size = Terrain.hash(ts, 3) < 0.5F ? 2 : 3;
+            int x = Mth.floor(cx + u * c - v * s), z = Mth.floor(cz + u * s + v * c);
+            if (Math.floorMod(x, 16) > 16 - size || Math.floorMod(z, 16) > 16 - size) continue;
+            boolean ok = true;
+            // (the ice whole round it, and under it clear of a crevasse's walls too)
+            for (int dx = -1; dx <= size && ok; dx++) {
+                for (int dz = -1; dz <= size && ok; dz++) {
+                    float[] l = local(x + dx + 0.5, z + dz + 0.5);
+                    boolean under = dx >= 0 && dz >= 0 && dx < size && dz < size;
+                    ok = thicknessAt(x + dx + 0.5, z + dz + 0.5) >= 3.0F && crevasse(l[0], l[1]) < 0 && icefallAt(l[0]) == 0.0F
+                            && l[0] > 0.0F && l[0] < length * 0.42F
+                            && (!under || crevasse(l[0] + 1.2F, l[1]) < 0 && crevasse(l[0] - 1.2F, l[1]) < 0);
+                }
+            }
+            for (int[] m : shafts) ok &= x + size + 1 < m[0] - 1 || x - 2 > m[0] + m[2] || z + size + 1 < m[1] - 1 || z - 2 > m[1] + m[2];
+            for (int[] t : list) ok &= x + size + 2 < t[0] || x - 3 > t[0] + t[2] || z + size + 2 < t[1] || z - 3 > t[1] + t[2];
+            if (!ok) continue;
+            // the pedestal under the middle of a big boulder, or under one corner or side of a smaller one
+            int ps = size == 2 ? 1 : Terrain.hash(ts, 4) < 0.6F ? 1 : 2;
+            int ox = ps == 1 && size == 3 ? 1 : Terrain.hash(ts, 5) < 0.5F ? 0 : size - ps;
+            int oz = ps == 1 && size == 3 ? 1 : Terrain.hash(ts, 6) < 0.5F ? 0 : size - ps;
+            int ph = 2 + Math.round(Terrain.hash(ts, 7) * 2.0F), bh = Terrain.hash(ts, 8) < 0.55F ? 2 : 1;
+            list.add(new int[]{x, z, size, x + ox, z + oz, ps, ph, bh, Math.min(2, (int) (Terrain.hash(ts, 9) * 3.0F))});
+        }
+        return list.toArray(new int[0][]);
+    }
+
+    private static boolean boulder(BlockState state) {
+        return state.is(Blocks.STONE) || state.is(Blocks.ANDESITE) || state.is(Blocks.GRANITE);
+    }
+
+    /** A glacier table's boulder and its pedestal, standing on the ice whose top in each of its columns is {@code tops}. */
+    private void table(WorldGenLevel level, BlockPos.MutableBlockPos pos, int[] t, int[] tops) {
+        int size = t[2], rest = Integer.MIN_VALUE;
+        for (int top : tops) rest = Math.max(rest, top);
+        // the pedestal: the ice the boulder has kept in its shade while the surface melted down round it
+        rest += t[6];
+        for (int dx = 0; dx < size; dx++) {
+            for (int dz = 0; dz < size; dz++) {
+                int x = t[0] + dx, z = t[1] + dz;
+                boolean pillar = x >= t[3] && x < t[3] + t[5] && z >= t[4] && z < t[4] + t[5];
+                if (pillar) {
+                    for (int h = tops[dx * size + dz] + 1; h <= rest; h++) Terrain.set(level, pos, x, h, z, Blocks.PACKED_ICE.defaultBlockState());
+                }
+                // the boulder, chunky, its upper layer rounded off at the corners
+                boolean corner = (dx == 0 || dx == size - 1) && (dz == 0 || dz == size - 1);
+                for (int h = 1; h <= t[7]; h++) {
+                    if (h == 2 && !pillar && (size == 3 ? corner : Terrain.noise(seed + 9, x, rest, z) < 0.3F)) continue;
+                    float n = Terrain.noise(seed + 10, x, rest + h, z);
+                    Block rock = switch (t[8]) {
+                        case 0 -> n < 0.25F ? Blocks.ANDESITE : Blocks.STONE;
+                        case 1 -> n < 0.3F ? Blocks.STONE : Blocks.ANDESITE;
+                        default -> n < 0.2F ? Blocks.STONE : Blocks.GRANITE;
+                    };
+                    Terrain.set(level, pos, x, rest + h, z, rock.defaultBlockState());
+                }
+            }
+        }
+    }
+
+    /**
+     * Summer: where the ice round a glacier table has melted down, its pedestal melts back too, letting the boulder down a
+     * block onto what's left of it, so that it never stands more than a few blocks proud of the ice. (The surface melt
+     * itself never touches a table: the top of each of its columns is rock.)
+     */
+    private void settleTable(ServerLevel level) {
+        int[][] list = tableList();
+        if (list.length == 0) return;
+        int[] t = list[level.random.nextInt(list.length)];
+        int x0 = t[0], z0 = t[1], size = t[2], m = size / 2;
+        if (!level.isLoaded(new BlockPos(x0, 0, z0))) return;
+        // the ice round it, a block out from each side of the boulder
+        int around = Integer.MIN_VALUE;
+        for (int[] r : new int[][]{{x0 - 1, z0 + m}, {x0 + size, z0 + m}, {x0 + m, z0 - 1}, {x0 + m, z0 + size}}) {
+            BlockPos column = new BlockPos(r[0], 0, r[1]);
+            if (!level.isLoaded(column)) return;
+            around = Math.max(around, level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column).getY() - 1);
+        }
+        // where the boulder rests now: down through it from its top, over the pedestal
+        BlockPos.MutableBlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(t[3], 0, t[4])).below().mutable();
+        if (!boulder(level.getBlockState(pos))) return;
+        while (pos.getY() > level.getMinBuildHeight() && boulder(level.getBlockState(pos.move(net.minecraft.core.Direction.DOWN)))) {
+            // (down to the first block under the boulder)
+        }
+        // (the boulder, and any snow lying on it, all come down together)
+        int rest = pos.getY(), high = t[7] + 1;
+        if (!level.getBlockState(pos).is(Blocks.PACKED_ICE) || rest - around <= PEDESTAL) return;
+        // (only if it's still just rock over the pedestal's ice or air: leave it be if anyone has been at it)
+        for (int dx = 0; dx < size; dx++) {
+            for (int dz = 0; dz < size; dz++) {
+                BlockState under = level.getBlockState(pos.set(x0 + dx, rest, z0 + dz));
+                if (!under.isAir() && !isIce(under) && !under.is(Blocks.SNOW)) return;
+                for (int h = 1; h <= high; h++) {
+                    BlockState s = level.getBlockState(pos.set(x0 + dx, rest + h, z0 + dz));
+                    if (!s.isAir() && !boulder(s) && !s.is(Blocks.SNOW)) return;
+                }
+                if (!level.getBlockState(pos.set(x0 + dx, rest + high + 1, z0 + dz)).isAir()) return;
+            }
+        }
+        for (int dx = 0; dx < size; dx++) {
+            for (int dz = 0; dz < size; dz++) {
+                for (int h = 0; h < high; h++) {
+                    BlockState above = level.getBlockState(pos.set(x0 + dx, rest + h + 1, z0 + dz));
+                    level.setBlock(pos.set(x0 + dx, rest + h, z0 + dz), above, Block.UPDATE_ALL);
+                }
+                level.setBlock(pos.set(x0 + dx, rest + high, z0 + dz), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+    }
+
     private static BlockState iceMix(float n) {
         return n < 0.35F ? Blocks.BLUE_ICE.defaultBlockState() : n < 0.75F ? Blocks.PACKED_ICE.defaultBlockState() : Blocks.ICE.defaultBlockState();
     }
@@ -192,6 +328,13 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         long cell = seed + iu * 73428767L + iv * 912931L;
         if (fu < 1.0F || fv < 0.9F) {
             int floor = Math.max(ground + 1, top - 3 - Math.round(Terrain.hash(cell, 1) * 3.0F * fall));
+            // (where a pond just off the ice comes up against it, the ice is left standing to hold it in)
+            for (int h = top; h > floor; h--) {
+                if (Terrain.pondBeside(level, pos, x, h, z, (nx, nz) -> Math.round(thicknessAt(nx + 0.5, nz + 0.5)) < 1)) {
+                    floor = h;
+                    break;
+                }
+            }
             for (int h = floor + 1; h <= top; h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
             Terrain.set(level, pos, x, floor, z, Terrain.noise(seed, x, floor, z) < 0.5F ? Blocks.BLUE_ICE.defaultBlockState() : Blocks.SNOW_BLOCK.defaultBlockState());
             return;
@@ -207,6 +350,20 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         BoundingBox b = bounds();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int[][] shafts = moulinList();
+        // the glacier tables in this chunk, and the top of the ice in each of their columns (from the ground as it is now)
+        int[][] tabled = tableList();
+        int[][] tops = new int[tabled.length][];
+        for (int k = 0; k < tabled.length; k++) {
+            int[] t = tabled[k];
+            if (!Terrain.column(area, t[0], t[1])) continue;
+            tops[k] = new int[t[2] * t[2]];
+            for (int dx = 0; dx < t[2]; dx++) {
+                for (int dz = 0; dz < t[2]; dz++) {
+                    int x = t[0] + dx, z = t[1] + dz;
+                    tops[k][dx * t[2] + dz] = Terrain.ground(level, pos, x, z) + Math.round(thicknessAt(x + 0.5, z + 0.5));
+                }
+            }
+        }
         for (int x = Math.max(area.minX(), b.minX()); x <= Math.min(area.maxX(), b.maxX()); x++) {
             for (int z = Math.max(area.minZ(), b.minZ()); z <= Math.min(area.maxZ(), b.maxZ()); z++) {
                 int thick = Math.round(thicknessAt(x + 0.5, z + 0.5));
@@ -216,6 +373,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                     continue;
                 }
                 int ground = Terrain.ground(level, pos, x, z);
+                int pond = Terrain.surface(level, pos, x, ground, z);
                 Terrain.clearAbove(level, pos, x, ground, z, 24);
                 int top = ground + thick;
                 float fall = icefallAt(l[0]);
@@ -229,6 +387,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                     }
                     Terrain.set(level, pos, x, h, z, ice);
                 }
+                // a pond the ice has overridden is frozen into it (the sea round a snout is left alone)
+                for (int h = Math.max(top + 1, level.getSeaLevel()); h <= pond; h++) Terrain.set(level, pos, x, h, z, Blocks.PACKED_ICE.defaultBlockState());
                 // an ice cave: a blue tunnel melted up into the glacier from its foot
                 float cave = caveDistance(l[0], l[1]);
                 if (cave < 2.8F && thick >= 5) {
@@ -256,6 +416,9 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                     Terrain.set(level, pos, x, top + 1, z, Blocks.SNOW.defaultBlockState());
                 }
             }
+        }
+        for (int k = 0; k < tabled.length; k++) {
+            if (tops[k] != null) table(level, pos, tabled[k], tops[k]);
         }
     }
 
@@ -374,6 +537,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 level.setBlock(top, snout && random.nextInt(4) == 0 ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             }
         }
+        if (tables) settleTable(level);
     }
 
     /** A glacier that ends in the sea (or a lake) breaks off icebergs at its front now and then. */

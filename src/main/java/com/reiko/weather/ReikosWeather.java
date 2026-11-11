@@ -63,6 +63,12 @@ public class ReikosWeather {
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(() ->
                 ((net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT)
                         .addPlant(com.reiko.weather.registry.ModBlocks.FIREWEED.getId(), com.reiko.weather.registry.ModBlocks.POTTED_FIREWEED)));
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(() -> {
+            net.minecraft.world.level.block.FlowerPotBlock pot = (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT;
+            pot.addPlant(com.reiko.weather.registry.ModBlocks.DESERT_GOLD.getId(), com.reiko.weather.registry.ModBlocks.POTTED_DESERT_GOLD);
+            pot.addPlant(com.reiko.weather.registry.ModBlocks.SAND_VERBENA.getId(), com.reiko.weather.registry.ModBlocks.POTTED_SAND_VERBENA);
+            pot.addPlant(com.reiko.weather.registry.ModBlocks.DESERT_POPPY.getId(), com.reiko.weather.registry.ModBlocks.POTTED_DESERT_POPPY);
+        }));
 
         container.registerConfig(ModConfig.Type.SERVER, WeatherConfig.SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
@@ -183,6 +189,12 @@ public class ReikosWeather {
             event.accept(ModItems.BEACH_WRACK.get());
             event.accept(ModItems.FIREWEED.get());
             event.accept(ModItems.CHARRED_SOIL.get());
+            event.accept(ModItems.BUBBLE_ICE.get());
+            event.accept(ModItems.CLINKER.get());
+            event.accept(ModItems.SMOULDERING_GROUND.get());
+            event.accept(ModItems.DESERT_GOLD.get());
+            event.accept(ModItems.SAND_VERBENA.get());
+            event.accept(ModItems.DESERT_POPPY.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

@@ -89,6 +89,14 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue BLUE_HAZE;
     public static final ModConfigSpec.BooleanValue WOODSMOKE;
     public static final ModConfigSpec.BooleanValue ALTITUDE_SEASONS;
+    public static final ModConfigSpec.BooleanValue CLOUD_STREETS;
+    public static final ModConfigSpec.BooleanValue CLOUD_SHADE;
+    public static final ModConfigSpec.BooleanValue ASPERITAS_CLOUDS;
+    public static final ModConfigSpec.BooleanValue CHINOOK_ARCH;
+    public static final ModConfigSpec.BooleanValue THUNDER_ECHOES;
+    public static final ModConfigSpec.BooleanValue CAVE_BREATH;
+    public static final ModConfigSpec.BooleanValue FOG_DRIP;
+    public static final ModConfigSpec.BooleanValue CLOUD_FOREST_MIST;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -264,6 +272,22 @@ public final class ClientConfig {
                 .define("woodsmokeInversions", true);
         ALTITUDE_SEASONS = b.comment("High ground greens up later in spring and turns earlier in autumn.")
                 .define("altitudeSeasons", true);
+        CLOUD_STREETS = b.comment("On breezy summer days, fair-weather clouds line up in rows along the wind.")
+                .define("cloudStreets", true);
+        CLOUD_SHADE = b.comment("On broken-cloud days the light dims and brightens as clouds cross the sun.")
+                .define("cloudShade", true);
+        ASPERITAS_CLOUDS = b.comment("A rough, wave-tossed cloud base rolling overhead around storms.")
+                .define("asperitasClouds", true);
+        CHINOOK_ARCH = b.comment("During a foehn wind, a clear band of sky arches over the mountains under the cloud deck.")
+                .define("chinookArch", true);
+        THUNDER_ECHOES = b.comment("Thunder echoes back off the mountains and valley sides round you.")
+                .define("thunderEchoes", true);
+        CAVE_BREATH = b.comment("Cave mouths steam in cold weather.")
+                .define("caveBreath", true);
+        FOG_DRIP = b.comment("Leaves drip in fog.")
+                .define("fogDrip", true);
+        CLOUD_FOREST_MIST = b.comment("Cloud forests are wrapped in drifting mist.")
+                .define("cloudForestMist", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

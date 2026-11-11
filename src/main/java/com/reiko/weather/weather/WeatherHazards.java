@@ -70,11 +70,17 @@ public final class WeatherHazards {
             WeatherProfile profile = local.profile();
             float intensity = local.intensity();
 
+            // desert dust in the air: snow falling for a day or so after comes down dusty
+            if (profile.dustLayers > 0 || local.type() == WeatherType.HABOOB || local.type() == WeatherType.SANDSTORM) {
+                DUST_IN_AIR.put(player.getUUID(), level.getGameTime());
+            }
+            Long dust = DUST_IN_AIR.get(player.getUUID());
+            boolean dusty = dust != null && level.getGameTime() - dust < 24000L && WeatherConfig.DUSTY_SNOWFALL.get() && climate != Climate.ARID;
             int maxLayers = Math.min(profile.snowLayers, WeatherConfig.MAX_SNOW_LAYERS.get());
             if (maxLayers > 0 && intensity > 0) {
                 int attempts = Mth.ceil(6 * intensity);
                 for (int i = 0; i < attempts; i++) {
-                    accumulateSnow(level, randomColumn(level, player, random), maxLayers);
+                    accumulateSnow(level, randomColumn(level, player, random), maxLayers, dusty);
                 }
             }
             if (profile.ashLayers > 0 && intensity > 0 && WeatherConfig.ASH_FALL.get()) {
@@ -107,6 +113,7 @@ public final class WeatherHazards {
             Seas.tickPlayer(level, state, player, local, climate);
             StormWake.tickPlayer(level, player, local, climate);
             IcyWaters.tickPlayer(level, player, local, climate);
+            LocalTouches.tickPlayer(level, player, local, climate);
             if (profile.glazeWater && WeatherConfig.GLAZE_WATER.get() && random.nextFloat() < intensity) {
                 glazeWater(level, randomColumn(level, player, random));
             }
@@ -187,7 +194,10 @@ public final class WeatherHazards {
         return level.isLoaded(column) ? level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column) : null;
     }
 
-    private static void accumulateSnow(ServerLevel level, @Nullable BlockPos pos, int maxLayers) {
+    /** When each player last had desert dust in the air round them. */
+    private static final java.util.Map<java.util.UUID, Long> DUST_IN_AIR = new java.util.HashMap<>();
+
+    private static void accumulateSnow(ServerLevel level, @Nullable BlockPos pos, int maxLayers, boolean dusty) {
         if (pos == null || !level.isLoaded(pos)) {
             return;
         }
@@ -196,8 +206,22 @@ public final class WeatherHazards {
             return;
         }
         BlockState state = level.getBlockState(pos);
-        if (state.is(ModBlocks.DUSTY_SNOW.get())) {
+        if (dusty && (state.is(ModBlocks.DUSTY_SNOW.get()) || state.is(Blocks.SNOW))) {
+            // snow falling through the dust brings it down with it
+            int layers = state.getValue(SnowLayerBlock.LAYERS);
+            if (layers < maxLayers || state.is(Blocks.SNOW)) {
+                BlockState grown = ModBlocks.DUSTY_SNOW.get().defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers < maxLayers ? Math.min(8, layers + 1) : layers);
+                Block.pushEntitiesUp(state, grown, level, pos);
+                level.setBlockAndUpdate(pos, grown);
+            }
+        } else if (dusty && state.isAir() && ModBlocks.DUSTY_SNOW.get().defaultBlockState().canSurvive(level, pos)) {
+            level.setBlockAndUpdate(pos, ModBlocks.DUSTY_SNOW.get().defaultBlockState());
+        } else if (state.is(ModBlocks.DUSTY_SNOW.get())) {
             // fresh snow buries the dust
+            int layers = Math.min(8, state.getValue(SnowLayerBlock.LAYERS) + 1);
+            level.setBlockAndUpdate(pos, Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers));
+        } else if (state.is(ModBlocks.SNOW_CRUST.get()) || state.is(ModBlocks.SLUSH.get())) {
+            // fresh snow on a crust (or on slush, freezing again)
             int layers = Math.min(8, state.getValue(SnowLayerBlock.LAYERS) + 1);
             level.setBlockAndUpdate(pos, Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS, layers));
         } else if (state.is(Blocks.SNOW)) {

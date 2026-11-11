@@ -141,6 +141,12 @@ public final class Terrain {
     /** Crystal-clear blue water (rift fissures, fairy pools). */
     public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> CLEAR_WATER_BIOME =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("clear_water"));
+    /** A cloud forest: cool, dripping jungle wrapped in mist (the client draws the mist here). */
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> CLOUD_FOREST_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("cloud_forest"));
+    /** The deep, vivid azure of a blue spring. */
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> BLUE_SPRING_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("blue_spring"));
 
     /**
      * Repaints the biome over part of the chunk being built: every 4x4x4 biome cell between {@code minY} and

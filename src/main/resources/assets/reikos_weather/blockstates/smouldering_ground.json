@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/smouldering_ground",
+        "y": 0
+      },
+      {
+        "model": "reikos_weather:block/smouldering_ground",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/smouldering_ground",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/smouldering_ground",
+        "y": 270
+      }
+    ]
+  }
+}
