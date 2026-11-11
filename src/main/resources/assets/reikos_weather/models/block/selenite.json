@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "end": "reikos_weather:block/selenite_top",
+    "side": "reikos_weather:block/selenite"
+  }
+}

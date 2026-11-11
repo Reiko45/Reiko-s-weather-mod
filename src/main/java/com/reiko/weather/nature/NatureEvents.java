@@ -119,6 +119,13 @@ public final class NatureEvents {
             ItemStack fish = event.getDrops().stream().filter(s -> s.is(ItemTags.FISHES)).findFirst().orElse(new ItemStack(Items.COD));
             extra.add(fish.copyWithCount(1 + random.nextInt(2)));
             if (player instanceof ServerPlayer serverPlayer) WeatherAdvancements.award(serverPlayer, "upwelling");
+        } else if (WeatherConfig.INSECT_HATCHES.get() && level.getBiome(pos).is(net.minecraft.tags.BiomeTags.IS_RIVER) && local != null
+                && com.reiko.weather.weather.InsectHatches.mayflies(WeatherManager.seasonInfo().season(), WeatherManager.seasonInfo().dayOfSeason(),
+                        WeatherManager.seasonInfo().daysPerSeason(), level.getDayTime(), local.profile().wind, raining)
+                && random.nextFloat() < 0.4F) {
+            // a mayfly hatch: the trout are rising to the flies, and take anything
+            ItemStack fish = event.getDrops().stream().filter(s -> s.is(ItemTags.FISHES)).findFirst().orElse(new ItemStack(Items.SALMON));
+            extra.add(fish.copyWithCount(1));
         } else if (raining && random.nextFloat() < 0.3F) {
             // fish bite better in the rain: sometimes a second fish comes up
             ItemStack fish = event.getDrops().stream().filter(s -> s.is(ItemTags.FISHES)).findFirst().orElse(new ItemStack(Items.COD));

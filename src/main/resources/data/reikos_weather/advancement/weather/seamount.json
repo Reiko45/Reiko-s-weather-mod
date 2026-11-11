@@ -1,0 +1,39 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:brain_coral_block"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.seamount"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.seamount.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "dive": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "location": {
+                "structures": "reikos_weather:seamount"
+              },
+              "flags": {
+                "is_swimming": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

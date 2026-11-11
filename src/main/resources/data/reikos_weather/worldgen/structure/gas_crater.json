@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "gas_crater",
+  "biomes": "#reikos_weather:has_structure/gas_crater",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

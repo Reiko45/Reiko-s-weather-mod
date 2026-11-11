@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "seamount",
+  "biomes": "#reikos_weather:has_structure/seamount",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

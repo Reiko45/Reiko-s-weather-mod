@@ -26,23 +26,36 @@ import javax.annotation.Nullable;
  * and gaping crevasses. Lower down, meltwater streams on its surface have drilled moulins, shafts straight down
  * through the ice to the rock. Here and there on the melting lower half stand glacier tables: boulders that fell onto
  * the ice from the valley sides, each perched on a pillar of ice. The rock shades the ice under it from the sun, so as
- * the surface melts down all round, the ice beneath the boulder is left standing. In summer the lower end melts back a
- * little, meltwater runs off it, and pours roaring down the moulins, and the tables' pedestals melt back with the ice
- * round them, letting their boulders down.
+ * the surface melts down all round, the ice beneath the boulder is left standing. In the middle and lower reaches the
+ * meltwater gathers in hollows of the ice as supraglacial lakes, startlingly blue against the white (clean ice under clear
+ * water shows off the deep blue of the water itself), and runs into them along little channels it has melted down into
+ * the surface. In summer the lower end melts back a little, meltwater runs off it, and pours roaring down the moulins, and
+ * the tables' pedestals melt back with the ice round them, letting their boulders down.
  *
- * @param icefall where along the glacier its icefall is ({@link #NO_ICEFALL} if it hasn't one, as on glaciers from
- *                before there were any)
- * @param moulins whether it has moulins (not on glaciers from before there were any)
- * @param tables  whether it has glacier tables (not on glaciers from before there were any)
+ * @param icefall    where along the glacier its icefall is ({@link #NO_ICEFALL} if it hasn't one, as on glaciers from
+ *                   before there were any)
+ * @param moulins    whether it has moulins (not on glaciers from before there were any)
+ * @param tables     whether it has glacier tables (not on glaciers from before there were any)
+ * @param lakes      whether it has meltwater lakes (not on glaciers from before there were any)
+ * @param meltwater  the meltwater lakes and channels, as planned: the number of lakes; then for each lake {x, z, its
+ *                   radius along the glacier and across it (in tenths of a block), its depth, its water level}; then for
+ *                   each channel {which lake it runs into, the x and z of its head, its half-width (in tenths), its depth}
  */
 public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
-                      long seed) implements Landform {
+                      boolean lakes, int[] meltwater, long seed) implements Landform {
     public static final int NO_ICEFALL = Integer.MIN_VALUE;
     /** The most a table's pedestal stands above the ice round it before it melts down with it. */
     private static final int PEDESTAL = 5;
+    /** How far round its water a meltwater lake's hollow reaches, and how far beyond that the moulins and tables keep clear of it. */
+    private static final float BOWL = 3.0F, CLEAR = 1.5F;
+    private static final int[] DRY = {0, 0, 0, 0, -1};
 
     public Glacier(int cx, int cz, float angle, int length, int width, int thickness, long seed) {
         this(cx, cz, angle, length, width, thickness, NO_ICEFALL, false, false, seed);
+    }
+
+    public Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables, long seed) {
+        this(cx, cz, angle, length, width, thickness, icefall, moulins, tables, false, new int[0], seed);
     }
 
     @Nullable
@@ -79,13 +92,14 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             }
             previous = h;
         }
-        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, seed);
+        Glacier glacier = new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, seed);
+        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, true, glacier.planMeltwater(c), seed);
     }
 
     static Landform load(CompoundTag tag) {
         return new Glacier(tag.getInt("x"), tag.getInt("z"), tag.getFloat("angle"), tag.getInt("length"), tag.getInt("width"),
                 tag.getInt("thick"), tag.contains("icefall") ? tag.getInt("icefall") : NO_ICEFALL, tag.getBoolean("moulins"), tag.getBoolean("tables"),
-                tag.getLong("seed"));
+                tag.getBoolean("lakes"), tag.getIntArray("meltwater"), tag.getLong("seed"));
     }
 
     @Override
@@ -100,6 +114,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         tag.putInt("icefall", icefall);
         tag.putBoolean("moulins", moulins);
         tag.putBoolean("tables", tables);
+        tag.putBoolean("lakes", lakes);
+        tag.put("meltwater", new net.minecraft.nbt.IntArrayTag(meltwater));
         tag.putLong("seed", seed);
         return tag;
     }
@@ -162,8 +178,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
 
     /**
      * The moulins, {x, z, size, lip x, lip z}: each a shaft 1 or 2 blocks across, and the notch on one side of it
-     * where the meltwater pours in. They're only where the ice is thick and whole, clear of crevasses, the ice cave
-     * and the icefall, and above the snout that melts back in summer.
+     * where the meltwater pours in. They're only where the ice is thick and whole, clear of crevasses, the ice cave,
+     * the icefall and the meltwater lakes, and above the snout that melts back in summer.
      */
     private int[][] moulinList() {
         if (!moulins) return new int[0][];
@@ -180,7 +196,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             for (int dx = -2; dx <= size + 1 && ok; dx++) {
                 for (int dz = -2; dz <= size + 1 && ok; dz++) {
                     float[] l = local(x + dx + 0.5, z + dz + 0.5);
-                    ok = thicknessAt(x + dx + 0.5, z + dz + 0.5) >= 4.0F && crevasse(l[0], l[1]) < 0 && caveDistance(l[0], l[1]) > 4.5F && icefallAt(l[0]) == 0.0F;
+                    ok = thicknessAt(x + dx + 0.5, z + dz + 0.5) >= 4.0F && crevasse(l[0], l[1]) < 0 && caveDistance(l[0], l[1]) > 4.5F && icefallAt(l[0]) == 0.0F
+                            && meltAt(x + dx, z + dz)[0] == 0;
                 }
             }
             if (ok) list.add(new int[]{x, z, size, lx, lz});
@@ -189,11 +206,218 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
     }
 
     /**
+     * Plans the meltwater lakes: one to four, each in a hollow of thick ice in the middle or lower part of the glacier,
+     * clear of the icefall and of each other, with its water a block under the lowest of the ice round it (or held in by a
+     * low lip of ice on a slope) and clean ice under it; and a channel of meltwater leading into most of them. (Crevasses
+     * running into a lake stop short of it, the moulins and tables keep out of its way, and the ice cave keeps below it.)
+     * Laid out as {@link #meltwater}.
+     */
+    private int[] planMeltwater(PlanContext c) {
+        RandomSource random = c.random();
+        int want = 1 + random.nextInt(4);
+        java.util.List<int[]> lakeList = new java.util.ArrayList<>(), channelList = new java.util.ArrayList<>();
+        // (the moulins and tables keep out of the lakes' way, rather than the other way about)
+        double cs = Mth.cos(angle), sn = Mth.sin(angle);
+        // (no more than a hundred or so samples of the ground in all)
+        int asked = 0;
+        for (int attempt = 0; attempt < 24 && lakeList.size() < want && asked < 100; attempt++) {
+            float rv = 3.0F + random.nextFloat() * 5.0F, ru = Math.max(2.5F, rv * (0.5F + 0.4F * random.nextFloat())), pick = random.nextFloat();
+            boolean left = random.nextBoolean();
+            int deep = 1 + random.nextInt(3);
+            // where along the glacier: anywhere in its middle and lower reaches but in the icefall
+            float lo = -0.2F * length + ru * 1.12F + 2.0F, hi = 0.38F * length - ru * 1.12F - 2.0F;
+            float gap0 = icefall == NO_ICEFALL ? hi : icefall - 9.5F - ru * 1.12F - 2.0F, gap1 = icefall == NO_ICEFALL ? hi : icefall + 9.5F + ru * 1.12F + 2.0F;
+            float before = Math.max(0.0F, Math.min(hi, gap0) - lo), after = Math.max(0.0F, hi - Math.max(lo, gap1));
+            if (before + after <= 0.0F) break;
+            float u = pick * (before + after) < before ? lo + pick * (before + after) : Math.max(lo, gap1) + pick * (before + after) - before;
+            // and across it, stretched across the glacier but never wider than it
+            float room = halfWidth(u) * 0.85F - 2.0F;
+            rv = Math.min(rv, room / 1.12F);
+            float v = (left ? -1.0F : 1.0F) * (room - rv * 1.12F) * pick;
+            ru = Math.min(ru, Math.max(2.5F, rv));
+            if (rv < 3.0F) continue;
+            int x = Mth.floor(cx + u * cs - v * sn), z = Mth.floor(cz + u * sn + v * cs);
+            int[] others = pack(lakeList, channelList), lake = {x, z, Math.round(ru * 10.0F), Math.round(rv * 10.0F), deep, 0};
+            if (!fits(pack(java.util.List.of(lake), java.util.List.of()), others)) continue;
+            // its water a block under the lowest of the ice round it
+            int rim = Integer.MAX_VALUE, high = Integer.MIN_VALUE, under = Integer.MIN_VALUE, middle = c.groundAt(x, z);
+            asked += 9;
+            for (int k = 0; k < 8; k++) {
+                float a = k * Mth.PI / 4.0F, lu = Mth.cos(a) * (ru * 1.12F + 1.0F), lv = Mth.sin(a) * (rv * 1.12F + 1.0F);
+                int px = Mth.floor(x + 0.5 + lu * cs - lv * sn), pz = Mth.floor(z + 0.5 + lu * sn + lv * cs);
+                int g = c.groundAt(px, pz), top = g + Math.round(thicknessAt(px + 0.5, pz + 0.5));
+                rim = Math.min(rim, top);
+                high = Math.max(high, top);
+                under = Math.max(under, g);
+            }
+            // (on a slope, held in by a lip of ice a block or two high on its lower side, so as to have clean ice under all of
+            // it; not sunk deep into the slope; and deepest in the middle)
+            int water = Math.max(rim - 1, under + 2);
+            if (water > rim + 1 || high - water > 6) continue;
+            while (lake[4] > 1 && water - lake[4] <= middle) lake[4]--;
+            if (water - lake[4] <= middle) continue;
+            lake[5] = water;
+            int index = lakeList.size();
+            if (random.nextFloat() < 0.7F) {
+                // a channel the meltwater has melted down into the ice, running into it from up the glacier
+                float th = Mth.PI + (random.nextFloat() - 0.5F) * 2.4F, hw = random.nextFloat() < 0.6F ? 0.6F : 1.1F, most = 5.0F + random.nextFloat() * 9.0F;
+                int cd = hw > 1.0F && random.nextBoolean() ? 2 : 1;
+                float ct = Mth.cos(th), st = Mth.sin(th), edge = 1.12F / Mth.sqrt(Mth.square(ct / ru) + Mth.square(st / rv));
+                int[] channel = null;
+                for (float k = 2.0F; k <= most; k += 1.0F) {
+                    float lu = ct * (edge + k), lv = st * (edge + k);
+                    float px = (float) (x + 0.5 + lu * cs - lv * sn), pz = (float) (z + 0.5 + lu * sn + lv * cs);
+                    int[] longer = {0, Mth.floor(px), Mth.floor(pz), Math.round(hw * 10.0F), cd};
+                    if (!fits(pack(java.util.List.of(lake), java.util.List.of(longer)), others)) break;
+                    if ((int) k % 3 == 2) {
+                        // (the ice beside it at least a block over its water, and clean ice under it)
+                        int g = c.groundAt(Mth.floor(px), Mth.floor(pz)), top = g + Math.round(thicknessAt(px, pz));
+                        asked++;
+                        if (top < water + 1 || top - water > 6 || water - cd <= g) break;
+                    }
+                    channel = longer;
+                }
+                if (channel != null && channel[0] == 0) {
+                    float run = Mth.sqrt(Mth.square(channel[1] - x) + Mth.square(channel[2] - z));
+                    if (run >= edge + 4.0F) {
+                        channel[0] = index;
+                        channelList.add(channel);
+                    }
+                }
+            }
+            lakeList.add(lake);
+        }
+        return pack(lakeList, channelList);
+    }
+
+    /**
+     * Whether the meltwater in {@code planned} (laid out as {@link #meltwater}) fits: its water and the ice holding it in
+     * on thick ice clear of the icefall, and the hollow round it on the glacier, above the snout, and clear of the
+     * meltwater planned already ({@code others}). (An ice cave running under it keeps below its water.)
+     */
+    private boolean fits(int[] planned, int[] others) {
+        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE, r = 0;
+        for (int i = 0; i < planned[0]; i++) {
+            int o = 1 + i * 6;
+            r = Math.max(r, Math.max(planned[o + 2], planned[o + 3]));
+            minX = Math.min(minX, planned[o]);
+            maxX = Math.max(maxX, planned[o]);
+            minZ = Math.min(minZ, planned[o + 1]);
+            maxZ = Math.max(maxZ, planned[o + 1]);
+        }
+        for (int o = 1 + planned[0] * 6; o + 4 < planned.length; o += 5) {
+            minX = Math.min(minX, planned[o + 1]);
+            maxX = Math.max(maxX, planned[o + 1]);
+            minZ = Math.min(minZ, planned[o + 2]);
+            maxZ = Math.max(maxZ, planned[o + 2]);
+        }
+        int reach = Mth.ceil(r / 10.0F * 1.12F + BOWL + 2.0F);
+        for (int x = minX - reach; x <= maxX + reach; x++) {
+            for (int z = minZ - reach; z <= maxZ + reach; z++) {
+                int[] w = melt(planned, x, z);
+                if (w[0] == 0) continue;
+                float edge = w[0] == 2 ? 0.0F : w[3] / 10.0F;
+                if (edge >= BOWL + 1.0F) continue;
+                float[] l = local(x + 0.5, z + 0.5);
+                // (the water and the ice holding it in on thick, whole ice; the hollow round it on the glacier, though it
+                // stops short of an icefall it comes to, and cuts short any crevasse)
+                if (edge < 2.0F && thicknessAt(x + 0.5, z + 0.5) < 3.0F) return false;
+                if (thicknessAt(x + 0.5, z + 0.5) < 1.0F || edge < 2.0F && icefallAt(l[0]) >= 0.05F || l[0] > length * 0.38F) return false;
+                int[] near = melt(others, x, z);
+                if (near[0] == 2 || near[0] == 1 && near[3] < (BOWL + 1.0F) * 10.0F) return false;
+            }
+        }
+        return true;
+    }
+
+    private static int[] pack(java.util.List<int[]> lakeList, java.util.List<int[]> channelList) {
+        if (lakeList.isEmpty()) return new int[0];
+        int[] out = new int[1 + lakeList.size() * 6 + channelList.size() * 5];
+        out[0] = lakeList.size();
+        int o = 1;
+        for (int[] l : lakeList) {
+            System.arraycopy(l, 0, out, o, 6);
+            o += 6;
+        }
+        for (int[] ch : channelList) {
+            System.arraycopy(ch, 0, out, o, 5);
+            o += 5;
+        }
+        return out;
+    }
+
+    /** What a column is to the meltwater lakes and channels (see {@link #melt}). */
+    private int[] meltAt(int x, int z) {
+        return melt(meltwater, x, z);
+    }
+
+    /**
+     * What a column is to the meltwater in {@code data} (laid out as {@link #meltwater}): {0 nothing, 1 the ice round a
+     * lake or channel, 2 its water; the water's level; how deep the water is here; how far from the water the column is,
+     * in tenths; which lake}.
+     */
+    private int[] melt(int[] data, int x, int z) {
+        if (data.length == 0) return DRY;
+        int n = data[0];
+        float reach = BOWL + CLEAR + 1.0F, nearest = reach;
+        double cs = Mth.cos(angle), sn = Mth.sin(angle);
+        int[] best = DRY;
+        for (int i = 0; i < n; i++) {
+            int o = 1 + i * 6;
+            double dx = x - data[o], dz = z - data[o + 1];
+            float lu = (float) (dx * cs + dz * sn), lv = (float) (-dx * sn + dz * cs), ru = data[o + 2] / 10.0F, rv = data[o + 3] / 10.0F;
+            if (Math.abs(lu) > ru * 1.12F + reach || Math.abs(lv) > rv * 1.12F + reach) continue;
+            // (its shore a little ragged)
+            float e = Mth.sqrt(Mth.square(lu / ru) + Mth.square(lv / rv)) / (0.9F + 0.2F * Terrain.field(seed + 300 + i, x, z, 3.0));
+            if (e < 1.0F) return new int[]{2, data[o + 5], 1 + Math.round((data[o + 4] - 1) * Mth.sqrt(1.0F - e * e)), 0, i};
+            float edge = Mth.sqrt(lu * lu + lv * lv) * (1.0F - 1.0F / e);
+            if (edge < nearest) {
+                nearest = edge;
+                best = new int[]{1, data[o + 5], 0, Math.round(edge * 10.0F), i};
+            }
+        }
+        for (int o = 1 + n * 6; o + 4 < data.length; o += 5) {
+            int i = data[o], lo = 1 + i * 6;
+            float ax = data[lo] + 0.5F, az = data[lo + 1] + 0.5F, ex = data[o + 1] + 0.5F - ax, ez = data[o + 2] + 0.5F - az;
+            float px = x + 0.5F - ax, pz = z + 0.5F - az, len = ex * ex + ez * ez;
+            float f = len > 0.0F ? Mth.clamp((px * ex + pz * ez) / len, 0.0F, 1.0F) : 0.0F;
+            float d = Mth.sqrt(Mth.square(px - f * ex) + Mth.square(pz - f * ez)), hw = data[o + 3] / 10.0F;
+            if (d < hw) return new int[]{2, data[lo + 5], data[o + 4], 0, i};
+            if (d - hw < nearest) {
+                nearest = d - hw;
+                best = new int[]{1, data[lo + 5], 0, Math.round((d - hw) * 10.0F), i};
+            }
+        }
+        return best;
+    }
+
+    /**
+     * A meltwater lake's (or channel's) water in one column, over clean ice, or the ice of the hollow round it, sloping up
+     * from a block over the water's edge to the glacier's surface; {@code top} is the top of the ice there.
+     */
+    private static void meltwater(WorldGenLevel level, BlockPos.MutableBlockPos pos, int x, int z, int ground, int top, int[] melt) {
+        int water = melt[1];
+        if (melt[0] == 2) {
+            int bed = water - melt[2];
+            for (int h = top + 1; h < bed; h++) Terrain.set(level, pos, x, h, z, Blocks.PACKED_ICE.defaultBlockState());
+            if (bed > ground) Terrain.set(level, pos, x, bed, z, Blocks.BLUE_ICE.defaultBlockState());
+            for (int h = bed + 1; h <= water; h++) Terrain.set(level, pos, x, h, z, Blocks.WATER.defaultBlockState());
+            for (int h = water + 1; h <= top; h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+            return;
+        }
+        int side = Math.max(water + 1, Math.min(top, water + 1 + Math.round(melt[3] / 10.0F * 1.2F)));
+        if (side == top) return;
+        for (int h = top + 1; h < side; h++) Terrain.set(level, pos, x, h, z, Blocks.PACKED_ICE.defaultBlockState());
+        for (int h = side + 1; h <= top; h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+        Terrain.set(level, pos, x, side, z, melt[3] < 10 ? Blocks.BLUE_ICE.defaultBlockState() : Blocks.PACKED_ICE.defaultBlockState());
+    }
+
+    /**
      * The glacier tables, {x, z, the boulder's size, the pedestal's x, its z, its size, its height, the boulder's height,
      * kind of rock}: each a boulder 2 or 3 blocks across (x and z its corner) on a narrower pillar of ice. They stand out
-     * on the lower, melting half of the glacier, where the ice is whole (clear of crevasses, moulins and the icefall; the
-     * ice cave runs under a roof of ice that bears them) but above the snout, where the meltwater runs. Each lies wholly
-     * in one chunk, so it's built all at once.
+     * on the lower, melting half of the glacier, where the ice is whole (clear of crevasses, moulins, meltwater lakes and
+     * the icefall; the ice cave runs under a roof of ice that bears them) but above the snout, where the meltwater runs.
+     * Each lies wholly in one chunk, so it's built all at once.
      */
     int[][] tableList() {
         if (!tables) return new int[0][];
@@ -214,7 +438,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                     float[] l = local(x + dx + 0.5, z + dz + 0.5);
                     boolean under = dx >= 0 && dz >= 0 && dx < size && dz < size;
                     ok = thicknessAt(x + dx + 0.5, z + dz + 0.5) >= 3.0F && crevasse(l[0], l[1]) < 0 && icefallAt(l[0]) == 0.0F
-                            && l[0] > 0.0F && l[0] < length * 0.42F
+                            && l[0] > 0.0F && l[0] < length * 0.42F && meltAt(x + dx, z + dz)[0] == 0
                             && (!under || crevasse(l[0] + 1.2F, l[1]) < 0 && crevasse(l[0] - 1.2F, l[1]) < 0);
                 }
             }
@@ -328,9 +552,9 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         long cell = seed + iu * 73428767L + iv * 912931L;
         if (fu < 1.0F || fv < 0.9F) {
             int floor = Math.max(ground + 1, top - 3 - Math.round(Terrain.hash(cell, 1) * 3.0F * fall));
-            // (where a pond just off the ice comes up against it, the ice is left standing to hold it in)
+            // (where a pond just off the ice comes up against it, or the sea round a snout, the ice is left standing to hold it in)
             for (int h = top; h > floor; h--) {
-                if (Terrain.pondBeside(level, pos, x, h, z, (nx, nz) -> Math.round(thicknessAt(nx + 0.5, nz + 0.5)) < 1)) {
+                if (h < level.getSeaLevel() || Terrain.pondBeside(level, pos, x, h, z, (nx, nz) -> Math.round(thicknessAt(nx + 0.5, nz + 0.5)) < 1)) {
                     floor = h;
                     break;
                 }
@@ -391,11 +615,23 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 for (int h = Math.max(top + 1, level.getSeaLevel()); h <= pond; h++) Terrain.set(level, pos, x, h, z, Blocks.PACKED_ICE.defaultBlockState());
                 // an ice cave: a blue tunnel melted up into the glacier from its foot
                 float cave = caveDistance(l[0], l[1]);
+                int[] melt = meltAt(x, z);
+                // (where it runs under a meltwater lake, it keeps below the lake's bed)
+                int ceiling = melt[0] == 2 || melt[0] == 1 && melt[3] < 20 ? melt[1] - 4 : Integer.MAX_VALUE;
                 if (cave < 2.8F && thick >= 5) {
                     int roof = Math.round(Mth.sqrt(Math.max(0.0F, 2.6F * 2.6F - cave * cave)) * 1.3F) + 1;
-                    for (int h = ground + 1; h <= ground + Math.min(roof, thick - 2); h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+                    for (int h = ground + 1; h <= Math.min(ceiling, ground + Math.min(roof, thick - 2)); h++) {
+                        // (but never under the sea round a snout, nor beside a pond just off the ice)
+                        if (h < level.getSeaLevel() || Terrain.pondBeside(level, pos, x, h, z, (nx, nz) -> Math.round(thicknessAt(nx + 0.5, nz + 0.5)) < 1)) continue;
+                        Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+                    }
                 } else if (cave < 4.0F && thick >= 5) {
                     for (int h = ground + 1; h <= ground + Math.min(4, thick - 1); h++) Terrain.set(level, pos, x, h, z, Blocks.BLUE_ICE.defaultBlockState());
+                }
+                // a meltwater lake in a hollow of the ice, or a channel running into one
+                if (melt[0] == 2 || melt[0] == 1 && melt[3] < BOWL * 10.0F && (melt[3] < 20 || fall < 0.05F)) {
+                    meltwater(level, pos, x, z, ground, Math.max(top, pond), melt);
+                    continue;
                 }
                 if (fall >= 0.05F && thick >= 2) {
                     icefall(level, pos, x, z, l, ground, top, fall);
@@ -403,13 +639,20 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 }
                 if (moulin(level, pos, shafts, x, z, ground, top)) continue;
                 if (crev >= 0) {
-                    int depth = Mth.clamp(thick + 2, 5, 8);
-                    for (int h = top - depth + 1; h <= top; h++) {
+                    int floor = top - Mth.clamp(thick + 2, 5, 8);
+                    // (never open down into the sea round a snout, nor beside a pond just off the ice)
+                    for (int h = top; h > floor; h--) {
+                        if (h < level.getSeaLevel() || Terrain.pondBeside(level, pos, x, h, z, (nx, nz) -> Math.round(thicknessAt(nx + 0.5, nz + 0.5)) < 1)) {
+                            floor = h;
+                            break;
+                        }
+                    }
+                    for (int h = floor + 1; h <= top; h++) {
                         Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
                     }
-                    Terrain.set(level, pos, x, top - depth, z, Blocks.SNOW_BLOCK.defaultBlockState());
+                    Terrain.set(level, pos, x, floor, z, Blocks.SNOW_BLOCK.defaultBlockState());
                     // most of each crevasse hides under a thin bridge of powder snow
-                    if (Terrain.hash(seed, crev * 31 + Mth.floor(l[1] / 4.0F)) < 0.7F) {
+                    if (floor < top && Terrain.hash(seed, crev * 31 + Mth.floor(l[1] / 4.0F)) < 0.7F) {
                         Terrain.set(level, pos, x, top, z, Blocks.POWDER_SNOW.defaultBlockState());
                     }
                 } else if (l[0] < -length * 0.1F && Terrain.noise(seed, x, 0, z) > 0.3F) {
@@ -420,17 +663,26 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         for (int k = 0; k < tabled.length; k++) {
             if (tops[k] != null) table(level, pos, tabled[k], tops[k]);
         }
+        // the meltwater's startling blue, lake by lake
+        for (int i = 0; i < (meltwater.length == 0 ? 0 : meltwater[0]); i++) {
+            int o = 1 + i * 6, lake = i, water = meltwater[o + 5];
+            if (Math.abs(meltwater[o] - area.getCenter().getX()) > 48 || Math.abs(meltwater[o + 1] - area.getCenter().getZ()) > 48) continue;
+            Terrain.setBiome(level, area, water - 5, water + 3, (x, z) -> {
+                int[] m = meltAt(x, z);
+                return m[0] == 2 && m[4] == lake;
+            }, Terrain.CLEAR_WATER_BIOME);
+        }
     }
 
     /** A moulin's shaft, its lip, or the blue ice lining it, if this column is one; whether it was. */
     private static boolean moulin(WorldGenLevel level, BlockPos.MutableBlockPos pos, int[][] shafts, int x, int z, int ground, int top) {
         for (int[] m : shafts) {
             if (x >= m[0] && x < m[0] + m[2] && z >= m[1] && z < m[1] + m[2]) {
-                // the shaft, straight down to the rock it has bored through to
-                for (int h = ground + 1; h <= top; h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
+                // the shaft, straight down to the rock it has bored through to (or to the sea, where the ice has run down into it)
+                for (int h = Math.max(ground + 1, level.getSeaLevel()); h <= top; h++) Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
                 return true;
             }
-            if (x == m[3] && z == m[4]) {
+            if (x == m[3] && z == m[4] && top >= level.getSeaLevel()) {
                 // the notch at its lip the meltwater runs in by, frozen up until summer
                 Terrain.set(level, pos, x, top, z, Blocks.AIR.defaultBlockState());
                 Terrain.set(level, pos, x, top - 1, z, Blocks.ICE.defaultBlockState());
@@ -527,7 +779,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             double c = Mth.cos(angle), s = Mth.sin(angle);
             int x = Mth.floor(cx + u * c - v * s), z = Mth.floor(cz + u * s + v * c);
             BlockPos column = new BlockPos(x, 0, z);
-            if (!level.isLoaded(column)) continue;
+            // (the ice holding in a meltwater lake or channel is left be: melting it would let the water out)
+            if (!level.isLoaded(column) || meltAt(x, z)[0] > 0) continue;
             BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column).below();
             BlockState state = level.getBlockState(top);
             boolean ice = state.is(Blocks.PACKED_ICE) || state.is(Blocks.ICE) || state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.SNOW);

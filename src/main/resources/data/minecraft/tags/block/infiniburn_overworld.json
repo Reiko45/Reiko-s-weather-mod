@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:smouldering_ground"
+    "reikos_weather:smouldering_ground",
+    "reikos_weather:gas_vent"
   ]
 }

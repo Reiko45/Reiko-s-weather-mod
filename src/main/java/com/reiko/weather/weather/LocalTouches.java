@@ -51,6 +51,18 @@ public final class LocalTouches {
         if (WeatherConfig.FOG_DRIP.get() && p.fog > 0.35F && p.rain < 0.05F && random.nextInt(2) == 0) {
             fogDrip(level, column(level, player, random), random);
         }
+        if (WeatherConfig.MUD_SEASON.get() && climate != Climate.ARID && local.type().vanillaRain && p.rain > 0.25F
+                && (season == Season.SPRING || p.rain > 0.65F) && Temperature.ambient(level, player.blockPosition(), local) > 1.0F) {
+            for (int i = 0; i < 4; i++) mud(level, column(level, player, random));
+        }
+        if (WeatherConfig.PUDDLE_ICE.get() && (night || time < 2500L) && random.nextInt(2) == 0
+                && Temperature.ambient(level, player.blockPosition(), local) < -0.5F) {
+            for (int i = 0; i < 6; i++) freezePuddle(level, column(level, player, random));
+        }
+        if (SeasonalSpells.falseSpringWarmth(level) > 0.5F) {
+            // the false spring: the snow melts away and everything starts growing, weeks too early
+            for (int i = 0; i < 3; i++) earlyThaw(level, column(level, player, random), random);
+        }
         if (WeatherConfig.SUPERBLOOMS.get() && climate == Climate.ARID && season == Season.SPRING && ClimateYears.leaning(level) > 0.3F) {
             for (int i = 0; i < 2; i++) bloom(level, column(level, player, random), random);
         }
@@ -127,6 +139,38 @@ public final class LocalTouches {
         Block flower = kind < 0.4F ? ModBlocks.DESERT_GOLD.get() : kind < 0.7F ? ModBlocks.DESERT_POPPY.get() : ModBlocks.SAND_VERBENA.get();
         if (flower.defaultBlockState().canSurvive(level, top)) {
             level.setBlockAndUpdate(top, flower.defaultBlockState());
+        }
+    }
+
+    /** Mud season: bare earth and dirt paths out in the rain churn into sticky mud. */
+    private static void mud(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null || !level.isRainingAt(top)) return;
+        BlockPos ground = top.below();
+        BlockState s = level.getBlockState(ground);
+        if (s.is(Blocks.DIRT_PATH)) {
+            level.setBlockAndUpdate(ground, ModBlocks.MUDDY_PATH.get().defaultBlockState());
+        } else if ((s.is(Blocks.DIRT) || s.is(Blocks.COARSE_DIRT) || s.is(Blocks.ROOTED_DIRT)) && level.getBlockState(top).isAir()) {
+            level.setBlockAndUpdate(ground, ModBlocks.SOFT_MUD.get().defaultBlockState());
+        }
+    }
+
+    /** A puddle skinned over with ice on a frosty morning. */
+    private static void freezePuddle(ServerLevel level, @Nullable BlockPos top) {
+        if (top != null && level.getBlockState(top).is(ModBlocks.PUDDLE.get())) {
+            level.setBlockAndUpdate(top, ModBlocks.FROZEN_PUDDLE.get().defaultBlockState());
+        }
+    }
+
+    /** The warmth of a false spring: snow melting off, and crops and saplings putting on growth they'll lose to the frost. */
+    private static void earlyThaw(ServerLevel level, @Nullable BlockPos top, RandomSource random) {
+        if (top == null) return;
+        BlockState s = level.getBlockState(top);
+        if (s.is(Blocks.SNOW)) {
+            int layers = s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS);
+            if (layers > 1) level.setBlockAndUpdate(top, s.setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, layers - 1));
+            else level.removeBlock(top, false);
+        } else if (s.getBlock() instanceof CropBlock || s.is(BlockTags.SAPLINGS)) {
+            s.randomTick(level, top, random);
         }
     }
 

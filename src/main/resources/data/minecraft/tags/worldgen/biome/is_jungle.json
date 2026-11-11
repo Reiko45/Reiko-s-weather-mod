@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:cloud_forest"
+    "reikos_weather:cloud_forest",
+    "reikos_weather:boiling_river"
   ]
 }

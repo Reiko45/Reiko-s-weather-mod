@@ -1772,6 +1772,62 @@
    ]
   },
   {
+   "title": "Seasons and Small Things",
+   "icon": "minecraft:mud",
+   "entries": [
+    {
+     "title": "Mud and Ice",
+     "icon": "minecraft:mud",
+     "pages": [
+      "In the spring thaw and long rains, bare earth and dirt paths churn into sticky mud that drags at your feet and holds every footprint. It dries out again as the weather warms. On frosty mornings puddles skin over with ice that cracks under your boots, and melts once the sun is up."
+     ]
+    },
+    {
+     "title": "Out-of-Season Spells",
+     "icon": "minecraft:pumpkin",
+     "pages": [
+      "Some autumns, after the first frosts, summer comes back for a few days: an Indian summer, warm, still and hazy, the light soft and golden. Some winters a warm spell wakes everything early, melting the snow and starting the crops, and then a hard frost follows and kills the tender new growth: a false spring. The weather report tells you when one is on."
+     ]
+    },
+    {
+     "title": "Storm Light and Cloud",
+     "icon": "minecraft:lime_dye",
+     "pages": [
+      "Under a big hailstorm the daylight turns an eerie green. When the wind pushes fog or low cloud against a ridge, it spills over the crest and tumbles down the far side in a slow white cloud waterfall."
+     ]
+    },
+    {
+     "title": "Insects and Singing Sand",
+     "icon": "minecraft:fishing_rod",
+     "pages": [
+      "On still, warm evenings, midges dance in little clouds over the water. On spring and early-summer evenings the mayflies hatch over the rivers and the fish rise to them: a good time to fish. Slide down the steep face of a big dune in dry weather and the sand booms with a deep, droning hum."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Fire, Crystal and Deep Water",
+   "icon": "reikos_weather:selenite",
+   "entries": [
+    {
+     "title": "Underground and Burning",
+     "icon": "reikos_weather:gas_vent",
+     "pages": [
+      "Crystal caves hide giant beams of glassy selenite, grown over half a million years in hot water deep under desert mountains; a narrow passage leads down from the surface. Gas craters burn day and night where the ground over a pocket of natural gas collapsed and the gas was lit.",
+      "Lava domes are steep, blocky mounds of lava too thick to flow, steaming from their cracks. Boiling rivers run through the jungle from hot springs, steaming and scalding: don't fall in."
+     ]
+    },
+    {
+     "title": "Ice and Sea",
+     "icon": "minecraft:blue_ice",
+     "pages": [
+      "Ice shelves push out from frozen coasts over the sea and end in towering ice cliffs. Glaciers hold vivid blue meltwater lakes in summer, and many waterfalls have a hollow behind them you can walk into, behind the falling water.",
+      "Out in the deep ocean, seamounts rise from the sea floor almost to the surface, covered in coral in warm seas and kelp in cold ones. Submarine canyons cut deep into the sea floor offshore."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

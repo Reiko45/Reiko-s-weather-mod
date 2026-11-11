@@ -137,6 +137,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> DESERT_GOLD = REGISTER.registerSimpleBlockItem(ModBlocks.DESERT_GOLD);
     public static final DeferredItem<BlockItem> SAND_VERBENA = REGISTER.registerSimpleBlockItem(ModBlocks.SAND_VERBENA);
     public static final DeferredItem<BlockItem> DESERT_POPPY = REGISTER.registerSimpleBlockItem(ModBlocks.DESERT_POPPY);
+    public static final DeferredItem<BlockItem> SELENITE = REGISTER.registerSimpleBlockItem(ModBlocks.SELENITE);
+    public static final DeferredItem<BlockItem> GAS_VENT = REGISTER.registerSimpleBlockItem(ModBlocks.GAS_VENT);
 
     private ModItems() {}
 }

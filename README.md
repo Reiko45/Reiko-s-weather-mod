@@ -331,6 +331,15 @@ Ways to stay comfortable:
   watered.
 - **Cave breath:** cave mouths steam in cold weather, and on hot days a cool draught blows out of them (standing in
   a cave mouth cools you down).
+- **Mud season:** in the spring thaw and long rains, bare earth and dirt paths churn into sticky **mud** that drags at
+  your feet and holds footprints, and dries out again as it warms up. On frosty mornings **puddles freeze over**,
+  and the ice cracks underfoot.
+- **Indian summers and false springs:** some autumns, after the first frosts, a run of warm, still, hazy golden days;
+  some winters, a warm spell that melts the snow and wakes the crops early, then a hard frost that kills the new
+  growth. The weather report says when one is on.
+- **Midges and mayflies:** midges dance over the water on still, warm evenings, and on spring and early-summer evenings
+  the mayflies hatch over the rivers and the fish rise to them (a good time to fish).
+- **Singing dunes:** slide down a big dune's steep face in dry weather and the sand booms with a deep, droning hum.
 - **Superblooms:** in a wet year, the desert flowers in spring, with drifts of **desert gold**, **sand verbena** and
   **desert poppies** across the sand that die back in the summer heat.
 - **Lightning-charged tools:** leave a tool or weapon lying on an anvil or a copper block in a
@@ -404,6 +413,8 @@ Ways to stay comfortable:
 - **Chinook arch:** when a föhn wind pours down off the mountains, a band of clear sky arches over them under a
   sharp-edged deck of cloud.
 - **Echoing thunder:** among mountains and valleys, thunder comes rolling back off the slopes round you.
+- **Cloud waterfalls:** fog and low cloud pushed against a ridge spill over the crest and tumble down the far side.
+- **Green storm skies:** the daylight turns an eerie green under big hailstorms.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -558,6 +569,12 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
   high on jungle mountains, dripping with moss, ferns and vines; the horseshoe cliffs of ancient **dry falls**, with
   lakes in their old plunge pools; and boulder-strewn **frost-shattered summits**. Glaciers now carry **glacier
   tables**: boulders on pedestals of ice.
+- **Fire, crystal and deep water:** **crystal caves** of giant **selenite** beams deep under desert mountains;
+  burning **gas craters** (fire on **gas vents** that never goes out); steep, steaming **lava domes**; **boiling
+  rivers** that steam through the jungle and scald anyone who falls in; **ice shelves** ending in towering ice cliffs
+  along frozen coasts; **seamounts** rising from the deep ocean floor almost to the surface; and **submarine canyons**
+  cut deep into the sea floor. Glaciers now hold blue **meltwater lakes** in summer, and many **waterfalls** have a
+  cave behind them you can walk into.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -683,7 +700,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 91 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 95 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -693,7 +710,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
 Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
-A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds and True Blue.
+A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim and Sea Mount.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

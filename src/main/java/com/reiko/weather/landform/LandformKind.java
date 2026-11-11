@@ -152,7 +152,14 @@ public enum LandformKind implements StringRepresentable {
     DRY_FALLS(DryFalls::plan, DryFalls::load, () -> WeatherConfig.DRY_FALLS.get()),
     SKERRIES(Skerries::plan, Skerries::load, () -> WeatherConfig.SKERRIES.get()),
     DUNE_SLACKS(DuneSlacks::plan, DuneSlacks::load, () -> WeatherConfig.DUNE_SLACKS.get()),
-    FROST_SHATTERED_SUMMIT(FrostShatteredSummit::plan, FrostShatteredSummit::load, () -> WeatherConfig.FROST_SHATTERED_SUMMITS.get());
+    FROST_SHATTERED_SUMMIT(FrostShatteredSummit::plan, FrostShatteredSummit::load, () -> WeatherConfig.FROST_SHATTERED_SUMMITS.get()),
+    CRYSTAL_CAVE(CrystalCave::plan, CrystalCave::load, () -> WeatherConfig.CRYSTAL_CAVES.get()),
+    GAS_CRATER(GasCrater::plan, GasCrater::load, () -> WeatherConfig.GAS_CRATERS.get()),
+    BOILING_RIVER(BoilingRiver::plan, BoilingRiver::load, () -> WeatherConfig.BOILING_RIVERS.get()),
+    LAVA_DOME(LavaDome::plan, LavaDome::load, () -> WeatherConfig.LAVA_DOMES.get()),
+    ICE_SHELF(IceShelf::plan, IceShelf::load, () -> WeatherConfig.ICE_SHELVES.get()),
+    SEAMOUNT(Seamount::plan, Seamount::load, () -> WeatherConfig.SEAMOUNTS.get()),
+    SUBMARINE_CANYON(SubmarineCanyon::plan, SubmarineCanyon::load, () -> WeatherConfig.SUBMARINE_CANYONS.get());
 
     public static final Codec<LandformKind> CODEC = StringRepresentable.fromEnum(LandformKind::values);
 

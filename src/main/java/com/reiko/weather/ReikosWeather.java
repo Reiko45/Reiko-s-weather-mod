@@ -195,6 +195,8 @@ public class ReikosWeather {
             event.accept(ModItems.DESERT_GOLD.get());
             event.accept(ModItems.SAND_VERBENA.get());
             event.accept(ModItems.DESERT_POPPY.get());
+            event.accept(ModItems.SELENITE.get());
+            event.accept(ModItems.GAS_VENT.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

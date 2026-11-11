@@ -112,6 +112,9 @@ public final class WeatherReport {
             lines.add(Component.translatable("report.reikos_weather.year." + year.name().toLowerCase(java.util.Locale.ROOT))
                     .withStyle(year == ClimateYears.Phase.WET ? ChatFormatting.BLUE : ChatFormatting.GOLD));
         }
+        if (SeasonalSpells.indianSummer(level) > 0.3F) lines.add(Component.translatable("report.reikos_weather.indian_summer").withStyle(ChatFormatting.GOLD));
+        if (SeasonalSpells.falseSpringWarmth(level) > 0.3F) lines.add(Component.translatable("report.reikos_weather.false_spring").withStyle(ChatFormatting.GOLD));
+        if (SeasonalSpells.falseSpringFrost(level) > 0.3F) lines.add(Component.translatable("report.reikos_weather.false_spring_frost").withStyle(ChatFormatting.AQUA));
         for (StormCell cell : state.cells) {
             if (cell.type != WeatherType.HURRICANE) continue;
             double edge = cell.distanceTo(pos.getX(), pos.getZ()) - cell.radius;

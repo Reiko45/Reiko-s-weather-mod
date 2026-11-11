@@ -98,6 +98,11 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue CAVE_BREATH;
     public static final ModConfigSpec.BooleanValue FOG_DRIP;
     public static final ModConfigSpec.BooleanValue CLOUD_FOREST_MIST;
+    public static final ModConfigSpec.BooleanValue CLOUD_WATERFALLS;
+    public static final ModConfigSpec.BooleanValue GREEN_STORM_SKIES;
+    public static final ModConfigSpec.BooleanValue INSECT_SWARMS;
+    public static final ModConfigSpec.BooleanValue SINGING_DUNES;
+    public static final ModConfigSpec.BooleanValue GOLDEN_HAZE;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -292,6 +297,16 @@ public final class ClientConfig {
                 .define("fogDrip", true);
         CLOUD_FOREST_MIST = b.comment("Cloud forests are wrapped in drifting mist.")
                 .define("cloudForestMist", true);
+        CLOUD_WATERFALLS = b.comment("Fog and low cloud pour over mountain ridges and tumble down the far side.")
+                .define("cloudWaterfalls", true);
+        GREEN_STORM_SKIES = b.comment("The eerie green light under big hailstorms.")
+                .define("greenStormSkies", true);
+        INSECT_SWARMS = b.comment("Midges dance over water on calm summer evenings, and mayflies hatch over rivers.")
+                .define("insectSwarms", true);
+        SINGING_DUNES = b.comment("Sand sliding down a dune's steep face hums and booms in dry weather.")
+                .define("singingDunes", true);
+        GOLDEN_HAZE = b.comment("A soft golden haze over the still, warm days of an Indian summer.")
+                .define("goldenHaze", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

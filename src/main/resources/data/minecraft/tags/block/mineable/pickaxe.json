@@ -24,6 +24,8 @@
     "reikos_weather:brinicle",
     "reikos_weather:clinker",
     "reikos_weather:smouldering_ground",
-    "reikos_weather:bubble_ice"
+    "reikos_weather:bubble_ice",
+    "reikos_weather:selenite",
+    "reikos_weather:gas_vent"
   ]
 }

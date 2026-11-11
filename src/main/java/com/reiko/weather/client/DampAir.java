@@ -71,6 +71,26 @@ public final class DampAir {
             }
         }
         if (ClientConfig.CAVE_BREATH.get()) caveBreath(level, cam);
+        boilingRiver(level, cam);
+    }
+
+    /** A boiling river steams all day long, thickest in the cool of the morning. */
+    private static void boilingRiver(ClientLevel level, Vec3 cam) {
+        // (the river's air is only marked for a few blocks over the water, so look below the camera too)
+        boolean near = false;
+        for (int k = 0; k < 15 && !near; k++) {
+            int dx = k % 5 == 1 ? 12 : k % 5 == 2 ? -12 : 0, dz = k % 5 == 3 ? 12 : k % 5 == 4 ? -12 : 0;
+            near = level.getBiome(BlockPos.containing(cam.x + dx, cam.y - (k / 5) * 5, cam.z + dz)).is(Terrain.BOILING_RIVER_BIOME);
+        }
+        if (!near) return;
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int i = 0; i < 64; i++) {
+            p.set(cam.x + RANDOM.nextInt(33) - 16, cam.y + RANDOM.nextInt(19) - 14, cam.z + RANDOM.nextInt(33) - 16);
+            if (!level.getFluidState(p).is(net.minecraft.tags.FluidTags.WATER) || !level.getBlockState(p.above()).isAir()
+                    || !level.getBiome(p).is(Terrain.BOILING_RIVER_BIOME)) continue;
+            level.addParticle(ModParticles.STEAM_FOG.get(), p.getX() + RANDOM.nextDouble(), p.getY() + 1.0, p.getZ() + RANDOM.nextDouble(),
+                    0.0, 0.02 + RANDOM.nextDouble() * 0.02, 0.0);
+        }
     }
 
     /** Cave mouths round about steam in the cold: the air inside stays at the year's average, so in winter it's the warm side. */

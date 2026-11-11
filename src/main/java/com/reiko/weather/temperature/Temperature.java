@@ -74,6 +74,8 @@ public final class Temperature {
         }
         // snowy plains (0.0) about 2 °C, plains (0.8) about 15 °C, desert (2.0) about 34 °C
         float celsius = 2.0F + biomeTemp * 16.0F;
+        // an Indian summer, or a false spring and the frost after it (not in the hot deserts)
+        if (level.getBiome(pos).value().getBaseTemperature() < 1.5F) celsius += com.reiko.weather.weather.SeasonalSpells.temperatureOffset(level);
         if (!level.dimensionType().hasSkyLight()) {
             return celsius;
         }

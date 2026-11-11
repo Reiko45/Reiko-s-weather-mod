@@ -900,6 +900,125 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void fourteenthLandformsPlan(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int s = level.getSeaLevel();
+        java.util.function.BiFunction<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator, com.reiko.weather.landform.Landform> plan = (kind, ground) -> {
+            for (int i = 0; i < 80; i++) {
+                int x = Math.floorMod(i * 37, 400) - 200, z = Math.floorMod(i * 53, 400) - 200;
+                var planned = kind.plan(new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(i + 1), x, z, ground, s, level));
+                if (planned != null) return planned;
+            }
+            return null;
+        };
+        // a frozen coast with deep water off it, the deep ocean floor, and a shelf sloping away offshore
+        java.util.function.IntBinaryOperator frozenCoast = (x, z) -> {
+            double d = Math.abs(Math.floorMod(x, 200) - 100) + 6 * Math.sin(z * 0.03);
+            return (int) Math.round(d > 55 ? Math.min(s + 9, s + (d - 55) * 0.4) : Math.max(s - 35, s - (55 - d) * 0.8)) + (int) Math.round(1.5 * Math.sin(z * 0.06) + Math.cos(x * 0.11 + z * 0.07));
+        };
+        java.util.function.IntBinaryOperator deepOcean = (x, z) -> s - 36 + (int) Math.round(3 * Math.sin(x * 0.05) * Math.cos(z * 0.04) + 1.5 * Math.sin((x + z) * 0.09));
+        java.util.function.IntBinaryOperator shelf = (x, z) -> (int) Math.round(Math.min(s + 7, s - 7 - 0.15 * (x + 120)) + 1.5 * Math.sin(x * 0.07 + z * 0.05) + Math.cos(z * 0.13));
+        java.util.function.IntBinaryOperator dryLand = (x, z) -> s + 9 + (int) Math.round(3 * Math.sin(x * 0.04) * Math.sin(z * 0.05));
+        java.util.function.IntBinaryOperator lagoon = (x, z) -> s - 6 + (int) Math.round(1.2 * Math.sin(x * 0.06) * Math.cos(z * 0.05));
+        java.util.function.IntBinaryOperator hills = (x, z) -> s + 15 + (int) Math.round(5 * Math.sin(x * 0.03 + 1) * Math.cos(z * 0.027) + 2 * Math.sin((x - z) * 0.09));
+        java.util.function.IntBinaryOperator seaFloor = (x, z) -> s - 15 + (int) Math.round(2 * Math.sin(x * 0.05) * Math.cos(z * 0.04));
+        java.util.function.IntBinaryOperator lowland = (x, z) -> s + 1 + (int) Math.round(1.2 * Math.sin(x * 0.05) * Math.cos(z * 0.04) + 0.8 * Math.sin((x + z) * 0.1));
+        java.util.function.IntBinaryOperator mountainside = (x, z) -> s + 37 + (int) Math.round(0.9 * Math.abs(Math.floorMod(x, 160) - 80) + 3 * Math.sin(z * 0.05) + 1.5 * Math.sin((x + z) * 0.09));
+        java.util.function.IntBinaryOperator jungleSlope = (x, z) -> (int) Math.round(s + 19 - 0.14 * x + 2 * Math.sin(z * 0.05) * Math.cos(x * 0.04) + 1.5 * Math.sin((x + z) * 0.09));
+        // each kind: the ground it forms on, then ground it never forms on
+        record Fit(com.reiko.weather.landform.LandformKind kind, java.util.function.IntBinaryOperator good, java.util.List<java.util.function.IntBinaryOperator> bad) {}
+        var fits = java.util.List.of(
+                new Fit(com.reiko.weather.landform.LandformKind.ICE_SHELF, frozenCoast, java.util.List.of(dryLand, lagoon)),
+                new Fit(com.reiko.weather.landform.LandformKind.SEAMOUNT, deepOcean, java.util.List.of(dryLand, lagoon)),
+                new Fit(com.reiko.weather.landform.LandformKind.SUBMARINE_CANYON, shelf, java.util.List.of(dryLand, lagoon)),
+                new Fit(com.reiko.weather.landform.LandformKind.CRYSTAL_CAVE, hills, java.util.List.of(seaFloor, lowland)),
+                new Fit(com.reiko.weather.landform.LandformKind.GAS_CRATER, dryLand, java.util.List.of(seaFloor, mountainside)),
+                new Fit(com.reiko.weather.landform.LandformKind.LAVA_DOME, hills, java.util.List.of(seaFloor, mountainside)),
+                // (a stream can find its way down gently rolling ground, but not across a dead-flat plain)
+                new Fit(com.reiko.weather.landform.LandformKind.BOILING_RIVER, jungleSlope, java.util.List.of(seaFloor,
+                        (x, z) -> s + 9 + (int) Math.round(0.8 * Math.sin(x * 0.07) * Math.cos(z * 0.05)))));
+        for (Fit f : fits) {
+            var planned = plan.apply(f.kind(), f.good());
+            helper.assertTrue(planned != null, f.kind() + " on suitable ground");
+            var again = f.kind().load(planned.save());
+            helper.assertTrue(again.bounds().equals(planned.bounds()), f.kind() + " saves and loads");
+            var b = planned.bounds();
+            helper.assertTrue(b.getXSpan() < 256 && b.getZSpan() < 256, f.kind() + " stays within its reach");
+            for (int i = 0; i < f.bad().size(); i++) {
+                helper.assertTrue(plan.apply(f.kind(), f.bad().get(i)) == null, "no " + f.kind() + " on unsuitable ground #" + i);
+            }
+        }
+        // glaciers now carry meltwater lakes, and waterfalls caves behind the falling water (both kept through a save)
+        boolean lakes = false;
+        for (int k = 0; k < 6 && !lakes; k++) {
+            int shift = k * 41;
+            var glacier = plan.apply(com.reiko.weather.landform.LandformKind.GLACIER, (x, z) -> s + 37 + (int) Math.round(-0.12 * (x + shift) + 4 * Math.sin(z * 0.04) + 2 * Math.sin((x + z) * 0.07)));
+            if (glacier instanceof com.reiko.weather.landform.Glacier g && g.lakes()) {
+                lakes = com.reiko.weather.landform.LandformKind.GLACIER.load(glacier.save()) instanceof com.reiko.weather.landform.Glacier g2 && g2.lakes()
+                        && java.util.Arrays.equals(g.meltwater(), g2.meltwater());
+            }
+        }
+        helper.assertTrue(lakes, "glaciers have meltwater lakes, and keep them through a save");
+        boolean cave = false;
+        for (int k = 0; k < 6 && !cave; k++) {
+            int shift = k * 37;
+            var falls = plan.apply(com.reiko.weather.landform.LandformKind.WATERFALL, (x, z) -> {
+                double xc = Math.floorMod(x + shift + 100, 200) - 100;
+                return s + 13 + (int) Math.round(26 / (1 + Math.exp((Math.abs(xc) - 50 - 8 * Math.sin(z * 0.03)) * 0.35)) + 1.5 * Math.sin(x * 0.07 + z * 0.05));
+            });
+            cave = falls instanceof com.reiko.weather.landform.Waterfall w && w.cave()
+                    && com.reiko.weather.landform.LandformKind.WATERFALL.load(falls.save()) instanceof com.reiko.weather.landform.Waterfall w2 && w2.cave();
+        }
+        helper.assertTrue(cave, "waterfalls have caves behind them, and keep them through a save");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void mudIceAndSpells(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(17);
+        // spring mud dries back to earth once it stops raining (the platform's plains are mild)
+        helper.setBlock(1, 1, 1, ModBlocks.SOFT_MUD.get());
+        helper.setBlock(1, 2, 1, Blocks.AIR);
+        BlockPos mud = helper.absolutePos(new BlockPos(1, 1, 1));
+        if (!level.isRainingAt(mud.above())) {
+            for (int i = 0; i < 600 && level.getBlockState(mud).is(ModBlocks.SOFT_MUD.get()); i++) level.getBlockState(mud).randomTick(level, mud, random);
+            helper.assertBlockPresent(Blocks.DIRT, new BlockPos(1, 1, 1));
+        }
+        // and a muddy path dries back to a path
+        helper.setBlock(3, 1, 1, ModBlocks.MUDDY_PATH.get());
+        BlockPos path = helper.absolutePos(new BlockPos(3, 1, 1));
+        if (!level.isRainingAt(path.above())) {
+            for (int i = 0; i < 600 && level.getBlockState(path).is(ModBlocks.MUDDY_PATH.get()); i++) level.getBlockState(path).randomTick(level, path, random);
+            helper.assertBlockPresent(Blocks.DIRT_PATH, new BlockPos(3, 1, 1));
+        }
+        // ice on a puddle melts back to water in mild air
+        helper.setBlock(5, 1, 1, Blocks.STONE);
+        helper.setBlock(5, 2, 1, ModBlocks.FROZEN_PUDDLE.get());
+        BlockPos skin = helper.absolutePos(new BlockPos(5, 2, 1));
+        level.getBlockState(skin).randomTick(level, skin, random);
+        helper.assertBlockPresent(ModBlocks.PUDDLE.get(), new BlockPos(5, 2, 1));
+        // a gas vent relights the fire over it
+        if (level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)) {
+            helper.setBlock(1, 1, 4, ModBlocks.GAS_VENT.get());
+            helper.setBlock(1, 2, 4, Blocks.AIR);
+            BlockPos vent = helper.absolutePos(new BlockPos(1, 1, 4));
+            for (int i = 0; i < 60 && level.getBlockState(vent.above()).isAir(); i++) level.getBlockState(vent).randomTick(level, vent, random);
+            helper.assertTrue(level.getBlockState(vent.above()).is(net.minecraft.tags.BlockTags.FIRE), "the gas vent relights its fire");
+            helper.setBlock(1, 2, 4, Blocks.AIR);
+        }
+        // the mayflies hatch on spring evenings, not at noon or in the rain
+        var spring = com.reiko.weather.weather.Season.SPRING;
+        helper.assertTrue(com.reiko.weather.weather.InsectHatches.mayflies(spring, 20, 24, 12000L, 0.1F, false), "a spring-evening hatch");
+        helper.assertFalse(com.reiko.weather.weather.InsectHatches.mayflies(spring, 20, 24, 6000L, 0.1F, false), "no hatch at noon");
+        helper.assertFalse(com.reiko.weather.weather.InsectHatches.mayflies(spring, 20, 24, 12000L, 0.1F, true), "no hatch in the rain");
+        // out-of-season spells never push the temperature far
+        float offset = com.reiko.weather.weather.SeasonalSpells.temperatureOffset(level);
+        helper.assertTrue(offset >= -9.0F && offset <= 9.0F, "spells shift the temperature a few degrees at most");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
     public static void thawFrostAndBloom(GameTestHelper helper) {
         var level = helper.getLevel();
         var random = net.minecraft.util.RandomSource.create(13);

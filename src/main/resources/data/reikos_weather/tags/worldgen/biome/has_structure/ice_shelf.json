@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:frozen_ocean",
+    "minecraft:deep_frozen_ocean",
+    "minecraft:snowy_beach",
+    "minecraft:snowy_plains",
+    "minecraft:ice_spikes"
+  ]
+}

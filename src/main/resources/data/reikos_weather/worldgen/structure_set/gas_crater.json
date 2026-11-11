@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "reikos_weather:gas_crater",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 36,
+    "separation": 12,
+    "salt": 907315523,
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 5
+    }
+  }
+}

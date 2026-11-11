@@ -17,6 +17,8 @@ public final class Breezes {
      * wind's angle and strength.
      */
     public static float[] adjust(Level level, int x, int z, float windAngle, float wind) {
+        // the settled high of an Indian summer stills the wind (leaving the local breezes to stir)
+        wind *= 1.0F - 0.65F * SeasonalSpells.indianSummer(level);
         if (!WeatherConfig.SPEC.isLoaded() || !WeatherConfig.SEA_BREEZES.get() || level.dimension() != Level.OVERWORLD) {
             return new float[]{windAngle, wind};
         }

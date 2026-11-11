@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/frozen_puddle",
+        "y": 0
+      },
+      {
+        "model": "reikos_weather:block/frozen_puddle",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/frozen_puddle",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/frozen_puddle",
+        "y": 270
+      }
+    ]
+  }
+}

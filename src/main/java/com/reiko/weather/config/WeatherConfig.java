@@ -254,6 +254,11 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue CAVE_BREATH;
     public static final ModConfigSpec.BooleanValue SUPERBLOOMS;
     public static final ModConfigSpec.BooleanValue FROZEN_BUBBLES;
+    public static final ModConfigSpec.BooleanValue MUD_SEASON;
+    public static final ModConfigSpec.BooleanValue PUDDLE_ICE;
+    public static final ModConfigSpec.BooleanValue INDIAN_SUMMER;
+    public static final ModConfigSpec.BooleanValue FALSE_SPRING;
+    public static final ModConfigSpec.BooleanValue INSECT_HATCHES;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -316,6 +321,13 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue SKERRIES;
     public static final ModConfigSpec.BooleanValue DUNE_SLACKS;
     public static final ModConfigSpec.BooleanValue FROST_SHATTERED_SUMMITS;
+    public static final ModConfigSpec.BooleanValue CRYSTAL_CAVES;
+    public static final ModConfigSpec.BooleanValue GAS_CRATERS;
+    public static final ModConfigSpec.BooleanValue BOILING_RIVERS;
+    public static final ModConfigSpec.BooleanValue LAVA_DOMES;
+    public static final ModConfigSpec.BooleanValue ICE_SHELVES;
+    public static final ModConfigSpec.BooleanValue SEAMOUNTS;
+    public static final ModConfigSpec.BooleanValue SUBMARINE_CANYONS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -684,6 +696,16 @@ public final class WeatherConfig {
                 .define("superblooms", true);
         FROZEN_BUBBLES = b.comment("Bubbles of marsh gas freeze into the ice of boggy lakes in white stacks.")
                 .define("frozenBubbles", true);
+        MUD_SEASON = b.comment("In the spring thaw and long rains, bare ground and dirt paths turn to sticky mud that dries out again in summer.")
+                .define("mudSeason", true);
+        PUDDLE_ICE = b.comment("Puddles freeze over on frosty mornings, and the ice skin cracks underfoot.")
+                .define("puddleIce", true);
+        INDIAN_SUMMER = b.comment("Some autumns, after the first frosts, a spell of warm, still, hazy days: an Indian summer.")
+                .define("indianSummer", true);
+        FALSE_SPRING = b.comment("Some winters, a warm spell wakes everything early, and a hard frost follows: a false spring.")
+                .define("falseSpring", true);
+        INSECT_HATCHES = b.comment("Mayfly hatches on calm spring and summer evenings bring the fish rising (better fishing in rivers then).")
+                .define("insectHatches", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -1018,6 +1040,20 @@ public final class WeatherConfig {
                 .define("duneSlacks", true);
         FROST_SHATTERED_SUMMITS = b.comment("Frost-shattered summits: high, flat mountaintops strewn with boulders split by frost.")
                 .define("frostShatteredSummits", true);
+        CRYSTAL_CAVES = b.comment("Crystal caves: caverns full of giant, glassy selenite crystals.")
+                .define("crystalCaves", true);
+        GAS_CRATERS = b.comment("Gas craters: collapsed craters where natural gas has burned for decades (contained fire on bare rock).")
+                .define("gasCraters", true);
+        BOILING_RIVERS = b.comment("Boiling rivers: jungle rivers fed by hot springs, steaming and scalding hot.")
+                .define("boilingRivers", true);
+        LAVA_DOMES = b.comment("Lava domes: steep, blocky domes of dark lava in volcanic country, steaming from their cracks.")
+                .define("lavaDomes", true);
+        ICE_SHELVES = b.comment("Ice shelves: towering cliffs of ice along frozen coasts.")
+                .define("iceShelves", true);
+        SEAMOUNTS = b.comment("Seamounts: undersea mountains rising from the deep ocean almost to the surface.")
+                .define("seamounts", true);
+        SUBMARINE_CANYONS = b.comment("Submarine canyons: deep canyons cut into the sea floor off the coast.")
+                .define("submarineCanyons", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

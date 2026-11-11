@@ -298,7 +298,8 @@ public final class WeatherManager {
 
     private static float seasonMultiplier(WeatherType type) {
         Season season = seasonInfo.season();
-        return (season == null ? 1.0F : season.weatherMultiplier(type)) * ClimateYears.weatherMultiplier(overworld, type);
+        return (season == null ? 1.0F : season.weatherMultiplier(type)) * ClimateYears.weatherMultiplier(overworld, type)
+                * (overworld == null ? 1.0F : SeasonalSpells.weatherMultiplier(overworld, type));
     }
 
     /** Weighted random choice of the weather following {@code after}, biased by climate and season. */

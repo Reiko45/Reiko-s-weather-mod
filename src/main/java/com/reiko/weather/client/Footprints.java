@@ -28,14 +28,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/** Footprints pressed into fresh snow by players and animals, fading after a minute or so. */
+/** Footprints pressed into fresh snow (or spring mud) by players and animals, fading after a minute or so. */
 public final class Footprints {
     private static final ResourceLocation TEXTURE = ReikosWeather.id("textures/environment/footprint.png");
     private static final int MAX_PRINTS = 600;
     private static final int LIFETIME = 1600;
     private static final double STRIDE = 0.6;
 
-    private record Print(double x, double y, double z, float yaw, boolean left, float size, long born) {}
+    private record Print(double x, double y, double z, float yaw, boolean left, float size, long born, boolean mud) {}
 
     private record Track(Vec3 last, boolean left) {}
 
@@ -60,7 +60,8 @@ public final class Footprints {
             Vec3 pos = living.position();
             Track track = TRACKS.get(entity.getId());
             if (track != null && track.last().distanceToSqr(pos) < STRIDE * STRIDE * Math.max(0.5, living.getBbWidth())) continue;
-            if (!onSnow(level, pos)) {
+            boolean mud = !onSnow(level, pos) && inMud(level, pos);
+            if (!onSnow(level, pos) && !mud) {
                 TRACKS.put(entity.getId(), new Track(pos, track != null && track.left()));
                 continue;
             }
@@ -68,7 +69,7 @@ public final class Footprints {
             float yaw = track != null ? (float) Mth.atan2(pos.z - track.last().z, pos.x - track.last().x) : living.getYRot() * Mth.DEG_TO_RAD + Mth.HALF_PI;
             double side = (left ? 1 : -1) * 0.13 * Math.max(0.6, living.getBbWidth() / 0.6);
             double px = pos.x + Mth.sin(yaw) * side, pz = pos.z - Mth.cos(yaw) * side;
-            PRINTS.addLast(new Print(px, surface(level, pos) + 0.006, pz, yaw, left, Math.min(1.6F, Math.max(0.6F, living.getBbWidth() / 0.6F)), now));
+            PRINTS.addLast(new Print(px, surface(level, pos) + 0.006, pz, yaw, left, Math.min(1.6F, Math.max(0.6F, living.getBbWidth() / 0.6F)), now, mud));
             TRACKS.put(entity.getId(), new Track(pos, left));
         }
         if (TRACKS.size() > 256) TRACKS.clear();
@@ -77,7 +78,8 @@ public final class Footprints {
             Iterator<Print> it = PRINTS.iterator();
             while (it.hasNext()) {
                 Print p = it.next();
-                if (!onSnow(level, new Vec3(p.x(), p.y() - 0.13, p.z())) && !onSnow(level, new Vec3(p.x(), p.y() - 0.01, p.z()))) it.remove();
+                Vec3 under = new Vec3(p.x(), p.y() - 0.01, p.z());
+                if (p.mud() ? !inMud(level, new Vec3(p.x(), p.y() - 0.13, p.z())) : !onSnow(level, new Vec3(p.x(), p.y() - 0.13, p.z())) && !onSnow(level, under)) it.remove();
             }
         }
     }
@@ -89,7 +91,17 @@ public final class Footprints {
         if (state.is(Blocks.SNOW)) {
             return at.getY() + state.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) / 8.0;
         }
+        // you sink into mud a little: the prints lie on its top
+        if (mud(state)) return at.getY() + 1.0;
         return feet.y;
+    }
+
+    private static boolean mud(BlockState state) {
+        return state.is(com.reiko.weather.registry.ModBlocks.SOFT_MUD.get()) || state.is(com.reiko.weather.registry.ModBlocks.MUDDY_PATH.get()) || state.is(Blocks.MUD);
+    }
+
+    private static boolean inMud(ClientLevel level, Vec3 feet) {
+        return mud(level.getBlockState(BlockPos.containing(feet.x, feet.y + 0.01, feet.z))) || mud(level.getBlockState(BlockPos.containing(feet.x, feet.y - 0.01, feet.z)));
     }
 
     private static boolean onSnow(ClientLevel level, Vec3 feet) {
@@ -123,14 +135,16 @@ public final class Footprints {
             float age = (now - p.born()) / (float) LIFETIME;
             float alpha = 0.55F * Mth.clamp((1.0F - age) / 0.35F, 0.0F, 1.0F);
             float c = Mth.cos(p.yaw()), s = Mth.sin(p.yaw());
+            // blue-grey hollows in snow, dark wet prints in mud
+            float r = p.mud() ? 0.16F : 0.55F, g = p.mud() ? 0.11F : 0.62F, b = p.mud() ? 0.07F : 0.75F;
             float len = 0.17F * p.size(), wid = 0.08F * p.size();
             float x = (float) dx, y = (float) (p.y() - cam.y), z = (float) dz;
             // forward (c, s) along the stride, side (-s, c)
             float u0 = p.left() ? 0.0F : 1.0F, u1 = p.left() ? 1.0F : 0.0F;
-            buffer.addVertex(x - c * len - s * -wid, y, z - s * len - c * wid).setUv(u0, 1).setColor(0.55F, 0.62F, 0.75F, alpha);
-            buffer.addVertex(x - c * len + s * -wid, y, z - s * len + c * wid).setUv(u1, 1).setColor(0.55F, 0.62F, 0.75F, alpha);
-            buffer.addVertex(x + c * len + s * -wid, y, z + s * len + c * wid).setUv(u1, 0).setColor(0.55F, 0.62F, 0.75F, alpha);
-            buffer.addVertex(x + c * len - s * -wid, y, z + s * len - c * wid).setUv(u0, 0).setColor(0.55F, 0.62F, 0.75F, alpha);
+            buffer.addVertex(x - c * len - s * -wid, y, z - s * len - c * wid).setUv(u0, 1).setColor(r, g, b, alpha);
+            buffer.addVertex(x - c * len + s * -wid, y, z - s * len + c * wid).setUv(u1, 1).setColor(r, g, b, alpha);
+            buffer.addVertex(x + c * len + s * -wid, y, z + s * len + c * wid).setUv(u1, 0).setColor(r, g, b, alpha);
+            buffer.addVertex(x + c * len - s * -wid, y, z + s * len - c * wid).setUv(u0, 0).setColor(r, g, b, alpha);
         }
         MeshData mesh = buffer.build();
         if (mesh != null) {

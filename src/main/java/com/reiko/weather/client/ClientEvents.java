@@ -178,6 +178,10 @@ public final class ClientEvents {
                 (type, level, x, y, z, xd, yd, zd) -> new EmberParticle(level, x, y, z, xd, yd, zd, sprites));
         event.registerSpriteSet(ModParticles.BREATH.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.BreathParticle(level, x, y, z, xd, yd, zd, sprites));
+        event.registerSpriteSet(ModParticles.MIDGE.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.InsectParticle(level, x, y, z, sprites, false));
+        event.registerSpriteSet(ModParticles.MAYFLY.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.InsectParticle(level, x, y, z, sprites, true));
         event.registerSpriteSet(ModParticles.FIREFLY.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.FireflyParticle(level, x, y, z, sprites));
         event.registerSpriteSet(ModParticles.WORM.get(), sprites ->
@@ -251,6 +255,7 @@ public final class ClientEvents {
             CloudPuffs.banner(event.getCamera());
             DriftingClouds.collect(event.getCamera(), partialTick);
             Cumulus.collect(event.getCamera(), partialTick);
+            CloudWaterfalls.collect(event.getCamera(), partialTick);
             StormSkies.collect(event.getCamera(), partialTick);
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
@@ -299,6 +304,10 @@ public final class ClientEvents {
         Cumulus.tick(mc);
         StormSkies.tick(mc);
         DampAir.tick(mc);
+        InsectSwarms.tick(mc);
+        SkyTints.tick(mc);
+        SingingDunes.tick(mc);
+        CloudWaterfalls.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
@@ -349,6 +358,9 @@ public final class ClientEvents {
         DriftingClouds.reset();
         StormSkies.reset();
         DampAir.reset();
+        InsectSwarms.reset();
+        SkyTints.reset();
+        CloudWaterfalls.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();
@@ -405,6 +417,7 @@ public final class ClientEvents {
             event.setGreen(Mth.lerp(k, event.getGreen(), 0.88F));
             event.setBlue(Mth.lerp(k, event.getBlue(), 0.5F));
         }
+        float greenLight = SkyTints.green(), goldenHaze = SkyTints.golden();
         float cloudMist = DampAir.cloudMist();
         if (cloudMist > 0.02F && event.getCamera().getFluidInCamera() == FogType.NONE && Minecraft.getInstance().level != null) {
             // the cloud forest's mist: soft, pale grey, as bright as the day
@@ -440,6 +453,7 @@ public final class ClientEvents {
         Minecraft mc = Minecraft.getInstance();
         if (weight <= 0.01F || mc.level == null || event.getCamera().getFluidInCamera() != FogType.NONE
                 || blinded(event.getCamera().getEntity())) {
+            tintedLight(event, greenLight, goldenHaze);
             return;
         }
         float r = event.getRed(), g = event.getGreen(), b = event.getBlue();
@@ -461,6 +475,29 @@ public final class ClientEvents {
         event.setRed(Mth.lerp(weight, r, tr));
         event.setGreen(Mth.lerp(weight, g, tg));
         event.setBlue(Mth.lerp(weight, b, Math.min(1.0F, tb)));
+        tintedLight(event, greenLight, goldenHaze);
+    }
+
+    /**
+     * Colours laid over whatever the haze would otherwise be: the eerie green light under a big hailstorm, and the
+     * soft golden haze of an Indian summer. (Last, so the weather's own fog colour doesn't wash them out.)
+     */
+    private static void tintedLight(ViewportEvent.ComputeFogColor event, float green, float golden) {
+        if (event.getCamera().getFluidInCamera() != FogType.NONE) return;
+        if (golden > 0.02F) {
+            float lum = event.getRed() * 0.3F + event.getGreen() * 0.59F + event.getBlue() * 0.11F;
+            float k = golden * 0.5F;
+            event.setRed(Mth.lerp(k, event.getRed(), Math.min(1.0F, lum * 1.14F)));
+            event.setGreen(Mth.lerp(k, event.getGreen(), lum * 0.99F));
+            event.setBlue(Mth.lerp(k, event.getBlue(), lum * 0.72F));
+        }
+        if (green > 0.02F) {
+            float lum = event.getRed() * 0.3F + event.getGreen() * 0.59F + event.getBlue() * 0.11F;
+            float k = green * 0.6F;
+            event.setRed(Mth.lerp(k, event.getRed(), lum * 0.62F));
+            event.setGreen(Mth.lerp(k, event.getGreen(), Math.min(1.0F, lum * 1.12F)));
+            event.setBlue(Mth.lerp(k, event.getBlue(), lum * 0.88F));
+        }
     }
 
     private static boolean blinded(Entity entity) {

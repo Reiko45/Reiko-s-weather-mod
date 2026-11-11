@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "submarine_canyon",
+  "biomes": "#reikos_weather:has_structure/submarine_canyon",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

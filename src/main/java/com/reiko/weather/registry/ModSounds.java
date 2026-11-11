@@ -17,6 +17,7 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> WIND_WHISTLE = register("weather.wind_whistle");
     public static final DeferredHolder<SoundEvent, SoundEvent> BALL_LIGHTNING = register("entity.ball_lightning");
     public static final DeferredHolder<SoundEvent, SoundEvent> AVALANCHE = register("weather.avalanche");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DUNE_SONG = register("weather.dune_song");
     public static final DeferredHolder<SoundEvent, SoundEvent> BIRDSONG = register("ambient.birdsong");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRICKETS = register("ambient.crickets");
     public static final DeferredHolder<SoundEvent, SoundEvent> METEOR = register("entity.meteor");

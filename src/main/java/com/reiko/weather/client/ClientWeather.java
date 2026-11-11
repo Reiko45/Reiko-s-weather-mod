@@ -360,7 +360,8 @@ public final class ClientWeather {
             weatherFog *= 0.45F;
         }
         float cloudForest = DampAir.cloudMist() * (0.5F + 0.08F * Mth.sin(Minecraft.getInstance().level == null ? 0.0F : Minecraft.getInstance().level.getGameTime() * 0.004F));
-        return Math.max(Math.max(Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog()), AirAndWater.blueHaze() * 0.16F), cloudForest);
+        return Math.max(Math.max(Math.max(Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog()), AirAndWater.blueHaze() * 0.16F), cloudForest),
+                SkyTints.golden() * 0.08F);
     }
 
     public static float fogColorWeight() {
@@ -418,6 +419,17 @@ public final class ClientWeather {
             r = Mth.lerp(tintStrength, r, tintR * brightness);
             g = Mth.lerp(tintStrength, g, tintG * brightness);
             b = Mth.lerp(tintStrength, b, tintB * brightness);
+        }
+        float green = SkyTints.green(), golden = SkyTints.golden();
+        if (green > 0.0F) {
+            double l = r * 0.3 + g * 0.59 + b * 0.11;
+            r = Mth.lerp(green * 0.65, r, l * 0.6);
+            g = Mth.lerp(green * 0.65, g, Math.min(1.0, l * 1.12));
+            b = Mth.lerp(green * 0.65, b, l * 0.86);
+        }
+        if (golden > 0.0F) {
+            r = Mth.lerp(golden * 0.3, r, Math.min(1.0, r * 1.25 + 0.05));
+            b = Mth.lerp(golden * 0.3, b, b * 0.78);
         }
         if (bloodMoon > 0) {
             r = Mth.lerp(bloodMoon * 0.6, r, Math.max(r, 0.16));

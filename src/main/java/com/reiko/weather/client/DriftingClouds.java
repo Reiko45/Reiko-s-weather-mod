@@ -122,7 +122,8 @@ public final class DriftingClouds {
                 if (dist > REACH) continue;
                 // (the storm deck lies below these, so where it covers the sky they're hidden behind it)
                 float deck = ClientConfig.STORM_CLOUDS.get() ? ClientWeather.cloudsAt(x, z) : 0.0F;
-                float alpha = 0.78F * fade * (1.0F - deck) * (float) Mth.clamp((REACH - dist) / 140.0, 0.0, 1.0) * Mth.clamp(cover * 4.0F, 0.0F, 1.0F);
+                // (and under a full overcast they merge into the grey sheet above, rather than standing out)
+                float alpha = 0.78F * fade * (1.0F - deck) * (1.0F - 0.45F * ClientWeather.overcast()) * (float) Mth.clamp((REACH - dist) / 140.0, 0.0, 1.0) * Mth.clamp(cover * 4.0F, 0.0F, 1.0F);
                 if (alpha < 0.01F) continue;
                 patch(i * 92821 + j * 68917, x, base, z, c[2], c[3], tint, alpha, cam, maxDistance);
             }
@@ -148,8 +149,8 @@ public final class DriftingClouds {
 
     /** The clouds' colour: white by day, warm gold and pink near sunrise and sunset, dim grey by night. */
     static float[] sunlit(ClientLevel level, float partialTick, float daylight) {
-        // (and greyer as the weather clouds over)
-        float lit = (0.22F + 0.78F * daylight) * (1.0F - 0.4F * ClientWeather.overcast());
+        // (and a little greyer as the weather clouds over, though never darker than the grey sky behind them)
+        float lit = (0.22F + 0.78F * daylight) * (1.0F - 0.12F * ClientWeather.overcast());
         float sun = SkyPhenomena.sunHeight(level, partialTick);
         float glow = Mth.clamp(1.0F - Math.abs(sun - 0.04F) / 0.18F, 0.0F, 1.0F) * (1.0F - ClientWeather.overcast());
         return new float[]{Math.min(1.0F, lit * (1.0F + 0.3F * glow)), lit * (1.0F - 0.02F * glow), lit * (1.0F - 0.18F * glow) * 1.02F};

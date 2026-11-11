@@ -236,5 +236,14 @@
         "attenuation_distance": 48
       }
     ]
+  },
+  "weather.dune_song": {
+    "subtitle": "subtitles.reikos_weather.weather.dune_song",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/dune_song",
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

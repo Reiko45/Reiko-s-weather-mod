@@ -20,6 +20,8 @@
     "reikos_weather:charred_soil",
     "reikos_weather:frazil_ice",
     "reikos_weather:slush",
-    "reikos_weather:snow_crust"
+    "reikos_weather:snow_crust",
+    "reikos_weather:soft_mud",
+    "reikos_weather:muddy_path"
   ]
 }

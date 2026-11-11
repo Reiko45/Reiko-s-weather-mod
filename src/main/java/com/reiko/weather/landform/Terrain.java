@@ -147,6 +147,9 @@ public final class Terrain {
     /** The deep, vivid azure of a blue spring. */
     public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> BLUE_SPRING_BIOME =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("blue_spring"));
+    /** A boiling river: milky green-blue water, steaming hot (the client draws the steam, and the water scalds). */
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> BOILING_RIVER_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("boiling_river"));
 
     /**
      * Repaints the biome over part of the chunk being built: every 4x4x4 biome cell between {@code minY} and

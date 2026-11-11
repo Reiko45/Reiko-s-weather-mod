@@ -318,6 +318,30 @@ public final class ModBlocks {
     public static final DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> POTTED_SAND_VERBENA = potted("potted_sand_verbena", SAND_VERBENA);
     public static final DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> POTTED_DESERT_POPPY = potted("potted_desert_poppy", DESERT_POPPY);
 
+    /** Mud season: spring mud on bare ground and on dirt paths (each dries back to what it was). */
+    public static final DeferredBlock<com.reiko.weather.block.SoftMudBlock> SOFT_MUD = REGISTER.register("soft_mud",
+            () -> new com.reiko.weather.block.SoftMudBlock(false, BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5F)
+                    .sound(SoundType.MUD).randomTicks()));
+    public static final DeferredBlock<com.reiko.weather.block.SoftMudBlock> MUDDY_PATH = REGISTER.register("muddy_path",
+            () -> new com.reiko.weather.block.SoftMudBlock(true, BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5F)
+                    .sound(SoundType.MUD).randomTicks()));
+
+    /** A puddle frozen over on a frosty morning. */
+    public static final DeferredBlock<com.reiko.weather.block.FrozenPuddleBlock> FROZEN_PUDDLE = REGISTER.register("frozen_puddle",
+            () -> new com.reiko.weather.block.FrozenPuddleBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.0F)
+                    .sound(SoundType.GLASS).noOcclusion().randomTicks().replaceable().pushReaction(PushReaction.DESTROY).noLootTable()));
+
+    /** Selenite: great glassy crystals of gypsum, grown slowly in hot, mineral-rich water deep underground. */
+    public static final DeferredBlock<net.minecraft.world.level.block.RotatedPillarBlock> SELENITE = REGISTER.register("selenite",
+            () -> new net.minecraft.world.level.block.RotatedPillarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.QUARTZ).strength(1.0F)
+                    .sound(SoundType.AMETHYST).noOcclusion().requiresCorrectToolForDrops()
+                    .isRedstoneConductor((s, l, p) -> false).isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** A gas vent: scorched rock with natural gas seeping through it, which keeps a fire burning over it forever. */
+    public static final DeferredBlock<com.reiko.weather.block.GasVentBlock> GAS_VENT = REGISTER.register("gas_vent",
+            () -> new com.reiko.weather.block.GasVentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE).randomTicks().requiresCorrectToolForDrops().lightLevel(s -> 5)));
+
     private static DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> potted(String name, DeferredBlock<? extends net.minecraft.world.level.block.Block> flower) {
         return REGISTER.register(name, () -> new net.minecraft.world.level.block.FlowerPotBlock(
                 () -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT, flower,
