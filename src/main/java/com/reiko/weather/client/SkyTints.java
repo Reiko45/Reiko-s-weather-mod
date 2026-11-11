@@ -50,6 +50,13 @@ public final class SkyTints {
         return green;
     }
 
+    /** How super tonight's full moon is, 0 to 1 (bigger and brighter). */
+    public static float supermoon() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || !ClientConfig.SPEC.isLoaded() || !ClientConfig.SUPERMOON_LOOK.get() || !SyncedWeather.managed()) return 0.0F;
+        return com.reiko.weather.weather.Supermoons.strength(mc.level);
+    }
+
     /** How strong the golden Indian-summer haze is, 0 to 1. */
     public static float golden() {
         return golden;

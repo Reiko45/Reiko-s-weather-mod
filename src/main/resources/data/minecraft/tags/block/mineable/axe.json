@@ -5,6 +5,7 @@
     "reikos_weather:windmill",
     "reikos_weather:forecast_board",
     "reikos_weather:icebox",
-    "reikos_weather:fallen_branch"
+    "reikos_weather:fallen_branch",
+    "reikos_weather:driftwood"
   ]
 }

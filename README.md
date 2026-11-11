@@ -340,6 +340,15 @@ Ways to stay comfortable:
 - **Midges and mayflies:** midges dance over the water on still, warm evenings, and on spring and early-summer evenings
   the mayflies hatch over the rivers and the fish rise to them (a good time to fish).
 - **Singing dunes:** slide down a big dune's steep face in dry weather and the sand booms with a deep, droning hum.
+- **Snow bridges and aufeis:** in snowy weather, snow drifts over narrow streams from bank to bank. A **snow bridge**
+  looks like any other snow: it holds in hard frost, but gives way under you in a thaw, or if you run or jump onto it.
+  In a hard winter, water seeping from the banks freezes layer on layer over the stream ice into thick sheets of
+  slippery, milky **aufeis** that last into spring.
+- **Tumbleweeds and driftwood:** on windy days in deserts, badlands and dry savanna, **tumbleweeds** come bouncing
+  across the open ground and pile up against fences (hit one and it breaks into sticks). Storms wash **driftwood** up
+  onto beaches.
+- **Supermoons:** every fifth full moon is a supermoon, noticeably bigger and brighter, and its king tide washes a
+  block further up the beach.
 - **Superblooms:** in a wet year, the desert flowers in spring, with drifts of **desert gold**, **sand verbena** and
   **desert poppies** across the sand that die back in the summer heat.
 - **Lightning-charged tools:** leave a tool or weapon lying on an anvil or a copper block in a
@@ -415,6 +424,10 @@ Ways to stay comfortable:
 - **Echoing thunder:** among mountains and valleys, thunder comes rolling back off the slopes round you.
 - **Cloud waterfalls:** fog and low cloud pushed against a ridge spill over the crest and tumble down the far side.
 - **Green storm skies:** the daylight turns an eerie green under big hailstorms.
+- **Mares' tails and mackerel skies:** a day or so before the rain, high cirrus streams in, in fine hooked streaks,
+  then the rippled rows of a mackerel sky, then a thin milky veil that puts a halo round the sun.
+- **Scud:** ragged shreds of low cloud race along under a storm's dark base.
+- **Hail fog:** after a hailstorm, a low fog lies over the drifts of hail until they melt.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -575,6 +588,12 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
   along frozen coasts; **seamounts** rising from the deep ocean floor almost to the surface; and **submarine canyons**
   cut deep into the sea floor. Glaciers now hold blue **meltwater lakes** in summer, and many **waterfalls** have a
   cave behind them you can walk into.
+- **Bogs, caves and rust:** **glowworm grottoes**, stream caves in limestone hills whose roofs glow with thousands of
+  tiny blue lights; **red rivers** running blood-red with iron and acid from rusty **ochre** hillsides, with nothing
+  growing along their banks; **string bogs**, long curving ridges of peat with narrow pools between them in flat
+  northern country; and **earth hummocks**, cold grassland heaved by frost into countless little mounds. Peat bogs now
+  have **quaking mats** of floating moss that give way if you run or jump onto them, and glaciers have curved
+  **ogive** bands below their icefalls and **hidden crevasses** bridged over with snow.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -700,7 +719,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 95 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 99 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -710,7 +729,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
 Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
-A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim and Sea Mount.
+A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water and Gone With the Wind.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

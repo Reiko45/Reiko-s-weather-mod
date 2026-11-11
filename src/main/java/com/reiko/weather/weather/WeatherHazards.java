@@ -521,7 +521,9 @@ public final class WeatherHazards {
         }
         int sea = level.getSeaLevel();
         BlockPos pos;
-        if (top.getY() == sea && level.getBlockState(top).isAir()) {
+        // (a supermoon's king tide washes a block higher up the beach)
+        boolean king = tide && Supermoons.kingTide(level) && top.getY() == sea + 1 && level.getBiome(top).is(BiomeTags.IS_BEACH);
+        if ((top.getY() == sea || king) && level.getBlockState(top).isAir()) {
             pos = top;
             boolean flat = level.getBlockState(pos.below()).is(Blocks.MUD);
             if (tide && !(Tides.flooding(level) && level.getBiome(pos).is(BiomeTags.IS_BEACH) || flat && Tides.floodingFlats(level))) {

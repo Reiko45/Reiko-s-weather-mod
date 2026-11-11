@@ -33,9 +33,11 @@ public final class DebugInfo {
             event.getLeft().add(String.format(Locale.ROOT, "[Reiko's Weather] air %.1f°C halo %.2f beams %.2f blood %.2f frost %.2f seas %.2f",
                     ClientWeather.airTemperature(), ClientWeather.halo(), ClientWeather.sunbeams(), ClientWeather.bloodMoon(),
                     SeasonalColors.frost(), RoughSeas.roughness()));
-            event.getLeft().add(String.format(Locale.ROOT, "[Reiko's Weather] green light %.2f golden haze %.2f insects %s",
-                    SkyTints.green(), SkyTints.golden(), InsectSwarms.debug()));
-            event.getLeft().add("[Reiko's Weather] cloud falls " + CloudWaterfalls.debug());
+            event.getLeft().add(String.format(Locale.ROOT, "[Reiko's Weather] green %.2f golden %.2f insects %s cloud falls %s",
+                    SkyTints.green(), SkyTints.golden(), InsectSwarms.debug(), CloudWaterfalls.debug()));
+            event.getLeft().add(String.format(java.util.Locale.ROOT, "[Reiko's Weather] cirrus %.2f mackerel %.2f veil %.2f scud %.2f hail fog %s supermoon %.1f",
+                    HighClouds.cirrus(), HighClouds.mackerel(), HighClouds.veil(), Scud.strength(), HailFog.debug(),
+                    com.reiko.weather.weather.Supermoons.strength(mc.level)));
         }
     }
 

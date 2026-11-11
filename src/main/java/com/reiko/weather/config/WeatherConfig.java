@@ -259,6 +259,11 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue INDIAN_SUMMER;
     public static final ModConfigSpec.BooleanValue FALSE_SPRING;
     public static final ModConfigSpec.BooleanValue INSECT_HATCHES;
+    public static final ModConfigSpec.BooleanValue TUMBLEWEEDS;
+    public static final ModConfigSpec.BooleanValue SNOW_BRIDGES;
+    public static final ModConfigSpec.BooleanValue AUFEIS;
+    public static final ModConfigSpec.BooleanValue DRIFTWOOD;
+    public static final ModConfigSpec.BooleanValue SUPERMOONS;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -328,6 +333,11 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue ICE_SHELVES;
     public static final ModConfigSpec.BooleanValue SEAMOUNTS;
     public static final ModConfigSpec.BooleanValue SUBMARINE_CANYONS;
+    public static final ModConfigSpec.BooleanValue GLOWWORM_GROTTOES;
+    public static final ModConfigSpec.BooleanValue RED_RIVERS;
+    public static final ModConfigSpec.BooleanValue STRING_BOGS;
+    public static final ModConfigSpec.BooleanValue EARTH_HUMMOCKS;
+    public static final ModConfigSpec.BooleanValue QUAKING_BOGS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -706,6 +716,17 @@ public final class WeatherConfig {
                 .define("falseSpring", true);
         INSECT_HATCHES = b.comment("Mayfly hatches on calm spring and summer evenings bring the fish rising (better fishing in rivers then).")
                 .define("insectHatches", true);
+        TUMBLEWEEDS = b.comment("Tumbleweeds break loose and bounce across deserts, badlands and dry plains on windy days.")
+                .define("tumbleweeds", true);
+        SNOW_BRIDGES = b.comment("Snow bridges build over narrow streams in winter (and hide crevasses on glaciers). They give way under you in a thaw,",
+                        "or if you run or jump onto them.")
+                .define("snowBridges", true);
+        AUFEIS = b.comment("In hard winters, water seeping from springs and stream banks freezes layer on layer into thick sheets of ice (aufeis).")
+                .define("aufeis", true);
+        DRIFTWOOD = b.comment("Storms wash weathered driftwood up onto beaches.")
+                .define("driftwood", true);
+        SUPERMOONS = b.comment("A few full moons a year are supermoons, and their spring tides run higher than usual.")
+                .define("supermoons", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -1054,6 +1075,16 @@ public final class WeatherConfig {
                 .define("seamounts", true);
         SUBMARINE_CANYONS = b.comment("Submarine canyons: deep canyons cut into the sea floor off the coast.")
                 .define("submarineCanyons", true);
+        GLOWWORM_GROTTOES = b.comment("Glowworm grottoes: caves over underground streams, their ceilings speckled with blue points of light.")
+                .define("glowwormGrottoes", true);
+        RED_RIVERS = b.comment("Red rivers: acidic, iron-rich streams running blood-red over orange-stained rock.")
+                .define("redRivers", true);
+        STRING_BOGS = b.comment("String bogs: long curving ridges of peat with narrow pools between them, in flat northern country.")
+                .define("stringBogs", true);
+        EARTH_HUMMOCKS = b.comment("Earth hummocks: cold, wet grassland heaved by frost into countless little grassy mounds.")
+                .define("earthHummocks", true);
+        QUAKING_BOGS = b.comment("Quaking bogs: floating mats of moss at the edges of bog pools, which wobble and give way underfoot.")
+                .define("quakingBogs", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "string_bog",
+  "biomes": "#reikos_weather:has_structure/string_bog",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

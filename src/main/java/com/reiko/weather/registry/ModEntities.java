@@ -47,5 +47,10 @@ public final class ModEntities {
                     .sized(2.0F, 0.45F).clientTrackingRange(8).updateInterval(3)
                     .build(ReikosWeather.id("ice_floe").toString()));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<com.reiko.weather.entity.TumbleweedEntity>> TUMBLEWEED = REGISTER.register("tumbleweed",
+            () -> EntityType.Builder.<com.reiko.weather.entity.TumbleweedEntity>of(com.reiko.weather.entity.TumbleweedEntity::new, MobCategory.MISC)
+                    .sized(0.8F, 0.8F).clientTrackingRange(8).updateInterval(2)
+                    .build(ReikosWeather.id("tumbleweed").toString()));
+
     private ModEntities() {}
 }

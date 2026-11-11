@@ -3,6 +3,12 @@
   "values": {
     "reikos_weather:peat": {
       "burn_time": 1200
+    },
+    "reikos_weather:driftwood": {
+      "burn_time": 300
+    },
+    "reikos_weather:tumbleweed": {
+      "burn_time": 100
     }
   }
 }

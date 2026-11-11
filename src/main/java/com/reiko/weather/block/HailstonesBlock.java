@@ -45,4 +45,14 @@ public class HailstonesBlock extends SnowLayerBlock {
                     pos.getZ() + random.nextDouble(), 0.0, 0.004, 0.0);
         }
     }
+
+    /**
+     * Only a thin single layer gets swept aside by a block landing on it. (This has no item of its own, and vanilla's
+     * snow check, which compares the item in hand with this block's item, would call itself forever when a falling
+     * block landed on it.)
+     */
+    @Override
+    protected boolean canBeReplaced(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.item.context.BlockPlaceContext context) {
+        return state.getValue(LAYERS) == 1;
+    }
 }

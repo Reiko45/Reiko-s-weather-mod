@@ -125,9 +125,7 @@ public final class CloudWaterfalls {
 
     /** For the F3 screen: how strongly the cloud is pouring, and over which ridges. */
     static String debug() {
-        StringBuilder s = new StringBuilder(String.format(java.util.Locale.ROOT, "%.2f", strength));
-        for (Crest c : CRESTS) s.append(String.format(java.util.Locale.ROOT, " @%d,%d,%d", (int) c.x(), c.top(), (int) c.z()));
-        return s.toString();
+        return String.format(java.util.Locale.ROOT, "%.2f (%d ridges)", strength, CRESTS.size());
     }
 
     public static void reset() {

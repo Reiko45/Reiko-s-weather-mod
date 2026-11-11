@@ -103,6 +103,10 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue INSECT_SWARMS;
     public static final ModConfigSpec.BooleanValue SINGING_DUNES;
     public static final ModConfigSpec.BooleanValue GOLDEN_HAZE;
+    public static final ModConfigSpec.BooleanValue HIGH_CLOUDS;
+    public static final ModConfigSpec.BooleanValue SCUD;
+    public static final ModConfigSpec.BooleanValue HAIL_FOG;
+    public static final ModConfigSpec.BooleanValue SUPERMOON_LOOK;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -307,6 +311,14 @@ public final class ClientConfig {
                 .define("singingDunes", true);
         GOLDEN_HAZE = b.comment("A soft golden haze over the still, warm days of an Indian summer.")
                 .define("goldenHaze", true);
+        HIGH_CLOUDS = b.comment("High cirrus streaks and rippled mackerel skies, which spread in and thicken ahead of fronts and storms.")
+                .define("highClouds", true);
+        SCUD = b.comment("Ragged shreds of low cloud racing under storm clouds and along gust fronts.")
+                .define("scud", true);
+        HAIL_FOG = b.comment("A low fog over the drifts of hail after a hailstorm.")
+                .define("hailFog", true);
+        SUPERMOON_LOOK = b.comment("Supermoons look bigger and brighter than other full moons.")
+                .define("supermoonLook", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

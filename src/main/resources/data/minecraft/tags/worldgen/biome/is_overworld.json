@@ -3,6 +3,7 @@
   "values": [
     "reikos_weather:cloud_forest",
     "reikos_weather:blue_spring",
-    "reikos_weather:boiling_river"
+    "reikos_weather:boiling_river",
+    "reikos_weather:red_river"
   ]
 }

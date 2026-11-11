@@ -113,11 +113,18 @@ public final class SkyEffectsRenderer {
         boolean harvest = com.reiko.weather.network.SyncedWeather.season() == com.reiko.weather.weather.Season.AUTUMN && phase == 0;
         float moonTint = overworld && ClientConfig.HARVEST_MOON.get() && phase != 4 && moonDir.y > -0.05F
                 ? clearSky * Mth.clamp(1.0F - moonDir.y / (harvest ? 0.6F : 0.35F), 0.0F, 1.0F) * (harvest ? 1.0F : 0.65F) : 0.0F;
+        // the high ice clouds: lit white by day, and catching the sunset's colours after the ground is in shadow
+        float highLit = overworld ? clearSky * Mth.clamp((sun.y + 0.12F) * 4.0F, 0.0F, 1.0F) : 0.0F;
+        float cirrus = HighClouds.cirrus() * highLit, mackerel = HighClouds.mackerel() * highLit, veil = HighClouds.veil() * highLit;
+        float lowSun = Mth.clamp(1.0F - sun.y / 0.25F, 0.0F, 1.0F);
+        float[] highTint = {1.0F, Mth.lerp(lowSun, 0.97F, 0.55F), Mth.lerp(lowSun, 1.0F, 0.47F)};
+        // a supermoon: bigger (see LevelRendererMixin) and brighter, with a broader glow round it
+        float supermoon = overworld && moonDir.y > -0.05F ? SkyTints.supermoon() * clearSky * (1.0F - overcast) : 0.0F;
         float sprayBow = overworld && ClientConfig.SPRAY_BOWS.get() && sun.y > 0.02F && sun.y < 0.65F
                 ? clearSky * (1.0F - overcast) * Mth.clamp((RoughSeas.roughness() - 0.2F) * 2.5F, 0.0F, 1.0F) : 0.0F;
         // the Chinook arch over the mountains upwind, in a föhn
         float chinook = overworld && ClientConfig.CHINOOK_ARCH.get() ? StormSkies.chinook() : 0.0F;
-        if (!eclipsing && chinook <= 0.005F && planets <= 0.005F && earthshine <= 0.005F && moonTint <= 0.005F && sprayBow <= 0.005F && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+        if (!eclipsing && cirrus <= 0.005F && mackerel <= 0.005F && veil <= 0.005F && supermoon <= 0.005F && chinook <= 0.005F && planets <= 0.005F && earthshine <= 0.005F && moonTint <= 0.005F && sprayBow <= 0.005F && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
                 && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F
                 && milky <= 0.005F && zodiacal <= 0.005F && cha <= 0.005F && cza <= 0.005F && nacreous <= 0.005F && redSky <= 0.005F) {
             return;
@@ -200,6 +207,19 @@ public final class SkyEffectsRenderer {
         }
         if (nlc > 0.005F) {
             drawNoctilucent(pose, level.getGameTime() + partialTick, nlc * 0.5F);
+        }
+        if (veil > 0.005F) {
+            drawVeil(pose, highTint, veil * 0.16F);
+        }
+        if (mackerel > 0.005F) {
+            drawMackerel(pose, level.getGameTime() + partialTick, HighClouds.windAzimuth(), highTint, mackerel);
+        }
+        if (cirrus > 0.005F) {
+            drawCirrus(pose, level.getGameTime() + partialTick, HighClouds.windAzimuth(), highTint, cirrus);
+        }
+        if (supermoon > 0.005F && !(eclipsing && eclipse.lunar())) {
+            Vector3f[] around = basis(moonDir);
+            drawGlow(pose, new Vector3f(moonDir).normalize(), around[0], around[1], 0.0F, 9.0F, new float[]{0.85F, 0.9F, 1.0F}, 0.12F * supermoon);
         }
         if (milky > 0.005F) {
             drawMilkyWay(pose, theta, milky);
@@ -1510,6 +1530,135 @@ public final class SkyEffectsRenderer {
 
     private static void vertex(BufferBuilder buffer, Matrix4f pose, Vector3f p, float[] color, float alpha) {
         buffer.addVertex(pose, p.x, p.y, p.z).setColor(color[0], color[1], color[2], alpha);
+    }
+
+    /** A point on the dome, offset from a centre direction along a streak (along) and across it. */
+    private static Vector3f streakPoint(Vector3f centre, Vector3f along, Vector3f across, float x, float y) {
+        return new Vector3f(centre).add(new Vector3f(along).mul(x)).add(new Vector3f(across).mul(y)).normalize().mul(DOME);
+    }
+
+    /** The direction along the sky at a point that runs the way the wind does, and the one across it. */
+    private static Vector3f[] windFrame(Vector3f centre, float windAzimuth) {
+        Vector3f w = new Vector3f(Mth.sin(windAzimuth), 0.0F, -Mth.cos(windAzimuth));
+        Vector3f along = new Vector3f(w).sub(new Vector3f(centre).mul(centre.dot(w)));
+        if (along.lengthSquared() < 1.0E-4F) along.set(1.0F, 0.0F, 0.0F);
+        along.normalize();
+        return new Vector3f[]{along, new Vector3f(centre).cross(along).normalize()};
+    }
+
+    private static float skyHash(int seed, int salt) {
+        return (Mth.murmurHash3Mixer(seed * 0x2545F491 + salt * 0x9E3779B9) >>> 8) / (float) (1 << 24);
+    }
+
+    /**
+     * Cirrus: long, fine streaks of ice crystals combed out by the wind high up, many ending in a hooked tuft where
+     * the crystals fall out of the fast air above into the slower air below ("mares' tails").
+     */
+    private static void drawCirrus(Matrix4f pose, float time, float windAzimuth, float[] tint, float strength) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 14;
+        for (int s = 0; s < 26; s++) {
+            float h = skyHash(s, 1);
+            if (h > strength * 1.15F) continue;
+            float show = Mth.clamp((strength * 1.15F - h) * 5.0F, 0.0F, 1.0F);
+            // spread over the sky, drifting slowly downwind
+            float az = skyHash(s, 2) * Mth.TWO_PI + time * 0.000004F, el = (10.0F + 62.0F * skyHash(s, 3)) * Mth.DEG_TO_RAD;
+            Vector3f centre = new Vector3f(Mth.sin(az) * Mth.cos(el), Mth.sin(el), -Mth.cos(az) * Mth.cos(el));
+            Vector3f[] frame = windFrame(centre, windAzimuth + (skyHash(s, 4) - 0.5F) * 0.5F);
+            float length = 0.3F + 0.45F * skyHash(s, 5), width = 0.03F + 0.04F * skyHash(s, 6);
+            float hook = (skyHash(s, 7) - 0.5F) * 0.5F * length;
+            float alpha = 0.16F * show * horizonFade(new Vector3f(centre).mul(DOME));
+            // a soft band of overlapping fibres, not one hard line
+            for (int strand = 0; strand < 5; strand++) {
+                float offset = (skyHash(s * 5 + strand, 8) - 0.5F) * width * 1.4F;
+                float strandAlpha = alpha * (0.35F + 0.4F * skyHash(s * 5 + strand, 9));
+                float w = width * (0.5F + 0.6F * skyHash(s * 5 + strand, 10));
+                for (int i = 0; i < segments; i++) {
+                    float t0 = i / (float) segments, t1 = (i + 1) / (float) segments;
+                    // fine at the tail, thickening to a tuft at the hooked head
+                    float x0 = (t0 - 0.5F) * length, x1 = (t1 - 0.5F) * length;
+                    float y0 = offset + hook * t0 * t0 * t0, y1 = offset + hook * t1 * t1 * t1;
+                    float a0 = strandAlpha * profile(t0), a1 = strandAlpha * profile(t1);
+                    float w0 = w * (0.4F + 1.2F * t0), w1 = w * (0.4F + 1.2F * t1);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x0, y0 - w0), tint, 0.0F);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x1, y1 - w1), tint, 0.0F);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x1, y1), tint, a1);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x0, y0), tint, a0);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x0, y0), tint, a0);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x1, y1), tint, a1);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x1, y1 + w1), tint, 0.0F);
+                    vertex(buffer, pose, streakPoint(centre, frame[0], frame[1], x0, y0 + w0), tint, 0.0F);
+                }
+            }
+        }
+        draw(buffer);
+    }
+
+    /** How bright a cirrus streak is along its length: faint at the tail, brightest towards the head. */
+    private static float profile(float t) {
+        return Mth.clamp(Mth.sin(t * Mth.PI) * (0.5F + 0.7F * t), 0.0F, 1.0F);
+    }
+
+    /**
+     * A mackerel sky (cirrocumulus): a patch of sky covered in tiny cloudlets set out in neat rows, like the
+     * scales on a mackerel's back, where waves in the high air ripple the cloud layer.
+     */
+    private static void drawMackerel(Matrix4f pose, float time, float windAzimuth, float[] tint, float strength) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        // the patch sits up the sky, upwind of overhead, creeping along with the wind
+        float az = windAzimuth + Mth.PI + 0.4F * Mth.sin(time * 0.00003F), el = 48.0F * Mth.DEG_TO_RAD;
+        Vector3f centre = new Vector3f(Mth.sin(az) * Mth.cos(el), Mth.sin(el), -Mth.cos(az) * Mth.cos(el));
+        Vector3f[] frame = windFrame(centre, windAzimuth);
+        float drift = time * 0.00004F;
+        int rows = 20, cols = 30;
+        float rowGap = 0.036F, colGap = 0.032F, size = 0.019F;
+        for (int r = 0; r < rows; r++) {
+            for (int k = 0; k < cols; k++) {
+                int seed = r * 131 + k;
+                // the ripples run across the wind, in rows one behind another
+                float x = (r - rows / 2.0F) * rowGap + ((drift / rowGap) % 1.0F) * rowGap + (skyHash(seed, 11) - 0.5F) * rowGap * 0.35F;
+                float y = (k - cols / 2.0F) * colGap + (skyHash(seed, 12) - 0.5F) * colGap * 0.5F + 0.02F * Mth.sin(r * 0.9F);
+                // a ragged-edged patch, thinning out towards its edges
+                float ex = x / (rows * rowGap * 0.5F), ey = y / (cols * colGap * 0.5F);
+                float edge = 1.0F - Mth.sqrt(ex * ex + ey * ey) - 0.25F * (skyHash(seed, 13) - 0.5F);
+                if (edge <= 0.0F || skyHash(seed, 14) > 0.35F + strength) continue;
+                float a = 0.26F * strength * Mth.clamp(edge * 3.0F, 0.0F, 1.0F);
+                float sx = size * (0.7F + 0.6F * skyHash(seed, 15)), sy = sx * 1.3F;
+                Vector3f mid = streakPoint(centre, frame[0], frame[1], x, y);
+                if (mid.y < 2.0F) continue;
+                // a soft little puff: bright in the middle, fading to nothing at its edges
+                Vector3f[] ring = new Vector3f[8];
+                for (int q = 0; q < 8; q++) {
+                    float phi = q * Mth.TWO_PI / 8.0F;
+                    ring[q] = streakPoint(centre, frame[0], frame[1], x + Mth.cos(phi) * sx, y + Mth.sin(phi) * sy);
+                }
+                for (int q = 0; q < 8; q += 2) {
+                    vertex(buffer, pose, mid, tint, a);
+                    vertex(buffer, pose, ring[q], tint, 0.0F);
+                    vertex(buffer, pose, ring[(q + 1) % 8], tint, 0.0F);
+                    vertex(buffer, pose, ring[(q + 2) % 8], tint, 0.0F);
+                }
+            }
+        }
+        draw(buffer);
+    }
+
+    /** Cirrostratus: a thin, milky veil over the whole sky, turning the blue to white ahead of the rain. */
+    private static void drawVeil(Matrix4f pose, float[] tint, float alpha) {
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int steps = 36;
+        for (int i = 0; i < steps; i++) {
+            float a0 = i * Mth.TWO_PI / steps, a1 = (i + 1) * Mth.TWO_PI / steps;
+            for (int r = 0; r < 9; r++) {
+                float e0 = (r * 10.0F) * Mth.DEG_TO_RAD, e1 = ((r + 1) * 10.0F) * Mth.DEG_TO_RAD;
+                float f0 = r == 0 ? 0.0F : 1.0F;
+                vertexSky(buffer, pose, a0, e0, tint, alpha * f0);
+                vertexSky(buffer, pose, a1, e0, tint, alpha * f0);
+                vertexSky(buffer, pose, a1, e1, tint, alpha);
+                vertexSky(buffer, pose, a0, e1, tint, alpha);
+            }
+        }
+        draw(buffer);
     }
 
     private static void draw(BufferBuilder buffer) {

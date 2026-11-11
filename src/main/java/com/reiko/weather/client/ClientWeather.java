@@ -192,7 +192,8 @@ public final class ClientWeather {
         boolean dryish = rain < 0.15F && fog < 0.4F;
         float icy = Mth.clamp((-1.0F - airTemperature) / 6.0F, 0.0F, 1.0F);
         float thinCloud = Mth.clamp(1.0F - Math.abs(overcast - 0.35F) / 0.25F, 0.0F, 1.0F);
-        float haloTarget = on && dryish && overcast < 0.75F ? Math.max(icy, thinCloud * 0.6F) : 0.0F;
+        // (and in the veil of cirrostratus spreading in ahead of the rain)
+        float haloTarget = on && dryish && overcast < 0.75F ? Math.max(Math.max(icy, thinCloud * 0.6F), HighClouds.veil() * 0.85F) : 0.0F;
         halo = approach(halo, haloTarget, 0.003F);
 
         float broken = Math.max(bell(overcast), bell(cloudsAt(cam.x, cam.z)));
@@ -361,7 +362,7 @@ public final class ClientWeather {
         }
         float cloudForest = DampAir.cloudMist() * (0.5F + 0.08F * Mth.sin(Minecraft.getInstance().level == null ? 0.0F : Minecraft.getInstance().level.getGameTime() * 0.004F));
         return Math.max(Math.max(Math.max(Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog()), AirAndWater.blueHaze() * 0.16F), cloudForest),
-                SkyTints.golden() * 0.08F);
+                Math.max(SkyTints.golden() * 0.08F, HailFog.fog() * 0.3F));
     }
 
     public static float fogColorWeight() {

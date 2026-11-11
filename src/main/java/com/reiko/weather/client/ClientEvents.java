@@ -206,6 +206,7 @@ public final class ClientEvents {
         event.registerEntityRenderer(ModEntities.METEOR.get(), com.reiko.weather.client.render.MeteorRenderer::new);
         event.registerEntityRenderer(ModEntities.VOLCANIC_BOMB.get(), com.reiko.weather.client.render.VolcanicBombRenderer::new);
         event.registerEntityRenderer(ModEntities.ICE_FLOE.get(), com.reiko.weather.client.render.IceFloeRenderer::new);
+        event.registerEntityRenderer(ModEntities.TUMBLEWEED.get(), com.reiko.weather.client.render.TumbleweedRenderer::new);
     }
 
     public static void registerModels(ModelEvent.RegisterAdditional event) {
@@ -256,6 +257,7 @@ public final class ClientEvents {
             DriftingClouds.collect(event.getCamera(), partialTick);
             Cumulus.collect(event.getCamera(), partialTick);
             CloudWaterfalls.collect(event.getCamera(), partialTick);
+            Scud.collect(event.getCamera(), partialTick);
             StormSkies.collect(event.getCamera(), partialTick);
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
@@ -308,6 +310,9 @@ public final class ClientEvents {
         SkyTints.tick(mc);
         SingingDunes.tick(mc);
         CloudWaterfalls.tick(mc);
+        HighClouds.tick(mc);
+        Scud.tick(mc);
+        HailFog.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
@@ -361,6 +366,9 @@ public final class ClientEvents {
         InsectSwarms.reset();
         SkyTints.reset();
         CloudWaterfalls.reset();
+        HighClouds.reset();
+        Scud.reset();
+        HailFog.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();
@@ -484,6 +492,15 @@ public final class ClientEvents {
      */
     private static void tintedLight(ViewportEvent.ComputeFogColor event, float green, float golden) {
         if (event.getCamera().getFluidInCamera() != FogType.NONE) return;
+        float hail = HailFog.fog();
+        if (hail > 0.02F) {
+            // the hail fog is a pale, cold grey-white
+            float lum = event.getRed() * 0.3F + event.getGreen() * 0.59F + event.getBlue() * 0.11F;
+            float k = hail * 0.5F;
+            event.setRed(Mth.lerp(k, event.getRed(), lum * 0.98F));
+            event.setGreen(Mth.lerp(k, event.getGreen(), lum));
+            event.setBlue(Mth.lerp(k, event.getBlue(), Math.min(1.0F, lum * 1.04F)));
+        }
         if (golden > 0.02F) {
             float lum = event.getRed() * 0.3F + event.getGreen() * 0.59F + event.getBlue() * 0.11F;
             float k = golden * 0.5F;

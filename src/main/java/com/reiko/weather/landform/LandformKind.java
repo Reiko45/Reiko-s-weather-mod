@@ -159,7 +159,11 @@ public enum LandformKind implements StringRepresentable {
     LAVA_DOME(LavaDome::plan, LavaDome::load, () -> WeatherConfig.LAVA_DOMES.get()),
     ICE_SHELF(IceShelf::plan, IceShelf::load, () -> WeatherConfig.ICE_SHELVES.get()),
     SEAMOUNT(Seamount::plan, Seamount::load, () -> WeatherConfig.SEAMOUNTS.get()),
-    SUBMARINE_CANYON(SubmarineCanyon::plan, SubmarineCanyon::load, () -> WeatherConfig.SUBMARINE_CANYONS.get());
+    SUBMARINE_CANYON(SubmarineCanyon::plan, SubmarineCanyon::load, () -> WeatherConfig.SUBMARINE_CANYONS.get()),
+    GLOWWORM_GROTTO(GlowwormGrotto::plan, GlowwormGrotto::load, () -> WeatherConfig.GLOWWORM_GROTTOES.get()),
+    RED_RIVER(RedRiver::plan, RedRiver::load, () -> WeatherConfig.RED_RIVERS.get()),
+    STRING_BOG(StringBog::plan, StringBog::load, () -> WeatherConfig.STRING_BOGS.get()),
+    EARTH_HUMMOCKS(EarthHummocks::plan, EarthHummocks::load, () -> WeatherConfig.EARTH_HUMMOCKS.get());
 
     public static final Codec<LandformKind> CODEC = StringRepresentable.fromEnum(LandformKind::values);
 

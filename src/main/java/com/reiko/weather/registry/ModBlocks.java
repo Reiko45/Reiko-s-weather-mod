@@ -342,6 +342,41 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.GasVentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 6.0F)
                     .sound(SoundType.STONE).randomTicks().requiresCorrectToolForDrops().lightLevel(s -> 5)));
 
+    /** A snow bridge over a stream or a crevasse: just snow to look at, but it gives way. */
+    public static final DeferredBlock<com.reiko.weather.block.SnowBridgeBlock> SNOW_BRIDGE = REGISTER.register("snow_bridge",
+            () -> new com.reiko.weather.block.SnowBridgeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.2F)
+                    .sound(SoundType.SNOW).randomTicks()));
+
+    /** Aufeis: layer on layer of ice frozen out of seeping winter water. */
+    public static final DeferredBlock<com.reiko.weather.block.AufeisBlock> AUFEIS = REGISTER.register("aufeis",
+            () -> new com.reiko.weather.block.AufeisBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.5F)
+                    .friction(0.98F).sound(SoundType.GLASS).noOcclusion().randomTicks()));
+
+    /** Driftwood, washed up on the beach. */
+    public static final DeferredBlock<com.reiko.weather.block.DriftwoodBlock> DRIFTWOOD = REGISTER.register("driftwood",
+            () -> new com.reiko.weather.block.DriftwoodBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(1.5F)
+                    .sound(SoundType.WOOD).ignitedByLava()));
+
+    /** A floating mat of sphagnum over a bog pool. */
+    public static final DeferredBlock<com.reiko.weather.block.QuakingMatBlock> QUAKING_MAT = REGISTER.register("quaking_mat",
+            () -> new com.reiko.weather.block.QuakingMatBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GREEN).strength(0.4F)
+                    .sound(SoundType.MOSS).speedFactor(0.6F).noOcclusion()));
+
+    /** Glowworms on a cave roof. */
+    public static final DeferredBlock<com.reiko.weather.block.GlowwormsBlock> GLOWWORMS = REGISTER.register("glowworms",
+            () -> new com.reiko.weather.block.GlowwormsBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).instabreak()
+                    .noCollission().sound(SoundType.COBWEB).lightLevel(s -> 5).noOcclusion().pushReaction(PushReaction.DESTROY)));
+
+    /** Ochre: rock stained rust-red and orange by iron-rich water. */
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> OCHRE = REGISTER.register("ochre",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(1.25F, 4.2F)
+                    .sound(SoundType.TUFF).requiresCorrectToolForDrops()));
+
+    /** A tumbleweed come to rest. */
+    public static final DeferredBlock<com.reiko.weather.block.TumbleweedBlock> TUMBLEWEED = REGISTER.register("tumbleweed",
+            () -> new com.reiko.weather.block.TumbleweedBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instabreak()
+                    .noCollission().sound(SoundType.GRASS).noOcclusion().ignitedByLava().pushReaction(PushReaction.DESTROY)));
+
     private static DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> potted(String name, DeferredBlock<? extends net.minecraft.world.level.block.Block> flower) {
         return REGISTER.register(name, () -> new net.minecraft.world.level.block.FlowerPotBlock(
                 () -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT, flower,

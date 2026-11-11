@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:bubble_ice"
+    "reikos_weather:bubble_ice",
+    "reikos_weather:aufeis"
   ]
 }

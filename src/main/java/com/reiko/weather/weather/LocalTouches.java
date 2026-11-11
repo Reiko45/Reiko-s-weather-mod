@@ -63,6 +63,20 @@ public final class LocalTouches {
             // the false spring: the snow melts away and everything starts growing, weeks too early
             for (int i = 0; i < 3; i++) earlyThaw(level, column(level, player, random), random);
         }
+        if ((WeatherConfig.SNOW_BRIDGES.get() || WeatherConfig.AUFEIS.get()) && climate != Climate.ARID && random.nextInt(3) == 0) {
+            float air = Temperature.ambient(level, player.blockPosition(), local);
+            // snow drifting into a narrow stream builds out from both banks until it meets in the middle
+            if (WeatherConfig.SNOW_BRIDGES.get() && air < -3.0F && (p.snowLayers > 0 || random.nextInt(6) == 0)) {
+                snowBridge(level, column(level, player, random), random);
+            }
+            // in a hard winter, water keeps seeping out over the stream ice and freezing, layer on layer
+            if (WeatherConfig.AUFEIS.get() && air < -8.0F) aufeis(level, column(level, player, random));
+        }
+        com.reiko.weather.entity.TumbleweedEntity.trySpawn(level, player, local, climate);
+        if (WeatherConfig.DRIFTWOOD.get() && random.nextInt(p.wind > 0.55F || p.rain > 0.6F ? 15 : 300) == 0) {
+            // storms wash it up (and it lies about on the beach long after)
+            driftwood(level, column(level, player, random), random);
+        }
         if (WeatherConfig.SUPERBLOOMS.get() && climate == Climate.ARID && season == Season.SPRING && ClimateYears.leaning(level) > 0.3F) {
             for (int i = 0; i < 2; i++) bloom(level, column(level, player, random), random);
         }
@@ -171,6 +185,95 @@ public final class LocalTouches {
             else level.removeBlock(top, false);
         } else if (s.getBlock() instanceof CropBlock || s.is(BlockTags.SAPLINGS)) {
             s.randomTick(level, top, random);
+        }
+    }
+
+    /** A snow bridge: snow drifted over a narrow stream from bank to bank, hiding the water under it. */
+    private static void snowBridge(ServerLevel level, @Nullable BlockPos top, RandomSource random) {
+        if (top == null) return;
+        BlockPos water = top.below();
+        if (!level.getFluidState(water).is(FluidTags.WATER) || !level.getBlockState(top).isAir() || !level.canSeeSky(top)) return;
+        Direction.Axis first = random.nextBoolean() ? Direction.Axis.X : Direction.Axis.Z;
+        for (Direction.Axis axis : new Direction.Axis[]{first, first == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X}) {
+            int lo = 0, hi = 0;
+            while (lo < 4 && level.getFluidState(water.relative(axis, -(lo + 1))).is(FluidTags.WATER)) lo++;
+            while (hi < 4 && level.getFluidState(water.relative(axis, hi + 1)).is(FluidTags.WATER)) hi++;
+            // only a narrow stream: a wide river stays open
+            if (lo + hi + 1 > 3 || !bank(level, water.relative(axis, -(lo + 1)), water.getY()) || !bank(level, water.relative(axis, hi + 1), water.getY())) continue;
+            for (int k = -lo; k <= hi; k++) {
+                BlockState over = level.getBlockState(water.relative(axis, k).above());
+                if (!over.isAir() && !over.is(Blocks.SNOW)) return;
+            }
+            for (int k = -lo; k <= hi; k++) level.setBlockAndUpdate(water.relative(axis, k).above(), ModBlocks.SNOW_BRIDGE.get().defaultBlockState());
+            return;
+        }
+    }
+
+    /** Whether a column is a firm bank at the water's edge: ground level with the water, or a block above it. */
+    private static boolean bank(ServerLevel level, BlockPos side, int waterY) {
+        BlockPos at = new BlockPos(side.getX(), waterY, side.getZ());
+        if (!level.getFluidState(at).isEmpty() || !level.getBlockState(at).isFaceSturdy(level, at, Direction.UP)) return false;
+        BlockPos up = at.above();
+        BlockState s = level.getBlockState(up);
+        return s.isAir() || s.is(Blocks.SNOW) || s.isFaceSturdy(level, up, Direction.UP) && level.getBlockState(up.above()).isAir();
+    }
+
+    /** Aufeis: seeping winter water spreading over the stream ice from the banks and freezing, layer on layer. */
+    private static void aufeis(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null) return;
+        BlockPos at = top;
+        if (level.getBlockState(at.below()).is(Blocks.SNOW)) at = at.below();
+        BlockPos below = at.below();
+        BlockState s = level.getBlockState(below);
+        if (s.is(ModBlocks.AUFEIS.get())) {
+            int layers = s.getValue(com.reiko.weather.block.AufeisBlock.LAYERS);
+            if (layers < 8) {
+                level.setBlockAndUpdate(below, s.setValue(com.reiko.weather.block.AufeisBlock.LAYERS, layers + 1));
+            } else if (!level.getBlockState(below.below()).is(ModBlocks.AUFEIS.get()) && (level.getBlockState(at).isAir() || level.getBlockState(at).is(Blocks.SNOW))) {
+                // up to two blocks thick at most
+                level.setBlockAndUpdate(at, ModBlocks.AUFEIS.get().defaultBlockState());
+            }
+            return;
+        }
+        if (!s.is(Blocks.ICE) || !level.getFluidState(below.below()).is(FluidTags.WATER) && !level.getBlockState(below.below()).isSolid()) return;
+        // it starts where the ground water comes out, at the banks, and spreads from there
+        boolean source = false;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            for (int k = 1; k <= 2 && !source; k++) {
+                BlockPos n = below.relative(d, k);
+                BlockState ns = level.getBlockState(n);
+                source = ns.is(ModBlocks.AUFEIS.get()) || level.getBlockState(n.above()).is(ModBlocks.AUFEIS.get())
+                        || ns.is(BlockTags.DIRT) || ns.is(BlockTags.BASE_STONE_OVERWORLD) || ns.is(Blocks.GRAVEL);
+            }
+        }
+        if (source && (level.getBlockState(at).isAir() || level.getBlockState(at).is(Blocks.SNOW))) {
+            level.setBlockAndUpdate(at, ModBlocks.AUFEIS.get().defaultBlockState());
+        }
+    }
+
+    /** Driftwood: a bleached log washed up on the beach by a storm. */
+    private static void driftwood(ServerLevel level, @Nullable BlockPos top, RandomSource random) {
+        if (top == null) return;
+        int sea = level.getSeaLevel();
+        BlockPos ground = top.below();
+        if (ground.getY() < sea - 1 || ground.getY() > sea + 1 || !level.getBlockState(top).isAir()) return;
+        BlockState g = level.getBlockState(ground);
+        if (!g.is(BlockTags.SAND) && !g.is(Blocks.GRAVEL) || !level.getBiome(top).is(BiomeTags.IS_BEACH)) return;
+        // just above the waterline, and not every few blocks
+        boolean shore = false;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            for (int k = 1; k <= 5 && !shore; k++) shore = level.getFluidState(new BlockPos(ground.getX(), sea - 1, ground.getZ()).relative(d, k)).is(FluidTags.WATER);
+        }
+        if (!shore) return;
+        for (BlockPos p : BlockPos.betweenClosed(top.offset(-6, -2, -6), top.offset(6, 2, 6))) {
+            if (level.getBlockState(p).is(ModBlocks.DRIFTWOOD.get())) return;
+        }
+        Direction.Axis axis = random.nextBoolean() ? Direction.Axis.X : Direction.Axis.Z;
+        int length = 1 + random.nextInt(3);
+        for (int k = 0; k < length; k++) {
+            BlockPos p = top.relative(axis, k);
+            if (!level.getBlockState(p).isAir() || !level.getBlockState(p.below()).isFaceSturdy(level, p.below(), Direction.UP)) break;
+            level.setBlockAndUpdate(p, ModBlocks.DRIFTWOOD.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, axis));
         }
     }
 

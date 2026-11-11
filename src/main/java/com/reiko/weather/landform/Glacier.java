@@ -1,6 +1,7 @@
 package com.reiko.weather.landform;
 
 import com.reiko.weather.config.WeatherConfig;
+import com.reiko.weather.registry.ModBlocks;
 import com.reiko.weather.weather.Season;
 import com.reiko.weather.weather.WeatherAdvancements;
 import com.reiko.weather.weather.WeatherManager;
@@ -21,10 +22,15 @@ import javax.annotation.Nullable;
 
 /**
  * A tongue of ice flowing down a mountainside: packed ice with veins of blue ice, snow-covered higher up and
- * bare lower down. Crevasses cut across it, many of them hidden under a bridge of powder snow. Where its bed
- * steepens, the ice is stretched until it cracks apart into an icefall, a chaos of toppling ice towers (seracs)
- * and gaping crevasses. Lower down, meltwater streams on its surface have drilled moulins, shafts straight down
- * through the ice to the rock. Here and there on the melting lower half stand glacier tables: boulders that fell onto
+ * bare lower down. Crevasses cut across it, many of them hidden under a bridge of powder snow; up in the snow, some
+ * are hidden altogether, roofed over by wind-packed snow bridges that look no different from the snow round them, and
+ * give way under the unwary. Where its bed steepens, the ice is stretched until it cracks apart into an icefall, a chaos
+ * of toppling ice towers (seracs) and gaping crevasses. Below an icefall, the bare ice of the tongue is striped across
+ * with ogives (Forbes bands): arcs of darker and paler ice, one pair for each year's flow through the icefall (ice that
+ * came through in summer, dusty and dense, and ice that came through in winter, choked with snow), each arc bowed
+ * downstream because the middle of the glacier flows faster than its sides, and fading as they near the snout.
+ * Lower down, meltwater streams on its surface have drilled moulins, shafts straight down through the ice to the rock.
+ * Here and there on the melting lower half stand glacier tables: boulders that fell onto
  * the ice from the valley sides, each perched on a pillar of ice. The rock shades the ice under it from the sun, so as
  * the surface melts down all round, the ice beneath the boulder is left standing. In the middle and lower reaches the
  * meltwater gathers in hollows of the ice as supraglacial lakes, startlingly blue against the white (clean ice under clear
@@ -40,9 +46,12 @@ import javax.annotation.Nullable;
  * @param meltwater  the meltwater lakes and channels, as planned: the number of lakes; then for each lake {x, z, its
  *                   radius along the glacier and across it (in tenths of a block), its depth, its water level}; then for
  *                   each channel {which lake it runs into, the x and z of its head, its half-width (in tenths), its depth}
+ * @param ogives     whether the tongue below its icefall is banded with ogives (not on glaciers from before there were any)
+ * @param bridges    whether some of the crevasses up in the snow are hidden under snow bridges (not on glaciers from before
+ *                   there were any, nor while snow bridges are turned off)
  */
 public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
-                      boolean lakes, int[] meltwater, long seed) implements Landform {
+                      boolean lakes, int[] meltwater, boolean ogives, boolean bridges, long seed) implements Landform {
     public static final int NO_ICEFALL = Integer.MIN_VALUE;
     /** The most a table's pedestal stands above the ice round it before it melts down with it. */
     private static final int PEDESTAL = 5;
@@ -56,6 +65,11 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
 
     public Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables, long seed) {
         this(cx, cz, angle, length, width, thickness, icefall, moulins, tables, false, new int[0], seed);
+    }
+
+    public Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
+                   boolean lakes, int[] meltwater, long seed) {
+        this(cx, cz, angle, length, width, thickness, icefall, moulins, tables, lakes, meltwater, false, false, seed);
     }
 
     @Nullable
@@ -93,13 +107,17 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             previous = h;
         }
         Glacier glacier = new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, seed);
-        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, true, glacier.planMeltwater(c), seed);
+        // ogives wherever there's an icefall with room enough below it for them; snow bridges unless they're turned off
+        // (they're on while the config is still loading, during world creation)
+        boolean ogives = icefall != NO_ICEFALL && icefall < length * 0.3F;
+        boolean bridges = !WeatherConfig.SPEC.isLoaded() || WeatherConfig.SNOW_BRIDGES.get();
+        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, true, glacier.planMeltwater(c), ogives, bridges, seed);
     }
 
     static Landform load(CompoundTag tag) {
         return new Glacier(tag.getInt("x"), tag.getInt("z"), tag.getFloat("angle"), tag.getInt("length"), tag.getInt("width"),
                 tag.getInt("thick"), tag.contains("icefall") ? tag.getInt("icefall") : NO_ICEFALL, tag.getBoolean("moulins"), tag.getBoolean("tables"),
-                tag.getBoolean("lakes"), tag.getIntArray("meltwater"), tag.getLong("seed"));
+                tag.getBoolean("lakes"), tag.getIntArray("meltwater"), tag.getBoolean("ogives"), tag.getBoolean("bridges"), tag.getLong("seed"));
     }
 
     @Override
@@ -116,6 +134,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         tag.putBoolean("tables", tables);
         tag.putBoolean("lakes", lakes);
         tag.put("meltwater", new net.minecraft.nbt.IntArrayTag(meltwater));
+        tag.putBoolean("ogives", ogives);
+        tag.putBoolean("bridges", bridges);
         tag.putLong("seed", seed);
         return tag;
     }
@@ -174,6 +194,66 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
     /** How much a point is in the icefall (0-1). */
     private float icefallAt(float u) {
         return icefall == NO_ICEFALL ? 0.0F : Terrain.smooth((10.0F - Math.abs(u - icefall)) / 4.0F);
+    }
+
+    /**
+     * Which crevasses are hidden under snow bridges (by their number, as {@link #crevasse} gives it): of those lying wholly
+     * up in the snow and clear of the icefall, a third to a half (one of two, one or two of three...), or a lone one half
+     * the time.
+     */
+    private boolean[] bridged() {
+        boolean[] out = new boolean[32];
+        if (!bridges) return out;
+        float half = length / 2.0F, spacing = 13.0F + 5.0F * Terrain.hash(seed, 7);
+        int[] up = new int[out.length];
+        int n = 0;
+        for (int k = 0; k < out.length; k++) {
+            float uk = -half + length * 0.15F + k * spacing;
+            // (each wanders up to 2.9 blocks either side of its line)
+            if (uk > length * 0.25F || uk + 2.9F >= 0.0F) break;
+            if (icefall == NO_ICEFALL || Math.abs(uk - icefall) > 11.0F) up[n++] = k;
+        }
+        int m = n == 1 ? (Terrain.hash(seed, 200) < 0.5F ? 1 : 0) : n == 0 ? 0 : Math.max(1, Math.round(n * (0.33F + 0.17F * Terrain.hash(seed, 201))));
+        // (the m of them that draw the lowest lots)
+        for (int a = 0; a < n; a++) {
+            int rank = 0;
+            for (int b = 0; b < n; b++) {
+                if (Terrain.hash(seed, 210 + up[b]) < Terrain.hash(seed, 210 + up[a])) rank++;
+            }
+            out[up[a]] = rank < m;
+        }
+        return out;
+    }
+
+    /**
+     * The ogives at (u, v): how dark the ice is there, from 1 in the heart of a dark band to -1 in the heart of a light
+     * one (0 where there are none: above the icefall, up in the snow, near the glacier's sides, or near its snout, where
+     * they've faded out). They start just below the icefall, bowed a little; the further the ice carries them, the more
+     * the faster flow down the glacier's middle bows them, and the closer they crowd as the ice slows toward the snout.
+     */
+    private float ogive(float u, float v, int x, int z) {
+        if (!ogives || icefall == NO_ICEFALL) return 0.0F;
+        float start = icefall + 10.0F, end = length / 2.0F - 1.0F;
+        if (u < Math.max(start, 0.0F) || u > end) return 0.0F;
+        float hw = halfWidth(u);
+        // (the fastest ice needn't run right down the middle)
+        float mid = hw * 0.2F * (Terrain.hash(seed, 301) - 0.5F), across = Math.min(1.0F, Math.abs(v - mid) / (hw + Math.abs(mid)));
+        float run = u - start, t = run / Math.max(1.0F, end - start);
+        float bow = Math.min(hw * 0.6F, 2.0F + 0.32F * run);
+        float wave = (7.0F + 4.0F * Terrain.hash(seed, 300)) * (1.0F - 0.2F * t);
+        float f = (run - bow * (1.0F - across * across)) / wave + 0.18F * (Terrain.field(seed + 500, x, z, 4.0) - 0.5F);
+        float fade = Terrain.smooth(run / 4.0F) * (1.0F - Terrain.smooth((t - 0.45F) / 0.55F)) * Terrain.smooth((1.0F - across) / 0.25F);
+        return Mth.cos((f - Mth.floor(f)) * Mth.TWO_PI) * fade;
+    }
+
+    /** The ice an ogive band shows at the surface, or null where it's just the glacier's own. */
+    @Nullable
+    private BlockState band(float ogive, int x, int y, int z) {
+        if (ogive > 0.6F) return Blocks.BLUE_ICE.defaultBlockState();
+        if (ogive > 0.35F) return Blocks.ICE.defaultBlockState();
+        // (the light bands dusted white with the snow that was folded into them)
+        if (ogive < -0.55F && Terrain.noise(seed + 2, x, y, z) < 0.8F) return Blocks.SNOW_BLOCK.defaultBlockState();
+        return null;
     }
 
     /**
@@ -574,6 +654,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         BoundingBox b = bounds();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int[][] shafts = moulinList();
+        boolean[] hidden = bridged();
         // the glacier tables in this chunk, and the top of the ice in each of their columns (from the ground as it is now)
         int[][] tabled = tableList();
         int[][] tops = new int[tabled.length][];
@@ -651,12 +732,22 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                         Terrain.set(level, pos, x, h, z, Blocks.AIR.defaultBlockState());
                     }
                     Terrain.set(level, pos, x, floor, z, Blocks.SNOW_BLOCK.defaultBlockState());
-                    // most of each crevasse hides under a thin bridge of powder snow
-                    if (floor < top && Terrain.hash(seed, crev * 31 + Mth.floor(l[1] / 4.0F)) < 0.7F) {
+                    if (crev < hidden.length && hidden[crev] && l[0] < 0.0F) {
+                        // roofed over by a snow bridge a block or two thick, with the snow lying on it just as on the ice
+                        // round it: nothing shows of the crevasse under it
+                        int cap = floor < top - 2 && Terrain.field(seed + 501, x, z, 5.0) > 0.45F ? 2 : 1;
+                        for (int h = Math.max(floor + 1, top - cap + 1); h <= top; h++) Terrain.set(level, pos, x, h, z, ModBlocks.SNOW_BRIDGE.get().defaultBlockState());
+                        if (l[0] < -length * 0.1F && Terrain.noise(seed, x, 0, z) > 0.3F) Terrain.set(level, pos, x, top + 1, z, Blocks.SNOW.defaultBlockState());
+                    } else if (floor < top && Terrain.hash(seed, crev * 31 + Mth.floor(l[1] / 4.0F)) < 0.7F) {
+                        // most of each crevasse hides under a thin bridge of powder snow
                         Terrain.set(level, pos, x, top, z, Blocks.POWDER_SNOW.defaultBlockState());
                     }
                 } else if (l[0] < -length * 0.1F && Terrain.noise(seed, x, 0, z) > 0.3F) {
                     Terrain.set(level, pos, x, top + 1, z, Blocks.SNOW.defaultBlockState());
+                } else if (!lining(shafts, x, z)) {
+                    // the ogives, in the top of the ice only (an ice cave's roof under them is left as it was)
+                    BlockState band = band(ogive(l[0], l[1], x, z), x, top, z);
+                    if (band != null) Terrain.set(level, pos, x, top, z, band);
                 }
             }
         }
@@ -693,6 +784,14 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 for (int h = ground + 1; h < top; h++) Terrain.set(level, pos, x, h, z, Blocks.BLUE_ICE.defaultBlockState());
                 return false;
             }
+        }
+        return false;
+    }
+
+    /** Whether a column is in a moulin's blue lining (or its shaft or lip). */
+    private static boolean lining(int[][] shafts, int x, int z) {
+        for (int[] m : shafts) {
+            if (x >= m[0] - 1 && x <= m[0] + m[2] && z >= m[1] - 1 && z <= m[1] + m[2] || x == m[3] && z == m[4]) return true;
         }
         return false;
     }
@@ -783,11 +882,18 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             if (!level.isLoaded(column) || meltAt(x, z)[0] > 0) continue;
             BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column).below();
             BlockState state = level.getBlockState(top);
-            boolean ice = state.is(Blocks.PACKED_ICE) || state.is(Blocks.ICE) || state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.SNOW);
+            // (an ogive's dark band melts down with the ice round it, and shows on in the ice under it; the snow bridges, far
+            // up in the snow, are never reached, and melt through on their own in a thaw)
+            float[] l = local(x + 0.5, z + 0.5);
+            float ogive = ogive(l[0], l[1], x, z);
+            boolean ice = state.is(Blocks.PACKED_ICE) || state.is(Blocks.ICE) || state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.SNOW)
+                    || state.is(Blocks.BLUE_ICE) && ogive > 0.35F;
             // never melt right down to the rock: keep two blocks of ice
             if (ice && isIce(level.getBlockState(top.below())) && isIce(level.getBlockState(top.below(2)))) {
                 boolean snout = u > half - length * 0.08F;
                 level.setBlock(top, snout && random.nextInt(4) == 0 ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                BlockState band = ogive > 0.35F ? band(ogive, x, top.getY() - 1, z) : null;
+                if (band != null && level.getBlockState(top.below()).is(Blocks.PACKED_ICE)) level.setBlock(top.below(), band, Block.UPDATE_ALL);
             }
         }
         if (tables) settleTable(level);

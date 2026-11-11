@@ -974,6 +974,102 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void fifteenthLandformsPlan(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int s = level.getSeaLevel();
+        java.util.function.BiFunction<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator, com.reiko.weather.landform.Landform> plan = (kind, ground) -> {
+            for (int i = 0; i < 80; i++) {
+                int x = Math.floorMod(i * 37, 400) - 200, z = Math.floorMod(i * 53, 400) - 200;
+                var planned = kind.plan(new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(i + 1), x, z, ground, s, level));
+                if (planned != null) return planned;
+            }
+            return null;
+        };
+        // limestone hills, a badlands slope, flat northern ground and gentle cold grassland; and where none of them belong
+        java.util.function.IntBinaryOperator karst = (x, z) -> s + 19 + (int) Math.round(13 * Math.sin(x * 0.045 + 0.3) * Math.cos(z * 0.04) + 3 * Math.sin(x * 0.12 + z * 0.09) + 1.5 * Math.cos(z * 0.23));
+        java.util.function.IntBinaryOperator slope = (x, z) -> (int) Math.round(s + 27 - 0.18 * x + 3 * Math.sin(z * 0.05) + 1.5 * Math.sin((x + z) * 0.09));
+        java.util.function.IntBinaryOperator flat = (x, z) -> s + 5 + (int) Math.round(1.5 * Math.sin(x * 0.05) * Math.cos(z * 0.04) + Math.sin((x + z) * 0.1));
+        java.util.function.IntBinaryOperator gentle = (x, z) -> s + 7 + (int) Math.round(3 * Math.sin(x * 0.05) * Math.cos(z * 0.043) + 2 * Math.sin((x + z) * 0.11));
+        java.util.function.IntBinaryOperator seaFloor = (x, z) -> s - 15 + (int) Math.round(2 * Math.sin(x * 0.05) * Math.cos(z * 0.04));
+        java.util.function.IntBinaryOperator mountainside = (x, z) -> s + 37 + (int) Math.round(0.9 * Math.abs(Math.floorMod(x, 160) - 80) + 3 * Math.sin(z * 0.05) + 1.5 * Math.sin((x + z) * 0.09));
+        record Fit(com.reiko.weather.landform.LandformKind kind, java.util.function.IntBinaryOperator good, java.util.List<java.util.function.IntBinaryOperator> bad) {}
+        var fits = java.util.List.of(
+                new Fit(com.reiko.weather.landform.LandformKind.GLOWWORM_GROTTO, karst, java.util.List.of(flat, seaFloor)),
+                new Fit(com.reiko.weather.landform.LandformKind.RED_RIVER, slope, java.util.List.of(flat, seaFloor)),
+                new Fit(com.reiko.weather.landform.LandformKind.STRING_BOG, flat, java.util.List.of(seaFloor, mountainside)),
+                new Fit(com.reiko.weather.landform.LandformKind.EARTH_HUMMOCKS, gentle, java.util.List.of(seaFloor, mountainside)));
+        for (Fit f : fits) {
+            var planned = plan.apply(f.kind(), f.good());
+            helper.assertTrue(planned != null, f.kind() + " on suitable ground");
+            var again = f.kind().load(planned.save());
+            helper.assertTrue(again.bounds().equals(planned.bounds()), f.kind() + " saves and loads");
+            var b = planned.bounds();
+            helper.assertTrue(b.getXSpan() < 256 && b.getZSpan() < 256, f.kind() + " stays within its reach");
+            for (int i = 0; i < f.bad().size(); i++) {
+                helper.assertTrue(plan.apply(f.kind(), f.bad().get(i)) == null, "no " + f.kind() + " on unsuitable ground #" + i);
+            }
+        }
+        // peat bogs now often have quaking mats, glaciers ogives and snow-bridged crevasses (all kept through a save)
+        boolean quaking = false;
+        for (int k = 0; k < 8 && !quaking; k++) {
+            int shift = k * 29;
+            var bog = plan.apply(com.reiko.weather.landform.LandformKind.PEAT_BOG, (x, z) -> s + 3 + (int) Math.round(1.5 * Math.sin((x + shift) * 0.05) * Math.cos(z * 0.04)));
+            quaking = bog instanceof com.reiko.weather.landform.PeatBog p && p.quaking()
+                    && com.reiko.weather.landform.LandformKind.PEAT_BOG.load(bog.save()) instanceof com.reiko.weather.landform.PeatBog p2 && p2.quaking();
+        }
+        helper.assertTrue(quaking, "peat bogs have quaking mats");
+        boolean ogives = false, bridges = false;
+        for (int k = 0; k < 8 && !(ogives && bridges); k++) {
+            int shift = k * 41;
+            // (a valley floor that drops in steps, so the ice breaks up into icefalls over them)
+            var glacier = plan.apply(com.reiko.weather.landform.LandformKind.GLACIER, (x, z) -> s + 60 + (int) Math.round(-0.1 * x
+                    - 9 * Math.floor((x + shift) / 55.0) + 3 * Math.sin(z * 0.04)));
+            if (glacier instanceof com.reiko.weather.landform.Glacier g
+                    && com.reiko.weather.landform.LandformKind.GLACIER.load(glacier.save()) instanceof com.reiko.weather.landform.Glacier g2) {
+                ogives |= g.ogives() && g2.ogives();
+                bridges |= g.bridges() && g2.bridges();
+            }
+        }
+        helper.assertTrue(ogives, "glaciers have ogives below their icefalls");
+        helper.assertTrue(bridges, "glaciers hide crevasses under snow bridges");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void winterGroundAndMoons(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(15);
+        // a block landing on a drift of hail (or any of the other snow-like layers) must not loop forever
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
+        var landing = new net.minecraft.world.item.context.DirectionalPlaceContext(level, at, net.minecraft.core.Direction.DOWN,
+                net.minecraft.world.item.ItemStack.EMPTY, net.minecraft.core.Direction.UP);
+        for (var block : java.util.List.of(ModBlocks.HAILSTONES, ModBlocks.DUSTY_SNOW, ModBlocks.PINK_SNOW, ModBlocks.SLUSH, ModBlocks.SNOW_CRUST)) {
+            var deep = block.get().defaultBlockState().setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, 3);
+            var thin = block.get().defaultBlockState().setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, 1);
+            helper.assertFalse(deep.canBeReplaced(landing), block.getId() + ": a deep layer holds");
+            helper.assertTrue(thin.canBeReplaced(landing), block.getId() + ": a thin layer is swept aside");
+        }
+        // every fifth full moon is a supermoon
+        helper.assertTrue(com.reiko.weather.weather.Supermoons.strength(16 * 24000L + 18000L) > 0.5F, "a supermoon on the 16th night");
+        helper.assertTrue(com.reiko.weather.weather.Supermoons.strength(8 * 24000L + 18000L) == 0.0F, "an ordinary full moon on the 8th");
+        helper.assertTrue(com.reiko.weather.weather.Supermoons.strength(17 * 24000L + 18000L) == 0.0F, "no supermoon the night after");
+        // aufeis melts away a layer at a time in mild air (the platform's plains are well above freezing)
+        helper.setBlock(3, 1, 1, Blocks.STONE);
+        helper.setBlock(3, 2, 1, ModBlocks.AUFEIS.get().defaultBlockState().setValue(com.reiko.weather.block.AufeisBlock.LAYERS, 3));
+        BlockPos ice = helper.absolutePos(new BlockPos(3, 2, 1));
+        for (int i = 0; i < 400 && level.getBlockState(ice).is(ModBlocks.AUFEIS.get()); i++) level.getBlockState(ice).randomTick(level, ice, random);
+        helper.assertBlockPresent(Blocks.AIR, new BlockPos(3, 2, 1));
+        // a snow bridge, once it starts to give way, falls in (and takes the rest of the span with it)
+        helper.setBlock(5, 3, 1, ModBlocks.SNOW_BRIDGE.get());
+        helper.setBlock(6, 3, 1, ModBlocks.SNOW_BRIDGE.get());
+        com.reiko.weather.block.SnowBridgeBlock.giveWay(level, helper.absolutePos(new BlockPos(5, 3, 1)), 1);
+        helper.runAfterDelay(20, () -> {
+            helper.assertBlockPresent(Blocks.AIR, new BlockPos(5, 3, 1));
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = PLATFORM)
     public static void mudIceAndSpells(GameTestHelper helper) {
         var level = helper.getLevel();
         var random = net.minecraft.util.RandomSource.create(17);

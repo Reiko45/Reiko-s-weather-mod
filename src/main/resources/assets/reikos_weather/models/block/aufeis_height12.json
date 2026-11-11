@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/snow_height12",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "particle": "reikos_weather:block/aufeis",
+    "texture": "reikos_weather:block/aufeis"
+  }
+}

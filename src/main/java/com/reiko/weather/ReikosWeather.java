@@ -197,6 +197,12 @@ public class ReikosWeather {
             event.accept(ModItems.DESERT_POPPY.get());
             event.accept(ModItems.SELENITE.get());
             event.accept(ModItems.GAS_VENT.get());
+            event.accept(ModItems.AUFEIS.get());
+            event.accept(ModItems.DRIFTWOOD.get());
+            event.accept(ModItems.QUAKING_MAT.get());
+            event.accept(ModItems.GLOWWORMS.get());
+            event.accept(ModItems.OCHRE.get());
+            event.accept(ModItems.TUMBLEWEED.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

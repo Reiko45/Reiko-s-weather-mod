@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "torn=false,waterlogged=false": [
+      {
+        "model": "reikos_weather:block/quaking_mat",
+        "y": 0
+      },
+      {
+        "model": "reikos_weather:block/quaking_mat",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/quaking_mat",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/quaking_mat",
+        "y": 270
+      }
+    ],
+    "torn=false,waterlogged=true": {
+      "model": "reikos_weather:block/quaking_mat"
+    },
+    "torn=true,waterlogged=false": {
+      "model": "reikos_weather:block/quaking_mat_torn"
+    },
+    "torn=true,waterlogged=true": {
+      "model": "reikos_weather:block/quaking_mat_torn"
+    }
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "reikos_weather:block/tumbleweed",
+    "t": "reikos_weather:block/tumbleweed"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        8
+      ],
+      "to": [
+        15,
+        13,
+        8
+      ],
+      "shade": true,
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        0,
+        1
+      ],
+      "to": [
+        8,
+        13,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        6.5,
+        1
+      ],
+      "to": [
+        15,
+        6.5,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        8
+      ],
+      "to": [
+        15,
+        13,
+        8
+      ],
+      "shade": true,
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          6.5,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        8,
+        0,
+        1
+      ],
+      "to": [
+        8,
+        13,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          6.5,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        1,
+        6.5,
+        1
+      ],
+      "to": [
+        15,
+        6.5,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          6.5,
+          8
+        ],
+        "axis": "x",
+        "angle": 45
+      }
+    },
+    {
+      "from": [
+        1,
+        6.5,
+        1
+      ],
+      "to": [
+        15,
+        6.5,
+        15
+      ],
+      "shade": true,
+      "faces": {
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          6.5,
+          8
+        ],
+        "axis": "z",
+        "angle": -45
+      }
+    }
+  ]
+}

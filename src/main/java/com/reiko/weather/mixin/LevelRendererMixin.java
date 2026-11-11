@@ -20,6 +20,12 @@ public abstract class LevelRendererMixin {
         return Math.max(rainLevel * (1.0F - 0.9F * ClientWeather.sunShower()), ClientWeather.sunOcclusion());
     }
 
+    /** A supermoon looks noticeably bigger than an ordinary full moon. */
+    @org.spongepowered.asm.mixin.injection.ModifyConstant(method = "renderSky", constant = @org.spongepowered.asm.mixin.injection.Constant(floatValue = 20.0F))
+    private float reikos_weather$supermoon(float size) {
+        return size * (1.0F + 0.22F * com.reiko.weather.client.SkyTints.supermoon());
+    }
+
     /** Minecraft's blocky clouds give way to the mod's own (see DriftingClouds), when they're turned on. */
     @Inject(method = "renderClouds", at = @At("HEAD"), cancellable = true)
     private void reikos_weather$replaceClouds(com.mojang.blaze3d.vertex.PoseStack poseStack, org.joml.Matrix4f frustum, org.joml.Matrix4f projection,

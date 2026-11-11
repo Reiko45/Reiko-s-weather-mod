@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "red_river",
+  "biomes": "#reikos_weather:has_structure/red_river",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

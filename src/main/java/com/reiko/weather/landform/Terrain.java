@@ -150,6 +150,9 @@ public final class Terrain {
     /** A boiling river: milky green-blue water, steaming hot (the client draws the steam, and the water scalds). */
     public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> BOILING_RIVER_BIOME =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("boiling_river"));
+    /** A red river: acidic, iron-rich water the colour of rust (nothing lives in it). */
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> RED_RIVER_BIOME =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, com.reiko.weather.ReikosWeather.id("red_river"));
 
     /**
      * Repaints the biome over part of the chunk being built: every 4x4x4 biome cell between {@code minY} and

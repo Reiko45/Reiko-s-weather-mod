@@ -28,7 +28,7 @@ public final class Tides {
     /** Whether high water is washing up the beach right now. */
     public static boolean flooding(Level level) {
         return WeatherConfig.SPEC.isLoaded() && WeatherConfig.TIDES.get() && level.dimension() == Level.OVERWORLD
-                && springness(level) >= 1.0F && cycle(level.getDayTime()) > 0.8F;
+                && springness(level) >= 1.0F && cycle(level.getDayTime()) > (Supermoons.kingTide(level) ? 0.6F : 0.8F);
     }
 
     /** Whether the tide is in over the tidal flats (every high tide, not just the spring tides). */
@@ -42,7 +42,7 @@ public final class Tides {
         float now = cycle(time), soon = cycle(time + 200L);
         String height = now > 0.6F ? "high" : now < -0.6F ? "low" : soon > now ? "rising" : "falling";
         float spring = springness(level);
-        String kind = spring >= 1.0F ? "spring" : spring <= 0.0F ? "neap" : "normal";
+        String kind = Supermoons.kingTide(level) ? "king" : spring >= 1.0F ? "spring" : spring <= 0.0F ? "neap" : "normal";
         return Component.translatable("report.reikos_weather.tide", Component.translatable("report.reikos_weather.tide." + height),
                 Component.translatable("report.reikos_weather.tide." + kind));
     }

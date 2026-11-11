@@ -1828,6 +1828,64 @@
    ]
   },
   {
+   "title": "Signs in the Sky",
+   "icon": "minecraft:feather",
+   "entries": [
+    {
+     "title": "High Cloud and Scud",
+     "icon": "minecraft:feather",
+     "pages": [
+      "A day or so before the rain, the high clouds spread in: fine streaks of cirrus combed out by the wind, many with a hooked tuft at one end (mares' tails), then the rippled rows of a mackerel sky, then a thin milky veil that puts a halo round the sun. \"Mackerel sky and mares' tails make tall ships carry low sails.\"",
+      "Under a storm's dark base, ragged shreds of low cloud called scud race along much faster than the clouds above them."
+     ]
+    },
+    {
+     "title": "Hail Fog and Supermoons",
+     "icon": "minecraft:snowball",
+     "pages": [
+      "After a big hailstorm, warm air passing over the drifts of hail is chilled into a low fog that lies over them until the hail melts. Now and then a full moon is a supermoon: noticeably bigger and brighter, and its spring tides (king tides) wash further up the beach."
+     ]
+    },
+    {
+     "title": "Winter Streams",
+     "icon": "minecraft:snow_block",
+     "pages": [
+      "In snowy weather, snow drifts over narrow streams from bank to bank until it bridges them. A snow bridge looks like any other snow, and holds in hard frost, but it gives way under you in a thaw, or if you run or jump onto it. Glaciers hide crevasses under snow bridges too.",
+      "In a hard winter, water keeps seeping out of the banks over the stream ice and freezing, layer on layer, into sheets of milky aufeis that last into spring."
+     ]
+    },
+    {
+     "title": "Wind and Shore",
+     "icon": "reikos_weather:tumbleweed",
+     "pages": [
+      "On windy days in deserts, badlands and dry savanna, tumbleweeds come bouncing across the open ground, piling up against fences and walls. Storms wash driftwood up onto beaches: weathered logs bleached silver-grey by sun and salt."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Bogs, Caves and Rust",
+   "icon": "reikos_weather:glowworms",
+   "entries": [
+    {
+     "title": "Glowworms and Red Rivers",
+     "icon": "reikos_weather:glowworms",
+     "pages": [
+      "Glowworm grottoes are caves cut by underground streams, their roofs speckled with thousands of tiny blue lights like a night sky: glowworms, hanging threads of silk to catch the midges that hatch from the stream below.",
+      "Red rivers run from rusty iron-ore hillsides, blood-red with iron and acid over orange-stained rock. Nothing grows along their banks."
+     ]
+    },
+    {
+     "title": "Bogs and Hummocks",
+     "icon": "reikos_weather:quaking_mat",
+     "pages": [
+      "In flat northern country, string bogs lie in long curving ridges of peat with narrow pools between them. Floating mats of moss grow out over the pools of quaking bogs: they wobble underfoot, and give way if you run or jump onto them.",
+      "In cold, wet grassland, frost heaves the ground into countless little grassy mounds, earth hummocks, hard going on foot. Below the icefalls of glaciers, curved bands of light and dark ice run across the tongue."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "reikos_weather:dusty_snow",
-    "reikos_weather:snow_roller"
+    "reikos_weather:snow_roller",
+    "reikos_weather:snow_bridge"
   ]
 }
