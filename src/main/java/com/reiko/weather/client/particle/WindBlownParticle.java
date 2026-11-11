@@ -31,7 +31,9 @@ public class WindBlownParticle extends TextureSheetParticle {
         /** Spray billowing up from the foot of a waterfall. */
         SPRAY(0.3, -0.035, 0.32F),
         /** The billowing grey cloud of a pyroclastic flow: huge, dense, rising slowly as it spreads. */
-        ASH_CLOUD(0.15, -0.02, 0.8F);
+        ASH_CLOUD(0.15, -0.02, 0.8F),
+        /** Woodsmoke spread out flat under a lid of warmer air: barely drifting, neither rising nor falling. */
+        SMOKE_HAZE(0.05, 0.0, 0.3F);
 
         final double windFactor;
         final double fallSpeed;
@@ -74,6 +76,7 @@ public class WindBlownParticle extends TextureSheetParticle {
             case STEAM -> { quadSize = 0.7F + random.nextFloat() * 0.9F; lifetime = 50 + random.nextInt(40); hasPhysics = false; }
             case SPRAY -> { quadSize = 1.0F + random.nextFloat() * 1.4F; lifetime = 35 + random.nextInt(30); hasPhysics = false; }
             case ASH_CLOUD -> { quadSize = 3.0F + random.nextFloat() * 4.0F; lifetime = 160 + random.nextInt(100); hasPhysics = false; }
+            case SMOKE_HAZE -> { quadSize = 2.5F + random.nextFloat() * 2.5F; lifetime = 220 + random.nextInt(120); hasPhysics = false; }
         }
         this.targetAlpha = kind.maxAlpha * (soft() ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
         if (!soft()) {
@@ -122,7 +125,7 @@ public class WindBlownParticle extends TextureSheetParticle {
 
     /** Big, soft clouds rather than little flakes. */
     private boolean soft() {
-        return kind == Kind.DUST || kind == Kind.MIST || kind == Kind.STEAM || kind == Kind.SPRAY || kind == Kind.ASH_CLOUD;
+        return kind == Kind.DUST || kind == Kind.MIST || kind == Kind.STEAM || kind == Kind.SPRAY || kind == Kind.ASH_CLOUD || kind == Kind.SMOKE_HAZE;
     }
 
     @Override

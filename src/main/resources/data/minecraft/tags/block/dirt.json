@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "reikos_weather:peat",
-    "reikos_weather:cracked_mud"
+    "reikos_weather:cracked_mud",
+    "reikos_weather:charred_soil"
   ]
 }

@@ -41,7 +41,8 @@ import java.util.List;
  * the lie of the land downhill, the way water would.
  */
 public final class MassFlows {
-    public enum Kind { LAHAR, PYROCLASTIC }
+    /** A volcanic mudflow, a scalding avalanche of ash and gas, or a bog burst (a waterlogged peat bog sliding downhill). */
+    public enum Kind { LAHAR, PYROCLASTIC, BOG }
 
     private static final class Front {
         final Kind kind;
@@ -72,7 +73,7 @@ public final class MassFlows {
         boolean griefing = level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
         for (Iterator<Front> it = FRONTS.iterator(); it.hasNext(); ) {
             Front f = it.next();
-            f.progress += f.kind == Kind.LAHAR ? 0.35 : 1.1;
+            f.progress += f.kind == Kind.PYROCLASTIC ? 1.1 : f.kind == Kind.BOG ? 0.22 : 0.35;
             boolean alive = true;
             while (f.progress >= 1.0 && alive) {
                 f.progress -= 1.0;
@@ -112,14 +113,17 @@ public final class MassFlows {
     }
 
     public static void start(ServerLevel level, Kind kind, double x, double z, double dx, double dz) {
-        float width = kind == Kind.LAHAR ? 2.5F + level.random.nextFloat() * 1.5F : 4.5F + level.random.nextFloat() * 2.0F;
-        FRONTS.add(new Front(kind, x, z, dx, dz, width, kind == Kind.LAHAR ? 420 : 260));
+        float width = kind == Kind.LAHAR ? 2.5F + level.random.nextFloat() * 1.5F : kind == Kind.BOG ? 2.0F + level.random.nextFloat() * 1.5F
+                : 4.5F + level.random.nextFloat() * 2.0F;
+        FRONTS.add(new Front(kind, x, z, dx, dz, width, kind == Kind.LAHAR ? 420 : kind == Kind.BOG ? 150 : 260));
         BlockPos at = BlockPos.containing(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) x, (int) z), z);
-        level.playSound(null, at, kind == Kind.LAHAR ? ModSounds.AVALANCHE.get() : ModSounds.VOLCANO_ERUPTION.get(), SoundSource.WEATHER, 8.0F, 0.6F);
+        level.playSound(null, at, kind == Kind.PYROCLASTIC ? ModSounds.VOLCANO_ERUPTION.get() : ModSounds.AVALANCHE.get(), SoundSource.WEATHER,
+                kind == Kind.BOG ? 4.0F : 8.0F, kind == Kind.BOG ? 0.45F : 0.6F);
         for (ServerPlayer p : level.players()) {
             if (p.distanceToSqr(x, p.getY(), z) < 320 * 320) {
-                p.displayClientMessage(Component.translatable(kind == Kind.LAHAR ? "message.reikos_weather.lahar" : "message.reikos_weather.pyroclastic")
-                        .withStyle(st -> st.withColor(kind == Kind.LAHAR ? 0xB08A5A : 0xD8D0C8).withBold(true)), true);
+                p.displayClientMessage(Component.translatable(kind == Kind.LAHAR ? "message.reikos_weather.lahar" : kind == Kind.BOG ? "message.reikos_weather.bog_burst"
+                                : "message.reikos_weather.pyroclastic")
+                        .withStyle(st -> st.withColor(kind == Kind.LAHAR ? 0xB08A5A : kind == Kind.BOG ? 0x8A6440 : 0xD8D0C8).withBold(true)), true);
             }
         }
     }
@@ -145,7 +149,7 @@ public final class MassFlows {
         int ahead = best / 4;
         f.flat = ahead >= here ? f.flat + 1 : Math.max(0, f.flat - 1);
         // it runs out once the ground levels off for long enough (a pyroclastic flow carries further on its own momentum)
-        if (f.flat > (f.kind == Kind.LAHAR ? 12 : 20)) return false;
+        if (f.flat > (f.kind == Kind.PYROCLASTIC ? 20 : 12)) return false;
         f.dx = Mth.lerp(0.5, f.dx, bestX);
         f.dz = Mth.lerp(0.5, f.dz, bestZ);
         double len = Math.sqrt(f.dx * f.dx + f.dz * f.dz);
@@ -155,7 +159,7 @@ public final class MassFlows {
         f.z += f.dz;
         BlockPos surface = BlockPos.containing(f.x, height(level, f.x, f.z), f.z);
         // a lahar that reaches a river or the sea is swallowed by it
-        if (f.kind == Kind.LAHAR && level.getFluidState(surface.below()).is(FluidTags.WATER)) return false;
+        if (f.kind != Kind.PYROCLASTIC && level.getFluidState(surface.below()).is(FluidTags.WATER)) return false;
         if (griefing) {
             int r = Mth.ceil(f.width);
             for (int ox = -r; ox <= r; ox++) {
@@ -198,7 +202,13 @@ public final class MassFlows {
         BlockPos top = pos.below();
         BlockState ground = level.getBlockState(top);
         if (ground.hasBlockEntity() || ground.is(BlockTags.PLANKS) || ground.is(BlockTags.DOORS) || !ground.getFluidState().isEmpty()) return;
-        if (f.kind == Kind.LAHAR) {
+        if (f.kind == Kind.BOG) {
+            // a black slurry of peat over everything, a block deep in places where it slowed
+            if (ground.is(BlockTags.DIRT) || ground.is(BlockTags.SAND) || ground.is(Blocks.GRAVEL)) {
+                level.setBlock(top, level.random.nextInt(3) == 0 ? Blocks.MUD.defaultBlockState() : ModBlocks.PEAT.get().defaultBlockState(), 2);
+            }
+            if (f.steps > 50 && level.random.nextInt(5) == 0 && level.getBlockState(pos).isAir()) level.setBlock(pos, ModBlocks.PEAT.get().defaultBlockState(), 2);
+        } else if (f.kind == Kind.LAHAR) {
             // mud over everything, thicker as it slows down further down the valley
             if (ground.is(BlockTags.DIRT) || ground.is(BlockTags.SAND) || ground.is(Blocks.GRAVEL) || ground.is(ModBlocks.VOLCANIC_ASH.get())) {
                 level.setBlock(top, Blocks.MUD.defaultBlockState(), 2);
@@ -220,8 +230,8 @@ public final class MassFlows {
         double r = f.width + 1.5;
         AABB box = new AABB(f.x - r, at.getY() - 3, f.z - r, f.x + r, at.getY() + (f.kind == Kind.PYROCLASTIC ? 12 : 4), f.z + r);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, e -> !e.isSpectator())) {
-            if (f.kind == Kind.LAHAR) {
-                e.hurt(level.damageSources().inWall(), 2.0F);
+            if (f.kind != Kind.PYROCLASTIC) {
+                e.hurt(level.damageSources().inWall(), f.kind == Kind.BOG ? 1.0F : 2.0F);
                 e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 3));
                 e.push(f.dx * 0.25, 0.05, f.dz * 0.25);
             } else {
@@ -233,14 +243,15 @@ public final class MassFlows {
         }
         for (ServerPlayer p : level.getEntitiesOfClass(ServerPlayer.class, box.inflate(40, 20, 40))) {
             if (p.isAlive() && p.distanceToSqr(Vec3.atCenterOf(at)) > (f.width + 4) * (f.width + 4)) {
-                WeatherAdvancements.award(p, f.kind == Kind.LAHAR ? "lahar" : "pyroclastic_flow");
+                WeatherAdvancements.award(p, f.kind == Kind.LAHAR ? "lahar" : f.kind == Kind.BOG ? "bog_burst" : "pyroclastic_flow");
             }
         }
     }
 
     private static void effects(ServerLevel level, Front f, BlockPos at) {
-        if (f.kind == Kind.LAHAR) {
-            far(level, new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK, Blocks.MUD.defaultBlockState()),
+        if (f.kind != Kind.PYROCLASTIC) {
+            far(level, new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK,
+                            f.kind == Kind.BOG ? ModBlocks.PEAT.get().defaultBlockState() : Blocks.MUD.defaultBlockState()),
                     f.x, at.getY() + 0.5, f.z, 30, f.width * 0.6, 0.4, f.width * 0.6, 0.15);
             if (f.steps % 15 == 0) level.playSound(null, at, ModSounds.AVALANCHE.get(), SoundSource.WEATHER, 3.0F, 0.5F);
         } else {

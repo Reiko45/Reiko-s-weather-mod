@@ -140,6 +140,13 @@ public final class ClientEvents {
                     p.setColor(Math.min(1, (color >> 16 & 255) / 255.0F * shade), Math.min(1, (color >> 8 & 255) / 255.0F * shade), Math.min(1, (color & 255) / 255.0F * shade));
                     return p;
                 });
+        event.registerSpriteSet(ModParticles.SMOKE_HAZE.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> {
+                    WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.SMOKE_HAZE);
+                    float shade = 0.62F + level.random.nextFloat() * 0.08F;
+                    p.setColor(shade, shade * 1.02F, shade * 1.08F);
+                    return p;
+                });
         event.registerSpriteSet(ModParticles.ASH_CLOUD.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> {
                     WindBlownParticle p = new WindBlownParticle(level, x, y, z, xd, yd, zd, sprites, WindBlownParticle.Kind.ASH_CLOUD);
@@ -241,6 +248,7 @@ public final class ClientEvents {
             CloudPuffs.collect(event.getCamera(), partialTick);
             CloudPuffs.inversion(event.getCamera());
             CloudPuffs.lenticular(event.getCamera());
+            CloudPuffs.banner(event.getCamera());
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
             SkySights.collectUpper(event.getCamera(), partialTick);
@@ -385,6 +393,14 @@ public final class ClientEvents {
             event.setRed(Mth.lerp(k, event.getRed(), 0.95F));
             event.setGreen(Mth.lerp(k, event.getGreen(), 0.88F));
             event.setBlue(Mth.lerp(k, event.getBlue(), 0.5F));
+        }
+        float haze = AirAndWater.blueHaze();
+        if (haze > 0.02F && event.getCamera().getFluidInCamera() == FogType.NONE) {
+            // the blue haze over hot forests (the Blue Ridge, the Blue Mountains)
+            float k = haze * 0.32F;
+            event.setRed(Mth.lerp(k, event.getRed(), 0.55F));
+            event.setGreen(Mth.lerp(k, event.getGreen(), 0.67F));
+            event.setBlue(Mth.lerp(k, event.getBlue(), 0.86F));
         }
         float eclipse = ClientWeather.eclipseLoss();
         if (eclipse > 0.01F && event.getCamera().getFluidInCamera() == FogType.NONE) {

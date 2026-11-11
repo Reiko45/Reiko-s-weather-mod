@@ -16,6 +16,8 @@
     "reikos_weather:pink_sand",
     "reikos_weather:hailstones",
     "reikos_weather:steaming_ground",
-    "reikos_weather:pink_snow"
+    "reikos_weather:pink_snow",
+    "reikos_weather:charred_soil",
+    "reikos_weather:frazil_ice"
   ]
 }

@@ -1633,6 +1633,79 @@
    ]
   },
   {
+   "title": "Night Skies, Dew and Ice",
+   "icon": "minecraft:spyglass",
+   "entries": [
+    {
+     "title": "Planets and the Moon",
+     "icon": "minecraft:spyglass",
+     "pages": [
+      "The planets wander along the sun's path. Venus is the brightest, never far from the sun: the evening star after sunset or the morning star before dawn. Jupiter is bright and creamy, Mars ruddy (brightest when it's opposite the sun, near the moon) and Saturn pale gold. Planets don't twinkle.",
+      "The dark part of a crescent moon glows faintly with earthshine: sunlight bounced off the world. A low moon looks orange, and the harvest moon, the full moon in autumn, rises big and deep orange-gold."
+     ]
+    },
+    {
+     "title": "Dew and Spray",
+     "icon": "minecraft:short_grass",
+     "pages": [
+      "On a dewy morning with the sun low behind you, a glow rings the shadow of your head on the grass (the heiligenschein), and a pale dewbow lies on the grass in front of you.\n\nOn a bright day with a rough sea, rainbows stand in the spray blown off the breaking waves."
+     ]
+    },
+    {
+     "title": "Air",
+     "icon": "minecraft:spruce_sapling",
+     "pages": [
+      "On windy days a plume of cloud streams off the lee side of a sharp peak like a flag: a banner cloud. On hot summer days a blue haze hangs over big forests.",
+      "On still, cold mornings and evenings, smoke from campfires and furnaces rises a little way and then spreads out flat in a blue-grey layer. Up in the mountains the seasons run late in spring and early in autumn."
+     ]
+    },
+    {
+     "title": "After the Storm",
+     "icon": "minecraft:kelp",
+     "pages": [
+      "After long, heavy rain a sodden peat bog on a hillside can burst and slide downhill as a slow black river of peat. A storm over a dry lakebed floods it with a sheet of shallow water that lingers for days before it dries.",
+      "Storms throw kelp and seagrass up along the beaches. Ground burnt by a wildfire is left charred, and recovers over the seasons: fireweed first, then grass and young birches."
+     ]
+    },
+    {
+     "title": "Icy Waters",
+     "icon": "minecraft:blue_ice",
+     "pages": [
+      "In a gale over a freezing sea, spray freezes where it lands, glazing the shore in ice. Under the sea ice in bitter cold, brinicles grow down to the sea floor and freeze a web of ice over the bottom.",
+      "Some patches of the winter sea ice never freeze over: polynyas, steaming in the cold. In bitter cold, rivers fill with slushy frazil ice, and anchor ice coats the stones on the bed."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Rock and Water",
+   "icon": "minecraft:sandstone",
+   "entries": [
+    {
+     "title": "Mountains and Ice",
+     "icon": "minecraft:packed_ice",
+     "pages": [
+      "Tepuis are sheer-sided table mountains with long waterfalls pouring off them. On snowy volcanic peaks, steam vents build hollow chimneys of ice: fumarole ice towers. Tundra slopes creep downhill in tongues of turf: solifluction lobes."
+     ]
+    },
+    {
+     "title": "Bent and Broken Rock",
+     "icon": "minecraft:red_sandstone",
+     "pages": [
+      "Hogbacks are tilted rock layers standing up as sawtooth ridges, with triangular flatirons leaning against the mountain front. In folded cliffs the layers bend into arches and troughs. Rift fissures are long cracks where the ground is pulling apart, filled with crystal-clear water.",
+      "Inverted channels are old riverbeds whose gravel turned hard as rock, left standing as winding ridges when the land round them wore away. Ancient shorelines are steps cut by a long-gone lake round its dry basin."
+     ]
+    },
+    {
+     "title": "Water in the Hills",
+     "icon": "minecraft:moss_block",
+     "pages": [
+      "Hanging gardens grow where water seeps out of a canyon wall: ferns, moss and vines in an alcove under an overhang. A landslide can dam a valley, leaving a lake behind it with drowned trees standing in the water. Fairy pools are a chain of clear blue pools and little falls down a mountain stream."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

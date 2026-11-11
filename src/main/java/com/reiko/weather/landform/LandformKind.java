@@ -133,7 +133,18 @@ public enum LandformKind implements StringRepresentable {
     LOESS_CLIFFS(LoessCliffs::plan, LoessCliffs::load, () -> WeatherConfig.LOESS_CLIFFS.get()),
     MIMA_MOUNDS(MimaMounds::plan, MimaMounds::load, () -> WeatherConfig.MIMA_MOUNDS.get()),
     TAFONI(Tafoni::plan, Tafoni::load, () -> WeatherConfig.TAFONI.get()),
-    FRINGING_REEF(FringingReef::plan, FringingReef::load, () -> WeatherConfig.FRINGING_REEFS.get());
+    FRINGING_REEF(FringingReef::plan, FringingReef::load, () -> WeatherConfig.FRINGING_REEFS.get()),
+    SOLIFLUCTION_LOBES(SolifluctionLobes::plan, SolifluctionLobes::load, () -> WeatherConfig.SOLIFLUCTION.get()),
+    HOGBACKS(Hogbacks::plan, Hogbacks::load, () -> WeatherConfig.HOGBACKS.get()),
+    FOLDED_CLIFFS(FoldedCliffs::plan, FoldedCliffs::load, () -> WeatherConfig.FOLDED_CLIFFS.get()),
+    TEPUI(Tepui::plan, Tepui::load, () -> WeatherConfig.TEPUIS.get()),
+    RIFT_FISSURE(RiftFissure::plan, RiftFissure::load, () -> WeatherConfig.RIFT_FISSURES.get()),
+    ANCIENT_SHORELINES(AncientShorelines::plan, AncientShorelines::load, () -> WeatherConfig.ANCIENT_SHORELINES.get()),
+    HANGING_GARDEN(HangingGarden::plan, HangingGarden::load, () -> WeatherConfig.HANGING_GARDENS.get()),
+    LANDSLIDE_LAKE(LandslideLake::plan, LandslideLake::load, () -> WeatherConfig.LANDSLIDE_LAKES.get()),
+    ICE_TOWERS(IceTowers::plan, IceTowers::load, () -> WeatherConfig.ICE_TOWERS.get()),
+    INVERTED_CHANNEL(InvertedChannel::plan, InvertedChannel::load, () -> WeatherConfig.INVERTED_CHANNELS.get()),
+    FAIRY_POOLS(FairyPools::plan, FairyPools::load, () -> WeatherConfig.FAIRY_POOLS.get());
 
     public static final Codec<LandformKind> CODEC = StringRepresentable.fromEnum(LandformKind::values);
 

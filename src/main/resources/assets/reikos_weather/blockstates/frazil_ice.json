@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/frazil_ice"
+      },
+      {
+        "model": "reikos_weather:block/frazil_ice",
+        "y": 90
+      }
+    ]
+  }
+}

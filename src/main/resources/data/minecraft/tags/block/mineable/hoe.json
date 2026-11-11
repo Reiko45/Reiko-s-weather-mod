@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reikos_weather:leaf_pile"
+    "reikos_weather:leaf_pile",
+    "reikos_weather:beach_wrack"
   ]
 }

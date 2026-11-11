@@ -80,6 +80,15 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue UPPER_LIGHTNING;
     public static final ModConfigSpec.BooleanValue STEVE;
     public static final ModConfigSpec.BooleanValue GEGENSCHEIN;
+    public static final ModConfigSpec.BooleanValue PLANETS;
+    public static final ModConfigSpec.BooleanValue EARTHSHINE;
+    public static final ModConfigSpec.BooleanValue HARVEST_MOON;
+    public static final ModConfigSpec.BooleanValue DEWBOWS;
+    public static final ModConfigSpec.BooleanValue SPRAY_BOWS;
+    public static final ModConfigSpec.BooleanValue BANNER_CLOUDS;
+    public static final ModConfigSpec.BooleanValue BLUE_HAZE;
+    public static final ModConfigSpec.BooleanValue WOODSMOKE;
+    public static final ModConfigSpec.BooleanValue ALTITUDE_SEASONS;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -237,6 +246,24 @@ public final class ClientConfig {
                 .define("steve", true);
         GEGENSCHEIN = b.comment("Gegenschein: a faint glow in the sky opposite the sun on the darkest nights.")
                 .define("gegenschein", true);
+        PLANETS = b.comment("Venus, Jupiter, Mars and Saturn wander along the sun's path through the night sky.")
+                .define("planets", true);
+        EARTHSHINE = b.comment("The dark part of a crescent moon glows faintly with light reflected off the world.")
+                .define("earthshine", true);
+        HARVEST_MOON = b.comment("The moon rises big and orange, above all the full moon nearest the autumn equinox.")
+                .define("harvestMoon", true);
+        DEWBOWS = b.comment("On dewy mornings a white bow lies on the grass and a glow rings your shadow.")
+                .define("dewbows", true);
+        SPRAY_BOWS = b.comment("Rainbows in waterfall spray and breaking surf when the sun is behind you.")
+                .define("sprayBows", true);
+        BANNER_CLOUDS = b.comment("On windy days, a plume of cloud streams off the lee side of sharp peaks.")
+                .define("bannerClouds", true);
+        BLUE_HAZE = b.comment("A bluish haze hangs over big forests on hot summer days.")
+                .define("blueHaze", true);
+        WOODSMOKE = b.comment("On still, cold mornings, campfire and chimney smoke spreads out in a flat layer.")
+                .define("woodsmokeInversions", true);
+        ALTITUDE_SEASONS = b.comment("High ground greens up later in spring and turns earlier in autumn.")
+                .define("altitudeSeasons", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

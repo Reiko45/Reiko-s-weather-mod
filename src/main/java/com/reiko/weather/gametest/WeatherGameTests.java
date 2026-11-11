@@ -718,6 +718,56 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void twelfthLandformsPlan(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int sea = level.getSeaLevel();
+        java.util.function.BiFunction<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator, com.reiko.weather.landform.Landform> plan = (kind, ground) -> {
+            for (int seed = 1; seed <= 60; seed++) {
+                var planned = kind.plan(new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(seed), 0, 0, ground, sea, level));
+                if (planned != null) return planned;
+            }
+            return null;
+        };
+        java.util.function.IntBinaryOperator gentle = (x, z) -> sea + 8 + (int) (2 * Math.sin(x * 0.07));
+        java.util.function.IntBinaryOperator slope = (x, z) -> sea + 40 - (int) Math.floor(x * 0.4);
+        java.util.Map<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator> suits = new java.util.LinkedHashMap<>();
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.TEPUI,
+                com.reiko.weather.landform.LandformKind.RIFT_FISSURE, com.reiko.weather.landform.LandformKind.HOGBACKS,
+                com.reiko.weather.landform.LandformKind.INVERTED_CHANNEL}) {
+            suits.put(kind, gentle);
+        }
+        suits.put(com.reiko.weather.landform.LandformKind.ICE_TOWERS, (x, z) -> sea + 60);
+        suits.put(com.reiko.weather.landform.LandformKind.SOLIFLUCTION_LOBES, slope);
+        for (var e : suits.entrySet()) {
+            var planned = plan.apply(e.getKey(), e.getValue());
+            helper.assertTrue(planned != null, e.getKey() + " on suitable ground");
+            var again = e.getKey().load(planned.save());
+            helper.assertTrue(again.bounds().equals(planned.bounds()), e.getKey() + " saves and loads");
+            var b = planned.bounds();
+            helper.assertTrue(b.getXSpan() < 256 && b.getZSpan() < 256, e.getKey() + " stays within its reach");
+        }
+        // none of them form out at sea
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.TEPUI,
+                com.reiko.weather.landform.LandformKind.RIFT_FISSURE, com.reiko.weather.landform.LandformKind.HOGBACKS,
+                com.reiko.weather.landform.LandformKind.INVERTED_CHANNEL, com.reiko.weather.landform.LandformKind.ICE_TOWERS,
+                com.reiko.weather.landform.LandformKind.SOLIFLUCTION_LOBES, com.reiko.weather.landform.LandformKind.FOLDED_CLIFFS,
+                com.reiko.weather.landform.LandformKind.FAIRY_POOLS, com.reiko.weather.landform.LandformKind.HANGING_GARDEN,
+                com.reiko.weather.landform.LandformKind.ANCIENT_SHORELINES}) {
+            helper.assertTrue(plan.apply(kind, (x, z) -> sea - 20) == null, "no " + kind + " at sea");
+        }
+        // cliffs, valleys, slopes and basins need relief: none on dead-flat land
+        for (var kind : new com.reiko.weather.landform.LandformKind[]{com.reiko.weather.landform.LandformKind.FOLDED_CLIFFS,
+                com.reiko.weather.landform.LandformKind.HANGING_GARDEN, com.reiko.weather.landform.LandformKind.LANDSLIDE_LAKE,
+                com.reiko.weather.landform.LandformKind.FAIRY_POOLS, com.reiko.weather.landform.LandformKind.SOLIFLUCTION_LOBES,
+                com.reiko.weather.landform.LandformKind.ANCIENT_SHORELINES}) {
+            helper.assertTrue(plan.apply(kind, (x, z) -> sea + 25) == null, "no " + kind + " on flat land");
+        }
+        // and fumarole ice towers are high up
+        helper.assertTrue(plan.apply(com.reiko.weather.landform.LandformKind.ICE_TOWERS, gentle) == null, "no ice towers in the lowlands");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
     public static void landformsKeepApart(GameTestHelper helper) {
         // a big lava field, a smaller headland overlapping it, and a little cenote overlapping only the headland
         var big = new com.reiko.weather.landform.LandformSpacing.Claim(com.reiko.weather.landform.LandformKind.KIPUKA,
@@ -742,6 +792,50 @@ public class WeatherGameTests {
         var twin = new com.reiko.weather.landform.LandformSpacing.Claim(com.reiko.weather.landform.LandformKind.TAFONI,
                 new net.minecraft.world.level.ChunkPos(3, 3), new net.minecraft.world.level.levelgen.structure.BoundingBox(-100, 50, -100, 100, 120, 100));
         helper.assertTrue(big.beats(twin) != twin.beats(big), "a tie still has exactly one winner");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void icyWatersAndAftermath(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(5);
+        // slushy frazil ice melts back to water in mild air (the test platform's plains are well above freezing)
+        helper.setBlock(1, 1, 1, ModBlocks.FRAZIL_ICE.get());
+        BlockPos slush = helper.absolutePos(new BlockPos(1, 1, 1));
+        helper.assertTrue(level.getFluidState(slush).isSource(), "frazil ice is still water underneath");
+        level.getBlockState(slush).randomTick(level, slush, random);
+        helper.assertBlockPresent(Blocks.WATER, new BlockPos(1, 1, 1));
+        // a brinicle hanging from ice melts away to water too
+        helper.setBlock(3, 3, 1, Blocks.ICE);
+        helper.setBlock(3, 2, 1, ModBlocks.BRINICLE.get());
+        BlockPos tube = helper.absolutePos(new BlockPos(3, 2, 1));
+        level.getBlockState(tube).randomTick(level, tube, random);
+        helper.assertBlockPresent(Blocks.WATER, new BlockPos(3, 2, 1));
+        // charred soil greens over (outside winter)
+        if (com.reiko.weather.weather.WeatherManager.seasonInfo().season() != com.reiko.weather.weather.Season.WINTER) {
+            helper.setBlock(5, 1, 1, ModBlocks.CHARRED_SOIL.get());
+            BlockPos burnt = helper.absolutePos(new BlockPos(5, 1, 1));
+            for (int i = 0; i < 400 && level.getBlockState(burnt).is(ModBlocks.CHARRED_SOIL.get()); i++) {
+                level.getBlockState(burnt).randomTick(level, burnt, random);
+            }
+            helper.assertBlockPresent(Blocks.GRASS_BLOCK, new BlockPos(5, 1, 1));
+        }
+        // wrack needs ground under it
+        helper.assertFalse(ModBlocks.BEACH_WRACK.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(1, 5, 4))), "no wrack in mid-air");
+        // a dry lakebed is what floods into a playa lake
+        helper.assertTrue(com.reiko.weather.weather.StormWake.lakebed(ModBlocks.CRACKED_MUD.get().defaultBlockState()), "cracked mud is a lakebed");
+        helper.assertFalse(com.reiko.weather.weather.StormWake.lakebed(Blocks.GRASS_BLOCK.defaultBlockState()), "grass isn't a lakebed");
+        // polynyas lie in the same places every time, and there are some in any stretch of sea
+        boolean found = false;
+        for (int x = 0; x < 512 && !found; x += 4) {
+            for (int z = 0; z < 512 && !found; z += 4) {
+                found = com.reiko.weather.weather.IcyWaters.polynya(x, z);
+            }
+        }
+        helper.assertTrue(found, "polynyas are scattered through the sea");
+        // fireweed goes in a flower pot
+        helper.assertTrue(((net.minecraft.world.level.block.FlowerPotBlock) Blocks.FLOWER_POT).getFullPotsView().containsKey(ModBlocks.FIREWEED.getId()),
+                "fireweed can be potted");
         helper.succeed();
     }
 

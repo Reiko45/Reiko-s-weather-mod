@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/beach_wrack"
+      },
+      {
+        "model": "reikos_weather:block/beach_wrack",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/beach_wrack",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/beach_wrack",
+        "y": 270
+      }
+    ]
+  }
+}

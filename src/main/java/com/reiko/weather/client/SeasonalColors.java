@@ -46,10 +46,17 @@ public final class SeasonalColors {
         Season season = SyncedWeather.season();
         boolean on = mc.level != null && mc.level.dimension() == Level.OVERWORLD && season != null && SyncedWeather.dayOfSeason() >= 0
                 && ClientConfig.SEASONAL_COLORS.get() && !Seasons.usingSereneSeasons();
+        if (!on) {
+            highAutumn = highWinter = 0.0F;
+        }
         if (on) {
             float day = SyncedWeather.dayOfSeason() + Math.floorMod(mc.level.getDayTime(), 24000L) / 24000.0F;
             float progress = Mth.clamp(day / Math.max(1, SyncedWeather.daysPerSeason()), 0.0F, 1.0F);
             float early = smooth(progress * 4.0F);
+            // up the mountains the seasons run differently: autumn colours come early, spring green comes late
+            boolean high = ClientConfig.ALTITUDE_SEASONS.get();
+            highAutumn = !high ? 0.0F : season == Season.AUTUMN ? Math.min(1.0F, 0.4F + smooth(progress * 2.0F)) : season == Season.SUMMER ? smooth((progress - 0.7F) * 3.3F) * 0.6F : 0.0F;
+            highWinter = !high ? 0.0F : season == Season.SPRING ? 1.0F - smooth(progress * 1.6F) : season == Season.AUTUMN ? smooth((progress - 0.7F) * 3.3F) * 0.7F : 0.0F;
             switch (season) {
                 case AUTUMN -> a = smooth(progress * 2.0F);
                 case WINTER -> { a = 1.0F - early; w = early; }
@@ -136,8 +143,17 @@ public final class SeasonalColors {
         return time > 13000L || time < 1500L;
     }
 
+    /** How far high ground runs ahead of the season (turning early in autumn) and behind it (greening late in spring). */
+    private static float highAutumn, highWinter;
+
+    /** 0 in the lowlands, rising to 1 well up the mountains. */
+    private static float height(BlockPos pos) {
+        return Mth.clamp((pos.getY() - 95) / 70.0F, 0.0F, 1.0F);
+    }
+
     public static int grass(int color, BlockPos pos) {
-        float a = autumn, w = winter, f = frost, d = drought;
+        float h = height(pos);
+        float a = Math.max(autumn, highAutumn * h), w = Math.max(winter, highWinter * h), f = frost, d = drought;
         if (a <= 0 && w <= 0 && f <= 0 && d <= 0) return color;
         color = mix(color, DROUGHT_GRASS, d * 0.6F);
         color = mix(color, AUTUMN_GRASS, a * 0.3F);
@@ -146,7 +162,8 @@ public final class SeasonalColors {
     }
 
     public static int foliage(int color, BlockPos pos) {
-        float a = autumn, w = winter, f = frost, d = drought;
+        float h = height(pos);
+        float a = Math.max(autumn, highAutumn * h), w = Math.max(winter, highWinter * h), f = frost, d = drought;
         if (a <= 0 && w <= 0 && f <= 0 && d <= 0) return color;
         color = mix(color, DROUGHT_LEAVES, d * 0.2F);
         if (a <= 0 && w <= 0) return mix(color, FROST_LEAVES, f * 0.65F);

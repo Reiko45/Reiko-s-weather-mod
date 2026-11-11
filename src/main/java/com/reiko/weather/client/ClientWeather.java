@@ -359,7 +359,7 @@ public final class ClientWeather {
         if (type != WeatherType.FOG && wearingGoggles()) {
             weatherFog *= 0.45F;
         }
-        return Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog());
+        return Math.max(Math.max(Math.max(weatherFog, mist * 0.72F) * (0.25F + 0.75F * exposure), GroundAir.fog()), AirAndWater.blueHaze() * 0.16F);
     }
 
     public static float fogColorWeight() {

@@ -49,6 +49,18 @@ public class PuddleBlock extends Block {
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        BlockState floor = level.getBlockState(pos.below());
+        if (com.reiko.weather.config.WeatherConfig.PLAYA_LAKES.get() && com.reiko.weather.weather.StormWake.lakebed(floor)) {
+            // a lake on a dry lakebed lingers for days, drying faster in the heat, and leaves its salt behind
+            var local = com.reiko.weather.weather.WeatherManager.local(level, pos);
+            if (local.type().vanillaRain && local.profile().rain > 0.3F) return;
+            float air = com.reiko.weather.temperature.Temperature.ambient(level, pos, local);
+            if (random.nextInt(air > 30.0F ? 15 : 40) == 0) {
+                level.setBlockAndUpdate(pos, floor.is(Blocks.WHITE_TERRACOTTA) || floor.is(com.reiko.weather.registry.ModBlocks.ROCK_SALT.get())
+                        ? com.reiko.weather.registry.ModBlocks.SALT_CRUST.get().defaultBlockState() : Blocks.AIR.defaultBlockState());
+            }
+            return;
+        }
         if (!level.isRainingAt(pos) && random.nextInt(2) == 0) {
             level.removeBlock(pos, false);
         }

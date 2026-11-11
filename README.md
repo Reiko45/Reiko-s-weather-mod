@@ -79,6 +79,8 @@ equinoxes), with the nights the other way round. Noon and midnight stay where th
 
 **Snow caps:** the air cools with height, so the mountains wear snow caps whose snowline creeps down in autumn and
 winter and climbs back up in spring. In summer, old snow high up turns pink with snow algae (**watermelon snow**).
+Up in the mountains the leaves and grass also run on their own calendar: they green up later in spring and turn
+earlier in autumn.
 
 If **Serene Seasons** is installed, its calendar is used instead (including the day of the season),
 and its own foliage colours take over.
@@ -311,6 +313,14 @@ Ways to stay comfortable:
 - **Village heat islands:** villages are a few degrees warmer than the country round them, with less frost.
 - **Salt spray:** gales off the sea scorch the leaves off the seaward side of coastal trees. **Marine heatwaves:**
   in long, hot summers the sea warms, fish move away and coral bleaches.
+- **Bog bursts:** after long, heavy rain a sodden peat bog on a hillside can burst and slide downhill as a slow black
+  river of peat. **Playa lakes:** a storm over a dry lakebed floods it with a sheet of shallow water that lingers for
+  days, drying faster in the heat (and leaving its salt behind on salt flats).
+- **Recovery after fire:** wildfires leave the ground charred; over the growing seasons it recovers, fireweed first,
+  then grass and the odd young birch. **Wrack lines:** storms throw kelp and seagrass along the top of the beaches.
+- **Icy waters:** gales over a freezing sea glaze the shore in **freezing spray**; under the sea ice in bitter cold,
+  **brinicles** grow down to the sea floor; **polynyas**, patches of open water, never freeze over all winter; and
+  fast rivers clog with slushy **frazil ice**, with anchor ice on their beds. (Block changes need `mobGriefing`.)
 - **Lightning-charged tools:** leave a tool or weapon lying on an anvil or a copper block in a
   thunderstorm (a lightning rod nearby helps). If lightning strikes it, it's charged for five minutes:
   it mines faster and hits harder, with a crackle of sparks.
@@ -364,6 +374,13 @@ Ways to stay comfortable:
 - **Blue jets and elves** flash high above the biggest storms at night; **STEVE**, a mauve ribbon of light, arcs
   across the sky on some geomagnetic storm nights; and the faint **gegenschein** glows opposite the sun on the darkest
   nights. When the sun comes out after a summer shower, **steam** rises off warm roads and fields.
+- **Planets:** Venus (the evening or morning star), Jupiter, Mars and Saturn wander along the sun's path, and Mars
+  and the moon meet now and then. **Earthshine** lights the dark part of a crescent moon, and a low moon rises
+  orange: deepest of all the **harvest moon**, the full moon in autumn.
+- **Dewbows and the heiligenschein:** on dewy mornings a glow rings the shadow of your head on the grass, and a pale
+  bow lies on the grass in front of you. On bright days with a rough sea, rainbows stand in the spray off the waves.
+- **Banner clouds** stream off sharp peaks on windy days; a **blue haze** hangs over big forests on hot summer days;
+  and on still, cold mornings and evenings, smoke from fires and furnaces spreads out in a flat **woodsmoke** layer.
 - **Wall clouds and funnel clouds:** a dark, turning wall cloud hangs under the back of a supercell, and now
   and then a funnel cloud snakes down from it and draws back up.
 
@@ -502,6 +519,13 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
   **beaver ponds**, **patterned fens**, and **cypress swamps** with their knees.
 - **Dry lands and coasts:** **loess cliffs** and gullies, **Mima mounds**, honeycombed **tafoni** sea cliffs, and
   **fringing reefs** with spurs and grooves.
+- **Mountains and ice:** **tepuis** (sheer table mountains with long waterfalls), **fumarole ice towers** over steam
+  vents on snowy peaks, and **solifluction lobes** creeping down tundra slopes.
+- **Bent and broken rock:** **hogbacks and flatirons**, **folded cliffs** with their layers bent into arches, **rift
+  fissures** full of crystal-clear water, **inverted channels** (old riverbeds left standing as ridges), and the
+  stepped **ancient shorelines** of a long-gone lake.
+- **Water in the hills:** **hanging gardens** on seeping canyon walls, **landslide lakes** behind old rockslide dams,
+  and **fairy pools** stepping down a mountain stream.
 - **Ancient things:** **petrified forests** of stone logs (**petrified wood**), **fossil beds** with great bones
   weathering out (brush the gravel below), and **nurse logs** and root mounds in old forests.
 
@@ -607,6 +631,9 @@ Under **Accessibility** in the client settings:
 | **Gypsum, Shell, Olivine and Pink Sand** | gypsum dunes and coloured beaches | Decorative sands; smelt into glass. |
 | **Rock Salt** | salt domes | A pale, glassy salt rock for building. |
 | **Steaming Ground** | geothermal ground | Warm, stained earth that steams and melts snow off itself. |
+| **Fireweed** | grows back on burnt ground | A magenta flower; makes magenta dye and goes in a flower pot. |
+| **Charred Soil** | left by wildfires | Burnt ground that recovers over the seasons. |
+| **Beach Wrack** | washed up after storms | Kelp and seagrass along the tideline; gather it for kelp. |
 
 ## Weather & mobs
 - Weather changes which monsters spawn: **strays** in blizzards and snow, **husks** in desert
@@ -626,7 +653,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 84 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 87 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -635,7 +662,8 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 (visit five kinds of landform), Downburst, Firenado, Shaken, Not Stirred, Iceberg, Right Ahead!,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
-Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls and Hot Water.
+Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
+A Lake in the Desert and Finger of Death.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

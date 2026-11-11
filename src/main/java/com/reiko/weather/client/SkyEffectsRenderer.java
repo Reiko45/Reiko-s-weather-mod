@@ -102,7 +102,20 @@ public final class SkyEffectsRenderer {
                 ? clearSky * (1.0F - overcast) * Mth.clamp((-sun.y - 0.2F) * 4.0F, 0.0F, 1.0F) * Mth.clamp(Math.min(nightTime - 13800L, 17500L - nightTime) / 600.0F, 0.0F, 1.0F) : 0.0F;
         float gegenschein = overworld && ClientConfig.GEGENSCHEIN.get() ? dark * Mth.clamp((-sun.y - 0.5F) * 3.0F, 0.0F, 1.0F) : 0.0F;
         float fata = overworld ? SkySights.fataMorgana() : 0.0F;
-        if (!eclipsing && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+        // planets after dusk and before dawn (Venus shows in the twilight), earthshine on a crescent moon,
+        // an orange moon low in the sky, and rainbows in the spray off a rough sea
+        float sunDown = Mth.clamp((0.02F - sun.y) * 8.0F, 0.0F, 1.0F);
+        float planets = overworld && ClientConfig.PLANETS.get() ? clearSky * (1.0F - overcast) * sunDown : 0.0F;
+        Vector3f moonDir = new Vector3f(sun).negate();
+        float earthshine = overworld && ClientConfig.EARTHSHINE.get() && moonDir.y > 0.0F
+                ? clearSky * (1.0F - overcast) * (phase == 3 || phase == 5 ? 1.0F : phase == 2 || phase == 6 ? 0.45F : 0.0F)
+                * Mth.clamp((-sun.y - 0.05F) * 5.0F, 0.0F, 1.0F) : 0.0F;
+        boolean harvest = com.reiko.weather.network.SyncedWeather.season() == com.reiko.weather.weather.Season.AUTUMN && phase == 0;
+        float moonTint = overworld && ClientConfig.HARVEST_MOON.get() && phase != 4 && moonDir.y > -0.05F
+                ? clearSky * Mth.clamp(1.0F - moonDir.y / (harvest ? 0.6F : 0.35F), 0.0F, 1.0F) * (harvest ? 1.0F : 0.65F) : 0.0F;
+        float sprayBow = overworld && ClientConfig.SPRAY_BOWS.get() && sun.y > 0.02F && sun.y < 0.65F
+                ? clearSky * (1.0F - overcast) * Mth.clamp((RoughSeas.roughness() - 0.2F) * 2.5F, 0.0F, 1.0F) : 0.0F;
+        if (!eclipsing && planets <= 0.005F && earthshine <= 0.005F && moonTint <= 0.005F && sprayBow <= 0.005F && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
                 && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F
                 && milky <= 0.005F && zodiacal <= 0.005F && cha <= 0.005F && cza <= 0.005F && nacreous <= 0.005F && redSky <= 0.005F) {
             return;
@@ -133,6 +146,21 @@ public final class SkyEffectsRenderer {
         }
         if (fata > 0.005F) {
             drawFataMorgana(pose, level.getGameTime() + partialTick, fata);
+        }
+        if (moonTint > 0.005F && !(eclipsing && eclipse.lunar())) {
+            drawMoonTint(pose, moonDir, moonTint, harvest);
+        }
+        if (earthshine > 0.005F && !(eclipsing && eclipse.lunar())) {
+            drawEarthshine(pose, moonDir, earthshine);
+        }
+        if (planets > 0.005F) {
+            drawPlanets(pose, theta, level.getDayTime() + partialTick, sun, planets);
+        }
+        if (sprayBow > 0.005F) {
+            // blended normally: added light can't show colour against the bright sky low over the sea
+            RenderSystem.defaultBlendFunc();
+            drawSprayBow(pose, sun, sprayBow);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         }
         if (comet > 0.005F) {
             drawComet(pose, sun, theta, SkyCalendar.cometShape(day), comet);
@@ -1274,6 +1302,160 @@ public final class SkyEffectsRenderer {
         }
         draw(buffer);
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+    }
+
+    /**
+     * The planets, wandering along the sun's path: Venus never far from the sun, the evening or the morning star by
+     * turns and the brightest of them; Jupiter bright and creamy; Mars ruddy, brightest when it's opposite the sun
+     * (where the moon is, so the two sometimes meet); Saturn a steady pale gold. They don't twinkle, which is how
+     * you tell a planet from a star.
+     */
+    private static void drawPlanets(Matrix4f pose, float theta, float dayTime, Vector3f sun, float strength) {
+        float days = dayTime / 24000.0F;
+        // {elongation from the sun (degrees), how far off the sun's path, brightness, size, r, g, b, how dark the sky must be}
+        float venus = 44.0F * Mth.sin(days / 48.0F * Mth.TWO_PI + 0.7F);
+        float mars = 360.0F * frac(days / 52.0F + 0.63F), jupiter = 360.0F * frac(days / 36.0F + 0.21F), saturn = 360.0F * frac(days / 31.0F + 0.87F);
+        float marsNear = Mth.square(Mth.sin(mars * 0.5F * Mth.DEG_TO_RAD)); // 1 opposite the sun
+        float[][] planets = {
+                {venus, 1.6F * Mth.sin(days * 0.37F), 1.0F, 0.42F, 1.0F, 0.98F, 0.9F, 0.0F},
+                {jupiter, 1.1F, 0.75F, 0.34F, 1.0F, 0.96F, 0.86F, 0.12F},
+                {mars, -1.3F, 0.3F + 0.5F * marsNear, 0.24F + 0.08F * marsNear, 1.0F, 0.55F, 0.33F, 0.15F},
+                {saturn, 0.6F, 0.45F, 0.27F, 0.98F, 0.88F, 0.66F, 0.18F}};
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        boolean any = false;
+        for (float[] p : planets) {
+            float along = p[0] * Mth.DEG_TO_RAD;
+            if (Math.abs(Mth.wrapDegrees(p[0])) < 14.0F) continue; // lost in the sun's glare
+            Vector3f dir = new Vector3f(-Mth.sin(theta + along), Mth.cos(theta + along), p[1] * Mth.DEG_TO_RAD).normalize();
+            float dark = Mth.clamp((-sun.y - p[7]) * 8.0F + 1.0F, 0.0F, 1.0F);
+            float alpha = strength * p[2] * dark * Mth.clamp(dir.y * 20.0F, 0.0F, 1.0F);
+            if (alpha < 0.01F) continue;
+            Vector3f[] b = basis(dir);
+            float size = (float) Math.tan(p[3] * Mth.DEG_TO_RAD) * DOME;
+            Vector3f c = new Vector3f(dir).mul(DOME);
+            float[] col = {p[4], p[5], p[6]};
+            vertex(buffer, pose, new Vector3f(c).add(new Vector3f(b[0]).mul(-size)).add(new Vector3f(b[1]).mul(-size)), col, alpha);
+            vertex(buffer, pose, new Vector3f(c).add(new Vector3f(b[0]).mul(size)).add(new Vector3f(b[1]).mul(-size)), col, alpha);
+            vertex(buffer, pose, new Vector3f(c).add(new Vector3f(b[0]).mul(size)).add(new Vector3f(b[1]).mul(size)), col, alpha);
+            vertex(buffer, pose, new Vector3f(c).add(new Vector3f(b[0]).mul(-size)).add(new Vector3f(b[1]).mul(size)), col, alpha);
+            any = true;
+        }
+        if (any) draw(buffer);
+        else buffer.build();
+        // a soft glow round the brighter ones
+        for (float[] p : planets) {
+            if (p[2] < 0.6F || Math.abs(Mth.wrapDegrees(p[0])) < 14.0F) continue;
+            float along = p[0] * Mth.DEG_TO_RAD;
+            Vector3f dir = new Vector3f(-Mth.sin(theta + along), Mth.cos(theta + along), p[1] * Mth.DEG_TO_RAD).normalize();
+            float alpha = strength * p[2] * Mth.clamp((-sun.y - p[7]) * 8.0F + 1.0F, 0.0F, 1.0F) * Mth.clamp(dir.y * 20.0F, 0.0F, 1.0F);
+            if (alpha < 0.01F) continue;
+            Vector3f[] b = basis(dir);
+            drawGlow(pose, dir, b[0], b[1], 0.0F, 1.6F, new float[]{p[4], p[5], p[6]}, 0.12F * alpha);
+        }
+    }
+
+    private static float frac(float f) {
+        return f - Mth.floor(f);
+    }
+
+    /** Earthshine: sunlight bounced off the world faintly lights the dark part of a crescent moon, grey-blue. */
+    private static void drawEarthshine(Matrix4f pose, Vector3f moon, float strength) {
+        Vector3f[] face = faceBasis(moon);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int n = 16;
+        float half = Eclipses.MOON + 0.3F, cell = 2.0F * half / n;
+        float[] col = {0.26F, 0.3F, 0.4F};
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                float x0 = -half + i * cell, y0 = -half + j * cell, x1 = x0 + cell, y1 = y0 + cell;
+                vertex(buffer, pose, onFace(moon, face, x0, y0), col, 0.16F * strength * onMoon(x0, y0));
+                vertex(buffer, pose, onFace(moon, face, x1, y0), col, 0.16F * strength * onMoon(x1, y0));
+                vertex(buffer, pose, onFace(moon, face, x1, y1), col, 0.16F * strength * onMoon(x1, y1));
+                vertex(buffer, pose, onFace(moon, face, x0, y1), col, 0.16F * strength * onMoon(x0, y1));
+            }
+        }
+        draw(buffer);
+    }
+
+    private static float onMoon(float x, float y) {
+        return Mth.clamp((Eclipses.MOON - 0.2F - Mth.sqrt(x * x + y * y)) / 0.6F, 0.0F, 1.0F);
+    }
+
+    /**
+     * The moon low in the sky looks orange: its light comes through so much air that the blue is scattered out of
+     * it. The harvest moon, the full moon nearest the autumn equinox, rises big and deep orange-gold.
+     */
+    private static void drawMoonTint(Matrix4f pose, Vector3f moon, float strength, boolean harvest) {
+        Vector3f[] face = faceBasis(moon);
+        float[] tint = harvest ? new float[]{1.0F, 0.66F, 0.32F} : new float[]{1.0F, 0.78F, 0.55F};
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.DST_COLOR, GlStateManager.DestFactor.ZERO);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int n = 16;
+        float half = Eclipses.MOON + 0.3F, cell = 2.0F * half / n;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                float x0 = -half + i * cell, y0 = -half + j * cell, x1 = x0 + cell, y1 = y0 + cell;
+                tintVertex(buffer, pose, moon, face, x0, y0, tint, strength);
+                tintVertex(buffer, pose, moon, face, x1, y0, tint, strength);
+                tintVertex(buffer, pose, moon, face, x1, y1, tint, strength);
+                tintVertex(buffer, pose, moon, face, x0, y1, tint, strength);
+            }
+        }
+        draw(buffer);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        if (harvest) {
+            Vector3f[] around = basis(moon);
+            drawGlow(pose, new Vector3f(moon).normalize(), around[0], around[1], 0.0F, 11.0F, new float[]{1.0F, 0.62F, 0.3F}, 0.1F * strength);
+        }
+    }
+
+    private static void tintVertex(BufferBuilder buffer, Matrix4f pose, Vector3f moon, Vector3f[] face, float x, float y, float[] tint, float strength) {
+        float k = strength * Mth.clamp((Eclipses.MOON + 0.4F - Mth.sqrt(x * x + y * y)) / 0.6F, 0.0F, 1.0F);
+        Vector3f p = onFace(moon, face, x, y);
+        buffer.addVertex(pose, p.x, p.y, p.z).setColor(Mth.lerp(k, 1.0F, tint[0]), Mth.lerp(k, 1.0F, tint[1]), Mth.lerp(k, 1.0F, tint[2]), 1.0F);
+    }
+
+    /**
+     * A spray bow: on a bright, rough day the spray blown off breaking waves catches the sun behind you, and the
+     * low ends of a rainbow stand in it just over the sea, vivid where the spray is thickest.
+     */
+    private static void drawSprayBow(Matrix4f pose, Vector3f sun, float alpha) {
+        Vector3f anti = new Vector3f(sun).negate().normalize();
+        Vector3f[] b = basis(anti);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int segments = 128, bands = RAINBOW.length + 1;
+        float inner = 40.0F * Mth.DEG_TO_RAD, outer = 42.5F * Mth.DEG_TO_RAD;
+        for (int s = 0; s < segments; s++) {
+            float phi0 = s / (float) segments * Mth.TWO_PI, phi1 = (s + 1) / (float) segments * Mth.TWO_PI;
+            for (int k = 0; k < bands; k++) {
+                float rho0 = Mth.lerp(k / (float) bands, inner, outer), rho1 = Mth.lerp((k + 1) / (float) bands, inner, outer);
+                Vector3f p00 = ringPoint(anti, b[0], b[1], phi0, rho0), p10 = ringPoint(anti, b[0], b[1], phi1, rho0);
+                Vector3f p11 = ringPoint(anti, b[0], b[1], phi1, rho1), p01 = ringPoint(anti, b[0], b[1], phi0, rho1);
+                float z00 = sprayZone(p00), z10 = sprayZone(p10), z11 = sprayZone(p11), z01 = sprayZone(p01);
+                if (z00 + z10 + z11 + z01 <= 0.0F) continue;
+                // vivid: the spray drops are big, and the bow stands against the darker sea and spray
+                float[] c0 = bandColor(k - 1), c1 = bandColor(k);
+                float a0 = k == 0 ? 0.0F : alpha * 0.45F, a1 = k == bands - 1 ? 0.0F : alpha * 0.45F;
+                vertex(buffer, pose, p00, c0, a0 * z00);
+                vertex(buffer, pose, p10, c0, a0 * z10);
+                vertex(buffer, pose, p11, c1, a1 * z11);
+                vertex(buffer, pose, p01, c1, a1 * z01);
+            }
+        }
+        draw(buffer);
+    }
+
+    /** How much spray hangs in this direction: only just over the horizon, and only over open sea. */
+    private static float sprayZone(Vector3f p) {
+        Vector3f d = new Vector3f(p).normalize();
+        float elevation = (float) Math.asin(Mth.clamp(d.y, -1.0F, 1.0F)) * Mth.RAD_TO_DEG;
+        if (elevation < -0.5F || elevation > 7.0F) return 0.0F;
+        float azimuth = (float) Math.atan2(d.x, -d.z);
+        if (azimuth < 0.0F) azimuth += Mth.TWO_PI;
+        float sector = azimuth / Mth.TWO_PI * 16.0F;
+        int s0 = (int) sector;
+        float sea = Mth.lerp(sector - s0, SkySights.sea(s0), SkySights.sea(s0 + 1));
+        return Mth.clamp((sea - 0.4F) * 2.5F, 0.0F, 1.0F) * Mth.clamp(1.0F - elevation / 7.0F, 0.0F, 1.0F) * Mth.clamp(elevation + 0.5F, 0.0F, 1.0F);
     }
 
     /** A point on the sky dome; azimuth 0 is due north (-Z). */

@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "reikos_weather:rift_fissure",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 34,
+    "separation": 11,
+    "salt": 615409883,
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 5
+    }
+  }
+}

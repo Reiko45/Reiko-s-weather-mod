@@ -47,6 +47,106 @@ public final class GroundOptics {
         Camera camera = event.getCamera();
         if (ClientConfig.GLORIES.get()) glory(level, camera, partialTick);
         if (ClientConfig.LIGHT_PILLARS.get()) pillars(level, camera);
+        if (ClientConfig.DEWBOWS.get()) dew(level, camera, partialTick);
+    }
+
+    // ------------------------------------------------------------------ dew optics
+
+    /**
+     * On a dewy morning with the sun low behind you, the drops on the grass do two things. They gather sunlight
+     * and send it straight back, so a bright halo rings the shadow of your head (the heiligenschein). And, like
+     * raindrops, they bend it into a bow: a dewbow, a pale ring lying on the grass in front of you, curving away
+     * into the distance.
+     */
+    private static void dew(ClientLevel level, Camera camera, float partialTick) {
+        long time = Math.floorMod(level.getDayTime(), 24000L);
+        if (time < 100L || time > 2600L) return;
+        float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
+        Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
+        if (sun.y < 0.03F || ClientWeather.rain() > 0.05F || ClientWeather.overcast() > 0.4F || ClientWeather.wind() > 0.3F
+                || ClientWeather.airTemperature() < 1.0F || ClientWeather.airTemperature() > 22.0F) return;
+        // the dew burns off as the sun climbs
+        float wet = time < 1500L ? 1.0F : 1.0F - (time - 1500L) / 1100.0F;
+        Vec3 cam = camera.getPosition();
+        int under = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, Mth.floor(cam.x), Mth.floor(cam.z));
+        float eye = (float) (cam.y - under);
+        if (eye < 0.8F || eye > 6.0F || !dewy(level, Mth.floor(cam.x), Mth.floor(cam.z))) return;
+        Vector3f anti = new Vector3f(sun).negate().normalize();
+        Matrix4f pose = new Matrix4f();
+        begin();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        boolean any = false;
+        // the heiligenschein, round the shadow of your head on the grass
+        float t = eye / -anti.y;
+        if (t < 40.0F) {
+            int hx = Mth.floor(cam.x + anti.x * t), hz = Mth.floor(cam.z + anti.z * t);
+            if (dewy(level, hx, hz)) {
+                float gy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, hx, hz) - (float) cam.y + 0.06F;
+                Vector3f c = new Vector3f(anti.x * t, gy, anti.z * t);
+                Vector3f u = new Vector3f(1.0F, 0.0F, 0.0F), v = new Vector3f(0.0F, 0.0F, 1.0F);
+                float[] white = {1.0F, 0.98F, 0.9F};
+                float radius = 0.6F + t * 0.08F;
+                for (int sgm = 0; sgm < 24; sgm++) {
+                    float p0 = sgm / 24.0F * Mth.TWO_PI, p1 = (sgm + 1) / 24.0F * Mth.TWO_PI;
+                    vertex(buffer, pose, c, white, 0.32F * wet);
+                    vertex(buffer, pose, c, white, 0.32F * wet);
+                    vertex(buffer, pose, ring(c, u, v, p1, radius), white, 0.0F);
+                    vertex(buffer, pose, ring(c, u, v, p0, radius), white, 0.0F);
+                }
+                any = true;
+            }
+        }
+        // the dewbow: the 42-degree circle round the point opposite the sun, where it meets the ground
+        Vector3f ref = Math.abs(anti.y) < 0.95F ? new Vector3f(0.0F, 1.0F, 0.0F) : new Vector3f(1.0F, 0.0F, 0.0F);
+        Vector3f bu = new Vector3f(ref).sub(new Vector3f(anti).mul(anti.dot(ref))).normalize();
+        Vector3f bv = new Vector3f(anti).cross(bu).normalize();
+        float[][] bands = {{0.75F, 0.8F, 1.0F}, {0.95F, 1.0F, 0.95F}, {1.0F, 0.88F, 0.8F}};
+        int segments = 120;
+        for (int sgm = 0; sgm < segments; sgm++) {
+            float p0 = sgm / (float) segments * Mth.TWO_PI, p1 = (sgm + 1) / (float) segments * Mth.TWO_PI;
+            for (int b = 0; b < bands.length; b++) {
+                float r0 = (40.5F + b * 0.7F) * Mth.DEG_TO_RAD, r1 = r0 + 0.7F * Mth.DEG_TO_RAD;
+                Vector3f a0 = onGround(level, cam, eye, bowRay(anti, bu, bv, p0, r0)), a1 = onGround(level, cam, eye, bowRay(anti, bu, bv, p1, r0));
+                Vector3f b1 = onGround(level, cam, eye, bowRay(anti, bu, bv, p1, r1)), b0 = onGround(level, cam, eye, bowRay(anti, bu, bv, p0, r1));
+                if (a0 == null || a1 == null || b0 == null || b1 == null) continue;
+                // fainter far off, where the drops are seen edge-on through the grass
+                float alpha = 0.2F * wet * Mth.clamp(1.0F - a0.length() / 36.0F, 0.0F, 1.0F);
+                if (alpha < 0.01F) continue;
+                vertex(buffer, pose, a0, bands[b], alpha);
+                vertex(buffer, pose, a1, bands[b], alpha);
+                vertex(buffer, pose, b1, bands[b], alpha);
+                vertex(buffer, pose, b0, bands[b], alpha);
+                any = true;
+            }
+        }
+        if (any) draw(buffer);
+        else buffer.build();
+        end();
+    }
+
+    private static Vector3f bowRay(Vector3f anti, Vector3f u, Vector3f v, float phi, float rho) {
+        return new Vector3f(anti).mul(Mth.cos(rho)).add(new Vector3f(u).mul(Mth.sin(rho) * Mth.cos(phi))).add(new Vector3f(v).mul(Mth.sin(rho) * Mth.sin(phi)));
+    }
+
+    /** Where a ray from the eye meets dewy grass (relative to the camera), or null if it doesn't, or it's too far. */
+    @org.jetbrains.annotations.Nullable
+    private static Vector3f onGround(ClientLevel level, Vec3 cam, float eye, Vector3f ray) {
+        if (ray.y > -0.03F) return null;
+        float t = eye / -ray.y;
+        if (t > 36.0F) return null;
+        int x = Mth.floor(cam.x + ray.x * t), z = Mth.floor(cam.z + ray.z * t);
+        if (!dewy(level, x, z)) return null;
+        float gy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z) - (float) cam.y + 0.06F;
+        return new Vector3f(ray.x * t, gy, ray.z * t);
+    }
+
+    /** Grass (or a lawn of short grass) open to the sky, where dew settles. */
+    private static boolean dewy(ClientLevel level, int x, int z) {
+        int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z);
+        BlockPos ground = new BlockPos(x, y - 1, z);
+        BlockState s = level.getBlockState(ground);
+        return s.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || s.is(net.minecraft.world.level.block.Blocks.MOSS_BLOCK);
     }
 
     // ------------------------------------------------------------------ glories

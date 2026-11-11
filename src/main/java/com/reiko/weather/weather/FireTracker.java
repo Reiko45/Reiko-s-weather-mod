@@ -27,6 +27,17 @@ public final class FireTracker {
 
     /** Called (from a mixin) every time a fire block ticks. */
     public static void onFireTick(Level level, BlockPos pos) {
+        // a wildfire leaves the ground charred (it grows back over the seasons)
+        if (level instanceof net.minecraft.server.level.ServerLevel server && level.random.nextInt(3) == 0
+                && WeatherConfig.FIRE_SUCCESSION.get() && server.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING)) {
+            BlockPos below = pos.below();
+            var ground = level.getBlockState(below);
+            if (ground.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || ground.is(net.minecraft.world.level.block.Blocks.PODZOL)
+                    || ground.is(net.minecraft.world.level.block.Blocks.DIRT) || ground.is(net.minecraft.world.level.block.Blocks.COARSE_DIRT)
+                    || ground.is(net.minecraft.world.level.block.Blocks.ROOTED_DIRT) || ground.is(net.minecraft.world.level.block.Blocks.MYCELIUM)) {
+                level.setBlock(below, com.reiko.weather.registry.ModBlocks.CHARRED_SOIL.get().defaultBlockState(), 2);
+            }
+        }
         if (level.dimension() == Level.OVERWORLD) {
             long key = ChunkPos.asLong(pos.getX() >> 5, pos.getZ() >> 5);
             COUNTS.addTo(key, 1);

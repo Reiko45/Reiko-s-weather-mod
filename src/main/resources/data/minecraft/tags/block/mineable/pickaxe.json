@@ -20,6 +20,7 @@
     "reikos_weather:pumice",
     "reikos_weather:whirlpool",
     "reikos_weather:rock_salt",
-    "reikos_weather:frozen_waterfall"
+    "reikos_weather:frozen_waterfall",
+    "reikos_weather:brinicle"
   ]
 }

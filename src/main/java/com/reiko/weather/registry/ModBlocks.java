@@ -241,5 +241,35 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.SteamingGroundBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).strength(0.6F)
                     .sound(SoundType.GRAVEL).randomTicks()));
 
+    /** A brinicle: a hollow finger of ice growing down from sea ice to the sea floor. */
+    public static final DeferredBlock<com.reiko.weather.block.BrinicleBlock> BRINICLE = REGISTER.register("brinicle",
+            () -> new com.reiko.weather.block.BrinicleBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.3F)
+                    .sound(SoundType.GLASS).noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY).noLootTable()
+                    .isRedstoneConductor((s, l, p) -> false).isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** Frazil ice: slush of loose ice crystals clogging a bitterly cold river (or coating its bed as anchor ice). */
+    public static final DeferredBlock<com.reiko.weather.block.FrazilIceBlock> FRAZIL_ICE = REGISTER.register("frazil_ice",
+            () -> new com.reiko.weather.block.FrazilIceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.2F)
+                    .sound(SoundType.SNOW).noCollission().noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY).noLootTable()
+                    .isRedstoneConductor((s, l, p) -> false).isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** Beach wrack: kelp and seagrass thrown up along the tideline by a storm. */
+    public static final DeferredBlock<com.reiko.weather.block.BeachWrackBlock> BEACH_WRACK = REGISTER.register("beach_wrack",
+            () -> new com.reiko.weather.block.BeachWrackBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.1F)
+                    .sound(SoundType.WET_GRASS).noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY)));
+
+    /** Fireweed: tall magenta flowers, the first to come back on burnt ground. */
+    public static final DeferredBlock<net.minecraft.world.level.block.FlowerBlock> FIREWEED = REGISTER.register("fireweed",
+            () -> new net.minecraft.world.level.block.FlowerBlock(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 4.0F,
+                    BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.ALLIUM).mapColor(MapColor.COLOR_MAGENTA)));
+    public static final DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> POTTED_FIREWEED = REGISTER.register("potted_fireweed",
+            () -> new net.minecraft.world.level.block.FlowerPotBlock(() -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT,
+                    FIREWEED, BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.POTTED_ALLIUM)));
+
+    /** Charred soil left by a wildfire: it recovers over the seasons, through fireweed to grass and young trees. */
+    public static final DeferredBlock<com.reiko.weather.block.CharredSoilBlock> CHARRED_SOIL = REGISTER.register("charred_soil",
+            () -> new com.reiko.weather.block.CharredSoilBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.5F)
+                    .sound(SoundType.GRAVEL).randomTicks()));
+
     private ModBlocks() {}
 }

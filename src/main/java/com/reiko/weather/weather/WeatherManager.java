@@ -139,6 +139,7 @@ public final class WeatherManager {
         HailGlass.reset();
         com.reiko.weather.landform.Arroyo.reset();
         com.reiko.weather.landform.LandformSpacing.reset();
+        StormWake.reset();
         com.reiko.weather.volcano.MassFlows.reset();
         Highlands.reset();
         Seas.reset();

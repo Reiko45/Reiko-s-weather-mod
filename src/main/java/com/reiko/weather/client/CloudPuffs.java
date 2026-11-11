@@ -117,24 +117,7 @@ public final class CloudPuffs {
                 com.reiko.weather.weather.CustomWeathers.client(SyncedWeather.custom()), ClientWeather.climate()).wind;
         if (prevailing < 0.45F || ClientWeather.rain() > 0.2F || ClientWeather.overcast() > 0.6F) return;
         Vec3 cam = camera.getPosition();
-        long now = level.getGameTime();
-        if (now - peakScan > 200 || now < peakScan) {
-            peakScan = now;
-            peakY = Integer.MIN_VALUE;
-            for (int i = 0; i < 24; i++) {
-                for (int r = 80; r <= 240; r += 80) {
-                    float a = i * Mth.TWO_PI / 24.0F;
-                    int x = Mth.floor(cam.x + Mth.cos(a) * r), z = Mth.floor(cam.z + Mth.sin(a) * r);
-                    if (!SkySights.loaded(level, new net.minecraft.core.BlockPos(x, 0, z))) continue;
-                    int h = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z);
-                    if (h > peakY) {
-                        peakY = h;
-                        peakX = x;
-                        peakZ = z;
-                    }
-                }
-            }
-        }
+        scanPeak(level, cam);
         if (peakY < level.getSeaLevel() + 55) return;
         float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
         float daylight = level.getSkyDarken(1.0F);
@@ -154,6 +137,90 @@ public final class CloudPuffs {
                 float shade = (0.85F + 0.1F * layer) * (0.25F + 0.75F * daylight);
                 PuffRenderer.add(x, y, z, size, shade, shade, shade * 1.02F, 0.7F * strength, false, cam, maxDistance);
             }
+        }
+    }
+
+    /** Finds the highest ground round about (every ten seconds or so): the peak lenticular and banner clouds form over. */
+    private static void scanPeak(ClientLevel level, Vec3 cam) {
+        long now = level.getGameTime();
+        if (now - peakScan <= 200 && now >= peakScan) return;
+        peakScan = now;
+        peakY = Integer.MIN_VALUE;
+        for (int i = 0; i < 24; i++) {
+            for (int r = 80; r <= 240; r += 80) {
+                float a = i * Mth.TWO_PI / 24.0F;
+                int x = Mth.floor(cam.x + Mth.cos(a) * r), z = Mth.floor(cam.z + Mth.sin(a) * r);
+                if (!SkySights.loaded(level, new net.minecraft.core.BlockPos(x, 0, z))) continue;
+                int h = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z);
+                if (h > peakY) {
+                    peakY = h;
+                    peakX = x;
+                    peakZ = z;
+                }
+            }
+        }
+        if (peakY == Integer.MIN_VALUE) return;
+        // climb to the very summit from the best sample
+        for (int step = 0; step < 6; step++) {
+            int bestX = peakX, bestZ = peakZ, best = peakY;
+            for (int dx = -8; dx <= 8; dx += 4) {
+                for (int dz = -8; dz <= 8; dz += 4) {
+                    if (!SkySights.loaded(level, new net.minecraft.core.BlockPos(peakX + dx, 0, peakZ + dz))) continue;
+                    int h = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, peakX + dx, peakZ + dz);
+                    if (h > best) {
+                        best = h;
+                        bestX = peakX + dx;
+                        bestZ = peakZ + dz;
+                    }
+                }
+            }
+            if (best == peakY) break;
+            peakX = bestX;
+            peakZ = bestZ;
+            peakY = best;
+        }
+    }
+
+    /**
+     * A banner cloud: on a windy day, air forced up the windward face of a sharp peak swirls up again in the lee,
+     * cools and condenses, so a plume of cloud streams off the downwind side of the summit like a flag from a pole
+     * (as off the Matterhorn), while the windward side stays clear.
+     */
+    public static void banner(Camera camera) {
+        Minecraft mc = Minecraft.getInstance();
+        ClientLevel level = mc.level;
+        if (level == null || level.dimension() != Level.OVERWORLD || !ClientConfig.BANNER_CLOUDS.get() || !SyncedWeather.managed()) return;
+        float prevailing = com.reiko.weather.weather.CustomWeathers.backgroundProfile(SyncedWeather.type(),
+                com.reiko.weather.weather.CustomWeathers.client(SyncedWeather.custom()), ClientWeather.climate()).wind;
+        if (prevailing < 0.35F || ClientWeather.rain() > 0.3F) return;
+        Vec3 cam = camera.getPosition();
+        scanPeak(level, cam);
+        if (peakY < level.getSeaLevel() + 55) return;
+        // only a peak that stands well clear of the ground round it flies a banner
+        int shoulder = Integer.MAX_VALUE;
+        for (int i = 0; i < 8; i++) {
+            float a = i * Mth.TWO_PI / 8.0F;
+            int x = Mth.floor(peakX + Mth.cos(a) * 24), z = Mth.floor(peakZ + Mth.sin(a) * 24);
+            if (!SkySights.loaded(level, new net.minecraft.core.BlockPos(x, 0, z))) continue;
+            shoulder = Math.min(shoulder, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z));
+        }
+        if (shoulder == Integer.MAX_VALUE || peakY - shoulder < 18) return;
+        float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
+        float daylight = level.getSkyDarken(1.0F);
+        float time = level.getGameTime();
+        Vec3 wind = Wind.direction(SyncedWeather.windAngle());
+        float strength = Mth.clamp((prevailing - 0.35F) * 4.0F, 0.0F, 1.0F) * (1.0F - 0.5F * ClientWeather.overcast());
+        int n = 18;
+        for (int i = 0; i < n; i++) {
+            float t = i / (float) (n - 1);
+            // the plume billows out and sinks a little as it streams away downwind, fluttering
+            double along = 3.0 + t * 75.0;
+            double flutter = Mth.sin(time * 0.03F + i * 0.9F) * (1.5 + t * 6.0);
+            double x = peakX + 0.5 + wind.x * along - wind.z * flutter, z = peakZ + 0.5 + wind.z * along + wind.x * flutter;
+            float y = peakY - 3.0F - t * 9.0F + Mth.sin(time * 0.021F + i) * 1.5F;
+            float size = 4.0F + t * 15.0F + 2.0F * PuffRenderer.hash(i, 931);
+            float shade = (0.88F + 0.08F * PuffRenderer.hash(i, 932)) * (0.25F + 0.75F * daylight);
+            PuffRenderer.add(x, y, z, size, shade, shade, shade * 1.02F, 0.75F * strength * (1.0F - 0.65F * t), false, cam, maxDistance);
         }
     }
 

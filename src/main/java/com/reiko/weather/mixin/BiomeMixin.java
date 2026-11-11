@@ -21,6 +21,16 @@ public abstract class BiomeMixin {
         if (lapse != 0.0F) cir.setReturnValue(cir.getReturnValue() - lapse);
     }
 
+    /** Polynyas: patches of an icy sea that never freeze over. */
+    @org.spongepowered.asm.mixin.injection.Inject(method = "shouldFreeze(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Z)Z",
+            at = @At("HEAD"), cancellable = true)
+    private void reikos_weather$polynya(net.minecraft.world.level.LevelReader level, net.minecraft.core.BlockPos pos, boolean mustBeAtEdge,
+                                        org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+        if (level instanceof net.minecraft.server.level.ServerLevel && com.reiko.weather.weather.IcyWaters.keepsOpen(level, pos)) {
+            cir.setReturnValue(false);
+        }
+    }
+
     /** The monsoon brings rain to savannas in summer. */
     @ModifyReturnValue(method = "hasPrecipitation", at = @At("RETURN"))
     private boolean reikos_weather$monsoon(boolean precipitation) {

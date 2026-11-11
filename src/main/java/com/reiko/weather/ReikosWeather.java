@@ -59,6 +59,10 @@ public class ReikosWeather {
         modBus.addListener(ModNetwork::register);
         modBus.addListener(ReikosWeather::addCreativeTabContents);
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(com.reiko.weather.compat.Compat::setup));
+        // fireweed goes in a flower pot like any other flower
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(() ->
+                ((net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT)
+                        .addPlant(com.reiko.weather.registry.ModBlocks.FIREWEED.getId(), com.reiko.weather.registry.ModBlocks.POTTED_FIREWEED)));
 
         container.registerConfig(ModConfig.Type.SERVER, WeatherConfig.SPEC);
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
@@ -176,6 +180,9 @@ public class ReikosWeather {
             event.accept(ModItems.PINK_SAND.get());
             event.accept(ModItems.ROCK_SALT.get());
             event.accept(ModItems.STEAMING_GROUND.get());
+            event.accept(ModItems.BEACH_WRACK.get());
+            event.accept(ModItems.FIREWEED.get());
+            event.accept(ModItems.CHARRED_SOIL.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

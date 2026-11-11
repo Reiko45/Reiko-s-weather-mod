@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "waterlogged=true": {
+      "model": "reikos_weather:block/brinicle"
+    },
+    "waterlogged=false": {
+      "model": "reikos_weather:block/brinicle"
+    }
+  }
+}

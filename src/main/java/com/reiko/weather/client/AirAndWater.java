@@ -26,7 +26,9 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class AirAndWater {
     private static final RandomSource RANDOM = RandomSource.create();
-    private static float pollen, lightPollution, sampledLight;
+    private static float pollen, lightPollution, sampledLight, blueHaze, forest;
+    private static final java.util.List<BlockPos> FIRES = new java.util.ArrayList<>();
+    private static long fireScan = -1000L;
 
     public static void tick(Minecraft mc) {
         ClientLevel level = mc.level;
@@ -43,8 +45,18 @@ public final class AirAndWater {
             sampledLight = Mth.lerp(0.05F, sampledLight, light);
             lightPollution = Mth.clamp((sampledLight - 0.04F) * 6.0F, 0.0F, 0.9F);
         }
+        // blue haze: on hot summer days big forests breathe out a mist of plant oils that turns to a bluish haze
+        long hour = Math.floorMod(level.getDayTime(), 24000L);
+        float hazeTarget = 0.0F;
+        if (ClientConfig.BLUE_HAZE.get() && ClientWeather.airTemperature() > 24.0F && ClientWeather.rain() < 0.05F && ClientWeather.overcast() < 0.5F
+                && hour > 1500L && hour < 11500L) {
+            if (level.getGameTime() % 40L == 0L) forest = forestAround(level, cam);
+            hazeTarget = Mth.clamp((forest - 0.35F) * 2.0F, 0.0F, 1.0F) * Mth.clamp((ClientWeather.airTemperature() - 24.0F) / 6.0F, 0.0F, 1.0F);
+        }
+        blueHaze = Mth.lerp(0.004F, blueHaze, hazeTarget);
         if (mc.options.particles().get() == ParticleStatus.MINIMAL) return;
         float density = ClientConfig.PARTICLE_DENSITY.get().floatValue();
+        if (ClientConfig.WOODSMOKE.get()) woodsmoke(level, cam, density);
         long time = Math.floorMod(level.getDayTime(), 24000L);
         float rain = ClientWeather.rain(), wind = ClientWeather.wind();
 
@@ -105,6 +117,68 @@ public final class AirAndWater {
                         dir.x * 0.25 * wind, 0.05, dir.z * 0.25 * wind);
             }
         }
+    }
+
+    /** The share of the country round about that's forest (sampled out to the middle distance, where the haze shows). */
+    private static float forestAround(ClientLevel level, Vec3 cam) {
+        int forested = 0, seen = 0;
+        for (int i = 0; i < 12; i++) {
+            float a = i * Mth.TWO_PI / 12.0F;
+            for (int r = 40; r <= 120; r += 40) {
+                BlockPos p = BlockPos.containing(cam.x + Mth.cos(a) * r, cam.y, cam.z + Mth.sin(a) * r);
+                if (!SkySights.loaded(level, p)) continue;
+                var biome = level.getBiome(p);
+                seen++;
+                if (biome.is(net.minecraft.tags.BiomeTags.IS_FOREST) || biome.is(net.minecraft.tags.BiomeTags.IS_JUNGLE)
+                        || biome.is(net.minecraft.tags.BiomeTags.IS_TAIGA)) forested++;
+            }
+        }
+        return seen == 0 ? 0.0F : forested / (float) seen;
+    }
+
+    /**
+     * Woodsmoke on a still, cold morning or evening: the ground has chilled the air next to it, warmer air lies
+     * on top like a lid, and the smoke from fires and chimneys rises a little way and then spreads out flat under it
+     * in a blue-grey layer.
+     */
+    private static void woodsmoke(ClientLevel level, Vec3 cam, float density) {
+        long time = Math.floorMod(level.getDayTime(), 24000L);
+        boolean still = ClientWeather.wind() < 0.15F && ClientWeather.rain() < 0.05F;
+        boolean hour = time > 22500L || time < 2500L || time > 11500L && time < 14500L;
+        if (!still || !hour || ClientWeather.airTemperature() > 8.0F) return;
+        long now = level.getGameTime();
+        if (now - fireScan > 60L || now < fireScan) {
+            fireScan = now;
+            FIRES.clear();
+            int cx = Mth.floor(cam.x) >> 4, cz = Mth.floor(cam.z) >> 4;
+            for (int dx = -3; dx <= 3; dx++) {
+                for (int dz = -3; dz <= 3; dz++) {
+                    var chunk = level.getChunk(cx + dx, cz + dz);
+                    for (var be : chunk.getBlockEntities().values()) {
+                        var state = be.getBlockState();
+                        boolean lit = state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.LIT)
+                                && state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.LIT);
+                        if (lit && (be instanceof net.minecraft.world.level.block.entity.CampfireBlockEntity
+                                || be instanceof net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity)) {
+                            FIRES.add(be.getBlockPos());
+                            if (FIRES.size() >= 24) return;
+                        }
+                    }
+                }
+            }
+        }
+        for (BlockPos fire : FIRES) {
+            if (RANDOM.nextFloat() > 0.35F * density) continue;
+            // the smoke rises to the lid and spreads out sideways under it
+            double lid = fire.getY() + 7.0 + RANDOM.nextDouble() * 2.5;
+            level.addParticle(ModParticles.SMOKE_HAZE.get(), fire.getX() + 0.5 + RANDOM.nextGaussian() * 3.0, lid, fire.getZ() + 0.5 + RANDOM.nextGaussian() * 3.0,
+                    RANDOM.nextGaussian() * 0.015, 0.0, RANDOM.nextGaussian() * 0.015);
+        }
+    }
+
+    /** How thick the summer blue haze over the forests is, 0 to 1. */
+    public static float blueHaze() {
+        return blueHaze;
     }
 
     /** How much lamplight washes out the night sky here, 0 (dark) to 0.9 (in a lit village). */

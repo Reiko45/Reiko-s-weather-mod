@@ -239,6 +239,14 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue HEAT_ISLANDS;
     public static final ModConfigSpec.BooleanValue SALT_SPRAY;
     public static final ModConfigSpec.BooleanValue MARINE_HEATWAVES;
+    public static final ModConfigSpec.BooleanValue BOG_BURSTS;
+    public static final ModConfigSpec.BooleanValue PLAYA_LAKES;
+    public static final ModConfigSpec.BooleanValue FIRE_SUCCESSION;
+    public static final ModConfigSpec.BooleanValue FREEZING_SPRAY;
+    public static final ModConfigSpec.BooleanValue BRINICLES;
+    public static final ModConfigSpec.BooleanValue POLYNYAS;
+    public static final ModConfigSpec.BooleanValue FRAZIL_ICE;
+    public static final ModConfigSpec.BooleanValue WRACK_LINES;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -282,6 +290,17 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue MIMA_MOUNDS;
     public static final ModConfigSpec.BooleanValue TAFONI;
     public static final ModConfigSpec.BooleanValue FRINGING_REEFS;
+    public static final ModConfigSpec.BooleanValue SOLIFLUCTION;
+    public static final ModConfigSpec.BooleanValue HOGBACKS;
+    public static final ModConfigSpec.BooleanValue FOLDED_CLIFFS;
+    public static final ModConfigSpec.BooleanValue TEPUIS;
+    public static final ModConfigSpec.BooleanValue RIFT_FISSURES;
+    public static final ModConfigSpec.BooleanValue ANCIENT_SHORELINES;
+    public static final ModConfigSpec.BooleanValue HANGING_GARDENS;
+    public static final ModConfigSpec.BooleanValue LANDSLIDE_LAKES;
+    public static final ModConfigSpec.BooleanValue ICE_TOWERS;
+    public static final ModConfigSpec.BooleanValue INVERTED_CHANNELS;
+    public static final ModConfigSpec.BooleanValue FAIRY_POOLS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -620,6 +639,22 @@ public final class WeatherConfig {
                 .define("saltSpray", true);
         MARINE_HEATWAVES = b.comment("In a long, hot summer the sea warms: fish move away and coral bleaches (needs mobGriefing).")
                 .define("marineHeatwaves", true);
+        BOG_BURSTS = b.comment("After long, heavy rain a waterlogged peat bog can burst and slide downhill as a river of peat (needs mobGriefing).")
+                .define("bogBursts", true);
+        PLAYA_LAKES = b.comment("Dry desert lakebeds flood into shallow lakes after heavy rain and slowly dry out again.")
+                .define("playaLakes", true);
+        FIRE_SUCCESSION = b.comment("Wildfires leave charred ground that recovers over the seasons: fireweed first, then grass and young trees.")
+                .define("fireSuccession", true);
+        FREEZING_SPRAY = b.comment("Gales over a freezing sea glaze the shore, docks and boats with ice.")
+                .define("freezingSpray", true);
+        BRINICLES = b.comment("Under sea ice in bitter cold, icy fingers (brinicles) grow down to the sea floor.")
+                .define("brinicles", true);
+        POLYNYAS = b.comment("Some patches of winter sea ice never freeze over: open water that steams in the cold.")
+                .define("polynyas", true);
+        FRAZIL_ICE = b.comment("In bitter cold, slushy frazil ice clogs fast rivers and anchor ice coats their beds.")
+                .define("frazilIce", true);
+        WRACK_LINES = b.comment("Storms wash kelp and seagrass up onto beaches along the high-tide line.")
+                .define("wrackLines", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -916,6 +951,28 @@ public final class WeatherConfig {
                 .define("tafoni", true);
         FRINGING_REEFS = b.comment("Fringing reefs: coral reefs along warm coasts, cut by spurs and grooves.")
                 .define("fringingReefs", true);
+        SOLIFLUCTION = b.comment("Solifluction lobes: tundra slopes creeping downhill in tongues of turf.")
+                .define("solifluctionLobes", true);
+        HOGBACKS = b.comment("Hogbacks and flatirons: tilted rock layers standing up as sawtooth ridges and triangular slabs.")
+                .define("hogbacks", true);
+        FOLDED_CLIFFS = b.comment("Folded cliffs: rock layers bent into arches and troughs, laid bare in a cliff face.")
+                .define("foldedCliffs", true);
+        TEPUIS = b.comment("Tepuis: sheer-sided table mountains with long waterfalls pouring off them.")
+                .define("tepuis", true);
+        RIFT_FISSURES = b.comment("Rift fissures: long cracks in the rock, filled with crystal-clear water.")
+                .define("riftFissures", true);
+        ANCIENT_SHORELINES = b.comment("Ancient shorelines: steps cut by a long-gone lake, ringing its dry basin.")
+                .define("ancientShorelines", true);
+        HANGING_GARDENS = b.comment("Hanging gardens: seeps on canyon walls, green with ferns and moss.")
+                .define("hangingGardens", true);
+        LANDSLIDE_LAKES = b.comment("Landslide lakes: valleys dammed by an old landslide, with a lake behind it.")
+                .define("landslideLakes", true);
+        ICE_TOWERS = b.comment("Fumarole ice towers: hollow chimneys of ice built up over steam vents on snowy peaks.")
+                .define("fumaroleIceTowers", true);
+        INVERTED_CHANNELS = b.comment("Inverted channels: old riverbeds left standing as winding ridges in the desert.")
+                .define("invertedChannels", true);
+        FAIRY_POOLS = b.comment("Fairy pools: a chain of clear blue plunge pools and little falls down a mountain stream.")
+                .define("fairyPools", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

@@ -1,0 +1,8 @@
+{
+  "type": "reikos_weather:landform",
+  "landform": "solifluction_lobes",
+  "biomes": "#reikos_weather:has_structure/solifluction_lobes",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}
