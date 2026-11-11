@@ -399,7 +399,8 @@ leaves **volcanic smog** drifting downwind (see Smog Cloud above).
 
 ## Landforms
 New parts of the world also get landforms shaped by the weather. None of them form on top of a
-village or a volcano.
+village or a volcano, or on top of each other: where two would overlap, the bigger one forms and
+the smaller one doesn't. (A landform placed with `/place structure` goes where it's put.)
 - **Hot springs:** white sinter with steaming pools ringed in orange and yellow, bubbling mud and
   hissing vents. Soak in a pool to warm up and slowly heal. **Geysers** on little mounds erupt every
   few minutes, throwing anything above them high into the air (a huge lift for a paraglider); a

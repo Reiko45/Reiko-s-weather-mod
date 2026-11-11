@@ -10,7 +10,6 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 
@@ -43,24 +42,21 @@ public class LandformStructure extends Structure {
             return Optional.empty();
         }
         ChunkPos chunk = context.chunkPos();
-        int x = chunk.getMiddleBlockX(), z = chunk.getMiddleBlockZ();
-        // working out the ground's height means running the terrain noise for a whole column, so never do a column twice
-        it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap heights = new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
-        PlanContext plan = new PlanContext(context.random(), x, z,
-                (px, pz) -> heights.computeIfAbsent(net.minecraft.world.level.ChunkPos.asLong(px, pz), k -> context.chunkGenerator()
-                        .getFirstOccupiedHeight(px, pz, Heightmap.Types.OCEAN_FLOOR_WG, context.heightAccessor(), context.randomState())),
-                context.chunkGenerator().getSeaLevel(), context.heightAccessor());
-        Landform landform = kind.plan(plan);
-        if (landform == null) {
+        // (vanilla makes this same check afterwards; making it first saves planning where it could never be built)
+        if (!LandformSpacing.inBiome(context, context.validBiome(), chunk)) {
             return Optional.empty();
         }
-        // never on (or half-buried by) a volcano; villages are kept clear by the structure sets themselves
-        var b = landform.bounds();
-        if (nearVolcano(context, x, z, 125 + Math.max(b.getXSpan(), b.getZSpan()) / 2)) {
+        LandformSpacing.Candidate planned = LandformSpacing.candidate(context, kind, chunk);
+        if (planned == null) {
             return Optional.empty();
         }
-        int y = Math.max(plan.groundAt(x, z), plan.seaLevel() - 1);
-        return Optional.of(new GenerationStub(new BlockPos(x, y, z), builder -> builder.addPiece(new LandformPiece(landform))));
+        Landform landform = planned.landform();
+        // where a bigger landform would overlap it, that one is built instead (a command places it regardless)
+        if (!LandformSpacing.byCommand(context) && LandformSpacing.yields(context, new LandformSpacing.Claim(kind, chunk, landform.bounds()))) {
+            return Optional.empty();
+        }
+        return Optional.of(new GenerationStub(new BlockPos(chunk.getMiddleBlockX(), planned.y(), chunk.getMiddleBlockZ()),
+                builder -> builder.addPiece(new LandformPiece(landform))));
     }
 
     private static final ResourceKey<StructureSet> VOLCANOES = ResourceKey.create(Registries.STRUCTURE_SET, ReikosWeather.id("volcanoes"));
@@ -69,7 +65,7 @@ public class LandformStructure extends Structure {
      * Whether a volcano could be centred within {@code reach} blocks of (x, z). It goes by the volcano structure
      * set's candidate chunks (where one would go if the biome allowed it), so it errs on the side of keeping clear.
      */
-    private static boolean nearVolcano(GenerationContext context, int x, int z, int reach) {
+    static boolean nearVolcano(GenerationContext context, int x, int z, int reach) {
         StructureSet set = context.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(VOLCANOES);
         if (set == null || !(set.placement() instanceof RandomSpreadStructurePlacement placement)) {
             return false;

@@ -718,6 +718,34 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void landformsKeepApart(GameTestHelper helper) {
+        // a big lava field, a smaller headland overlapping it, and a little cenote overlapping only the headland
+        var big = new com.reiko.weather.landform.LandformSpacing.Claim(com.reiko.weather.landform.LandformKind.KIPUKA,
+                new net.minecraft.world.level.ChunkPos(0, 0), new net.minecraft.world.level.levelgen.structure.BoundingBox(-100, 50, -100, 100, 120, 100));
+        var middle = new com.reiko.weather.landform.LandformSpacing.Claim(com.reiko.weather.landform.LandformKind.TAFONI,
+                new net.minecraft.world.level.ChunkPos(8, 0), new net.minecraft.world.level.levelgen.structure.BoundingBox(60, 50, -40, 160, 120, 40));
+        var small = new com.reiko.weather.landform.LandformSpacing.Claim(com.reiko.weather.landform.LandformKind.CENOTE,
+                new net.minecraft.world.level.ChunkPos(12, 0), new net.minecraft.world.level.levelgen.structure.BoundingBox(150, 50, -15, 180, 120, 15));
+        var apart = new com.reiko.weather.landform.LandformSpacing.Claim(com.reiko.weather.landform.LandformKind.MIMA_MOUNDS,
+                new net.minecraft.world.level.ChunkPos(0, 20), new net.minecraft.world.level.levelgen.structure.BoundingBox(-30, 50, 290, 30, 120, 350));
+        var all = java.util.List.of(big, middle, small, apart);
+        java.util.function.Function<com.reiko.weather.landform.LandformSpacing.Claim, java.util.List<com.reiko.weather.landform.LandformSpacing.Claim>> rivals =
+                c -> all.stream().filter(o -> o != c && o.clashes(c)).toList();
+        helper.assertTrue(big.beats(middle) && middle.beats(small), "the bigger landform wins");
+        helper.assertTrue(big.clashes(middle) && middle.clashes(small) && !big.clashes(small), "overlaps are found (and only those)");
+        helper.assertFalse(com.reiko.weather.landform.LandformSpacing.yields(big, rivals), "the biggest is always built");
+        helper.assertTrue(com.reiko.weather.landform.LandformSpacing.yields(middle, rivals), "one overlapping a bigger one gives way");
+        // the headland isn't built, so the cenote it would have crowded out stands after all
+        helper.assertFalse(com.reiko.weather.landform.LandformSpacing.yields(small, rivals), "nothing is crowded out by a landform that isn't built");
+        helper.assertFalse(com.reiko.weather.landform.LandformSpacing.yields(apart, rivals), "one with room to itself is built");
+        // two the same size: settled the same way whichever asks
+        var twin = new com.reiko.weather.landform.LandformSpacing.Claim(com.reiko.weather.landform.LandformKind.TAFONI,
+                new net.minecraft.world.level.ChunkPos(3, 3), new net.minecraft.world.level.levelgen.structure.BoundingBox(-100, 50, -100, 100, 120, 100));
+        helper.assertTrue(big.beats(twin) != twin.beats(big), "a tie still has exactly one winner");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
     public static void fireIceAndHighlands(GameTestHelper helper) {
         var level = helper.getLevel();
         var random = net.minecraft.util.RandomSource.create(11);
