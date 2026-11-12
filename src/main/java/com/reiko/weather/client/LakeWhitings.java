@@ -2,7 +2,6 @@ package com.reiko.weather.client;
 
 import com.reiko.weather.config.ClientConfig;
 import com.reiko.weather.network.SyncedWeather;
-import com.reiko.weather.weather.Climate;
 import com.reiko.weather.weather.Season;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -25,7 +24,7 @@ public final class LakeWhitings {
         ClientLevel level = mc.level;
         float target = 0.0F;
         if (level != null && level.dimension() == Level.OVERWORLD && SyncedWeather.managed() && ClientConfig.LAKE_WHITINGS.get()
-                && SyncedWeather.season() == Season.SUMMER && ClientWeather.climate() != Climate.COLD) {
+                && SyncedWeather.season() == Season.SUMMER) {
             int per = Math.max(1, SyncedWeather.daysPerSeason());
             float t = (SyncedWeather.dayOfSeason() + Math.floorMod(level.getDayTime(), 24000L) / 24000.0F) / per;
             // late in the summer, once the water has warmed right through

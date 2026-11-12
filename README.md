@@ -1,7 +1,7 @@
 # Reiko's Weather
 
 A complete weather overhaul for **Minecraft 1.21.1** on **NeoForge**. It replaces vanilla's
-rain/thunder cycle with 24 weather types, seasons, storms and weather fronts that roll across the map, tornadoes,
+rain/thunder cycle with 36 weather types, seasons, storms and weather fronts that roll across the map, tornadoes,
 waterspouts and dust devils. It also adds body temperature and ways to stay comfortable, local
 climates shaped by the terrain, droughts and wildfires, winter hazards, storm surges and tides,
 meteor showers and blood moons, volcanoes that wake up and erupt, landforms shaped by the weather (hot
@@ -635,7 +635,8 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
   **cryoconite holes** melted into the ice by dark grit, and **dirt cones** of ice shielded from the sun by a coat of it.
 - **Tar pits:** natural asphalt seeping up into sticky black pools in plains, savannas and deserts, ringed with a
   hard, cracked crust and full of the bones of animals caught long ago; some lie hidden under a skin of rainwater.
-  Wade in and you sink to the knees and stick fast. Tar and asphalt can both be dug up for building.
+  Wade in and you sink to the knees and stick fast: you can barely jump, and the only way out is to wade to the
+  edge and heave yourself up and over it. Tar and asphalt can both be dug up for building.
 
 ## The Nether and the End
 The other dimensions get weather of their own.

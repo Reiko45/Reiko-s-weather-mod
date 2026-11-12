@@ -80,6 +80,7 @@ public class RippledSandBlock extends FallingBlock {
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!level.canSeeSky(pos.above())) return;
         var local = WeatherManager.local(level, pos);
+        if (local == null) return;
         if (local.type().vanillaRain && local.profile().rain > 0.15F && local.intensity() > 0.2F) {
             // the rain beats the ripples flat
             level.setBlockAndUpdate(pos, smooth().defaultBlockState());

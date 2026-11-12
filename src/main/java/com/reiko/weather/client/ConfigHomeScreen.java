@@ -95,7 +95,11 @@ public class ConfigHomeScreen extends Screen {
                             ClientConfig.BLOSSOMS, ClientConfig.WHITECAPS, ClientConfig.FALLING_LEAVES, ClientConfig.BREATH,
                             ClientConfig.STEAM_FOG, ClientConfig.WATERFALL_SPRAY, ClientConfig.STORM_CLOUD_SHAPES, ClientConfig.LIGHT_PILLARS,
                             ClientConfig.SEA_SPARKLE, ClientConfig.INVERSION_HAZE, ClientConfig.DEW, ClientConfig.POLLEN,
-                            ClientConfig.CLOUD_FORMS, ClientConfig.SPIDER_LIGHTNING}) {
+                            ClientConfig.CLOUD_FORMS, ClientConfig.SPIDER_LIGHTNING,
+                            // the extra cloud layers and drifting particles added since
+                            ClientConfig.GROUND_STEAM, ClientConfig.WOODSMOKE, ClientConfig.CLOUD_FOREST_MIST, ClientConfig.CLOUD_WATERFALLS,
+                            ClientConfig.INSECT_SWARMS, ClientConfig.SCUD, ClientConfig.CASTELLANUS, ClientConfig.SNOW_PLUMES,
+                            ClientConfig.ASPERITAS_CLOUDS, ClientConfig.BANNER_CLOUDS, ClientConfig.GOSSAMER, ClientConfig.FOG_DRIP}) {
                         v.set(false);
                     }
                 }

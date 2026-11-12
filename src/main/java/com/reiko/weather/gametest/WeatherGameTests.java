@@ -1065,7 +1065,13 @@ public class WeatherGameTests {
         for (BlockPos p : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(0, 2, 2)), helper.absolutePos(new BlockPos(8, 12, 9)))) {
             if (level.getBlockState(p).is(Blocks.BARRIER)) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
         }
-        int changed = com.reiko.weather.weather.FaultScarps.tear(level, helper.absolutePos(new BlockPos(1, 0, 4)), 0.0F, 5, random);
+        // it spares anything built nearby (a chest here; the arena's own structure block counts too)...
+        helper.setBlock(6, 2, 6, Blocks.CHEST);
+        helper.assertTrue(com.reiko.weather.weather.FaultScarps.tear(level, helper.absolutePos(new BlockPos(1, 0, 4)), 0.0F, 5, random) == 0,
+                "the fault spares the ground by a chest");
+        helper.setBlock(6, 2, 6, Blocks.AIR);
+        // ...and tears open bare ground
+        int changed = com.reiko.weather.weather.FaultScarps.tear(level, helper.absolutePos(new BlockPos(1, 0, 4)), 0.0F, 5, random, false);
         BlockPos probe = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, helper.absolutePos(new BlockPos(5, 0, 4)));
         helper.assertTrue(changed > 0, "the fault tears the ground (top " + helper.relativePos(probe) + " " + level.getBlockState(probe.below()) + ")");
         helper.succeed();

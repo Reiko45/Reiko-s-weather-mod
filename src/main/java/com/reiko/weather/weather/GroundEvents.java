@@ -106,7 +106,10 @@ public final class GroundEvents {
         for (BlockPos p : BlockPos.betweenClosed(center.offset(-r, -6, -r), center.offset(r, 4, r))) {
             BlockState s = level.getBlockState(p);
             if (s.hasBlockEntity() || s.is(BlockTags.PLANKS) || s.is(Blocks.BRICKS) || s.is(Blocks.STONE_BRICKS) || s.is(Blocks.GLASS) || s.is(BlockTags.IMPERMEABLE) || s.is(BlockTags.WOOL)
-                    || s.is(BlockTags.DOORS) || s.is(Blocks.FARMLAND) || s.is(Blocks.DIRT_PATH)) {
+                    || s.is(BlockTags.DOORS) || s.is(Blocks.FARMLAND) || s.is(Blocks.DIRT_PATH)
+                    // (and the stairs, slabs, walls, fences, panes and worked stone that never form on their own)
+                    || s.is(BlockTags.STAIRS) || s.is(BlockTags.SLABS) || s.is(BlockTags.WALLS) || s.is(BlockTags.FENCES)
+                    || s.is(net.neoforged.neoforge.common.Tags.Blocks.GLASS_PANES) || s.is(Blocks.COBBLESTONE) || s.is(Blocks.SMOOTH_STONE)) {
                 return true;
             }
         }

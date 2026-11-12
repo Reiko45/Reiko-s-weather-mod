@@ -27,6 +27,11 @@ import net.minecraft.world.phys.Vec3;
 public final class CloudDeckRenderer {
     private static final ResourceLocation TEXTURE = ReikosWeather.id("textures/environment/storm_clouds.png");
     private static final int GRID = 48;
+    /** The cloud cover over the grid, as of the last tick it was worked out. */
+    private static final float[] COVER = new float[(GRID + 1) * (GRID + 1)];
+    private static long coverTick = Long.MIN_VALUE;
+    private static double coverX, coverZ;
+    private static float coverCell;
     private static final float DEFAULT_RANGE = 960.0F;
     private static final float[][] LAYERS = {{0.0F, 256.0F, 1.0F}, {7.0F, 176.0F, 0.75F}};
     /** Per-frame: deck radius in blocks, grid cell size, and the distance vertices are pulled in to. */
@@ -62,17 +67,27 @@ public final class CloudDeckRenderer {
         maxDistance = mc.gameRenderer.getDepthFar() * 0.92F;
         double gx0 = Math.floor(cam.x / CELL) * CELL - GRID / 2.0 * CELL;
         double gz0 = Math.floor(cam.z / CELL) * CELL - GRID / 2.0 * CELL;
+        // (the storm cells move once a tick, so the cover is only worked out again each tick, or when the grid moves)
+        long tick = level.getGameTime();
+        if (tick != coverTick || gx0 != coverX || gz0 != coverZ || CELL != coverCell) {
+            coverTick = tick;
+            coverX = gx0;
+            coverZ = gz0;
+            coverCell = CELL;
+            for (int i = 0; i <= GRID; i++) {
+                for (int j = 0; j <= GRID; j++) {
+                    double wx = gx0 + i * CELL, wz = gz0 + j * CELL;
+                    double dist = Math.sqrt((wx - cam.x) * (wx - cam.x) + (wz - cam.z) * (wz - cam.z));
+                    float fade = 1.0F - Mth.clamp((float) ((dist - FADE_START) / (FADE_END - FADE_START)), 0.0F, 1.0F);
+                    COVER[i * (GRID + 1) + j] = ClientWeather.cloudsAt(wx, wz) * fade;
+                }
+            }
+        }
         float[] alpha = new float[(GRID + 1) * (GRID + 1)];
         boolean any = false;
-        for (int i = 0; i <= GRID; i++) {
-            for (int j = 0; j <= GRID; j++) {
-                double wx = gx0 + i * CELL, wz = gz0 + j * CELL;
-                double dist = Math.sqrt((wx - cam.x) * (wx - cam.x) + (wz - cam.z) * (wz - cam.z));
-                float fade = 1.0F - Mth.clamp((float) ((dist - FADE_START) / (FADE_END - FADE_START)), 0.0F, 1.0F);
-                float a = ClientWeather.cloudsAt(wx, wz) * fade * fogFade;
-                alpha[i * (GRID + 1) + j] = a;
-                any |= a > 0.01F;
-            }
+        for (int k = 0; k < alpha.length; k++) {
+            alpha[k] = COVER[k] * fogFade;
+            any |= alpha[k] > 0.01F;
         }
         if (!any) {
             return;

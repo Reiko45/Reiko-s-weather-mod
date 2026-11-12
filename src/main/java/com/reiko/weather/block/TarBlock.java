@@ -21,7 +21,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Tar: natural asphalt, oozing up through cracks from oil-bearing rock below and pooling at the surface, soft and
  * sticky in the warmth. Anything that wades in sinks to the knees and sticks fast, and can only drag itself out
- * slowly: for thousands of years, animals that came to drink at the rainwater lying on top were trapped in pools like
+ * slowly, heaving against the edge of the pool: for thousands of years, animals that came to drink at the rainwater lying on top were trapped in pools like
  * these, and their bones are found in them still. Bubbles of gas well up through it and burst with a soft plop.
  */
 public class TarBlock extends Block {
@@ -58,8 +58,14 @@ public class TarBlock extends Block {
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!(entity instanceof LivingEntity) || entity.getY() > pos.getY() + 0.94) return;
         if (entity instanceof Player player && player.getAbilities().flying) return;
-        // stuck fast: every step is a slow, sucking pull
-        entity.makeStuckInBlock(state, new Vec3(0.3, 0.6, 0.3));
+        // stuck fast: every step is a slow, sucking pull, and it can barely jump...
+        Vec3 v = entity.getDeltaMovement();
+        double up = v.y > 0.0 ? v.y * 0.5 : v.y;
+        // ...but heaving against the edge of the pool, it can drag itself up and out, a little at a time
+        // (a slow climb up the side, then a last heave up over the lip of the pool once near the top)
+        if (entity.horizontalCollision) up = Math.max(up, entity.getY() > pos.getY() + 0.6 ? 0.5 : 0.16);
+        entity.setDeltaMovement(v.x * 0.35, up, v.z * 0.35);
+        entity.resetFallDistance();
         if (level.isClientSide && level.random.nextInt(12) == 0 && entity.getDeltaMovement().horizontalDistanceSqr() > 1.0E-5) {
             level.playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.HONEY_BLOCK_SLIDE, SoundSource.BLOCKS, 0.5F,
                     0.6F + level.random.nextFloat() * 0.2F, false);

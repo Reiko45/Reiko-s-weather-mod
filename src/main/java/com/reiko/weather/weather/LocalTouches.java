@@ -421,8 +421,9 @@ public final class LocalTouches {
     /** Whether candle ice can heap up here: open air, snow, or the grass and such that grows along a shore. */
     private static boolean heapable(ServerLevel level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
-        return (state.isAir() || state.is(Blocks.SNOW) || state.canBeReplaced()) && state.getFluidState().isEmpty()
-                && !state.is(ModBlocks.CANDLE_ICE.get());
+        // (only the low plants of a shore: never a player's light blocks, or vines and lichen)
+        return (state.isAir() || state.is(Blocks.SNOW) || state.is(Blocks.SHORT_GRASS) || state.is(Blocks.FERN) || state.is(Blocks.DEAD_BUSH))
+                && state.getFluidState().isEmpty();
     }
 
     /** Whether a spot is just inside a cave mouth, where a cool draught blows out on a hot day. */

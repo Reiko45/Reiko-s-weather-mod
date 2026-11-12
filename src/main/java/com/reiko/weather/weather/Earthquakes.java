@@ -203,7 +203,8 @@ public final class Earthquakes {
             for (BlockPos p : BlockPos.randomBetweenClosed(random, Math.round(80 * felt), player.getBlockX() - 16, player.getBlockY() - 6,
                     player.getBlockZ() - 16, player.getBlockX() + 16, player.getBlockY() + 10, player.getBlockZ() + 16)) {
                 BlockState s = level.getBlockState(p);
-                if ((s.is(Blocks.GLASS_PANE) || s.is(Blocks.GLASS)) && random.nextFloat() < 0.25F) {
+                if ((s.is(Blocks.GLASS_PANE) || s.is(Blocks.GLASS) || s.is(com.reiko.weather.registry.ModBlocks.FROSTED_GLASS.get())
+                        || s.is(com.reiko.weather.registry.ModBlocks.FROSTED_GLASS_PANE.get())) && random.nextFloat() < 0.25F) {
                     level.destroyBlock(p, false);
                 }
             }

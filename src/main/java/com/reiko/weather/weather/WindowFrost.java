@@ -30,7 +30,8 @@ public final class WindowFrost {
             BlockState state = level.getBlockState(pos);
             boolean glass = state.is(Blocks.GLASS), pane = state.is(Blocks.GLASS_PANE);
             if (!glass && !pane || !window(level, pos)) continue;
-            if (Temperature.ambient(level, pos, local) > -8.0F) return;
+            // (it's the cold outside the glass that matters)
+            if (Temperature.ambient(level, outside(level, pos), local) > -8.0F) return;
             level.setBlockAndUpdate(pos, glass ? ModBlocks.FROSTED_GLASS.get().defaultBlockState()
                     : copyPane(state, ModBlocks.FROSTED_GLASS_PANE.get().defaultBlockState()));
         }
@@ -47,10 +48,20 @@ public final class WindowFrost {
         return false;
     }
 
-    /** Whether frosted glass thaws on this random tick: as soon as the air rises above freezing, or in the morning sun. */
+    /** The open-air side of a window (or the glass itself, if neither side is open to the sky). */
+    static BlockPos outside(ServerLevel level, BlockPos pos) {
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            BlockPos side = pos.relative(d);
+            if (level.getBlockState(side).isAir() && level.canSeeSky(side)) return side;
+        }
+        return pos;
+    }
+
+    /** Whether frosted glass thaws on this random tick: as soon as the air outside rises toward freezing, or in the morning sun. */
     public static boolean thaws(ServerLevel level, BlockPos pos, RandomSource random) {
         if (!WeatherConfig.WINDOW_FROST.get()) return true;
-        float air = Temperature.ambient(level, pos, null);
+        BlockPos out = outside(level, pos);
+        float air = Temperature.ambient(level, out, WeatherManager.local(level, out));
         long time = Math.floorMod(level.getDayTime(), 24000L);
         boolean day = time > 1000L && time < 12000L;
         return air > -3.0F && random.nextInt(2) == 0 || day && air > -12.0F && random.nextInt(4) == 0;

@@ -47,6 +47,8 @@ public class WindBlownParticle extends TextureSheetParticle {
     }
 
     private final Kind kind;
+    /** Whether this kind bumps into the blocks round it (soft clouds of dust and mist drift through them). */
+    private boolean physics;
     private final float spin;
     private final float swayPhase;
     private final float targetAlpha;
@@ -79,6 +81,7 @@ public class WindBlownParticle extends TextureSheetParticle {
             case SMOKE_HAZE -> { quadSize = 2.5F + random.nextFloat() * 2.5F; lifetime = 220 + random.nextInt(120); hasPhysics = false; }
         }
         this.targetAlpha = kind.maxAlpha * (soft() ? 0.6F + random.nextFloat() * 0.4F : 1.0F);
+        this.physics = this.hasPhysics;
         if (!soft()) {
             this.setSize(0.08F, 0.08F);
         }
@@ -112,6 +115,13 @@ public class WindBlownParticle extends TextureSheetParticle {
         this.roll += spin;
         if (soft()) {
             this.quadSize *= kind == Kind.STEAM || kind == Kind.SPRAY ? 1.012F : kind == Kind.ASH_CLOUD ? 1.006F : 1.004F;
+        }
+        if (physics) {
+            // high in open air there's nothing to bump into: skip the costly block collision until the ground (or a
+            // wall in the way) is near, and just check for the ground below
+            int here = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, Mth.floor(this.x), Mth.floor(this.z));
+            int next = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, Mth.floor(this.x + this.xd), Mth.floor(this.z + this.zd));
+            this.hasPhysics = this.y + this.yd < Math.max(here, next) + 1.5;
         }
         this.move(this.xd, this.yd, this.zd);
         if (this.onGround && kind != Kind.SAND && kind != Kind.LEAF) {

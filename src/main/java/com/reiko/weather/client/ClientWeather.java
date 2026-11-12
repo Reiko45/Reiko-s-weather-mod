@@ -336,10 +336,19 @@ public final class ClientWeather {
         for (StormCell cell : SyncedWeather.cells()) {
             float w = cell.weightAt(x, z);
             if (w > 0) {
-                coverage = Math.max(coverage, w * WeatherProfiles.get(cell.type, Climate.TEMPERATE).clouds);
+                coverage = Math.max(coverage, w * CLOUDS[cell.type.ordinal()]);
             }
         }
         return coverage;
+    }
+
+    /** How cloudy each kind of storm cell is (looked up once: the cloud deck asks thousands of times a tick). */
+    private static final float[] CLOUDS = new float[com.reiko.weather.weather.WeatherType.values().length];
+
+    static {
+        for (com.reiko.weather.weather.WeatherType type : com.reiko.weather.weather.WeatherType.values()) {
+            CLOUDS[type.ordinal()] = WeatherProfiles.get(type, Climate.TEMPERATE).clouds;
+        }
     }
 
     public static boolean hasStormClouds() {

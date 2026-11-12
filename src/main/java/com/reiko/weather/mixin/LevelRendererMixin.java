@@ -29,8 +29,34 @@ public abstract class LevelRendererMixin {
     private void reikos_weather$sunPath(com.mojang.blaze3d.vertex.PoseStack pose, org.joml.Quaternionf rotation,
                                         com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
         float tilt = com.reiko.weather.client.SunPath.tilt();
+        reikos_weather$tilt = tilt;
         if (tilt != 0.0F) pose.mulPose(com.mojang.math.Axis.XP.rotation(tilt));
         original.call(pose, rotation);
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private static float reikos_weather$tilt, reikos_weather$roll;
+
+    /**
+     * ...then, once vanilla has turned the sky to the time of day, the sun's and moon's square discs are turned about
+     * their own centres to sit square to the horizon (the stars are drawn without that turn, below).
+     */
+    @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "renderSky", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionf;)V", ordinal = 4))
+    private void reikos_weather$levelDiscs(com.mojang.blaze3d.vertex.PoseStack pose, org.joml.Quaternionf rotation,
+                                           com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
+        original.call(pose, rotation);
+        // (the time of day's turn about X, read back from the rotation vanilla made)
+        float t = 2.0F * (float) Math.atan2(rotation.x(), rotation.w());
+        reikos_weather$roll = com.reiko.weather.client.SunPath.discRoll(reikos_weather$tilt, t);
+        if (reikos_weather$roll != 0.0F) pose.mulPose(com.mojang.math.Axis.YP.rotation(reikos_weather$roll));
+    }
+
+    @org.spongepowered.asm.mixin.injection.ModifyArg(method = "renderSky", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/vertex/VertexBuffer;drawWithShader(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lnet/minecraft/client/renderer/ShaderInstance;)V",
+            ordinal = 1), index = 0)
+    private org.joml.Matrix4f reikos_weather$starsUnrolled(org.joml.Matrix4f pose) {
+        return reikos_weather$roll == 0.0F ? pose : new org.joml.Matrix4f(pose).rotateY(-reikos_weather$roll);
     }
 
     /** A supermoon looks noticeably bigger than an ordinary full moon. */

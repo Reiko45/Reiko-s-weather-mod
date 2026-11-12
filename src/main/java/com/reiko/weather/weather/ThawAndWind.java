@@ -94,7 +94,7 @@ public final class ThawAndWind {
             BlockState ground = level.getBlockState(floor), here = level.getBlockState(at);
             if (here.is(ModBlocks.MELTWATER_RILL.get()) || !level.getFluidState(floor).isEmpty() || !level.getFluidState(at).isEmpty()) return;
             if (!ground.isFaceSturdy(level, floor, Direction.UP) || !natural(ground)) return;
-            if (!here.isAir() && !here.canBeReplaced()) return;
+            if (!here.isAir() && !here.is(Blocks.SHORT_GRASS) && !here.is(Blocks.FERN) && !here.is(Blocks.DEAD_BUSH)) return;
             if (placed == 0 && GroundEvents.built(level, floor, 3)) return;
             level.setBlockAndUpdate(at, ModBlocks.MELTWATER_RILL.get().defaultBlockState().setValue(MeltwaterRillBlock.FACING, down));
             placed++;

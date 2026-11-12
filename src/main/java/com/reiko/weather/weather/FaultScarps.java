@@ -40,6 +40,11 @@ public final class FaultScarps {
      * crack along the line, with the ground on its left heaved up a block. Returns how many columns it changed.
      */
     public static int tear(ServerLevel level, BlockPos start, float angle, int length, RandomSource random) {
+        return tear(level, start, angle, length, random, true);
+    }
+
+    /** As {@link #tear}, optionally without first looking round for anything built (for testing). */
+    public static int tear(ServerLevel level, BlockPos start, float angle, int length, RandomSource random, boolean spareBuilt) {
         double dx = Mth.cos(angle), dz = Mth.sin(angle), px = -dz, pz = dx;
         int changed = 0;
         boolean blocked = false;
@@ -47,11 +52,10 @@ public final class FaultScarps {
         for (int t = 0; t <= length; t++) {
             wobble = Mth.clamp(wobble + (random.nextFloat() - 0.5F) * 0.5F, -1.5F, 1.5F);
             double x = start.getX() + 0.5 + dx * t + px * wobble, z = start.getZ() + 0.5 + dz * t + pz * wobble;
-            // keep well clear of anything built (checked every few blocks)
-            if (t % 4 == 0) {
-                BlockPos here = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(x, 0, z));
-                blocked = !level.isLoaded(here) || GroundEvents.built(level, here, 4);
-            }
+            // keep well clear of anything built: the crack and the heaved strip beside it reach about 4 blocks from the
+            // line, so look 7 blocks round every step of it
+            BlockPos here = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(x + px * 1.5, 0, z + pz * 1.5));
+            blocked = !level.isLoaded(here) || spareBuilt && GroundEvents.built(level, here, 7);
             if (blocked) continue;
             if (crack(level, BlockPos.containing(x, 0, z), random)) changed++;
             for (int o = 1; o <= 3; o++) {

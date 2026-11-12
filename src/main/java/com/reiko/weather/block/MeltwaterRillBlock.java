@@ -71,7 +71,7 @@ public class MeltwaterRillBlock extends HorizontalDirectionalBlock {
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        float air = Temperature.ambient(level, pos, null);
+        float air = Temperature.ambient(level, pos, com.reiko.weather.weather.WeatherManager.local(level, pos));
         if (air < -1.0F) {
             // the night frost glazes it over
             level.setBlockAndUpdate(pos, ModBlocks.FROZEN_PUDDLE.get().defaultBlockState());

@@ -47,6 +47,27 @@ public final class SunPath {
         return v.set(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
     }
 
+    /**
+     * How far to turn the sun's (and moon's) square disc about its own centre so it sits square to the horizon as it
+     * does in vanilla, rather than leaning over with the tilted sky (by as much as the tilt itself at sunrise and
+     * sunset). {@code t} is vanilla's turn of the sky for the time of day, in radians.
+     */
+    public static float discRoll(float tilt, float t) {
+        if (tilt == 0.0F) return 0.0F;
+        // the sky's turn, as the renderer makes it: the tilt, vanilla's quarter turn, then the time of day
+        org.joml.Matrix3f sky = new org.joml.Matrix3f().rotationX(tilt).rotateY(-Mth.HALF_PI).rotateX(t);
+        Vector3f sun = sky.transform(new Vector3f(0.0F, 1.0F, 0.0F));
+        Vector3f edge = sky.transform(new Vector3f(1.0F, 0.0F, 0.0F));
+        // keep this edge of the moon's disc level, pointing to the right of anyone facing it (as vanilla's does when it
+        // rises): so the moon stays square and upright all night, turning smoothly, never by sudden quarter turns. The
+        // sun's disc gets the same turn, and looks the same every quarter turn anyway.
+        Vector3f moon = new Vector3f(sun).negate();
+        Vector3f target = moon.cross(new Vector3f(0.0F, 1.0F, 0.0F));
+        if (target.lengthSquared() < 1.0E-6F) return 0.0F;
+        target.normalize();
+        return (float) Math.atan2(new Vector3f(edge).cross(target).dot(sun), edge.dot(target));
+    }
+
     /** Which way the sun is (a unit vector), on its tilted path. */
     public static Vector3f sun(ClientLevel level, float partialTick) {
         float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;

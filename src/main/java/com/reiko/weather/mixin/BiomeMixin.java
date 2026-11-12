@@ -15,10 +15,10 @@ public abstract class BiomeMixin {
     }
 
     /** Snow caps: high ground is colder, so the snowline climbs and falls with the seasons. */
-    @org.spongepowered.asm.mixin.injection.Inject(method = "getTemperature", at = @At("RETURN"), cancellable = true)
-    private void reikos_weather$snowCaps(net.minecraft.core.BlockPos pos, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Float> cir) {
-        float lapse = com.reiko.weather.weather.Highlands.lapse(pos);
-        if (lapse != 0.0F) cir.setReturnValue(cir.getReturnValue() - lapse);
+    @ModifyReturnValue(method = "getTemperature", at = @At("RETURN"))
+    private float reikos_weather$snowCaps(float temperature, net.minecraft.core.BlockPos pos) {
+        // (a plain return-value hook: this runs for every column of falling rain and snow, every frame)
+        return temperature - com.reiko.weather.weather.Highlands.lapse(pos);
     }
 
     /** Polynyas: patches of an icy sea that never freeze over. */

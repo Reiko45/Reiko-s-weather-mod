@@ -155,7 +155,8 @@ public final class Microclimate {
         float foehn = bora > 0.0F ? 0.0F : foehn(info, p);
         if (bora > 0.0F) {
             // gusting violently, the sky swept clear
-            float gust = 0.5F + 0.5F * Mth.sin(level.getGameTime() * 0.11F + x * 0.01F) * Mth.sin(level.getGameTime() * 0.037F);
+            float clock = (float) (level.getGameTime() % 1_000_000L);
+            float gust = 0.5F + 0.5F * Mth.sin(clock * 0.11F + x * 0.01F) * Mth.sin(clock * 0.037F);
             b.wind = Mth.clamp(Math.max(b.wind, 0.55F + 0.3F * bora) * (0.8F + 0.45F * gust), 0.0F, 1.0F);
             b.tempOffset -= 7.0F * bora;
             b.rain *= 1.0F - 0.8F * bora;
