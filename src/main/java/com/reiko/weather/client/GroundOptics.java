@@ -227,8 +227,13 @@ public final class GroundOptics {
 
     // ------------------------------------------------------------------ light pillars
 
+    /**
+     * A bright, steady lamp: a lantern, torch, campfire or the like. (Not lava or wildfire: a volcano or a burning
+     * hillside doesn't stand in still, frigid air full of ice crystals, and lit up a forest of beams.)
+     */
     private static boolean bright(BlockState state) {
-        return state.getLightEmission() >= 13;
+        return state.getLightEmission() >= 13 && !state.is(net.minecraft.world.level.block.Blocks.LAVA)
+                && !state.is(net.minecraft.tags.BlockTags.FIRE) && !state.is(net.minecraft.world.level.block.Blocks.MAGMA_BLOCK);
     }
 
     /** Looks for bright lights out under the open sky nearby (only in sections whose palette holds one). */
@@ -275,24 +280,31 @@ public final class GroundOptics {
         }
         if (LIGHTS.isEmpty()) return;
         float strength = Mth.clamp((-10.0F - ClientWeather.airTemperature()) / 8.0F, 0.0F, 1.0F);
+        // (the nearest few: a whole town's worth at once was too much)
+        List<BlockPos> lights = new ArrayList<>(LIGHTS);
+        lights.sort(java.util.Comparator.comparingDouble(p -> p.distToCenterSqr(cam)));
+        if (lights.size() > 16) lights = lights.subList(0, 16);
         Matrix4f pose = new Matrix4f();
         begin();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         float[] warm = {1.0F, 0.82F, 0.5F};
-        for (BlockPos p : LIGHTS) {
+        for (BlockPos p : lights) {
             double dx = p.getX() + 0.5 - cam.x, dz = p.getZ() + 0.5 - cam.z;
             double d = Math.sqrt(dx * dx + dz * dz);
             // the pillar is the light caught by the crystals between you and it: only from a way off
             float fade = Mth.clamp((float) (d - 10.0) / 20.0F, 0.0F, 1.0F);
             if (fade <= 0.0F) continue;
-            float sx = (float) (-dz / d) * 0.6F, sz = (float) (dx / d) * 0.6F;
+            float sx = (float) (-dz / d) * 0.9F, sz = (float) (dx / d) * 0.9F;
             float x = (float) dx, z = (float) dz, y0 = (float) (p.getY() + 1.0 - cam.y), height = 28.0F + (p.hashCode() & 15);
-            float a = 0.35F * strength * fade;
-            buffer.addVertex(pose, x - sx, y0, z - sz).setColor(warm[0], warm[1], warm[2], a);
-            buffer.addVertex(pose, x + sx, y0, z + sz).setColor(warm[0], warm[1], warm[2], a);
-            buffer.addVertex(pose, x + sx, y0 + height, z + sz).setColor(warm[0], warm[1], warm[2], 0.0F);
-            buffer.addVertex(pose, x - sx, y0 + height, z - sz).setColor(warm[0], warm[1], warm[2], 0.0F);
+            float a = 0.3F * strength * fade;
+            // a soft column, brightest along the middle and fading out to both sides and toward the top
+            for (int side = -1; side <= 1; side += 2) {
+                buffer.addVertex(pose, x, y0, z).setColor(warm[0], warm[1], warm[2], a);
+                buffer.addVertex(pose, x + side * sx, y0, z + side * sz).setColor(warm[0], warm[1], warm[2], 0.0F);
+                buffer.addVertex(pose, x + side * sx, y0 + height, z + side * sz).setColor(warm[0], warm[1], warm[2], 0.0F);
+                buffer.addVertex(pose, x, y0 + height, z).setColor(warm[0], warm[1], warm[2], 0.0F);
+            }
         }
         draw(buffer);
         end();

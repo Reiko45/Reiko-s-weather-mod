@@ -91,7 +91,8 @@ the wind. Players far apart can have different weather. You can watch a storm ap
 low, dark cloud deck with shafts of rain hanging beneath it. Inside a cell, everything works the
 way rain normally does: riptide, cauldrons filling, fires going out, snow piling up and lightning.
 
-Thunderstorms tower up into tall, anvil-topped clouds you can watch from far away. On **summer
+Thunderstorms tower up into tall clouds you can watch from far away (with the volumetric clouds, the storm deck itself
+builds a rounded tower over each storm's heart; with them off, anvil-topped towers of cloud). On **summer
 afternoons** (any day in the tropics) the sun heats the ground, the clouds build through the day and
 some break into thunderstorms (even hailstorms), dying away by dusk.
 
@@ -395,8 +396,8 @@ Ways to stay comfortable:
   a **sun pillar** stands straight up from the low sun.
 - **Red sprites** flicker high above distant thunderstorms on dark nights, and on some summer nights
   **noctilucent clouds** glow electric blue low in the north long after sunset.
-- Squall lines come in under a dark **shelf cloud**, and **mammatus** pouches hang under the anvils of
-  big storms.
+- Squall lines come in under a dark **shelf cloud**, and (with the flat clouds) **mammatus** pouches hang under the
+  anvils of big storms.
 - After night rain under a full moon, look for a pale **moonbow**; when a low sun shines through thin
   fog, a broad white **fogbow**.
 - **Double rainbows:** a fainter second bow outside a bright rainbow, colours reversed, with the darker
@@ -407,7 +408,8 @@ Ways to stay comfortable:
 - **Green flash:** the last sliver of the sun can flash green as it sets into (or rises out of) the sea.
 - **Earth's shadow and the Belt of Venus:** at twilight, a dark blue band low in the sky opposite the
   sun, with a pink glow above it.
-- **Light pillars** stand up over lanterns, torches and fires on frigid, clear, still nights.
+- **Light pillars** stand up over lanterns, torches and campfires on frigid, clear, still nights (not over lava or
+  wildfires).
 - **Iridescent clouds:** thin cloud near the sun shimmers with pastel colours.
 - **The Milky Way** arches across dark, clear, moonless skies (washed out by the moon and by village lights), and
   faint **zodiacal light** rises after dusk where the sun went down.

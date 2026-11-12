@@ -279,7 +279,7 @@ public final class SkyEffectsRenderer {
             // around the sun by day, the (fainter) moon by night
             Vector3f moon = new Vector3f(sun).negate();
             if (sun.y > -0.05F) {
-                drawHalo(pose, sun, halo * 0.22F * Mth.clamp((sun.y + 0.05F) * 6.0F, 0.0F, 1.0F));
+                drawHalo(pose, sun, halo * 0.22F * Mth.clamp((sun.y + 0.05F) * 6.0F, 0.0F, 1.0F), false);
                 // on the very best halo days, the rarer ones: the parhelic circle and the faint 46-degree halo
                 float rare = ClientConfig.RARE_HALOS.get() ? Mth.clamp((halo - 0.55F) / 0.3F, 0.0F, 1.0F) * Mth.clamp((sun.y - 0.02F) * 8.0F, 0.0F, 1.0F) : 0.0F;
                 if (rare > 0.01F) {
@@ -291,8 +291,8 @@ public final class SkyEffectsRenderer {
                     drawSunDogs(pose, sun, dogs);
                 }
             }
-            if (moon.y > -0.05F) {
-                drawHalo(pose, moon, halo * 0.12F * Mth.clamp((moon.y + 0.05F) * 6.0F, 0.0F, 1.0F) * night);
+            if (moon.y > 0.0F) {
+                drawHalo(pose, moon, halo * 0.12F * Mth.clamp(moon.y * 8.0F, 0.0F, 1.0F) * night * moonlight, true);
                 // moon dogs: the same bright spots either side of a bright, low moon (paler, the colours barely there)
                 float moonDogs = halo * night * moonlight * Mth.clamp((0.6F - moon.y) * 4.0F, 0.0F, 1.0F) * Mth.clamp((moon.y + 0.05F) * 8.0F, 0.0F, 1.0F);
                 if (moonDogs > 0.01F) drawSunDogs(pose, moon, moonDogs * 0.45F);
@@ -307,8 +307,9 @@ public final class SkyEffectsRenderer {
                 : 0.0F;
         if (corona > 0.005F) {
             Vector3f moon = new Vector3f(sun).negate();
-            if (moon.y > -0.05F) drawCorona(pose, moon, corona * 0.55F * moonlight * night * Mth.clamp((moon.y + 0.05F) * 6.0F, 0.0F, 1.0F));
-            if (sun.y > -0.05F) drawCorona(pose, sun, corona * 0.16F * Mth.clamp((sun.y + 0.05F) * 6.0F, 0.0F, 1.0F));
+            // (only round a moon or sun that's properly up: just under the horizon it left a glow with nothing in it)
+            if (moon.y > 0.02F) drawCorona(pose, moon, corona * 0.55F * moonlight * night * Mth.clamp((moon.y - 0.02F) * 8.0F, 0.0F, 1.0F));
+            if (sun.y > 0.02F) drawCorona(pose, sun, corona * 0.16F * Mth.clamp((sun.y - 0.02F) * 8.0F, 0.0F, 1.0F));
         }
         if (blood > 0.005F) {
             drawBloodMoon(pose, new Vector3f(sun).negate(), blood);
@@ -590,14 +591,16 @@ public final class SkyEffectsRenderer {
     }
 
     /** A 22-degree ring of light around the sun or moon, faintly red on the inside. */
-    private static void drawHalo(Matrix4f pose, Vector3f center, float alpha) {
+    /** The 22-degree halo; {@code pale} for the moon's, whose light is too faint for its colours to show: a white ring. */
+    private static void drawHalo(Matrix4f pose, Vector3f center, float alpha, boolean pale) {
         if (alpha <= 0.003F) {
             return;
         }
         Vector3f[] basis = basis(center);
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         float[][] bands = {{20.6F, 0.0F}, {21.6F, 1.0F}, {22.6F, 0.7F}, {24.5F, 0.0F}};
-        float[][] colors = {{1.0F, 0.6F, 0.45F}, {1.0F, 0.85F, 0.75F}, {0.9F, 0.93F, 1.0F}, {0.85F, 0.9F, 1.0F}};
+        float[][] colors = pale ? new float[][]{{0.85F, 0.87F, 0.9F}, {0.88F, 0.9F, 0.94F}, {0.88F, 0.9F, 0.95F}, {0.85F, 0.88F, 0.95F}}
+                : new float[][]{{1.0F, 0.6F, 0.45F}, {1.0F, 0.85F, 0.75F}, {0.9F, 0.93F, 1.0F}, {0.85F, 0.9F, 1.0F}};
         int segments = 96;
         for (int i = 0; i < segments; i++) {
             float phi0 = i / (float) segments * Mth.TWO_PI, phi1 = (i + 1) / (float) segments * Mth.TWO_PI;
@@ -779,9 +782,12 @@ public final class SkyEffectsRenderer {
         RenderSystem.disableCull();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        drawSunbeams(new Matrix4f(), sun, level.getGameTime() + partialTick, beams * Mth.clamp(sun.y * 5.0F, 0.0F, 1.0F));
+        // (drawn far out, beyond the land, so the rays only show against the sky: a hill or a tree in front hides them,
+        // rather than a ray slicing across it close by)
+        Matrix4f far = new Matrix4f().scale(mc.gameRenderer.getDepthFar() * 0.8F / DOME);
+        drawSunbeams(far, sun, level.getGameTime() + partialTick, beams * Mth.clamp(sun.y * 5.0F, 0.0F, 1.0F));
         if (ClientConfig.ANTICREPUSCULAR_RAYS.get() && sun.y < 0.35F) {
-            drawAntiBeams(new Matrix4f(), sun, level.getGameTime() + partialTick, beams * Mth.clamp((0.35F - sun.y) * 5.0F, 0.0F, 1.0F) * Mth.clamp(sun.y * 8.0F, 0.0F, 1.0F));
+            drawAntiBeams(far, sun, level.getGameTime() + partialTick, beams * Mth.clamp((0.35F - sun.y) * 5.0F, 0.0F, 1.0F) * Mth.clamp(sun.y * 8.0F, 0.0F, 1.0F));
         }
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);

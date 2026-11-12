@@ -23,7 +23,8 @@ public final class CloudPuffs {
         if (level == null || level.dimension() != Level.OVERWORLD || !SyncedWeather.managed() || SyncedWeather.cells().isEmpty()) {
             return;
         }
-        boolean towers = ClientConfig.TOWERING_CLOUDS.get(), banks = ClientConfig.FOG_BANKS.get(), shapes = ClientConfig.STORM_CLOUD_SHAPES.get();
+        // (the volumetric clouds build the storms' towers themselves; the sprite towers clashed with them)
+        boolean towers = ClientConfig.TOWERING_CLOUDS.get() && !VolumetricClouds.active(), banks = ClientConfig.FOG_BANKS.get(), shapes = ClientConfig.STORM_CLOUD_SHAPES.get();
         sunset = sunsetGlow(level, partialTick);
         Vec3 cam = camera.getPosition();
         float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;

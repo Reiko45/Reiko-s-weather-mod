@@ -188,15 +188,25 @@ public final class CloudDeckRenderer {
                 RenderSystem.setShader(GameRenderer::getPositionColorShader);
                 buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             }
-            // a few overlapping columns so the edges look ragged
+            // a few overlapping shafts so the edges look ragged, each one soft: fading out to both sides, up into the
+            // cloud base and down toward the ground (flat-edged, they showed as grey panes hanging under the storm)
+            float b = (float) ((deckY - 14.0F - cam.y) * scale);
             for (int k = -2; k <= 2; k++) {
-                float off = k * 0.35F, w = 0.32F;
+                float off = k * 0.35F + (PuffRenderer.hash(k, cell.id) - 0.5F) * 0.15F, w = 0.3F + 0.12F * PuffRenderer.hash(k, cell.id + 5);
                 float ax = cx + px * (off - w), az = cz + pz * (off - w), bx = cx + px * (off + w), bz = cz + pz * (off + w);
+                float mx = cx + px * off, mz = cz + pz * off;
                 float a = alpha * (1.0F - Math.abs(k) * 0.18F);
-                buffer.addVertex(ax, top, az).setColor(shade, shade, shade * 1.05F, a);
-                buffer.addVertex(bx, top, bz).setColor(shade, shade, shade * 1.05F, a);
-                buffer.addVertex(bx, bottom, bz).setColor(shade, shade, shade * 1.05F, a * 0.35F);
-                buffer.addVertex(ax, bottom, az).setColor(shade, shade, shade * 1.05F, a * 0.35F);
+                float[][] rows = {{top, 0.0F}, {b, a}, {bottom, a * 0.25F}};
+                for (int r = 0; r < 2; r++) {
+                    float y0 = rows[r][0], a0 = rows[r][1], y1 = rows[r + 1][0], a1 = rows[r + 1][1];
+                    for (int side = 0; side < 2; side++) {
+                        float ex = side == 0 ? ax : bx, ez = side == 0 ? az : bz;
+                        buffer.addVertex(ex, y0, ez).setColor(shade, shade, shade * 1.05F, 0.0F);
+                        buffer.addVertex(mx, y0, mz).setColor(shade, shade, shade * 1.05F, a0);
+                        buffer.addVertex(mx, y1, mz).setColor(shade, shade, shade * 1.05F, a1);
+                        buffer.addVertex(ex, y1, ez).setColor(shade, shade, shade * 1.05F, 0.0F);
+                    }
+                }
             }
         }
         if (buffer != null) {

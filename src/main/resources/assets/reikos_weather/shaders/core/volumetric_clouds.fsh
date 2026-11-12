@@ -4,7 +4,7 @@
 
 uniform sampler2D Sampler0; // the scene's depth
 uniform sampler2D Sampler1; // value noise (green holds red shifted by (37, 17), so one fetch gives two slices)
-uniform sampler2D Sampler2; // storm cloud cover around the camera (red)
+uniform sampler2D Sampler2; // around the camera: storm cloud cover (red), fair-weather blotches (green), storm towers (blue)
 uniform sampler3D Sampler3; // tileable Worley noise, 1 at each cell's centre: red for the shapes, green for the detail
 
 uniform mat4 InvViewProj;
@@ -18,7 +18,7 @@ uniform vec3 LightColor;
 uniform vec3 SkyColor;
 uniform vec3 GroundColor;
 uniform vec3 HazeColor;
-uniform vec4 Extra;       // rain, lightning flash, how dense, (unused)
+uniform vec4 Extra;       // rain, lightning flash, how dense, how high the tallest cloud reaches above the base
 
 in vec2 texCoord;
 
@@ -43,10 +43,11 @@ float noise2(vec2 x) {
 // The clouds through a column at this spot: x = base, y = depth, z = cover, w = how heaped (cumulus) they are; and how
 // much of it is storm cloud. (Every noise scale here divides the period the camera's noise position wraps at,
 // 196608 blocks, so the wrap is seamless.)
-vec4 column(vec2 rel, vec2 np, out float storm) {
+vec4 column(vec2 rel, vec2 np, out float storm, out float tower) {
     // the storm cover, and the big, slow blotches the fair-weather clouds come and go in, are worked out on the CPU
-    vec2 map = texture(Sampler2, (rel - CoverOrigin) / CoverSize).rg;
+    vec3 map = texture(Sampler2, (rel - CoverOrigin) / CoverSize).rgb;
     storm = map.r;
+    tower = map.b;
     float fair = Cover.x, cumulus = Cover.y;
     float fairCover = clamp(fair * 1.1 + (map.g - 0.5) * 0.8, 0.0, 1.0) * step(0.02, fair);
     // heaps of cumulus over the warm ground, each over its own bubble of rising air
@@ -55,9 +56,10 @@ vec4 column(vec2 rel, vec2 np, out float storm) {
         float heaps = noise2(np / 96.0 + 3.0) * 0.7 + noise2(np / 48.0 + 5.0) * 0.3;
         cuCover = cumulus * clamp((heaps - 0.42) * 3.5, 0.0, 1.0);
     }
-    float heaped = cuCover > fairCover ? 1.0 - storm : 0.0;
+    // (over a thunderstorm's heart the cloud towers up far higher, rounding off at the top like a giant cumulus)
+    float heaped = max(cuCover > fairCover ? 1.0 - storm : 0.0, tower);
     float cover = max(max(fairCover, cuCover), storm);
-    float depth = mix(mix(36.0, 30.0 + 70.0 * cuCover, heaped), 150.0, storm);
+    float depth = mix(mix(36.0, 30.0 + 70.0 * cuCover, heaped), 150.0 + 170.0 * tower, storm);
     // (a storm's ragged base hangs lower, and rolls)
     float base = Layer.x;
     if (storm > 0.01) base -= storm * (10.0 + 14.0 * noise2(np / 96.0 + 11.0));
@@ -65,11 +67,12 @@ vec4 column(vec2 rel, vec2 np, out float storm) {
 }
 
 // The cloud's density at a spot in a column, 0 to 1: the fine detail only up close, where it shows.
-float density(vec4 col, float storm, vec3 np, bool detailed) {
+float density(vec4 col, float storm, float tower, vec3 np, bool detailed) {
     float h = (np.y - col.x) / col.y;
     if (h <= 0.0 || h >= 1.0 || col.z < 0.01) return 0.0;
-    // flat bases; the cover thins with height, so heaps round off into domes and towers
-    float taper = smoothstep(0.0, 0.05, h) * smoothstep(1.0, mix(0.3, 0.1, col.w), h);
+    // flat bases; the cover thins with height, so heaps round off into domes; a storm's tower stays solid most of
+    // the way up before it rounds off
+    float taper = smoothstep(0.0, 0.05, h) * mix(smoothstep(1.0, mix(0.3, 0.1, col.w), h), 1.0 - smoothstep(0.6, 1.0, h), tower);
     float cover = col.z * taper;
     if (cover < 0.01) return 0.0;
     float evolve = Cover.w / 1024.0;
@@ -103,7 +106,7 @@ void main() {
         scene = length(hit.xyz / hit.w);
     }
     // where the ray is inside the cloud layer
-    float bottom = Layer.x - 16.0 - CameraPos.y, top = Layer.x + 150.0 - CameraPos.y;
+    float bottom = Layer.x - 40.0 - CameraPos.y, top = Layer.x + max(150.0, Extra.w) - CameraPos.y;
     float t0, t1;
     if (abs(dir.y) < 1.0e-4) {
         if (bottom > 0.0 || top < 0.0) {
@@ -122,7 +125,7 @@ void main() {
         fragColor = vec4(0.0);
         return;
     }
-    int steps = int(Layer.w);
+    int steps = min(int(Layer.w) * 2, int(Layer.w) + int((t1 - t0) / 30.0));
     float dt = (t1 - t0) / float(steps);
     // (a fixed dither, so the banding of the steps turns into a fine grain the upscaling smooths over)
     float jitter = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
@@ -138,9 +141,9 @@ void main() {
         if (i >= steps || transmittance < 0.02) break;
         vec3 rel = dir * t;
         vec3 np = origin + vec3(rel.x, CameraPos.y + rel.y, rel.z);
-        float storm;
-        vec4 col = column(rel.xz, np.xz, storm);
-        float d = density(col, storm, np, t < 900.0);
+        float storm, tower;
+        vec4 col = column(rel.xz, np.xz, storm, tower);
+        float d = density(col, storm, tower, np, t < 900.0);
         if (d > 0.002) {
             // how much cloud lies between here and the sun (through the same column: close enough for its own shadow)
             float toward = 0.0, reach = 0.0;
@@ -148,7 +151,7 @@ void main() {
             for (int k = 1; k <= 3; k++) {
                 if (k > lights) break;
                 float s = 8.0 * float(k * k);
-                toward += density(col, storm, np + LightDir * s, false) * (s - reach);
+                toward += density(col, storm, tower, np + LightDir * s, false) * (s - reach);
                 reach = s;
             }
             // (Beer's law, with a little extra light scattered on through the cloud)

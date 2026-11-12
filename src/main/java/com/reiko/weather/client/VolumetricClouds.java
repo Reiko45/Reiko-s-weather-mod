@@ -75,6 +75,10 @@ public final class VolumetricClouds {
     private static double coverX, coverZ;
     private static float coverCell = REACH * 2.0F / COVER_N;
     private static float shade;
+    /** The tallest storm tower around just now (0 to 1), so the march reaches up far enough for it. */
+    private static float highest;
+    /** How far a full-height storm tower rises above the storm deck's 150 blocks. */
+    private static final float TOWER = 170.0F;
     /** The noise's red channel, for working out on the CPU how much cloud covers the sun. */
     private static final float[] NOISE = new float[256 * 256];
     /** The size of the Worley noise's cube; and its texture (made the first time it's needed), and the shapes' channel. */
@@ -138,6 +142,29 @@ public final class VolumetricClouds {
         shade = Mth.lerp(0.08F, shade, covered);
     }
 
+    /**
+     * How tall a thunderstorm's tower stands over a spot, 0 to 1 (1: towering up {@link #TOWER} blocks over the storm
+     * deck): rising over the heart of each storm, the tallest over supercells.
+     */
+    private static float tower(double x, double z) {
+        float most = 0.0F;
+        for (com.reiko.weather.weather.StormCell cell : SyncedWeather.cells()) {
+            float height = switch (cell.type) {
+                case SUPERCELL -> 1.0F;
+                case THUNDERSTORM, HAIL, PYROCUMULUS -> 0.8F;
+                case DERECHO, HURRICANE, THUNDERSNOW, GRAUPEL, POLAR_LOW -> 0.55F;
+                default -> 0.0F;
+            };
+            if (height <= 0.0F) continue;
+            float core = Math.min(cell.radius * 0.45F, 150.0F);
+            double d = Math.sqrt((cell.x - x) * (cell.x - x) + (cell.z - z) * (cell.z - z));
+            if (d >= core) continue;
+            float k = 1.0F - (float) d / core;
+            most = Math.max(most, height * cell.strength() * k * k * (3.0F - 2.0F * k));
+        }
+        return most;
+    }
+
     /** How much the passing cloud shades the sun, 0 to 1. */
     public static float shade() {
         return shade;
@@ -151,14 +178,19 @@ public final class VolumetricClouds {
         coverX = Math.floor(cam.x / coverCell) * coverCell - COVER_N / 2.0 * coverCell;
         coverZ = Math.floor(cam.z / coverCell) * coverCell - COVER_N / 2.0 * coverCell;
         boolean storms = ClientConfig.STORM_CLOUDS.get();
+        highest = 0.0F;
         for (int i = 0; i < COVER_N; i++) {
             for (int j = 0; j < COVER_N; j++) {
                 double x = coverX + (i + 0.5) * coverCell, z = coverZ + (j + 0.5) * coverCell;
                 float c = storms ? ClientWeather.cloudsAt(x, z) : 0.0F;
                 // (and the big, slow blotches the fair-weather clouds come and go in, drifting with them)
                 float b = blotch(wrap(x - driftX), wrap(z - driftZ));
+                // (and how high a thunderstorm's tower rises here)
+                float t = storms && ClientConfig.TOWERING_CLOUDS.get() ? tower(x, z) : 0.0F;
+                highest = Math.max(highest, t);
                 int red = Mth.clamp(Math.round(c * 255.0F), 0, 255), green = Mth.clamp(Math.round(b * 255.0F), 0, 255);
-                image.setPixelRGBA(i, j, 0xFF000000 | green << 8 | red);
+                int blue = Mth.clamp(Math.round(t * 255.0F), 0, 255);
+                image.setPixelRGBA(i, j, 0xFF000000 | blue << 16 | green << 8 | red);
             }
         }
         cover.bind();
@@ -354,7 +386,7 @@ public final class VolumetricClouds {
         float[] fog = RenderSystem.getShaderFogColor();
         shader.safeGetUniform("HazeColor").set(fog[0], fog[1], fog[2]);
         float flash = level.getSkyFlashTime() > 0 ? 0.45F : 0.0F;
-        shader.safeGetUniform("Extra").set(rain, flash, 1.0F, 0.0F);
+        shader.safeGetUniform("Extra").set(rain, flash, 1.0F, 150.0F + TOWER * highest);
     }
 
     private static void fullscreen() {
@@ -409,13 +441,14 @@ public final class VolumetricClouds {
         float fairCover = fair < 0.02F ? 0.0F : Mth.clamp(fair * 1.1F + (blotch(nx, nz) - 0.5F) * 0.8F, 0.0F, 1.0F);
         float heaps = noise2(nx / 96.0 + 3.0, nz / 96.0 + 3.0) * 0.7F + noise2(nx / 48.0 + 5.0, nz / 48.0 + 5.0) * 0.3F;
         float cuCover = cumulus * Mth.clamp((heaps - 0.42F) * 3.5F, 0.0F, 1.0F);
-        float heaped = cuCover > fairCover ? 1.0F - storm : 0.0F;
+        float tower = ClientConfig.STORM_CLOUDS.get() && ClientConfig.TOWERING_CLOUDS.get() ? tower(wx, wz) : 0.0F;
+        float heaped = Math.max(cuCover > fairCover ? 1.0F - storm : 0.0F, tower);
         float coverage = Math.max(Math.max(fairCover, cuCover), storm);
-        float depth = Mth.lerp(storm, Mth.lerp(heaped, 36.0F, 30.0F + 70.0F * cuCover), 150.0F);
+        float depth = Mth.lerp(storm, Mth.lerp(heaped, 36.0F, 30.0F + 70.0F * cuCover), 150.0F + TOWER * tower);
         float base = level.getSeaLevel() + BASE - storm * (10.0F + 14.0F * noise2(nx / 96.0 + 11.0, nz / 96.0 + 11.0));
         float h = (float) ((wy - base) / depth);
         if (h <= 0.0F || h >= 1.0F || coverage < 0.01F) return 0.0F;
-        float taper = smoothstep(0.0F, 0.05F, h) * smoothstep(1.0F, Mth.lerp(heaped, 0.3F, 0.1F), h);
+        float taper = smoothstep(0.0F, 0.05F, h) * Mth.lerp(tower, smoothstep(1.0F, Mth.lerp(heaped, 0.3F, 0.1F), h), 1.0F - smoothstep(0.6F, 1.0F, h));
         float c = coverage * taper;
         if (c < 0.01F) return 0.0F;
         double evolve = time / 1024.0;
@@ -448,7 +481,7 @@ public final class VolumetricClouds {
     /** How much of the sun's light the clouds between here and the sun hold back, 0 to 1. */
     private static float sunCover(ClientLevel level, Vec3 cam, Vector3f sun) {
         float base = level.getSeaLevel() + BASE;
-        double t0 = Math.max(0.0, (base - LOWEST - cam.y) / sun.y), t1 = Math.max(0.0, (base + 160.0 - cam.y) / sun.y);
+        double t0 = Math.max(0.0, (base - LOWEST - cam.y) / sun.y), t1 = Math.max(0.0, (base + 160.0 + TOWER * highest - cam.y) / sun.y);
         if (t1 <= t0) return 0.0F;
         float time = (float) (level.getGameTime() % EVOLVE);
         double optical = 0.0;
