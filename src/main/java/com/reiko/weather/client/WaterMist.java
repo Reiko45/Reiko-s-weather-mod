@@ -149,8 +149,7 @@ public final class WaterMist {
             return;
         }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
-        Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
+        Vector3f sun = SunPath.sun(level, partialTick);
         float sunUp = Mth.clamp(sun.y * 5.0F, 0.0F, 1.0F) * (1.0F - level.getRainLevel(partialTick)) * (1.0F - ClientWeather.overcast());
         if (sunUp < 0.02F) {
             return;

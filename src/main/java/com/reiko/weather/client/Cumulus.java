@@ -57,11 +57,11 @@ public final class Cumulus {
         float covered = 0.0F;
         if (sun > 0.05F && ClientConfig.CLOUD_SHADE.get() && DriftingClouds.cloudsWanted(mc)) {
             Vec3 cam = mc.gameRenderer.getMainCamera().getPosition();
-            float theta = level.getTimeOfDay(1.0F) * Mth.TWO_PI;
-            double sx = -Mth.sin(theta), sy = Mth.cos(theta);
+            org.joml.Vector3f toSun = SunPath.sun(level, 1.0F);
+            double sx = toSun.x, sy = toSun.y, sz = toSun.z;
             double t = (base(level) + 6.0 - cam.y) / Math.max(0.08, sy);
-            if (t > 0.0 && strength > 0.02F && ClientConfig.CLOUD_STREETS.get()) covered = coverage(cam.x + sx * t, cam.z) * strength;
-            if (DriftingClouds.replacing()) covered = Math.max(covered, DriftingClouds.coverage(level, cam.x, cam.y, cam.z, sx, sy));
+            if (t > 0.0 && strength > 0.02F && ClientConfig.CLOUD_STREETS.get()) covered = coverage(cam.x + sx * t, cam.z + sz * t) * strength;
+            if (DriftingClouds.replacing()) covered = Math.max(covered, DriftingClouds.coverage(level, cam.x, cam.y, cam.z, sx, sy, sz));
         }
         shade = Mth.lerp(0.06F, shade, covered);
     }

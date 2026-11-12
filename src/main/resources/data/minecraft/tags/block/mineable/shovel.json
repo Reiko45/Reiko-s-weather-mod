@@ -27,6 +27,7 @@
     "reikos_weather:gibber",
     "reikos_weather:cryoconite",
     "reikos_weather:rippled_sand",
-    "reikos_weather:rippled_red_sand"
+    "reikos_weather:rippled_red_sand",
+    "reikos_weather:tar"
   ]
 }

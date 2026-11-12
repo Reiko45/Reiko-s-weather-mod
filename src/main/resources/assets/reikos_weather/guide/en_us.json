@@ -1979,6 +1979,28 @@
    ]
   },
   {
+   "title": "The Sun's Path and the Tar Pits",
+   "icon": "minecraft:sunflower",
+   "entries": [
+    {
+     "title": "The Sun's Path",
+     "icon": "minecraft:clock",
+     "pages": [
+      "The sun no longer passes straight overhead: the world lies some way north of the equator, so the sun's path leans to the south. At midsummer the noon sun stands high, at midwinter it creeps low across the southern sky, and the moon and stars wheel round a pole star high in the north.",
+      "It still rises due east and sets due west on time, so day and night are just as they were. The latitude can be changed in the settings, and shader packs keep their own sun."
+     ]
+    },
+    {
+     "title": "Tar Pits",
+     "icon": "minecraft:bone",
+     "pages": [
+      "In some plains, savannas and deserts, natural asphalt seeps up through the ground into sticky black pools ringed with a hard, cracked crust. Rainwater lying on top of the tar draws animals in to drink, and they sink in and stick fast.",
+      "The pools are full of the bones of those caught long ago. Wading in, you sink to the knees and can only drag yourself out slowly, while bubbles of gas plop at the surface. Tar and asphalt can both be dug up and used for building."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

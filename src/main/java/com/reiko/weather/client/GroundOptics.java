@@ -61,8 +61,7 @@ public final class GroundOptics {
     private static void dew(ClientLevel level, Camera camera, float partialTick) {
         long time = Math.floorMod(level.getDayTime(), 24000L);
         if (time < 100L || time > 2600L) return;
-        float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
-        Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
+        Vector3f sun = SunPath.sun(level, partialTick);
         if (sun.y < 0.03F || ClientWeather.rain() > 0.05F || ClientWeather.overcast() > 0.4F || ClientWeather.wind() > 0.3F
                 || ClientWeather.airTemperature() < 1.0F || ClientWeather.airTemperature() > 22.0F) return;
         // the dew burns off as the sun climbs
@@ -161,8 +160,7 @@ public final class GroundOptics {
     }
 
     private static void glory(ClientLevel level, Camera camera, float partialTick) {
-        float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
-        Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
+        Vector3f sun = SunPath.sun(level, partialTick);
         if (sun.y < 0.02F || sun.y > 0.45F) return;
         Vec3 cam = camera.getPosition();
         float fog = fogBelow(level, cam);

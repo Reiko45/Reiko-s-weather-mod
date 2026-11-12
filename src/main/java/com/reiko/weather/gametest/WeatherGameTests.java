@@ -1071,6 +1071,22 @@ public class WeatherGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = PLATFORM, timeoutTicks = 100)
+    public static void tarTraps(GameTestHelper helper) {
+        // an animal stepping onto tar sinks in up to its knees; asphalt is solid ground
+        helper.setBlock(1, 1, 1, ModBlocks.TAR.get());
+        helper.setBlock(3, 1, 1, ModBlocks.ASPHALT.get());
+        var pig = helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(1, 2, 1));
+        var other = helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(3, 2, 1));
+        helper.runAfterDelay(40, () -> {
+            double sunk = helper.absolutePos(new BlockPos(1, 2, 1)).getY() - pig.getY();
+            double stood = other.getY() - helper.absolutePos(new BlockPos(3, 2, 1)).getY();
+            helper.assertTrue(sunk > 0.5, "a pig sinks into the tar (sunk " + sunk + ")");
+            helper.assertTrue(Math.abs(stood) < 0.05, "asphalt is solid ground (" + stood + ")");
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = PLATFORM)
     public static void silkFrostAndSand(GameTestHelper helper) {
         var level = helper.getLevel();

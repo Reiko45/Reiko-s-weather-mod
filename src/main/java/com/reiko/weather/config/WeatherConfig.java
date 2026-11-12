@@ -357,6 +357,7 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue TERRACETTES;
     public static final ModConfigSpec.BooleanValue BEACH_CUSPS;
     public static final ModConfigSpec.BooleanValue GLACIER_GRIT;
+    public static final ModConfigSpec.BooleanValue TAR_PITS;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -1147,6 +1148,9 @@ public final class WeatherConfig {
         GLACIER_GRIT = b.comment("Cryoconite holes and dirt cones: dark grit on glacier ice that melts little round holes into it,",
                         "or shields cones of ice from the sun.")
                 .define("glacierGrit", true);
+        TAR_PITS = b.comment("Tar pits: natural asphalt seeping up through the ground into sticky black pools that trap animals,",
+                        "with the bones of those caught long ago.")
+                .define("tarPits", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

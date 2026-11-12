@@ -77,11 +77,11 @@ public final class DriftingClouds {
     }
 
     /** How much of the sun's disc a spot on the cloud layer hides, 0 to 1. */
-    static float coverage(ClientLevel level, double camX, double camY, double camZ, double sunX, double sunY) {
+    static float coverage(ClientLevel level, double camX, double camY, double camZ, double sunX, double sunY, double sunZ) {
         if (cover < 0.02F || sunY < 0.05) return 0.0F;
         double t = (base(level) + 2.0 - camY) / Math.max(0.08, sunY);
         if (t <= 0.0) return 0.0F;
-        double x = camX + sunX * t, z = camZ;
+        double x = camX + sunX * t, z = camZ + sunZ * t;
         double pa = x * windX + z * windZ - drift, pc = -x * windZ + z * windX;
         int i0 = Mth.floor(pa / SPACING), j0 = Mth.floor(pc / SPACING);
         float most = 0.0F;

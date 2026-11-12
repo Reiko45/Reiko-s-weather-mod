@@ -20,6 +20,19 @@ public abstract class LevelRendererMixin {
         return Math.max(rainLevel * (1.0F - 0.9F * ClientWeather.sunShower()), ClientWeather.sunOcclusion());
     }
 
+    /**
+     * The sun's path through the seasons: the sun, moon and stars are tilted toward the south together, just before
+     * vanilla turns them to the time of day (see SunPath).
+     */
+    @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "renderSky", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionf;)V", ordinal = 3))
+    private void reikos_weather$sunPath(com.mojang.blaze3d.vertex.PoseStack pose, org.joml.Quaternionf rotation,
+                                        com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
+        float tilt = com.reiko.weather.client.SunPath.tilt();
+        if (tilt != 0.0F) pose.mulPose(com.mojang.math.Axis.XP.rotation(tilt));
+        original.call(pose, rotation);
+    }
+
     /** A supermoon looks noticeably bigger than an ordinary full moon. */
     @org.spongepowered.asm.mixin.injection.ModifyConstant(method = "renderSky", constant = @org.spongepowered.asm.mixin.injection.Constant(floatValue = 20.0F))
     private float reikos_weather$supermoon(float size) {

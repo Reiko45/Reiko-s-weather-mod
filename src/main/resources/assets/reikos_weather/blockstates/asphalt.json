@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "reikos_weather:block/asphalt",
+        "y": 0
+      },
+      {
+        "model": "reikos_weather:block/asphalt",
+        "y": 90
+      },
+      {
+        "model": "reikos_weather:block/asphalt",
+        "y": 180
+      },
+      {
+        "model": "reikos_weather:block/asphalt",
+        "y": 270
+      }
+    ]
+  }
+}

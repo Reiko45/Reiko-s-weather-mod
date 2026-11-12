@@ -451,6 +451,12 @@ Ways to stay comfortable:
 - **Hail fog:** after a hailstorm, a low fog lies over the drifts of hail until they melt.
 - **Rare halos and snow plumes:** on the best halo days, the parhelic circle (a white ring round the whole sky at the
   sun's height) and the faint 46-degree halo; on windy winter days, snow streams off the summits in long plumes.
+- **The sun's path:** the sun no longer passes straight overhead. The sky leans toward the south as it would some way
+  north of the equator (40 degrees by default, set with `sunLatitude`), so the noon sun stands high at midsummer
+  and low at midwinter, and the moon and stars wheel round a pole star high in the north. It still rises due east
+  and sets due west on time, so daylight and darkness are unchanged. The halos, rainbows, sunbeams and other sky
+  sights follow the sun wherever it is. It turns itself off while a shader pack is in use (shader packs place the
+  sun themselves).
 - **Coronas:** soft pastel rings tight round the moon (and, lost in its glare, the sun) shining through a thin veil of
   cloud.
 - **Moon dogs and volcanic twilight:** bright spots either side of a bright moon on icy nights; and for a couple of
@@ -627,6 +633,9 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
 - **Silk, frost and sand:** **terracettes**, narrow step-like tracks running along steep grassy hillsides; **beach
   cusps**, evenly spaced crescent scallops along the edge of sandy beaches; and on the lower ice of glaciers,
   **cryoconite holes** melted into the ice by dark grit, and **dirt cones** of ice shielded from the sun by a coat of it.
+- **Tar pits:** natural asphalt seeping up into sticky black pools in plains, savannas and deserts, ringed with a
+  hard, cracked crust and full of the bones of animals caught long ago; some lie hidden under a skin of rainwater.
+  Wade in and you sink to the knees and stick fast. Tar and asphalt can both be dug up for building.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -752,7 +761,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 104 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 105 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -762,7 +771,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
 Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
-A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water, Gone With the Wind, Gibber Plain, Glacier Mouse, Foxfire, Ice Chimes and Combed by the Wind.
+A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water, Gone With the Wind, Gibber Plain, Glacier Mouse, Foxfire, Ice Chimes, Combed by the Wind and Stuck in the Tar.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

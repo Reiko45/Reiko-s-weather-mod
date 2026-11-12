@@ -437,6 +437,17 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.FrostedPaneBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.GLASS_PANE)
                     .randomTicks()));
 
+    /** Tar: natural asphalt welling up soft and sticky from below, which anything stepping into sinks into and sticks fast. */
+    public static final DeferredBlock<com.reiko.weather.block.TarBlock> TAR = REGISTER.register("tar",
+            () -> new com.reiko.weather.block.TarBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.8F)
+                    .sound(SoundType.HONEY_BLOCK).speedFactor(0.4F).jumpFactor(0.3F).noOcclusion().isSuffocating((s, l, p) -> false)
+                    .isViewBlocking((s, l, p) -> false).pushReaction(PushReaction.NORMAL)));
+
+    /** Asphalt: tar that has hardened at the surface into a black, cracked crust. */
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> ASPHALT = REGISTER.register("asphalt",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(1.5F, 3.0F)
+                    .sound(SoundType.TUFF)));
+
     private static DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> potted(String name, DeferredBlock<? extends net.minecraft.world.level.block.Block> flower) {
         return REGISTER.register(name, () -> new net.minecraft.world.level.block.FlowerPotBlock(
                 () -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT, flower,

@@ -116,6 +116,8 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue CORONAS;
     public static final ModConfigSpec.BooleanValue SQUEAKY_SNOW;
     public static final ModConfigSpec.BooleanValue GOSSAMER;
+    public static final ModConfigSpec.BooleanValue SUN_PATH;
+    public static final ModConfigSpec.IntValue SUN_LATITUDE;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -346,6 +348,12 @@ public final class ClientConfig {
                 .define("squeakySnow", true);
         GOSSAMER = b.comment("On still autumn mornings, spider silk sheets the grass, glittering with dew, and threads drift on the air.")
                 .define("gossamer", true);
+        SUN_PATH = b.comment("The sun's daily path follows the seasons: low across the southern sky in winter and high in summer, with the",
+                        "moon and stars tilted to match. (Turned off while a shader pack is in use, as shader packs place the sun themselves.)")
+                .define("sunPath", true);
+        SUN_LATITUDE = b.comment("How far north of the equator the world is, in degrees, for the sun's path: at 40 the noon sun stands about",
+                        "73 degrees up at midsummer and 27 at midwinter; at 0 it passes overhead at the equinoxes.")
+                .defineInRange("sunLatitude", 40, 0, 66);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

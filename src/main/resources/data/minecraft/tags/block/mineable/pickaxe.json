@@ -28,6 +28,7 @@
     "reikos_weather:selenite",
     "reikos_weather:gas_vent",
     "reikos_weather:ochre",
-    "reikos_weather:aufeis"
+    "reikos_weather:aufeis",
+    "reikos_weather:asphalt"
   ]
 }

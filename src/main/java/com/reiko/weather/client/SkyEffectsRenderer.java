@@ -57,7 +57,9 @@ public final class SkyEffectsRenderer {
         float nlc = SkySights.noctilucent(), moonbow = SkySights.moonbow(), fogbow = SkySights.fogbow();
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
-        Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
+        // the sky tilted toward the south with the seasons (the sun's path), which the stars and planets follow too
+        skyTilt = SunPath.tilt();
+        Vector3f sun = SunPath.tiltSky(new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F), skyTilt);
         float clearSky = (1.0F - level.getRainLevel(partialTick) * (1.0F - 0.9F * ClientWeather.sunShower()))
                 * (1.0F - Math.min(1.0F, ClientWeather.fogDensity() * 1.5F));
         boolean overworld = level.dimension() == net.minecraft.world.level.Level.OVERWORLD && com.reiko.weather.network.SyncedWeather.managed();
@@ -766,8 +768,7 @@ public final class SkyEffectsRenderer {
             return;
         }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        float theta = level.getTimeOfDay(partialTick) * Mth.TWO_PI;
-        Vector3f sun = new Vector3f(-Mth.sin(theta), Mth.cos(theta), 0.0F);
+        Vector3f sun = SunPath.sun(level, partialTick);
         if (sun.y <= 0.0F) {
             return;
         }
@@ -840,8 +841,11 @@ public final class SkyEffectsRenderer {
     /** Turns a direction fixed among the stars into where it is in the sky now (the stars wheel round with the sun). */
     private static Vector3f celestial(Vector3f v, float theta) {
         float c = Mth.cos(theta), s = Mth.sin(theta);
-        return new Vector3f(v.x * c - v.y * s, v.x * s + v.y * c, v.z);
+        return SunPath.tiltSky(new Vector3f(v.x * c - v.y * s, v.x * s + v.y * c, v.z), skyTilt);
     }
+
+    /** How far the sky is tilted toward the south this frame (see {@link SunPath}). */
+    private static float skyTilt;
 
     /**
      * The Milky Way: a faint, mottled band of light right across the sky, brighter and broader toward the core,
@@ -907,7 +911,7 @@ public final class SkyEffectsRenderer {
 
     /** A point on (or {@code off} radians to the side of) the sun's path, where the sun would be at angle {@code t}. */
     private static Vector3f path(float t, float off) {
-        return new Vector3f(-Mth.sin(t) * Mth.cos(off), Mth.cos(t) * Mth.cos(off), Mth.sin(off)).mul(DOME);
+        return SunPath.tiltSky(new Vector3f(-Mth.sin(t) * Mth.cos(off), Mth.cos(t) * Mth.cos(off), Mth.sin(off)), skyTilt).mul(DOME);
     }
 
     /**
@@ -1346,7 +1350,7 @@ public final class SkyEffectsRenderer {
         boolean evening = shape[0] > 0.5F;
         float tc = theta + (evening ? -1.0F : 1.0F) * shape[1] * Mth.DEG_TO_RAD;
         float dec = shape[2] * Mth.DEG_TO_RAD;
-        Vector3f head = new Vector3f(-Mth.sin(tc) * Mth.cos(dec), Mth.cos(tc) * Mth.cos(dec), Mth.sin(dec)).normalize();
+        Vector3f head = SunPath.tiltSky(new Vector3f(-Mth.sin(tc) * Mth.cos(dec), Mth.cos(tc) * Mth.cos(dec), Mth.sin(dec)), skyTilt).normalize();
         if (head.y < -0.05F) return;
         Vector3f s = new Vector3f(sun).normalize();
         Vector3f away = new Vector3f(head).mul(head.dot(s)).sub(s);
@@ -1518,7 +1522,7 @@ public final class SkyEffectsRenderer {
         for (float[] p : planets) {
             float along = p[0] * Mth.DEG_TO_RAD;
             if (Math.abs(Mth.wrapDegrees(p[0])) < 14.0F) continue; // lost in the sun's glare
-            Vector3f dir = new Vector3f(-Mth.sin(theta + along), Mth.cos(theta + along), p[1] * Mth.DEG_TO_RAD).normalize();
+            Vector3f dir = SunPath.tiltSky(new Vector3f(-Mth.sin(theta + along), Mth.cos(theta + along), p[1] * Mth.DEG_TO_RAD), skyTilt).normalize();
             float dark = Mth.clamp((-sun.y - p[7]) * 8.0F + 1.0F, 0.0F, 1.0F);
             float alpha = strength * p[2] * dark * Mth.clamp(dir.y * 20.0F, 0.0F, 1.0F);
             if (alpha < 0.01F) continue;
@@ -1538,7 +1542,7 @@ public final class SkyEffectsRenderer {
         for (float[] p : planets) {
             if (p[2] < 0.6F || Math.abs(Mth.wrapDegrees(p[0])) < 14.0F) continue;
             float along = p[0] * Mth.DEG_TO_RAD;
-            Vector3f dir = new Vector3f(-Mth.sin(theta + along), Mth.cos(theta + along), p[1] * Mth.DEG_TO_RAD).normalize();
+            Vector3f dir = SunPath.tiltSky(new Vector3f(-Mth.sin(theta + along), Mth.cos(theta + along), p[1] * Mth.DEG_TO_RAD), skyTilt).normalize();
             float alpha = strength * p[2] * Mth.clamp((-sun.y - p[7]) * 8.0F + 1.0F, 0.0F, 1.0F) * Mth.clamp(dir.y * 20.0F, 0.0F, 1.0F);
             if (alpha < 0.01F) continue;
             Vector3f[] b = basis(dir);

@@ -1255,5 +1255,12 @@
   "block.reikos_weather.frosted_glass_pane": "Frosted Glass Pane",
   "subtitles.reikos_weather.weather.snow_squeak": "Snow squeaks",
   "advancement.reikos_weather.wind_combed": "Combed by the Wind",
-  "advancement.reikos_weather.wind_combed.desc": "Walk over sand the wind has combed into ripples"
+  "advancement.reikos_weather.wind_combed.desc": "Walk over sand the wind has combed into ripples",
+  "reikos_weather.configuration.tarPits": "Tar Pits",
+  "reikos_weather.configuration.sunPath": "The Sun's Path",
+  "reikos_weather.configuration.sunLatitude": "Latitude (for the sun's path)",
+  "block.reikos_weather.tar": "Tar",
+  "block.reikos_weather.asphalt": "Asphalt",
+  "advancement.reikos_weather.stuck_in_the_tar": "Stuck in the Tar",
+  "advancement.reikos_weather.stuck_in_the_tar.desc": "Wade into a tar pit, where the mammoths were caught"
 }
