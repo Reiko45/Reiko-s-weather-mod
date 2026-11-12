@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "reikos_weather:terracettes",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 20,
+    "separation": 7,
+    "salt": 418274093,
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 4
+    }
+  }
+}

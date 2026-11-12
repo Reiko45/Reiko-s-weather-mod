@@ -28,6 +28,7 @@ public class ReikosWeatherClient {
         modBus.addListener(ClientEvents::registerModels);
 
         NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
+        NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.SqueakySnow::onPlaySound);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onLoggingOut);
         NeoForge.EVENT_BUS.addListener(ClientEvents::onLoggingIn);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.DebugInfo::onDebugText);

@@ -56,6 +56,8 @@ neoForge {
 
         gameTestServer {
             type = "gameTestServer"
+            // its own folder: the game test server rewrites its world as a flat test world
+            gameDirectory = project.file('run/gametest')
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 

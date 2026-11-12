@@ -61,6 +61,11 @@ public final class ClientEvents {
                     p.setColor(1.0F, 1.0F, 1.0F);
                     return p;
                 });
+        // gossamer: loose threads of spider silk drifting, and sheets of it lying over the grass
+        event.registerSpriteSet(ModParticles.GOSSAMER.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.GossamerParticle(level, x, y, z, xd, yd, zd, sprites, false));
+        event.registerSpriteSet(ModParticles.GOSSAMER_SHEET.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.GossamerParticle(level, x, y, z, 0, 0, 0, sprites, true));
         // dew glinting on the grass at dawn
         event.registerSpriteSet(ModParticles.DEW.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> {
@@ -219,7 +224,7 @@ public final class ClientEvents {
 
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
         event.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 0x3F76E4,
-                ModBlocks.PUDDLE.get(), ModBlocks.RAIN_BARREL.get());
+                ModBlocks.PUDDLE.get(), ModBlocks.RAIN_BARREL.get(), ModBlocks.MELTWATER_RILL.get());
         event.register((state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageFoliageColor(level, pos)
                 : net.minecraft.world.level.FoliageColor.getDefaultColor(), ModBlocks.FALLEN_BRANCH.get());
         event.register((state, level, pos, tintIndex) -> leafPileColor(pos), ModBlocks.LEAF_PILE.get());

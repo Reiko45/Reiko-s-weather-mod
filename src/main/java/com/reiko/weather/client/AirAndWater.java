@@ -75,6 +75,31 @@ public final class AirAndWater {
             }
         }
 
+        // gossamer: on still, misty autumn mornings, millions of tiny spiders let out silk to drift on the air, and in the
+        // dew the threads and sheets of it over the grass shine silver as the sun gets up
+        boolean morning = time > 23000L || time < 3500L;
+        if (ClientConfig.GOSSAMER.get() && morning && SyncedWeather.season() == Season.AUTUMN && rain < 0.05F && wind < 0.15F
+                && ClientWeather.airTemperature() > 0.0F) {
+            for (int i = 0; i < Math.round(3 * density); i++) {
+                int x = Mth.floor(cam.x) + RANDOM.nextInt(25) - 12, z = Mth.floor(cam.z) + RANDOM.nextInt(25) - 12;
+                int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+                BlockPos ground = new BlockPos(x, y - 1, z);
+                if (!level.getBlockState(ground).is(Blocks.GRASS_BLOCK) || Math.abs(y - cam.y) > 8) continue;
+                level.addParticle(ModParticles.GOSSAMER_SHEET.get(), x + RANDOM.nextDouble(), y + 0.02 + RANDOM.nextDouble() * 0.08,
+                        z + RANDOM.nextDouble(), 0, 0, 0);
+            }
+            if (RANDOM.nextFloat() < 0.35F * density) {
+                Vec3 dir = Wind.direction(ClientWeather.windAngle());
+                double x = cam.x + (RANDOM.nextDouble() - 0.5) * 24, z = cam.z + (RANDOM.nextDouble() - 0.5) * 24;
+                int ground = level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(x), Mth.floor(z));
+                double y = ground + 0.5 + RANDOM.nextDouble() * 4.0;
+                if (Math.abs(y - cam.y) < 10) {
+                    double drift = 0.012 + wind * 0.08;
+                    level.addParticle(ModParticles.GOSSAMER.get(), x, y, z, dir.x * drift, 0.0, dir.z * drift);
+                }
+            }
+        }
+
         // pollen: dry, breezy spring days near woodland
         boolean spring = SyncedWeather.season() == Season.SPRING;
         BlockPos at = BlockPos.containing(cam);

@@ -254,5 +254,26 @@
         "attenuation_distance": 48
       }
     ]
+  },
+  "weather.snow_squeak": {
+    "subtitle": "subtitles.reikos_weather.weather.snow_squeak",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/snow_squeak1",
+        "volume": 0.9
+      },
+      {
+        "name": "reikos_weather:weather/snow_squeak2",
+        "volume": 0.9
+      },
+      {
+        "name": "reikos_weather:weather/snow_squeak3",
+        "volume": 0.9
+      },
+      {
+        "name": "reikos_weather:weather/snow_squeak4",
+        "volume": 0.9
+      }
+    ]
   }
 }

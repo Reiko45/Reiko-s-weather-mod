@@ -296,6 +296,18 @@ public final class SkyEffectsRenderer {
                 if (moonDogs > 0.01F) drawSunDogs(pose, moon, moonDogs * 0.45F);
             }
         }
+        // coronas: soft pastel rings tight round the moon (or, lost in its glare, the sun) seen through a thin veil of
+        // water-droplet cloud, waxing and waning as thicker and thinner patches drift across
+        float corona = overworld && ClientConfig.CORONAS.get()
+                ? Mth.clamp(1.0F - Math.abs(overcast - 0.6F) / 0.3F, 0.0F, 1.0F) * Mth.clamp(1.0F - ClientWeather.rain() * 8.0F, 0.0F, 1.0F)
+                        * Mth.clamp((ClientWeather.airTemperature() + 4.0F) / 6.0F, 0.0F, 1.0F) * (1.0F - halo)
+                        * (0.6F + 0.4F * Mth.sin((level.getGameTime() + partialTick) * 0.003F))
+                : 0.0F;
+        if (corona > 0.005F) {
+            Vector3f moon = new Vector3f(sun).negate();
+            if (moon.y > -0.05F) drawCorona(pose, moon, corona * 0.55F * moonlight * night * Mth.clamp((moon.y + 0.05F) * 6.0F, 0.0F, 1.0F));
+            if (sun.y > -0.05F) drawCorona(pose, sun, corona * 0.16F * Mth.clamp((sun.y + 0.05F) * 6.0F, 0.0F, 1.0F));
+        }
         if (blood > 0.005F) {
             drawBloodMoon(pose, new Vector3f(sun).negate(), blood);
         }
@@ -595,6 +607,43 @@ public final class SkyEffectsRenderer {
                     continue;
                 }
                 float a0 = alpha * bands[b][1], a1 = alpha * bands[b + 1][1];
+                vertex(buffer, pose, p00, colors[b], a0 * horizonFade(p00));
+                vertex(buffer, pose, p10, colors[b], a0 * horizonFade(p10));
+                vertex(buffer, pose, p11, colors[b + 1], a1 * horizonFade(p11));
+                vertex(buffer, pose, p01, colors[b + 1], a1 * horizonFade(p01));
+            }
+        }
+        draw(buffer);
+    }
+
+    /**
+     * A corona: light diffracted by the tiny water droplets of a thin cloud, in rings much tighter than an ice halo.
+     * A bright, bluish-white glow (the aureole) hugs the moon, edged with a brownish red, and in the best skies one or
+     * two fainter rings of pastel blue, green and red lie outside it. (Sized against Minecraft's large moon.)
+     */
+    private static void drawCorona(Matrix4f pose, Vector3f center, float alpha) {
+        if (alpha <= 0.003F) {
+            return;
+        }
+        Vector3f[] basis = basis(center);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        // {radius in degrees, brightness}, with the colour at each stop
+        float[][] stops = {{2.0F, 0.55F}, {3.6F, 0.9F}, {6.5F, 0.55F}, {8.6F, 0.35F}, {9.8F, 0.08F}, {11.2F, 0.3F}, {12.6F, 0.32F},
+                {14.0F, 0.28F}, {15.0F, 0.06F}, {16.2F, 0.16F}, {17.4F, 0.17F}, {18.6F, 0.14F}, {20.0F, 0.0F}};
+        float[][] colors = {{0.85F, 0.9F, 1.0F}, {0.9F, 0.94F, 1.0F}, {0.95F, 0.95F, 0.92F}, {0.85F, 0.55F, 0.4F}, {0.6F, 0.45F, 0.4F},
+                {0.5F, 0.65F, 1.0F}, {0.55F, 1.0F, 0.6F}, {1.0F, 0.5F, 0.55F}, {0.6F, 0.5F, 0.6F}, {0.55F, 0.7F, 1.0F}, {0.6F, 1.0F, 0.65F},
+                {1.0F, 0.55F, 0.6F}, {1.0F, 0.6F, 0.6F}};
+        int segments = 72;
+        for (int i = 0; i < segments; i++) {
+            float phi0 = i / (float) segments * Mth.TWO_PI, phi1 = (i + 1) / (float) segments * Mth.TWO_PI;
+            for (int b = 0; b < stops.length - 1; b++) {
+                float rho0 = stops[b][0] * Mth.DEG_TO_RAD, rho1 = stops[b + 1][0] * Mth.DEG_TO_RAD;
+                Vector3f p00 = ringPoint(center, basis[0], basis[1], phi0, rho0), p10 = ringPoint(center, basis[0], basis[1], phi1, rho0);
+                Vector3f p11 = ringPoint(center, basis[0], basis[1], phi1, rho1), p01 = ringPoint(center, basis[0], basis[1], phi0, rho1);
+                if (p00.y < -3.0F && p10.y < -3.0F && p11.y < -3.0F) {
+                    continue;
+                }
+                float a0 = alpha * stops[b][1], a1 = alpha * stops[b + 1][1];
                 vertex(buffer, pose, p00, colors[b], a0 * horizonFade(p00));
                 vertex(buffer, pose, p10, colors[b], a0 * horizonFade(p10));
                 vertex(buffer, pose, p11, colors[b + 1], a1 * horizonFade(p11));

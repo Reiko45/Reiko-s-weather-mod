@@ -24,6 +24,9 @@
     "reikos_weather:soft_mud",
     "reikos_weather:muddy_path",
     "reikos_weather:snow_bridge",
-    "reikos_weather:gibber"
+    "reikos_weather:gibber",
+    "reikos_weather:cryoconite",
+    "reikos_weather:rippled_sand",
+    "reikos_weather:rippled_red_sand"
   ]
 }

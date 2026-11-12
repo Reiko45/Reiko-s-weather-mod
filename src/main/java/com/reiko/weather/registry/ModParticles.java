@@ -37,6 +37,8 @@ public final class ModParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SPRAY = simple("spray");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SEA_SPARKLE = simple("sea_sparkle");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MIDGE = simple("midge");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GOSSAMER = simple("gossamer");
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> GOSSAMER_SHEET = simple("gossamer_sheet");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> MAYFLY = simple("mayfly");
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> SWALLOW = simple("swallow");
 

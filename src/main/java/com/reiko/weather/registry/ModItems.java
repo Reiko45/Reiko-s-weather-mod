@@ -150,6 +150,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> ORANGE_LICHEN = REGISTER.registerSimpleBlockItem(ModBlocks.ORANGE_LICHEN);
     public static final DeferredItem<BlockItem> BLACK_LICHEN = REGISTER.registerSimpleBlockItem(ModBlocks.BLACK_LICHEN);
     public static final DeferredItem<BlockItem> GLACIER_MOUSE = REGISTER.registerSimpleBlockItem(ModBlocks.GLACIER_MOUSE);
+    public static final DeferredItem<BlockItem> CRYOCONITE = REGISTER.registerSimpleBlockItem(ModBlocks.CRYOCONITE);
 
     private ModItems() {}
 }

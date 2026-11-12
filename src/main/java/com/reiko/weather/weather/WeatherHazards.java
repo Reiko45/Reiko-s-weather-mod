@@ -114,6 +114,7 @@ public final class WeatherHazards {
             StormWake.tickPlayer(level, player, local, climate);
             IcyWaters.tickPlayer(level, player, local, climate);
             LocalTouches.tickPlayer(level, player, local, climate);
+            ThawAndWind.tickPlayer(level, player, local, climate);
             StormSigns.tickPlayer(level, player, state, local);
             if (profile.glazeWater && WeatherConfig.GLAZE_WATER.get() && random.nextFloat() < intensity) {
                 glazeWater(level, randomColumn(level, player, random));
@@ -266,7 +267,11 @@ public final class WeatherHazards {
         }
         BlockState state = level.getBlockState(top);
         if (state.is(Blocks.SNOW) || state.is(ModBlocks.DUSTY_SNOW.get())) {
+            // in sunshine, snow goes first from slopes facing the sun and lingers in the shade
+            float sun = ThawAndWind.sun(level, top);
+            if (sun < 1.0F && level.random.nextFloat() > sun) return;
             int layers = state.getValue(SnowLayerBlock.LAYERS);
+            if (sun > 1.0F && layers > 2 && level.random.nextFloat() < sun - 1.0F) layers--;
             if (layers > 1) {
                 level.setBlockAndUpdate(top, state.setValue(SnowLayerBlock.LAYERS, layers - 1));
             } else {

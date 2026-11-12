@@ -1957,6 +1957,28 @@
    ]
   },
   {
+   "title": "Silk, Frost and Sand",
+   "icon": "minecraft:glass_pane",
+   "entries": [
+    {
+     "title": "Small Signs of the Weather",
+     "icon": "minecraft:cobweb",
+     "pages": [
+      "On still, misty autumn mornings, look for gossamer: sheets of spider silk over the grass, silver with dew, and loose threads drifting on the air. In a hard frost, below about -10°C, snow squeaks underfoot instead of crunching. On bitter nights, ferns of frost grow over windows of plain glass, and clear in the morning sun.",
+      "When the moon shines through a thin veil of cloud, look for a corona: soft pastel rings, much tighter round it than an ice halo. The wind combs dry sand into ripples running across it, and rain smooths them away."
+     ]
+    },
+    {
+     "title": "The Thaw",
+     "icon": "minecraft:snow",
+     "pages": [
+      "In a sunny thaw, snow goes first from slopes facing the sun and lingers for days on shady north-facing slopes and in the shadow of trees and cliffs. Below the melting snow, little rills of meltwater trickle down the hillsides, drying up once the snow above them has gone.",
+      "Out on the lower ice of glaciers, dark grit called cryoconite melts little round holes into the ice, while elsewhere a coat of grit shields cones of ice from the sun. Steep grassy hillsides are lined with terracettes, narrow tracks like steps, and sandy beaches are scalloped into evenly spaced cusps."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

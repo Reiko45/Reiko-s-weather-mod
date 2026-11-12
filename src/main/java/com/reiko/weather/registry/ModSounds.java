@@ -37,6 +37,8 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ICE_SHOVE = register("weather.ice_shove");
     public static final DeferredHolder<SoundEvent, SoundEvent> TREE_FALL = register("weather.tree_fall");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> SNOW_SQUEAK = register("weather.snow_squeak");
+
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return REGISTER.register(name, () -> SoundEvent.createVariableRangeEvent(ReikosWeather.id(name)));
     }

@@ -1072,6 +1072,36 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void silkFrostAndSand(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(18);
+        // frost ferns clear in mild air, and the glass is just as it was (a pane keeps its connections)
+        helper.setBlock(1, 2, 1, ModBlocks.FROSTED_GLASS.get());
+        BlockPos glass = helper.absolutePos(new BlockPos(1, 2, 1));
+        for (int i = 0; i < 400 && level.getBlockState(glass).is(ModBlocks.FROSTED_GLASS.get()); i++) level.getBlockState(glass).randomTick(level, glass, random);
+        helper.assertBlockPresent(Blocks.GLASS, new BlockPos(1, 2, 1));
+        var frostedPane = ModBlocks.FROSTED_GLASS_PANE.get().defaultBlockState().setValue(net.minecraft.world.level.block.CrossCollisionBlock.EAST, true);
+        helper.setBlock(3, 2, 1, frostedPane);
+        BlockPos pane = helper.absolutePos(new BlockPos(3, 2, 1));
+        for (int i = 0; i < 400 && level.getBlockState(pane).is(ModBlocks.FROSTED_GLASS_PANE.get()); i++) level.getBlockState(pane).randomTick(level, pane, random);
+        helper.assertTrue(level.getBlockState(pane).is(Blocks.GLASS_PANE) && level.getBlockState(pane).getValue(net.minecraft.world.level.block.CrossCollisionBlock.EAST),
+                "frosted pane thaws back to the same pane");
+        // a rill with no snow above it dries up (or glazes over in a frost)
+        helper.setBlock(5, 2, 1, ModBlocks.MELTWATER_RILL.get());
+        BlockPos rill = helper.absolutePos(new BlockPos(5, 2, 1));
+        for (int i = 0; i < 400 && level.getBlockState(rill).is(ModBlocks.MELTWATER_RILL.get()); i++) level.getBlockState(rill).randomTick(level, rill, random);
+        helper.assertTrue(!level.getBlockState(rill).is(ModBlocks.MELTWATER_RILL.get()), "a rill with no snow above it dries up");
+        // ripples run across the wind, and are made of the sand they came from
+        helper.assertTrue(com.reiko.weather.block.RippledSandBlock.crests(0.0F) == net.minecraft.core.Direction.Axis.Z
+                && com.reiko.weather.block.RippledSandBlock.crests(Mth.HALF_PI) == net.minecraft.core.Direction.Axis.X, "ripples run across the wind");
+        helper.assertTrue(ModBlocks.RIPPLED_RED_SAND.get().smooth() == Blocks.RED_SAND && ModBlocks.RIPPLED_SAND.get().smooth() == Blocks.SAND,
+                "rippled sand smooths back to its own sand");
+        helper.setBlock(7, 2, 1, ModBlocks.RIPPLED_SAND.get());
+        helper.assertBlockPresent(ModBlocks.RIPPLED_SAND.get(), new BlockPos(7, 2, 1));
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
     public static void winterGroundAndMoons(GameTestHelper helper) {
         var level = helper.getLevel();
         var random = net.minecraft.util.RandomSource.create(15);

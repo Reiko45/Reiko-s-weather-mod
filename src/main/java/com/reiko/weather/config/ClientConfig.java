@@ -113,6 +113,9 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue RARE_HALOS;
     public static final ModConfigSpec.BooleanValue SNOW_PLUMES;
     public static final ModConfigSpec.BooleanValue LAKE_WHITINGS;
+    public static final ModConfigSpec.BooleanValue CORONAS;
+    public static final ModConfigSpec.BooleanValue SQUEAKY_SNOW;
+    public static final ModConfigSpec.BooleanValue GOSSAMER;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -337,6 +340,12 @@ public final class ClientConfig {
                 .define("snowPlumes", true);
         LAKE_WHITINGS = b.comment("In hot summers, some lakes turn milky turquoise for a few weeks (a whiting).")
                 .define("lakeWhitings", true);
+        CORONAS = b.comment("Soft pastel rings close round the moon (and the sun) shining through thin cloud.")
+                .define("coronas", true);
+        SQUEAKY_SNOW = b.comment("In a hard frost (below about -10°C), snow squeaks underfoot instead of crunching.")
+                .define("squeakySnow", true);
+        GOSSAMER = b.comment("On still autumn mornings, spider silk sheets the grass, glittering with dew, and threads drift on the air.")
+                .define("gossamer", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

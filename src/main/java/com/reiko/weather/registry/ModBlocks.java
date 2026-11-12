@@ -411,6 +411,32 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.CandleIceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.1F)
                     .sound(SoundType.GLASS).noOcclusion().noCollission().randomTicks().replaceable().pushReaction(PushReaction.DESTROY).noLootTable()));
 
+    /** Cryoconite: dark, sooty grit blown onto glacier ice, which soaks up the sun and melts its way down into it. */
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> CRYOCONITE = REGISTER.register("cryoconite",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.6F)
+                    .sound(SoundType.GRAVEL)));
+
+    /** Sand combed into ripples by the wind. */
+    public static final DeferredBlock<com.reiko.weather.block.RippledSandBlock> RIPPLED_SAND = REGISTER.register("rippled_sand",
+            () -> new com.reiko.weather.block.RippledSandBlock(new net.minecraft.util.ColorRGBA(14406560),
+                    BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.SAND).randomTicks()));
+    public static final DeferredBlock<com.reiko.weather.block.RippledSandBlock> RIPPLED_RED_SAND = REGISTER.register("rippled_red_sand",
+            () -> new com.reiko.weather.block.RippledSandBlock(new net.minecraft.util.ColorRGBA(11098145),
+                    BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.RED_SAND).randomTicks()));
+
+    /** A rill of meltwater trickling down a hillside below the melting snow. */
+    public static final DeferredBlock<com.reiko.weather.block.MeltwaterRillBlock> MELTWATER_RILL = REGISTER.register("meltwater_rill",
+            () -> new com.reiko.weather.block.MeltwaterRillBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WATER).noCollission().instabreak()
+                    .sound(SoundType.EMPTY).noOcclusion().randomTicks().replaceable().pushReaction(PushReaction.DESTROY).noLootTable()));
+
+    /** Plain glass grown over with frost ferns on a bitter night. */
+    public static final DeferredBlock<com.reiko.weather.block.FrostedGlassBlock> FROSTED_GLASS = REGISTER.register("frosted_glass",
+            () -> new com.reiko.weather.block.FrostedGlassBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.GLASS)
+                    .randomTicks()));
+    public static final DeferredBlock<com.reiko.weather.block.FrostedPaneBlock> FROSTED_GLASS_PANE = REGISTER.register("frosted_glass_pane",
+            () -> new com.reiko.weather.block.FrostedPaneBlock(BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.GLASS_PANE)
+                    .randomTicks()));
+
     private static DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> potted(String name, DeferredBlock<? extends net.minecraft.world.level.block.Block> flower) {
         return REGISTER.register(name, () -> new net.minecraft.world.level.block.FlowerPotBlock(
                 () -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT, flower,

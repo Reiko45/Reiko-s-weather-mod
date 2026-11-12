@@ -40,7 +40,11 @@ import javax.annotation.Nullable;
  * the tables' pedestals melt back with the ice round them, letting their boulders down. Out on the bare, grit-dusted ice
  * of the lower tongue live herds of glacier mice: balls of moss the size of a fist, grown up round a crumb of the dust and
  * gravel that blows onto the ice, which roll over now and then as the ice they shade stands up under them, and creep
- * across the glacier together.
+ * across the glacier together. The same dark grit, cryoconite, soaks up the sun: a thin scatter of it warms the ice under
+ * it and melts its way straight down, so that the bare ice is pitted with clusters of little round holes, each brimming
+ * with clear meltwater over a layer of black grit at its bottom; but where the grit has been heaped thick, it shields the
+ * ice under it from the sun instead, and as the surface melts down all round it is left standing as a dirt cone, a cone
+ * of ice under a skin of gravel and grit.
  *
  * @param icefall    where along the glacier its icefall is ({@link #NO_ICEFALL} if it hasn't one, as on glaciers from
  *                   before there were any)
@@ -55,9 +59,11 @@ import javax.annotation.Nullable;
  *                   there were any, nor while snow bridges are turned off)
  * @param mice       whether herds of glacier mice live on its lower tongue (not on glaciers from before there were any, nor
  *                   while glacier mice are turned off)
+ * @param grit       whether its bare ice has cryoconite holes and dirt cones (not on glaciers from before there were any, nor
+ *                   while they're turned off)
  */
 public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
-                      boolean lakes, int[] meltwater, boolean ogives, boolean bridges, boolean mice, long seed) implements Landform {
+                      boolean lakes, int[] meltwater, boolean ogives, boolean bridges, boolean mice, boolean grit, long seed) implements Landform {
     public static final int NO_ICEFALL = Integer.MIN_VALUE;
     /** The most a table's pedestal stands above the ice round it before it melts down with it. */
     private static final int PEDESTAL = 5;
@@ -81,6 +87,11 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
     public Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
                    boolean lakes, int[] meltwater, boolean ogives, boolean bridges, long seed) {
         this(cx, cz, angle, length, width, thickness, icefall, moulins, tables, lakes, meltwater, ogives, bridges, false, seed);
+    }
+
+    public Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
+                   boolean lakes, int[] meltwater, boolean ogives, boolean bridges, boolean mice, long seed) {
+        this(cx, cz, angle, length, width, thickness, icefall, moulins, tables, lakes, meltwater, ogives, bridges, mice, false, seed);
     }
 
     @Nullable
@@ -124,14 +135,17 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         boolean bridges = !WeatherConfig.SPEC.isLoaded() || WeatherConfig.SNOW_BRIDGES.get();
         // glacier mice on most, unless they're turned off (and likewise on while the config is still loading)
         boolean mice = (!WeatherConfig.SPEC.isLoaded() || WeatherConfig.GLACIER_MICE.get()) && Terrain.hash(seed, 400) < 0.8F;
-        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, true, glacier.planMeltwater(c), ogives, bridges, mice, seed);
+        // cryoconite holes and dirt cones on most, just the same
+        boolean grit = (!WeatherConfig.SPEC.isLoaded() || WeatherConfig.GLACIER_GRIT.get()) && Terrain.hash(seed, 500) < 0.8F;
+        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, true, glacier.planMeltwater(c), ogives, bridges, mice, grit,
+                seed);
     }
 
     static Landform load(CompoundTag tag) {
         return new Glacier(tag.getInt("x"), tag.getInt("z"), tag.getFloat("angle"), tag.getInt("length"), tag.getInt("width"),
                 tag.getInt("thick"), tag.contains("icefall") ? tag.getInt("icefall") : NO_ICEFALL, tag.getBoolean("moulins"), tag.getBoolean("tables"),
                 tag.getBoolean("lakes"), tag.getIntArray("meltwater"), tag.getBoolean("ogives"), tag.getBoolean("bridges"), tag.getBoolean("mice"),
-                tag.getLong("seed"));
+                tag.getBoolean("grit"), tag.getLong("seed"));
     }
 
     @Override
@@ -151,6 +165,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         tag.putBoolean("ogives", ogives);
         tag.putBoolean("bridges", bridges);
         tag.putBoolean("mice", mice);
+        tag.putBoolean("grit", grit);
         tag.putLong("seed", seed);
         return tag;
     }
@@ -607,6 +622,238 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         return true;
     }
 
+    /**
+     * Whether a column is whole, bare ice out of the way of everything else on the glacier, as a glacier mouse sits on,
+     * but thick, and clear of the snout: the wall round a cryoconite hole may be any such; {@code under} a hole, or a dirt
+     * cone, the ice must also be clear of the ogive bands and the ice cave.
+     */
+    private boolean gritIce(int x, int z, int[][] shafts, int[][] tabled, boolean under) {
+        if (!bareIce(x, z, shafts, tabled) || thicknessAt(x + 0.5, z + 0.5) < 2.5F) return false;
+        float[] l = local(x + 0.5, z + 0.5);
+        if (l[0] >= length / 2.0F - 4.0F) return false;
+        if (!under) return true;
+        float o = ogive(l[0], l[1], x, z);
+        return o > -0.55F && o < 0.6F && caveDistance(l[0], l[1]) > 4.5F;
+    }
+
+    /**
+     * Spots about {@code step} apart (each jittered a little) all over the glacier below the snow line, {x, z} for each, in
+     * an order shuffled by {@code salt}: places to look for room for something, so as to find it wherever there is any.
+     */
+    private java.util.List<int[]> spots(long salt, float step) {
+        java.util.List<int[]> out = new java.util.ArrayList<>();
+        double c = Mth.cos(angle), s = Mth.sin(angle);
+        int across = Mth.ceil(width / 2.0F / step);
+        for (int i = 0; i * step < length / 2.0F; i++) {
+            for (int j = -across; j <= across; j++) {
+                long cell = salt + i * 7919L + j * 104729L;
+                float u = (i + Terrain.hash(cell, 1)) * step, v = (j + Terrain.hash(cell, 2) - 0.5F) * step;
+                if (Math.abs(v) > halfWidth(u)) continue;
+                out.add(new int[]{Mth.floor(cx + u * c - v * s), Mth.floor(cz + u * s + v * c), (int) (Terrain.hash(cell, 3) * (1 << 24))});
+            }
+        }
+        out.sort((a, b) -> Integer.compare(a[2], b[2]));
+        return out;
+    }
+
+    /** Whether any of {@code points} (each {x, z, ...}) lies in the box from (x0, z0) to (x1, z1). */
+    private static boolean anyIn(int[][] points, int x0, int z0, int x1, int z1) {
+        for (int[] p : points) {
+            if (p[0] >= x0 && p[0] <= x1 && p[1] >= z0 && p[1] <= z1) return true;
+        }
+        return false;
+    }
+
+    /**
+     * The cryoconite holes, {x, z, size, depth, full} for each (x and z its corner): four to eight clusters of a few to a
+     * dozen or so, out on the bare ice below the snow line, each hole 1 or 2 blocks across and 1 to 3 deep, with grit at the
+     * bottom and water standing in it to the brim (full 1) or a block short of it. Each keeps a wall of whole ice round it,
+     * clear of the other holes, the glacier mice and everything else on the ice, and lies wholly in one chunk with its
+     * wall, so it's built all at once.
+     */
+    int[][] holeList() {
+        if (!grit) return new int[0][];
+        int[][] shafts = moulinList(), tabled = tableList(), herds = mouseList();
+        java.util.List<int[]> list = new java.util.ArrayList<>();
+        java.util.List<float[]> middles = new java.util.ArrayList<>();
+        int clusters = 4 + Math.round(Terrain.hash(seed, 600) * 4.0F), k = 0;
+        for (int[] spot : spots(seed + 601, 5.0F)) {
+            if (middles.size() >= clusters) break;
+            long hs = seed + 15485863L * ++k;
+            float mx = spot[0] + 0.5F, mz = spot[1] + 0.5F;
+            boolean apart = gritIce(spot[0], spot[1], shafts, tabled, true);
+            for (float[] m : middles) apart &= Mth.length(mx - m[0], mz - m[1]) > 10.0F;
+            if (!apart) continue;
+            int want = 5 + (int) (Terrain.hash(hs, 3) * 10.0F), got = 0;
+            float spread = 2.0F + 0.6F * Mth.sqrt(want);
+            for (int m = 0; m < want * 5 && got < want; m++) {
+                float a = Terrain.hash(hs, 10 + m) * Mth.TWO_PI, r = spread * Mth.sqrt(Terrain.hash(hs, 300 + m));
+                int x = Mth.floor(mx + Mth.cos(a) * r), z = Mth.floor(mz + Mth.sin(a) * r);
+                int size = Terrain.hash(hs, 600 + m) < 0.3F ? 2 : 1, depth = 1 + Math.min(2, (int) (Terrain.hash(hs, 900 + m) * 3.0F));
+                // (the hole and its wall in one chunk)
+                if (Math.floorMod(x - 1, 16) > 14 - size || Math.floorMod(z - 1, 16) > 14 - size) continue;
+                boolean ok = !anyIn(herds, x - 1, z - 1, x + size, z + size);
+                for (int[] o : list) ok &= x + size < o[0] || o[0] + o[2] < x || z + size < o[1] || o[1] + o[2] < z;
+                for (int dx = -1; dx <= size && ok; dx++) {
+                    for (int dz = -1; dz <= size && ok; dz++) {
+                        boolean in = dx >= 0 && dz >= 0 && dx < size && dz < size;
+                        ok = gritIce(x + dx, z + dz, shafts, tabled, in) && (!in || thicknessAt(x + dx + 0.5, z + dz + 0.5) >= depth + 2.0F);
+                    }
+                }
+                if (!ok) continue;
+                list.add(new int[]{x, z, size, depth, depth == 1 || Terrain.hash(hs, 1200 + m) < 0.5F ? 1 : 0});
+                got++;
+            }
+            if (got > 0) middles.add(new float[]{mx, mz});
+        }
+        return list.toArray(new int[0][]);
+    }
+
+    /** Whether a column is in a cryoconite hole or the wall of ice round it. */
+    private static boolean inHole(int[][] holes, int x, int z) {
+        for (int[] h : holes) {
+            if (x >= h[0] - 1 && x <= h[0] + h[2] && z >= h[1] - 1 && z <= h[1] + h[2]) return true;
+        }
+        return false;
+    }
+
+    /**
+     * The dirt cones, {x, z, height} for each (x and z its middle): three to eight of them, here and there on the bare ice
+     * below the snow line, each a stepped cone of ice 2 to 4 blocks high under a skin of grit, with more of the grit lying
+     * round its foot (where that's on bare ice too). Each keeps clear of the cryoconite holes, the glacier mice and
+     * everything else on the ice, and lies wholly in one chunk with the grit round it, so it's built all at once.
+     */
+    int[][] coneList() {
+        if (!grit) return new int[0][];
+        int[][] shafts = moulinList(), tabled = tableList(), herds = mouseList(), holes = holeList();
+        java.util.List<int[]> list = new java.util.ArrayList<>();
+        int n = 3 + Math.round(Terrain.hash(seed, 700) * 5.0F);
+        for (int[] spot : spots(seed + 701, 2.5F)) {
+            if (list.size() >= n) break;
+            int x = spot[0], z = spot[1];
+            float pick = spot[2] / (float) (1 << 24);
+            // (the centre first: most spots fail there; a cone stands up out of the ice, so the ogive bands don't matter to it)
+            if (!gritIce(x, z, shafts, tabled, false)) continue;
+            // (a smaller one, where there isn't room for it)
+            for (int height = pick < 0.5F ? 2 : pick < 0.85F ? 3 : 4; height >= 2; height--) {
+                int r = height;
+                // (the cone and the grit round its foot in one chunk)
+                if (Math.floorMod(x - r, 16) > 15 - 2 * r || Math.floorMod(z - r, 16) > 15 - 2 * r) continue;
+                boolean ok = !anyIn(herds, x - r, z - r, x + r, z + r);
+                for (int[] h : holes) ok &= h[0] + h[2] < x - r || h[0] - 1 > x + r || h[1] + h[2] < z - r || h[1] - 1 > z + r;
+                for (int[] o : list) ok &= Math.abs(o[0] - x) > o[2] + r + 1 || Math.abs(o[1] - z) > o[2] + r + 1;
+                for (int dx = -r; dx <= r && ok; dx++) {
+                    // (all of it on whole, thick ice)
+                    for (int dz = -r; dz <= r && ok; dz++) ok = coneStep(dx, dz, height) == 0 || gritIce(x + dx, z + dz, shafts, tabled, false);
+                }
+                if (ok) {
+                    list.add(new int[]{x, z, height});
+                    break;
+                }
+            }
+        }
+        return list.toArray(new int[0][]);
+    }
+
+    /** How far a dirt cone {@code height} high stands over its base (dx, dz) from its middle: 0 beyond its foot. */
+    private static int coneStep(int dx, int dz, int height) {
+        return Math.max(0, height - Mth.floor(Mth.sqrt(dx * dx + dz * dz) + 0.3F));
+    }
+
+    /**
+     * The ground and the top of the ice to come, {ground, top} in turn, in each column of the box {@code size} across from
+     * (x0, z0), if it's in this chunk (null if not); the top is {@link Integer#MIN_VALUE} where water stands over the ice.
+     */
+    @Nullable
+    private int[] boxTops(WorldGenLevel level, BlockPos.MutableBlockPos pos, BoundingBox area, int x0, int z0, int size) {
+        if (!Terrain.column(area, x0, z0)) return null;
+        int[] out = new int[size * size * 2];
+        for (int dx = 0; dx < size; dx++) {
+            for (int dz = 0; dz < size; dz++) {
+                int x = x0 + dx, z = z0 + dz, ground = Terrain.ground(level, pos, x, z), top = ground + Math.round(thicknessAt(x + 0.5, z + 0.5));
+                out[(dx * size + dz) * 2] = ground;
+                out[(dx * size + dz) * 2 + 1] = Terrain.surface(level, pos, x, ground, z) > top ? Integer.MIN_VALUE : top;
+            }
+        }
+        return out;
+    }
+
+    /**
+     * A cryoconite hole (its box's ground and tops as {@link #boxTops} gives them): a layer of grit at the bottom, and water
+     * over it up to the lowest of the ice round it (or a block short), sealed in by ice on every side and below.
+     */
+    private void hole(WorldGenLevel level, BlockPos.MutableBlockPos pos, int[] hole, int[] tops) {
+        int size = hole[2], s = size + 2, brim = Integer.MAX_VALUE;
+        for (int dx = 0; dx < s; dx++) {
+            for (int dz = 0; dz < s; dz++) {
+                // (the corners of the wall hold nothing in)
+                if ((dx == 0 || dx == s - 1) && (dz == 0 || dz == s - 1)) continue;
+                int top = tops[(dx * s + dz) * 2 + 1];
+                if (top == Integer.MIN_VALUE) return;
+                brim = Math.min(brim, top);
+            }
+        }
+        // (with clean ice under the grit: shallower where the ice under it is thin, on sloping ground)
+        int depth = hole[3];
+        for (int dx = 1; dx <= size; dx++) {
+            for (int dz = 1; dz <= size; dz++) depth = Math.min(depth, brim - 2 - tops[(dx * s + dz) * 2]);
+        }
+        if (depth < 1) return;
+        int floor = brim - depth, water = depth == 1 ? brim : brim - 1 + hole[4];
+        // (and ice, or sound rock, all round the water)
+        for (int dx = 0; dx < s; dx++) {
+            for (int dz = 0; dz < s; dz++) {
+                int x = hole[0] - 1 + dx, z = hole[1] - 1 + dz;
+                if (dx >= 1 && dz >= 1 && dx <= size && dz <= size || (dx == 0 || dx == s - 1) && (dz == 0 || dz == s - 1)) continue;
+                for (int h = floor + 1; h <= water; h++) {
+                    BlockState wall = level.getBlockState(pos.set(x, h, z));
+                    if (!wall.blocksMotion() && wall.getFluidState().isEmpty()) return;
+                }
+            }
+        }
+        for (int dx = 1; dx <= size; dx++) {
+            for (int dz = 1; dz <= size; dz++) {
+                int x = hole[0] - 1 + dx, z = hole[1] - 1 + dz;
+                Terrain.set(level, pos, x, floor, z, ModBlocks.CRYOCONITE.get().defaultBlockState());
+                for (int h = floor + 1; h <= tops[(dx * s + dz) * 2 + 1]; h++) {
+                    Terrain.set(level, pos, x, h, z, h <= water ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
+    }
+
+    /**
+     * A dirt cone (its box's ground and tops as {@link #boxTops} gives them): a stepped cone of ice standing over the highest
+     * of the ice under it, each step topped with grit, and more of the grit slid off it and lying round its foot.
+     */
+    private void cone(WorldGenLevel level, BlockPos.MutableBlockPos pos, int[] cone, int[] tops, int[][] shafts, int[][] tabled) {
+        int height = cone[2], r = height, s = 2 * r + 1, base = Integer.MIN_VALUE;
+        for (int i = 1; i < tops.length; i += 2) {
+            if (tops[i] == Integer.MIN_VALUE) return;
+        }
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                if (coneStep(dx, dz, height) > 0) base = Math.max(base, tops[((dx + r) * s + dz + r) * 2 + 1]);
+            }
+        }
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                int x = cone[0] + dx, z = cone[1] + dz, top = tops[((dx + r) * s + dz + r) * 2 + 1], step = coneStep(dx, dz, height);
+                if (step > 0) {
+                    for (int h = top + 1; h < base + step; h++) Terrain.set(level, pos, x, h, z, Blocks.PACKED_ICE.defaultBlockState());
+                    Terrain.set(level, pos, x, base + step, z, grit(x, base + step, z));
+                } else if (Terrain.noise(seed + 41, x, 0, z) < 0.45F && gritIce(x, z, shafts, tabled, true)) {
+                    Terrain.set(level, pos, x, top, z, grit(x, top, z));
+                }
+            }
+        }
+    }
+
+    /** The grit on a dirt cone: mostly fine, sooty cryoconite, with patches of gravel. */
+    private BlockState grit(int x, int y, int z) {
+        return Terrain.noise(seed + 40, x, y, z) < 0.3F ? Blocks.GRAVEL.defaultBlockState() : ModBlocks.CRYOCONITE.get().defaultBlockState();
+    }
+
     /** Whether a block is a full block of ice, as a glacier mouse sits on. */
     private static boolean mouseIce(BlockState state) {
         return state.is(Blocks.ICE) || state.is(Blocks.PACKED_ICE) || state.is(Blocks.BLUE_ICE);
@@ -734,6 +981,12 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         boolean[] hidden = bridged();
         it.unimi.dsi.fastutil.longs.LongOpenHashSet herds = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
         for (int[] m : mouseList()) herds.add(BlockPos.asLong(m[0], 0, m[1]));
+        // the cryoconite holes and dirt cones in this chunk, and the ground and the top of the ice in each of their columns
+        // (as for the tables)
+        int[][] holes = holeList(), cones = coneList();
+        int[][] holeTops = new int[holes.length][], coneTops = new int[cones.length][];
+        for (int k = 0; k < holes.length; k++) holeTops[k] = boxTops(level, pos, area, holes[k][0] - 1, holes[k][1] - 1, holes[k][2] + 2);
+        for (int k = 0; k < cones.length; k++) coneTops[k] = boxTops(level, pos, area, cones[k][0] - cones[k][2], cones[k][1] - cones[k][2], 2 * cones[k][2] + 1);
         // the glacier tables in this chunk, and the top of the ice in each of their columns (from the ground as it is now)
         int[][] tabled = tableList();
         int[][] tops = new int[tabled.length][];
@@ -839,6 +1092,12 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         }
         for (int k = 0; k < tabled.length; k++) {
             if (tops[k] != null) table(level, pos, tabled[k], tops[k]);
+        }
+        for (int k = 0; k < holes.length; k++) {
+            if (holeTops[k] != null) hole(level, pos, holes[k], holeTops[k]);
+        }
+        for (int k = 0; k < cones.length; k++) {
+            if (coneTops[k] != null) cone(level, pos, cones[k], coneTops[k], shafts, tabled);
         }
         // the meltwater's startling blue, lake by lake
         for (int i = 0; i < (meltwater.length == 0 ? 0 : meltwater[0]); i++) {
@@ -961,13 +1220,15 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         // summer: the lower end melts back, and meltwater runs off it
         RandomSource random = level.random;
         float half = length / 2.0F;
+        int[][] holes = holeList();
         for (int i = 0; i < 6; i++) {
             float u = half - random.nextFloat() * length * 0.25F, v = (random.nextFloat() * 2.0F - 1.0F) * halfWidth(u);
             double c = Mth.cos(angle), s = Mth.sin(angle);
             int x = Mth.floor(cx + u * c - v * s), z = Mth.floor(cz + u * s + v * c);
             BlockPos column = new BlockPos(x, 0, z);
-            // (the ice holding in a meltwater lake or channel is left be: melting it would let the water out)
-            if (!level.isLoaded(column) || meltAt(x, z)[0] > 0) continue;
+            // (the ice holding in a meltwater lake or channel, or the water in a cryoconite hole, is left be: melting it would
+            // let the water out)
+            if (!level.isLoaded(column) || meltAt(x, z)[0] > 0 || inHole(holes, x, z)) continue;
             meltDown(level, column, random, u > half - length * 0.08F);
         }
         if (tables) settleTable(level);

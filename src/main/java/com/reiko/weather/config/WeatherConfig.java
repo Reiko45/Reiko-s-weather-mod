@@ -274,6 +274,10 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue FROST_CRACKS;
     public static final ModConfigSpec.BooleanValue CANDLE_ICE;
     public static final ModConfigSpec.BooleanValue FAULT_SCARPS;
+    public static final ModConfigSpec.BooleanValue SHADY_SNOW;
+    public static final ModConfigSpec.BooleanValue MELTWATER_RILLS;
+    public static final ModConfigSpec.BooleanValue SAND_RIPPLES;
+    public static final ModConfigSpec.BooleanValue WINDOW_FROST;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -350,6 +354,9 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue QUAKING_BOGS;
     public static final ModConfigSpec.BooleanValue DESERT_PAVEMENTS;
     public static final ModConfigSpec.BooleanValue GLACIER_MICE;
+    public static final ModConfigSpec.BooleanValue TERRACETTES;
+    public static final ModConfigSpec.BooleanValue BEACH_CUSPS;
+    public static final ModConfigSpec.BooleanValue GLACIER_GRIT;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -760,6 +767,17 @@ public final class WeatherConfig {
         FAULT_SCARPS = b.comment("A big earthquake can tear a fresh crack across the land, the ground heaved up along one side.",
                         "Only on natural ground, away from anything built; needs mobGriefing.")
                 .define("faultScarps", true);
+        SHADY_SNOW = b.comment("In a sunny thaw, snow melts first off slopes facing the sun (south) and lingers on shady north-facing",
+                        "slopes and in the shadow of trees and cliffs.")
+                .define("shadySnow", true);
+        MELTWATER_RILLS = b.comment("In a fast thaw, little streams of meltwater trickle down the hillsides below the melting snow,",
+                        "drying up once the snow above them has gone.")
+                .define("meltwaterRills", true);
+        SAND_RIPPLES = b.comment("The wind combs dry desert and beach sand into ripples running across it; rain smooths them away.")
+                .define("sandRipples", true);
+        WINDOW_FROST = b.comment("On bitter nights, ferns of frost grow over windows of plain glass, and clear when it warms up.",
+                        "The glass always turns back into the same glass block or pane.")
+                .define("windowFrost", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -1122,6 +1140,13 @@ public final class WeatherConfig {
                 .define("desertPavements", true);
         GLACIER_MICE = b.comment("Glacier mice: balls of moss slowly rolling over the lower ice of glaciers.")
                 .define("glacierMice", true);
+        TERRACETTES = b.comment("Terracettes: narrow, step-like tracks running along steep grassy hillsides.")
+                .define("terracettes", true);
+        BEACH_CUSPS = b.comment("Beach cusps: evenly spaced crescent scallops along the edge of sandy beaches.")
+                .define("beachCusps", true);
+        GLACIER_GRIT = b.comment("Cryoconite holes and dirt cones: dark grit on glacier ice that melts little round holes into it,",
+                        "or shields cones of ice from the sun.")
+                .define("glacierGrit", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

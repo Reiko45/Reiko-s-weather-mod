@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "reikos_weather:block/rippled_sand"
+    },
+    "axis=z": {
+      "model": "reikos_weather:block/rippled_sand",
+      "y": 90
+    }
+  }
+}

@@ -358,6 +358,14 @@ Ways to stay comfortable:
   trees **split with a crack** like a gunshot. In the spring thaw, lake ice rots into **candle ice** that the wind
   piles ashore, tinkling.
 - **Lake whitings:** late in a hot summer, some lakes turn milky turquoise for a few weeks.
+- **The thaw:** in a sunny thaw, snow goes first from slopes facing the sun (south) and lingers on shady north-facing
+  slopes and in the shadow of trees and cliffs; below the melting snow, **meltwater rills** trickle down the hillsides,
+  drying up once the snow above has gone (and freezing to a glaze on frosty nights).
+- **Small signs:** on still autumn mornings, **gossamer** (sheets of spider silk over the grass, silver with dew, and
+  threads drifting on the air); in a hard frost, snow **squeaks** underfoot instead of crunching; on bitter nights,
+  **frost ferns** grow over windows of plain glass (between open sky and a roof) and clear when it warms up, always
+  turning back into the same glass; and the wind combs dry sand into **ripples** running across it, which rain smooths
+  away.
 - **Foxfire and sun cups:** fallen logs in wet woods glow faint green at night with **foxfire**, and in summer sun
   high snowfields melt into a pitted surface of **sun cups**.
 - **Supermoons:** every fifth full moon is a supermoon, noticeably bigger and brighter, and its king tide washes a
@@ -443,6 +451,8 @@ Ways to stay comfortable:
 - **Hail fog:** after a hailstorm, a low fog lies over the drifts of hail until they melt.
 - **Rare halos and snow plumes:** on the best halo days, the parhelic circle (a white ring round the whole sky at the
   sun's height) and the faint 46-degree halo; on windy winter days, snow streams off the summits in long plumes.
+- **Coronas:** soft pastel rings tight round the moon (and, lost in its glare, the sun) shining through a thin veil of
+  cloud.
 - **Moon dogs and volcanic twilight:** bright spots either side of a bright moon on icy nights; and for a couple of
   weeks after a big eruption, purple twilights and a pale ring round the sun.
 
@@ -614,6 +624,9 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
 - **Stone, ice and shore:** **desert pavements** (gibber plains of dark, wind-polished pebbles, with wind-carved
   **ventifacts**); **glacier mice**, balls of moss creeping over the lower ice of glaciers; and rocky shores banded
   with **black and orange lichen** above the waterline.
+- **Silk, frost and sand:** **terracettes**, narrow step-like tracks running along steep grassy hillsides; **beach
+  cusps**, evenly spaced crescent scallops along the edge of sandy beaches; and on the lower ice of glaciers,
+  **cryoconite holes** melted into the ice by dark grit, and **dirt cones** of ice shielded from the sun by a coat of it.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -739,7 +752,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 103 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 104 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -749,7 +762,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
 Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
-A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water, Gone With the Wind, Gibber Plain, Glacier Mouse, Foxfire and Ice Chimes.
+A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water, Gone With the Wind, Gibber Plain, Glacier Mouse, Foxfire, Ice Chimes and Combed by the Wind.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at
@@ -866,7 +879,7 @@ Requires JDK 21.
 ./gradlew runServer      # launch a dev server
 ./gradlew runClient -PwithCompat   # with JEI, Jade, Curios, Tough As Nails, Serene Seasons and Distant Horizons
 ./gradlew runClient -PwithWthit    # with WTHIT (instead of comparing against Jade)
-./gradlew runGameTestServer        # run the automated in-game tests
+./gradlew runGameTestServer        # run the automated in-game tests (in their own folder, run/gametest)
 ```
 
 To check the visuals with shader packs, put the Sodium and Iris jars in `run/client/mods/` (Sodium

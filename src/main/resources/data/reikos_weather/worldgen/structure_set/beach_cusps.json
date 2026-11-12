@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "reikos_weather:beach_cusps",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 18,
+    "separation": 7,
+    "salt": 527130981,
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 4
+    }
+  }
+}

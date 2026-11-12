@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "reikos_weather:block/rippled_red_sand_top",
+    "bottom": "minecraft:block/red_sand",
+    "side": "minecraft:block/red_sand"
+  }
+}

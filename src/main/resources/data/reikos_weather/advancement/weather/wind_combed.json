@@ -1,0 +1,41 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:sand"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.wind_combed"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.wind_combed.desc"
+    },
+    "frame": "task",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "walk": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "stepping_on": {
+                "block": {
+                  "blocks": [
+                    "reikos_weather:rippled_sand",
+                    "reikos_weather:rippled_red_sand"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

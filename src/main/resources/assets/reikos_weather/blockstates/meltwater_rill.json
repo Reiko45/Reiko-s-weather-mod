@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=south": {
+      "model": "reikos_weather:block/meltwater_rill"
+    },
+    "facing=west": {
+      "model": "reikos_weather:block/meltwater_rill",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "reikos_weather:block/meltwater_rill",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "reikos_weather:block/meltwater_rill",
+      "y": 270
+    }
+  }
+}

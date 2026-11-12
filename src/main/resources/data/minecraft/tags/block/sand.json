@@ -5,6 +5,8 @@
     "reikos_weather:gypsum_sand",
     "reikos_weather:shell_sand",
     "reikos_weather:olivine_sand",
-    "reikos_weather:pink_sand"
+    "reikos_weather:pink_sand",
+    "reikos_weather:rippled_sand",
+    "reikos_weather:rippled_red_sand"
   ]
 }
