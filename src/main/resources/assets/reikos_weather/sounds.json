@@ -245,5 +245,14 @@
         "attenuation_distance": 48
       }
     ]
+  },
+  "weather.frost_crack": {
+    "subtitle": "subtitles.reikos_weather.weather.frost_crack",
+    "sounds": [
+      {
+        "name": "reikos_weather:weather/frost_crack",
+        "attenuation_distance": 48
+      }
+    ]
   }
 }

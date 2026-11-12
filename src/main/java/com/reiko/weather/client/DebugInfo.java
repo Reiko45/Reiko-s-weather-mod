@@ -40,6 +40,9 @@ public final class DebugInfo {
                     com.reiko.weather.weather.Supermoons.strength(mc.level)));
             event.getLeft().add(String.format(java.util.Locale.ROOT, "[Reiko's Weather] castellanus %.2f volcanic haze %.2f storm coming %.2f",
                     Castellanus.strength(), SkyTints.volcanicHaze(), Swallows.approach()));
+            event.getRight().add(String.format(java.util.Locale.ROOT, "[Reiko's Weather] snow plumes %.2f (%d peaks%s) whiting %.2f%s fog %.2f",
+                    SnowPlumes.strength(), SnowPlumes.peaks(), SnowPlumes.first(), LakeWhitings.strength(),
+                    LakeWhitings.hardWater(mc.player.getBlockX(), mc.player.getBlockZ()) ? " (hard water)" : "", ClientWeather.fogDensity()));
         }
     }
 

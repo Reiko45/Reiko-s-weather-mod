@@ -126,7 +126,10 @@ public final class WeatherReport {
         Climate climate = Climate.at(level, pos);
         LocalWeather raw = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5);
         Microclimate.Info info = Microclimate.at(level, pos.getX(), pos.getZ(), state.windAngle);
-        if (Microclimate.foehn(info, raw.profile()) > 0.3F) {
+        float bora = Microclimate.bora(level, info, raw.profile(), state.windAngle);
+        if (bora > 0.3F) {
+            lines.add(Component.translatable("report.reikos_weather.bora").withStyle(ChatFormatting.AQUA));
+        } else if (Microclimate.foehn(info, raw.profile()) > 0.3F) {
             lines.add(Component.translatable("report.reikos_weather.foehn").withStyle(ChatFormatting.GOLD));
         }
         if (Microclimate.frostHollow(level, info, raw.profile()) > 0.3F) {

@@ -1935,6 +1935,28 @@
    ]
   },
   {
+   "title": "Hard Winters and Hot Summers",
+   "icon": "minecraft:snow_block",
+   "entries": [
+    {
+     "title": "Winter Wind and Ice",
+     "icon": "minecraft:spruce_leaves",
+     "pages": [
+      "In winter, on coasts below mountains, bitterly cold air can spill over the range and plunge down to the sea in violent, icy gusts: a bora, the cold cousin of the föhn. On windy winter days, snow streams off the mountain tops in long white plumes.",
+      "On high, cold ridges, freezing fog and snow plaster the spruces into white, lumpy snow ghosts, which thaw back to green in spring. In a hard frost at night, trees split with a crack like a gunshot. In the spring thaw, lake ice falls apart into long candles that the wind piles ashore, tinkling like wind chimes."
+     ]
+    },
+    {
+     "title": "Halos, Whitings and Faults",
+     "icon": "minecraft:glass_pane",
+     "pages": [
+      "On the very best halo days, look for the parhelic circle, a thin white ring running right round the sky at the sun's height, and the faint, wide 46-degree halo.",
+      "Late in a hot summer, some lakes turn a milky turquoise for a few weeks as lime comes out of the water: a whiting. A big earthquake can tear a fresh crack across the land, the ground heaved up along one side of it."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

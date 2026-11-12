@@ -110,6 +110,9 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue CASTELLANUS;
     public static final ModConfigSpec.BooleanValue VOLCANIC_TWILIGHT;
     public static final ModConfigSpec.BooleanValue SWALLOWS;
+    public static final ModConfigSpec.BooleanValue RARE_HALOS;
+    public static final ModConfigSpec.BooleanValue SNOW_PLUMES;
+    public static final ModConfigSpec.BooleanValue LAKE_WHITINGS;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -328,6 +331,12 @@ public final class ClientConfig {
                 .define("volcanicTwilight", true);
         SWALLOWS = b.comment("Swallows skim low over the fields before a storm.")
                 .define("swallows", true);
+        RARE_HALOS = b.comment("On the best halo days, the parhelic circle round the whole sky and the faint 46-degree halo.")
+                .define("rareHalos", true);
+        SNOW_PLUMES = b.comment("On windy winter days, snow streams off the mountain tops in long white plumes.")
+                .define("snowPlumes", true);
+        LAKE_WHITINGS = b.comment("In hot summers, some lakes turn milky turquoise for a few weeks (a whiting).")
+                .define("lakeWhitings", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

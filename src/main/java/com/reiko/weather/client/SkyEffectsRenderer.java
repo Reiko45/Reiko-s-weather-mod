@@ -278,6 +278,12 @@ public final class SkyEffectsRenderer {
             Vector3f moon = new Vector3f(sun).negate();
             if (sun.y > -0.05F) {
                 drawHalo(pose, sun, halo * 0.22F * Mth.clamp((sun.y + 0.05F) * 6.0F, 0.0F, 1.0F));
+                // on the very best halo days, the rarer ones: the parhelic circle and the faint 46-degree halo
+                float rare = ClientConfig.RARE_HALOS.get() ? Mth.clamp((halo - 0.55F) / 0.3F, 0.0F, 1.0F) * Mth.clamp((sun.y - 0.02F) * 8.0F, 0.0F, 1.0F) : 0.0F;
+                if (rare > 0.01F) {
+                    drawWideHalo(pose, sun, rare * 0.1F);
+                    if (sun.y < 0.8F) drawParhelicCircle(pose, sun, rare * 0.16F);
+                }
                 if (sun.y < 0.6F) {
                     float dogs = halo * Mth.clamp((0.6F - sun.y) * 4.0F, 0.0F, 1.0F) * Mth.clamp((sun.y + 0.05F) * 8.0F, 0.0F, 1.0F);
                     drawSunDogs(pose, sun, dogs);
@@ -596,6 +602,62 @@ public final class SkyEffectsRenderer {
             }
         }
         draw(buffer);
+    }
+
+    /** The 46-degree halo: twice as wide as the common one, much fainter, and only in the best ice-crystal skies. */
+    private static void drawWideHalo(Matrix4f pose, Vector3f center, float alpha) {
+        Vector3f[] basis = basis(center);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        float[][] bands = {{44.6F, 0.0F}, {45.8F, 1.0F}, {47.0F, 0.6F}, {49.5F, 0.0F}};
+        float[][] colors = {{1.0F, 0.62F, 0.45F}, {1.0F, 0.86F, 0.74F}, {0.9F, 0.93F, 1.0F}, {0.85F, 0.9F, 1.0F}};
+        int segments = 128;
+        for (int i = 0; i < segments; i++) {
+            float phi0 = i / (float) segments * Mth.TWO_PI, phi1 = (i + 1) / (float) segments * Mth.TWO_PI;
+            for (int b = 0; b < bands.length - 1; b++) {
+                float rho0 = bands[b][0] * Mth.DEG_TO_RAD, rho1 = bands[b + 1][0] * Mth.DEG_TO_RAD;
+                Vector3f p00 = ringPoint(center, basis[0], basis[1], phi0, rho0), p10 = ringPoint(center, basis[0], basis[1], phi1, rho0);
+                Vector3f p11 = ringPoint(center, basis[0], basis[1], phi1, rho1), p01 = ringPoint(center, basis[0], basis[1], phi0, rho1);
+                if (p00.y < -3.0F && p10.y < -3.0F && p11.y < -3.0F) continue;
+                float a0 = alpha * bands[b][1], a1 = alpha * bands[b + 1][1];
+                vertex(buffer, pose, p00, colors[b], a0 * horizonFade(p00));
+                vertex(buffer, pose, p10, colors[b], a0 * horizonFade(p10));
+                vertex(buffer, pose, p11, colors[b + 1], a1 * horizonFade(p11));
+                vertex(buffer, pose, p01, colors[b + 1], a1 * horizonFade(p01));
+            }
+        }
+        draw(buffer);
+    }
+
+    /**
+     * The parhelic circle: a thin white ring running right round the sky at the sun's height, through the sun and the
+     * sun dogs, made by sunlight glinting off the vertical faces of plate-shaped ice crystals.
+     */
+    private static void drawParhelicCircle(Matrix4f pose, Vector3f sun, float alpha) {
+        float elevation = (float) Math.asin(Mth.clamp(sun.y, -1.0F, 1.0F));
+        float sunAz = (float) Mth.atan2(sun.x, -sun.z);
+        float half = 0.45F * Mth.DEG_TO_RAD;
+        float[] white = {1.0F, 1.0F, 1.0F};
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        int steps = 180;
+        for (int i = 0; i < steps; i++) {
+            float a0 = i * Mth.TWO_PI / steps, a1 = (i + 1) * Mth.TWO_PI / steps;
+            // brightest near the sun and the sun dogs, fading to a ghost of itself round the far side (and gappy)
+            float k0 = ring(a0 - sunAz), k1 = ring(a1 - sunAz);
+            vertexSky(buffer, pose, a0, elevation - half, white, 0.0F);
+            vertexSky(buffer, pose, a1, elevation - half, white, 0.0F);
+            vertexSky(buffer, pose, a1, elevation, white, alpha * k1);
+            vertexSky(buffer, pose, a0, elevation, white, alpha * k0);
+            vertexSky(buffer, pose, a0, elevation, white, alpha * k0);
+            vertexSky(buffer, pose, a1, elevation, white, alpha * k1);
+            vertexSky(buffer, pose, a1, elevation + half, white, 0.0F);
+            vertexSky(buffer, pose, a0, elevation + half, white, 0.0F);
+        }
+        draw(buffer);
+    }
+
+    private static float ring(float fromSun) {
+        float c = Mth.cos(fromSun);
+        return Mth.clamp(0.35F + 0.45F * c * c + 0.25F * Mth.sin(fromSun * 7.0F + 1.3F), 0.1F, 1.0F);
     }
 
     /** Two bright, rainbow-edged spots level with a low sun, one on each side of it. */

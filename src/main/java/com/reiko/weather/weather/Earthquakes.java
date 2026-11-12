@@ -89,6 +89,7 @@ public final class Earthquakes {
         double reach = 200 + 700 * magnitude;
         int ticks = 60 + Math.round(140 * magnitude);
         boolean griefing = level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+        boolean torn = false; // (one rupture per quake)
         for (ServerPlayer player : level.players()) {
             double d = Math.sqrt(player.distanceToSqr(x, player.getY(), z));
             if (d > reach) continue;
@@ -100,6 +101,10 @@ public final class Earthquakes {
                 WeatherAdvancements.award(player, "shaken");
             }
             if (griefing && felt > 0.3F) shakeLoose(level, player, felt, random);
+            if (main && !torn && felt > 0.55F) {
+                FaultScarps.rupture(level, player, felt, random);
+                torn = true;
+            }
             if (griefing && felt > 0.35F && WeatherConfig.LIQUEFACTION.get()) liquefy(level, player, felt, random);
         }
         boolean underSea = level.getBiome(BlockPos.containing(x, level.getSeaLevel(), z)).is(BiomeTags.IS_OCEAN);

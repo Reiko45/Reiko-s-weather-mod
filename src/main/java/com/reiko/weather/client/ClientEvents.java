@@ -261,6 +261,7 @@ public final class ClientEvents {
             CloudWaterfalls.collect(event.getCamera(), partialTick);
             Scud.collect(event.getCamera(), partialTick);
             Castellanus.collect(event.getCamera(), partialTick);
+            SnowPlumes.collect(event.getCamera(), partialTick);
             StormSkies.collect(event.getCamera(), partialTick);
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
@@ -317,6 +318,8 @@ public final class ClientEvents {
         Scud.tick(mc);
         HailFog.tick(mc);
         Castellanus.tick(mc);
+        SnowPlumes.tick(mc);
+        LakeWhitings.tick(mc);
         Swallows.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
@@ -375,6 +378,8 @@ public final class ClientEvents {
         Scud.reset();
         HailFog.reset();
         Castellanus.reset();
+        SnowPlumes.reset();
+        LakeWhitings.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();

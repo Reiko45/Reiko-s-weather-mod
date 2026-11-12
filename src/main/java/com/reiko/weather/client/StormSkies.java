@@ -60,7 +60,7 @@ public final class StormSkies {
                 float windAngle = SyncedWeather.windAngle();
                 var info = Microclimate.at(level, Mth.floor(cam.x), Mth.floor(cam.z), windAngle);
                 var profile = CustomWeathers.backgroundProfile(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), ClientWeather.climate());
-                foehnTarget = info == Microclimate.Info.NONE ? 0.0F : Microclimate.foehn(info, profile);
+                foehnTarget = info == Microclimate.Info.NONE || Microclimate.bora(level, info, profile, windAngle) > 0.0F ? 0.0F : Microclimate.foehn(info, profile);
                 // the arch lies over the mountains, upwind
                 chinookAngle = (float) Math.atan2(-Mth.cos(windAngle), Mth.sin(windAngle));
             }

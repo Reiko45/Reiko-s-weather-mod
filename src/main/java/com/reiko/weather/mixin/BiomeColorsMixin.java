@@ -16,6 +16,11 @@ public abstract class BiomeColorsMixin {
         return SeasonalColors.grass(color, pos);
     }
 
+    @ModifyReturnValue(method = "getAverageWaterColor", at = @At("RETURN"))
+    private static int reikos_weather$whiting(int color, @Local(argsOnly = true) BlockPos pos) {
+        return com.reiko.weather.client.LakeWhitings.water(color, pos);
+    }
+
     @ModifyReturnValue(method = "getAverageFoliageColor", at = @At("RETURN"))
     private static int reikos_weather$seasonLeaves(int color, @Local(argsOnly = true) BlockPos pos) {
         return SeasonalColors.foliage(color, pos);

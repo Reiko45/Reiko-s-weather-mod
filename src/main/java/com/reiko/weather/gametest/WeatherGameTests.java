@@ -1036,6 +1036,42 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void hardWintersAndFaults(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var random = net.minecraft.util.RandomSource.create(17);
+        // candle ice melts away in mild air, and snow ghosts thaw back to green spruce (keeping whether they were placed)
+        helper.setBlock(1, 2, 1, ModBlocks.CANDLE_ICE.get());
+        BlockPos candles = helper.absolutePos(new BlockPos(1, 2, 1));
+        for (int i = 0; i < 400 && level.getBlockState(candles).is(ModBlocks.CANDLE_ICE.get()); i++) level.getBlockState(candles).randomTick(level, candles, random);
+        helper.assertBlockPresent(Blocks.AIR, new BlockPos(1, 2, 1));
+        var spruce = Blocks.SPRUCE_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+        helper.setBlock(3, 2, 1, com.reiko.weather.block.SnowGhostLeavesBlock.plastered(ModBlocks.SNOW_GHOST_LEAVES.get(), spruce));
+        BlockPos ghost = helper.absolutePos(new BlockPos(3, 2, 1));
+        level.getBlockState(ghost).randomTick(level, ghost, random);
+        helper.assertTrue(level.getBlockState(ghost).is(Blocks.SPRUCE_LEAVES) && level.getBlockState(ghost).getValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT),
+                "a snow ghost thaws back to the spruce it was");
+        // a bora needs the sea downwind, mountains upwind and winter
+        var gale = com.reiko.weather.weather.WeatherProfiles.get(com.reiko.weather.weather.WeatherType.WINDY, com.reiko.weather.weather.Climate.TEMPERATE);
+        var coast = new com.reiko.weather.weather.Microclimate.Info(0, 0, 0.9F, 0, 0.0F, 0, 0.3F);
+        var inland = new com.reiko.weather.weather.Microclimate.Info(0, 0, 0.9F, 0, Float.NaN, 0, 0.3F);
+        boolean winter = com.reiko.weather.weather.WeatherManager.seasonInfo().season() == com.reiko.weather.weather.Season.WINTER;
+        if (com.reiko.weather.config.WeatherConfig.BORA.get() && gale.wind > 0.4F) {
+            helper.assertTrue((com.reiko.weather.weather.Microclimate.bora(level, coast, gale, 0.0F) > 0.0F) == winter, "a bora blows out to sea in winter only");
+        }
+        helper.assertTrue(com.reiko.weather.weather.Microclimate.bora(level, inland, gale, 0.0F) == 0.0F, "no bora away from the sea");
+        helper.assertTrue(com.reiko.weather.weather.Microclimate.bora(level, coast, gale, Mth.PI) == 0.0F, "no bora blowing in off the sea");
+        // a fault tears open across the rock: a crack along the line, the ground heaved up beside it
+        // (the test arena has a barrier roof, which would stand in for the ground: open it over the line)
+        for (BlockPos p : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(0, 2, 2)), helper.absolutePos(new BlockPos(8, 12, 9)))) {
+            if (level.getBlockState(p).is(Blocks.BARRIER)) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
+        }
+        int changed = com.reiko.weather.weather.FaultScarps.tear(level, helper.absolutePos(new BlockPos(1, 0, 4)), 0.0F, 5, random);
+        BlockPos probe = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, helper.absolutePos(new BlockPos(5, 0, 4)));
+        helper.assertTrue(changed > 0, "the fault tears the ground (top " + helper.relativePos(probe) + " " + level.getBlockState(probe.below()) + ")");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
     public static void winterGroundAndMoons(GameTestHelper helper) {
         var level = helper.getLevel();
         var random = net.minecraft.util.RandomSource.create(15);

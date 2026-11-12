@@ -79,6 +79,20 @@ public final class LocalTouches {
             // honey fungus in the old logs of a wet wood
             foxfire(level, player, random);
         }
+        if ((WeatherConfig.SNOW_GHOSTS.get() || WeatherConfig.FROST_CRACKS.get() || WeatherConfig.CANDLE_ICE.get()) && random.nextInt(2) == 0) {
+            float air = Temperature.ambient(level, player.blockPosition(), local);
+            // on a high, cold ridge in freezing fog or snow, rime and snow plaster the conifers white
+            if (WeatherConfig.SNOW_GHOSTS.get() && air < -6.0F && (p.fog > 0.2F || p.snowLayers > 0 || p.rain > 0.2F)
+                    && player.getBlockY() > level.getSeaLevel() + 40) {
+                for (int i = 0; i < 3; i++) snowGhost(level, column(level, player, random), random);
+            }
+            // in a hard frost at night, the sap freezes and a trunk splits with a crack like a gunshot
+            if (WeatherConfig.FROST_CRACKS.get() && air < -12.0F && night && random.nextInt(400) == 0) frostCrack(level, player, random);
+            // in the spring thaw, rotten lake ice falls apart into candles, and the wind piles them ashore
+            if (WeatherConfig.CANDLE_ICE.get() && season == Season.SPRING && air > 1.0F && p.wind > 0.15F) {
+                for (int i = 0; i < 3; i++) candleIce(level, column(level, player, random));
+            }
+        }
         if (WeatherConfig.SUN_CUPS.get() && season == Season.SUMMER && level.isDay() && p.rain < 0.05F && random.nextInt(3) == 0
                 && Temperature.ambient(level, player.blockPosition(), local) > -4.0F) {
             sunCups(level, column(level, player, random));
@@ -332,6 +346,83 @@ public final class LocalTouches {
         BlockPos below = at.below();
         if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)) return;
         level.setBlockAndUpdate(at, Blocks.SNOW.defaultBlockState().setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, target));
+    }
+
+    /** A snow ghost: rime and snow building up over a conifer on a cold ridge until it's buried in white. */
+    private static void snowGhost(ServerLevel level, @Nullable BlockPos top, RandomSource random) {
+        if (top == null || top.getY() < level.getSeaLevel() + 40) return;
+        BlockPos at = top.below();
+        if (level.getBlockState(top).is(Blocks.SNOW)) at = top.below();
+        else if (!level.getBlockState(at).is(Blocks.SPRUCE_LEAVES)) at = top;
+        if (!level.getBlockState(at).is(Blocks.SPRUCE_LEAVES)) return;
+        // the crown first, and the plaster spreads down and round the tree from there
+        plaster(level, at);
+        for (int i = 0; i < 6; i++) {
+            BlockPos n = at.offset(random.nextInt(5) - 2, -random.nextInt(4), random.nextInt(5) - 2);
+            plaster(level, n);
+        }
+    }
+
+    private static void plaster(ServerLevel level, BlockPos pos) {
+        BlockState s = level.getBlockState(pos);
+        if (s.is(Blocks.SPRUCE_LEAVES)) {
+            level.setBlock(pos, com.reiko.weather.block.SnowGhostLeavesBlock.plastered(ModBlocks.SNOW_GHOST_LEAVES.get(), s), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    /** A frost crack: a tree trunk round about splits in the cold, with a report like a rifle shot. */
+    private static void frostCrack(ServerLevel level, ServerPlayer player, RandomSource random) {
+        for (int i = 0; i < 32; i++) {
+            int x = player.getBlockX() + random.nextInt(41) - 20, z = player.getBlockZ() + random.nextInt(41) - 20;
+            BlockPos column = new BlockPos(x, 0, z);
+            if (!level.isLoaded(column)) continue;
+            BlockPos ground = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
+            BlockPos trunk = ground.above(1 + random.nextInt(2));
+            BlockState log = level.getBlockState(trunk);
+            if (!log.is(BlockTags.LOGS) || !log.hasProperty(RotatedPillarBlock.AXIS) || log.getValue(RotatedPillarBlock.AXIS) != Direction.Axis.Y) {
+                // the heightmap stops on top of the trunk when there are no leaves over it: look down the column instead
+                trunk = ground.below(1 + random.nextInt(2));
+                log = level.getBlockState(trunk);
+                if (!log.is(BlockTags.LOGS) || !log.hasProperty(RotatedPillarBlock.AXIS) || log.getValue(RotatedPillarBlock.AXIS) != Direction.Axis.Y) continue;
+            }
+            level.playSound(null, trunk, com.reiko.weather.registry.ModSounds.FROST_CRACK.get(), net.minecraft.sounds.SoundSource.AMBIENT,
+                    2.0F, 0.85F + random.nextFloat() * 0.3F);
+            level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK, log),
+                    trunk.getX() + 0.5, trunk.getY() + 0.5, trunk.getZ() + 0.5, 10, 0.3, 0.6, 0.3, 0.05);
+            return;
+        }
+    }
+
+    /** Candle ice blown ashore from a thawing lake. */
+    private static void candleIce(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null) return;
+        BlockPos ice = top.below();
+        if (!level.getBlockState(ice).is(Blocks.ICE) || !level.getFluidState(ice.below()).is(FluidTags.WATER)) return;
+        var biome = level.getBiome(ice);
+        if (biome.is(BiomeTags.IS_OCEAN) || biome.is(BiomeTags.IS_DEEP_OCEAN)) return;
+        for (Direction d : Direction.Plane.HORIZONTAL) {
+            BlockPos shore = ice.relative(d), on = shore.above();
+            BlockState s = level.getBlockState(shore);
+            if (!s.isFaceSturdy(level, shore, Direction.UP) || !level.getFluidState(shore).isEmpty() || s.is(Blocks.ICE)) continue;
+            if (!heapable(level, on)) continue;
+            // a heap a few blocks long along the shore
+            level.setBlockAndUpdate(on, ModBlocks.CANDLE_ICE.get().defaultBlockState());
+            for (Direction side : new Direction[]{d.getClockWise(), d.getCounterClockWise()}) {
+                BlockPos n = on.relative(side);
+                if (heapable(level, n) && level.getBlockState(n.below()).isFaceSturdy(level, n.below(), Direction.UP)
+                        && level.getFluidState(n.below()).isEmpty()) {
+                    level.setBlockAndUpdate(n, ModBlocks.CANDLE_ICE.get().defaultBlockState());
+                }
+            }
+            return;
+        }
+    }
+
+    /** Whether candle ice can heap up here: open air, snow, or the grass and such that grows along a shore. */
+    private static boolean heapable(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        return (state.isAir() || state.is(Blocks.SNOW) || state.canBeReplaced()) && state.getFluidState().isEmpty()
+                && !state.is(ModBlocks.CANDLE_ICE.get());
     }
 
     /** Whether a spot is just inside a cave mouth, where a cool draught blows out on a hot day. */

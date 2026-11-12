@@ -269,6 +269,11 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue FOXFIRE;
     public static final ModConfigSpec.BooleanValue SUN_CUPS;
     public static final ModConfigSpec.BooleanValue COASTAL_LICHEN;
+    public static final ModConfigSpec.BooleanValue BORA;
+    public static final ModConfigSpec.BooleanValue SNOW_GHOSTS;
+    public static final ModConfigSpec.BooleanValue FROST_CRACKS;
+    public static final ModConfigSpec.BooleanValue CANDLE_ICE;
+    public static final ModConfigSpec.BooleanValue FAULT_SCARPS;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -744,6 +749,17 @@ public final class WeatherConfig {
                 .define("sunCups", true);
         COASTAL_LICHEN = b.comment("Rocky shores are banded with black and orange lichen above the waterline (new chunks only).")
                 .define("coastalLichen", true);
+        BORA = b.comment("In winter, on coasts below mountains, icy gusts pour down the slopes to the sea: a bora (the cold cousin of the föhn).")
+                .define("bora", true);
+        SNOW_GHOSTS = b.comment("On high, cold ridges in winter, rime and snow plaster the conifers into white shapes (snow ghosts) until the thaw.")
+                .define("snowGhosts", true);
+        FROST_CRACKS = b.comment("In a hard freeze at night, tree trunks split with a crack like a gunshot.")
+                .define("frostCracks", true);
+        CANDLE_ICE = b.comment("In the spring thaw, lake ice rots into long crystals that the wind piles ashore, tinkling.")
+                .define("candleIce", true);
+        FAULT_SCARPS = b.comment("A big earthquake can tear a fresh crack across the land, the ground heaved up along one side.",
+                        "Only on natural ground, away from anything built; needs mobGriefing.")
+                .define("faultScarps", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();

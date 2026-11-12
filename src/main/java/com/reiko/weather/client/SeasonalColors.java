@@ -101,6 +101,11 @@ public final class SeasonalColors {
         }
     }
 
+    /** Asks for the chunks to be redrawn soon (for colours that changed, such as a lake's whiting). */
+    static void requestRebuild() {
+        rebuildPending = true;
+    }
+
     /** Autumn leaves letting go of the trees around the player. */
     private static void spawnFallingLeaves(Minecraft mc, float amount) {
         if (!ClientConfig.FALLING_LEAVES.get() || mc.player == null) {

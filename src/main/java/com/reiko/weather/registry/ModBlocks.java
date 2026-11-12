@@ -400,6 +400,17 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.GlacierMouseBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.1F)
                     .sound(SoundType.MOSS).noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY)));
 
+    /** A snow ghost's needles: spruce plastered white with rime and snow. */
+    public static final DeferredBlock<com.reiko.weather.block.SnowGhostLeavesBlock> SNOW_GHOST_LEAVES = REGISTER.register("snow_ghost_leaves",
+            () -> new com.reiko.weather.block.SnowGhostLeavesBlock(BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.2F)
+                    .randomTicks().sound(SoundType.SNOW).noOcclusion().isValidSpawn((s, l, p, e) -> false).isSuffocating((s, l, p) -> false)
+                    .isViewBlocking((s, l, p) -> false).ignitedByLava().pushReaction(PushReaction.DESTROY).isRedstoneConductor((s, l, p) -> false)));
+
+    /** Candle ice washed up on a lake shore in the spring thaw. */
+    public static final DeferredBlock<com.reiko.weather.block.CandleIceBlock> CANDLE_ICE = REGISTER.register("candle_ice",
+            () -> new com.reiko.weather.block.CandleIceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).strength(0.1F)
+                    .sound(SoundType.GLASS).noOcclusion().noCollission().randomTicks().replaceable().pushReaction(PushReaction.DESTROY).noLootTable()));
+
     private static DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> potted(String name, DeferredBlock<? extends net.minecraft.world.level.block.Block> flower) {
         return REGISTER.register(name, () -> new net.minecraft.world.level.block.FlowerPotBlock(
                 () -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT, flower,

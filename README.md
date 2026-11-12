@@ -350,7 +350,14 @@ Ways to stay comfortable:
 - **Old weather signs:** on summer mornings, turreted **castles in the sky** (altocumulus castellanus) warn that the
   afternoon will turn thundery; as a storm comes on, **swallows** skim low over the fields and livestock bunch
   together.
-- **Aftershocks:** a big earthquake is followed by smaller aftershocks over the next few days.
+- **Aftershocks and fault scarps:** a big earthquake is followed by smaller aftershocks over the next few days, and
+  can tear a fresh crack across the land with the ground heaved up along one side (natural ground only, away from
+  anything built; needs `mobGriefing`).
+- **Hard winters:** in winter, on coasts below mountains, a **bora** pours icy gusts down to the sea; on high, cold
+  ridges rime and snow plaster the spruces into white **snow ghosts** until the thaw; and in a hard frost at night,
+  trees **split with a crack** like a gunshot. In the spring thaw, lake ice rots into **candle ice** that the wind
+  piles ashore, tinkling.
+- **Lake whitings:** late in a hot summer, some lakes turn milky turquoise for a few weeks.
 - **Foxfire and sun cups:** fallen logs in wet woods glow faint green at night with **foxfire**, and in summer sun
   high snowfields melt into a pitted surface of **sun cups**.
 - **Supermoons:** every fifth full moon is a supermoon, noticeably bigger and brighter, and its king tide washes a
@@ -434,6 +441,8 @@ Ways to stay comfortable:
   then the rippled rows of a mackerel sky, then a thin milky veil that puts a halo round the sun.
 - **Scud:** ragged shreds of low cloud race along under a storm's dark base.
 - **Hail fog:** after a hailstorm, a low fog lies over the drifts of hail until they melt.
+- **Rare halos and snow plumes:** on the best halo days, the parhelic circle (a white ring round the whole sky at the
+  sun's height) and the faint 46-degree halo; on windy winter days, snow streams off the summits in long plumes.
 - **Moon dogs and volcanic twilight:** bright spots either side of a bright moon on icy nights; and for a couple of
   weeks after a big eruption, purple twilights and a pale ring round the sun.
 
@@ -730,7 +739,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 102 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 103 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -740,7 +749,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
 Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
-A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water, Gone With the Wind, Gibber Plain, Glacier Mouse and Foxfire.
+A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water, Gone With the Wind, Gibber Plain, Glacier Mouse, Foxfire and Ice Chimes.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

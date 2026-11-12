@@ -1222,5 +1222,19 @@
   "jei.reikos_weather.foxfire": "The threads of a honey fungus in a damp, rotting log, glowing a faint cold green. It spreads over fallen logs in wet woods and fades as they dry. Needs Silk Touch.",
   "jei.reikos_weather.orange_lichen": "Bright orange crust lichen, in a band along rocky shores above the reach of the waves.",
   "jei.reikos_weather.black_lichen": "Black tar lichen, staining rocky shores just above the waterline like spilt paint.",
-  "jei.reikos_weather.glacier_mouse": "A ball of moss living on the bare ice of a glacier, slowly rolling over as it grows. Herds of them creep across the ice together."
+  "jei.reikos_weather.glacier_mouse": "A ball of moss living on the bare ice of a glacier, slowly rolling over as it grows. Herds of them creep across the ice together.",
+  "reikos_weather.configuration.bora": "Bora",
+  "reikos_weather.configuration.snowGhosts": "Snow Ghosts",
+  "reikos_weather.configuration.frostCracks": "Frost Cracks",
+  "reikos_weather.configuration.candleIce": "Candle Ice",
+  "reikos_weather.configuration.faultScarps": "Fault Scarps",
+  "reikos_weather.configuration.rareHalos": "Rare Halos",
+  "reikos_weather.configuration.snowPlumes": "Snow Plumes",
+  "reikos_weather.configuration.lakeWhitings": "Lake Whitings",
+  "block.reikos_weather.snow_ghost_leaves": "Snow Ghost Needles",
+  "block.reikos_weather.candle_ice": "Candle Ice",
+  "subtitles.reikos_weather.weather.frost_crack": "Tree cracks in the frost",
+  "report.reikos_weather.bora": "A bora: icy gusts pouring down off the mountains to the sea",
+  "advancement.reikos_weather.ice_chimes": "Ice Chimes",
+  "advancement.reikos_weather.ice_chimes.desc": "Wade through the candle ice on a thawing lake shore"
 }
