@@ -1070,6 +1070,71 @@ public class WeatherGameTests {
     }
 
     @GameTest(template = PLATFORM)
+    public static void oldSignsAndShores(GameTestHelper helper) {
+        var level = helper.getLevel();
+        // thundery days are the same answer every time, about half of summer days (three in four in the tropics)
+        int thundery = 0, tropical = 0;
+        for (long day = 0; day < 2000; day++) {
+            helper.assertTrue(com.reiko.weather.weather.Convection.thunderyDay(day, false) == com.reiko.weather.weather.Convection.thunderyDay(day, false), "the same answer twice");
+            if (com.reiko.weather.weather.Convection.thunderyDay(day, false)) thundery++;
+            if (com.reiko.weather.weather.Convection.thunderyDay(day, true)) tropical++;
+        }
+        helper.assertTrue(thundery > 850 && thundery < 1150, "about half of days are thundery (" + thundery + ")");
+        helper.assertTrue(tropical > thundery, "more thundery days in the tropics");
+        // a big quake leaves aftershocks to come
+        if (com.reiko.weather.config.WeatherConfig.AFTERSHOCKS.get()) {
+            int before = com.reiko.weather.weather.Earthquakes.pendingAftershocks();
+            BlockPos far = helper.absolutePos(new BlockPos(1, 1, 1)).offset(5000, 0, 5000);
+            com.reiko.weather.weather.Earthquakes.quake(level, far.getX(), far.getZ(), 0.8F);
+            helper.assertTrue(com.reiko.weather.weather.Earthquakes.pendingAftershocks() > before, "aftershocks follow a big quake");
+        }
+        // foxfire only on a log; lichen only on a face of rock; a glacier mouse only on something firm
+        helper.setBlock(1, 1, 3, Blocks.OAK_LOG.defaultBlockState().setValue(net.minecraft.world.level.block.RotatedPillarBlock.AXIS, net.minecraft.core.Direction.Axis.X));
+        helper.assertTrue(ModBlocks.FOXFIRE.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(1, 2, 3))), "foxfire on a log");
+        helper.assertFalse(ModBlocks.FOXFIRE.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(3, 2, 3))), "no foxfire on bare ground");
+        helper.setBlock(5, 2, 3, Blocks.STONE);
+        var lichen = ModBlocks.ORANGE_LICHEN.get().defaultBlockState().setValue(net.minecraft.world.level.block.MultifaceBlock.getFaceProperty(net.minecraft.core.Direction.WEST), true);
+        helper.assertTrue(lichen.canSurvive(level, helper.absolutePos(new BlockPos(6, 2, 3))), "lichen on the face of a rock");
+        helper.assertFalse(lichen.canSurvive(level, helper.absolutePos(new BlockPos(7, 2, 3))), "no lichen hanging in the air");
+        helper.assertTrue(ModBlocks.GLACIER_MOUSE.get().defaultBlockState().canSurvive(level, helper.absolutePos(new BlockPos(5, 3, 3))), "a glacier mouse on a firm top");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
+    public static void pavementsAndMice(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int s = level.getSeaLevel();
+        java.util.function.BiFunction<com.reiko.weather.landform.LandformKind, java.util.function.IntBinaryOperator, com.reiko.weather.landform.Landform> plan = (kind, ground) -> {
+            for (int i = 0; i < 80; i++) {
+                int x = Math.floorMod(i * 37, 400) - 200, z = Math.floorMod(i * 53, 400) - 200;
+                var planned = kind.plan(new com.reiko.weather.landform.PlanContext(net.minecraft.util.RandomSource.create(i + 1), x, z, ground, s, level));
+                if (planned != null) return planned;
+            }
+            return null;
+        };
+        // a desert pavement on flat, dry ground; never on a mountainside or out at sea
+        var kind = com.reiko.weather.landform.LandformKind.DESERT_PAVEMENT;
+        var pavement = plan.apply(kind, (x, z) -> s + 7 + (int) Math.round(3 * Math.sin(x * 0.05) * Math.cos(z * 0.043) + 2 * Math.sin((x + z) * 0.11)));
+        helper.assertTrue(pavement != null, "a desert pavement on flat ground");
+        helper.assertTrue(kind.load(pavement.save()).bounds().equals(pavement.bounds()), "a desert pavement saves and loads");
+        helper.assertTrue(pavement.bounds().getXSpan() < 256 && pavement.bounds().getZSpan() < 256, "a desert pavement stays within its reach");
+        helper.assertTrue(plan.apply(kind, (x, z) -> s - 15 + (int) Math.round(2 * Math.sin(x * 0.05) * Math.cos(z * 0.04))) == null, "no desert pavement at sea");
+        helper.assertTrue(plan.apply(kind, (x, z) -> s + 37 + (int) Math.round(0.9 * Math.abs(Math.floorMod(x, 160) - 80) + 3 * Math.sin(z * 0.05))) == null,
+                "no desert pavement on a mountainside");
+        // most new glaciers carry glacier mice, and keep them through a save
+        boolean mice = false;
+        for (int k = 0; k < 8 && !mice; k++) {
+            int shift = k * 41;
+            var glacier = plan.apply(com.reiko.weather.landform.LandformKind.GLACIER, (x, z) -> s + 60 + (int) Math.round(-0.1 * x
+                    - 9 * Math.floor((x + shift) / 55.0) + 3 * Math.sin(z * 0.04)));
+            mice = glacier instanceof com.reiko.weather.landform.Glacier g && g.mice()
+                    && com.reiko.weather.landform.LandformKind.GLACIER.load(glacier.save()) instanceof com.reiko.weather.landform.Glacier g2 && g2.mice();
+        }
+        helper.assertTrue(mice, "glaciers have glacier mice");
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM)
     public static void mudIceAndSpells(GameTestHelper helper) {
         var level = helper.getLevel();
         var random = net.minecraft.util.RandomSource.create(17);

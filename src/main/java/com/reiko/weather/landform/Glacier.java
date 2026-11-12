@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -36,7 +37,10 @@ import javax.annotation.Nullable;
  * meltwater gathers in hollows of the ice as supraglacial lakes, startlingly blue against the white (clean ice under clear
  * water shows off the deep blue of the water itself), and runs into them along little channels it has melted down into
  * the surface. In summer the lower end melts back a little, meltwater runs off it, and pours roaring down the moulins, and
- * the tables' pedestals melt back with the ice round them, letting their boulders down.
+ * the tables' pedestals melt back with the ice round them, letting their boulders down. Out on the bare, grit-dusted ice
+ * of the lower tongue live herds of glacier mice: balls of moss the size of a fist, grown up round a crumb of the dust and
+ * gravel that blows onto the ice, which roll over now and then as the ice they shade stands up under them, and creep
+ * across the glacier together.
  *
  * @param icefall    where along the glacier its icefall is ({@link #NO_ICEFALL} if it hasn't one, as on glaciers from
  *                   before there were any)
@@ -49,9 +53,11 @@ import javax.annotation.Nullable;
  * @param ogives     whether the tongue below its icefall is banded with ogives (not on glaciers from before there were any)
  * @param bridges    whether some of the crevasses up in the snow are hidden under snow bridges (not on glaciers from before
  *                   there were any, nor while snow bridges are turned off)
+ * @param mice       whether herds of glacier mice live on its lower tongue (not on glaciers from before there were any, nor
+ *                   while glacier mice are turned off)
  */
 public record Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
-                      boolean lakes, int[] meltwater, boolean ogives, boolean bridges, long seed) implements Landform {
+                      boolean lakes, int[] meltwater, boolean ogives, boolean bridges, boolean mice, long seed) implements Landform {
     public static final int NO_ICEFALL = Integer.MIN_VALUE;
     /** The most a table's pedestal stands above the ice round it before it melts down with it. */
     private static final int PEDESTAL = 5;
@@ -70,6 +76,11 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
     public Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
                    boolean lakes, int[] meltwater, long seed) {
         this(cx, cz, angle, length, width, thickness, icefall, moulins, tables, lakes, meltwater, false, false, seed);
+    }
+
+    public Glacier(int cx, int cz, float angle, int length, int width, int thickness, int icefall, boolean moulins, boolean tables,
+                   boolean lakes, int[] meltwater, boolean ogives, boolean bridges, long seed) {
+        this(cx, cz, angle, length, width, thickness, icefall, moulins, tables, lakes, meltwater, ogives, bridges, false, seed);
     }
 
     @Nullable
@@ -111,13 +122,16 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         // (they're on while the config is still loading, during world creation)
         boolean ogives = icefall != NO_ICEFALL && icefall < length * 0.3F;
         boolean bridges = !WeatherConfig.SPEC.isLoaded() || WeatherConfig.SNOW_BRIDGES.get();
-        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, true, glacier.planMeltwater(c), ogives, bridges, seed);
+        // glacier mice on most, unless they're turned off (and likewise on while the config is still loading)
+        boolean mice = (!WeatherConfig.SPEC.isLoaded() || WeatherConfig.GLACIER_MICE.get()) && Terrain.hash(seed, 400) < 0.8F;
+        return new Glacier(c.x(), c.z(), best, length, width, thickness, icefall, true, true, true, glacier.planMeltwater(c), ogives, bridges, mice, seed);
     }
 
     static Landform load(CompoundTag tag) {
         return new Glacier(tag.getInt("x"), tag.getInt("z"), tag.getFloat("angle"), tag.getInt("length"), tag.getInt("width"),
                 tag.getInt("thick"), tag.contains("icefall") ? tag.getInt("icefall") : NO_ICEFALL, tag.getBoolean("moulins"), tag.getBoolean("tables"),
-                tag.getBoolean("lakes"), tag.getIntArray("meltwater"), tag.getBoolean("ogives"), tag.getBoolean("bridges"), tag.getLong("seed"));
+                tag.getBoolean("lakes"), tag.getIntArray("meltwater"), tag.getBoolean("ogives"), tag.getBoolean("bridges"), tag.getBoolean("mice"),
+                tag.getLong("seed"));
     }
 
     @Override
@@ -136,6 +150,7 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         tag.put("meltwater", new net.minecraft.nbt.IntArrayTag(meltwater));
         tag.putBoolean("ogives", ogives);
         tag.putBoolean("bridges", bridges);
+        tag.putBoolean("mice", mice);
         tag.putLong("seed", seed);
         return tag;
     }
@@ -535,6 +550,68 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         return list.toArray(new int[0][]);
     }
 
+    /**
+     * The glacier mice, {x, z} for each: up to four herds of six to twenty, each huddled within a few blocks, out on the
+     * bare ice of the lower tongue towards the snout (below the icefall, where that's down on the tongue, or above it where
+     * it leaves little room below), where most of the grit blown onto the glacier is left lying as the ice melts away from
+     * under it. They keep to whole ice: clear of the crevasses (and their walls), the icefall, the moulins, the meltwater
+     * lakes and the hollows round them, the glacier tables, and the snow dusting the pale ogive bands.
+     */
+    int[][] mouseList() {
+        if (!mice) return new int[0][];
+        int herds = 2 + Math.round(Terrain.hash(seed, 401) * 2.0F);
+        int[][] shafts = moulinList(), tabled = tableList();
+        java.util.List<int[]> list = new java.util.ArrayList<>();
+        java.util.List<float[]> middles = new java.util.ArrayList<>();
+        double c = Mth.cos(angle), s = Mth.sin(angle);
+        // (below the icefall, if it's down on the tongue; and where that leaves little room, between it and the snow line too)
+        float half = length / 2.0F, from = Math.max(length * 0.22F, icefall == NO_ICEFALL ? 0.0F : icefall + 11.0F);
+        float below = Math.max(0.0F, half - 2.5F - from), above = icefall == NO_ICEFALL || below >= 8.0F ? 0.0F : Math.max(0.0F, icefall - 14.0F);
+        for (int k = 0; k < 32 && middles.size() < herds; k++) {
+            long hs = seed + 104729L * (k + 1);
+            float pick = Terrain.hash(hs, 1) * (below + above);
+            float u = pick < below || above == 0.0F ? from + pick : 3.0F + pick - below;
+            float v = (Terrain.hash(hs, 2) * 2.0F - 1.0F) * halfWidth(u) * 0.7F;
+            float mx = (float) (cx + u * c - v * s), mz = (float) (cz + u * s + v * c);
+            boolean apart = bareIce(Mth.floor(mx), Mth.floor(mz), shafts, tabled);
+            for (float[] m : middles) apart &= Mth.length(mx - m[0], mz - m[1]) > 13.0F;
+            if (!apart) continue;
+            // (the bigger herds spread out over a little more of the ice)
+            int want = 6 + (int) (Terrain.hash(hs, 3) * 15.0F);
+            float spread = 1.6F + 0.55F * Mth.sqrt(want) + 0.8F * Terrain.hash(hs, 4);
+            java.util.List<int[]> herd = new java.util.ArrayList<>();
+            for (int m = 0; m < want * 4 && herd.size() < want; m++) {
+                float a = Terrain.hash(hs, 10 + m) * Mth.TWO_PI, r = spread * Mth.sqrt(Terrain.hash(hs, 200 + m));
+                int x = Mth.floor(mx + Mth.cos(a) * r), z = Mth.floor(mz + Mth.sin(a) * r);
+                boolean taken = false;
+                for (int[] p : herd) taken |= p[0] == x && p[1] == z;
+                for (int[] p : list) taken |= p[0] == x && p[1] == z;
+                if (!taken && bareIce(x, z, shafts, tabled)) herd.add(new int[]{x, z});
+            }
+            if (herd.size() < 6) continue;
+            list.addAll(herd);
+            middles.add(new float[]{mx, mz});
+        }
+        return list.toArray(new int[0][]);
+    }
+
+    /** Whether a column's top is whole, bare ice below the snow line, where a glacier mouse may sit. */
+    private boolean bareIce(int x, int z, int[][] shafts, int[][] tabled) {
+        float[] l = local(x + 0.5, z + 0.5);
+        if (Math.round(thicknessAt(x + 0.5, z + 0.5)) < 1 || l[0] <= 0.0F) return false;
+        if (crevasse(l[0], l[1]) >= 0 || crevasse(l[0] + 1.2F, l[1]) >= 0 || crevasse(l[0] - 1.2F, l[1]) >= 0) return false;
+        if (icefallAt(l[0]) > 0.0F || meltAt(x, z)[0] != 0 || lining(shafts, x, z) || ogive(l[0], l[1], x, z) < -0.55F) return false;
+        for (int[] t : tabled) {
+            if (x >= t[0] - 1 && x <= t[0] + t[2] && z >= t[1] - 1 && z <= t[1] + t[2]) return false;
+        }
+        return true;
+    }
+
+    /** Whether a block is a full block of ice, as a glacier mouse sits on. */
+    private static boolean mouseIce(BlockState state) {
+        return state.is(Blocks.ICE) || state.is(Blocks.PACKED_ICE) || state.is(Blocks.BLUE_ICE);
+    }
+
     private static boolean boulder(BlockState state) {
         return state.is(Blocks.STONE) || state.is(Blocks.ANDESITE) || state.is(Blocks.GRANITE);
     }
@@ -655,6 +732,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int[][] shafts = moulinList();
         boolean[] hidden = bridged();
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet herds = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        for (int[] m : mouseList()) herds.add(BlockPos.asLong(m[0], 0, m[1]));
         // the glacier tables in this chunk, and the top of the ice in each of their columns (from the ground as it is now)
         int[][] tabled = tableList();
         int[][] tops = new int[tabled.length][];
@@ -748,6 +827,13 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                     // the ogives, in the top of the ice only (an ice cave's roof under them is left as it was)
                     BlockState band = band(ogive(l[0], l[1], x, z), x, top, z);
                     if (band != null) Terrain.set(level, pos, x, top, z, band);
+                    // a glacier mouse sitting on the ice (on top of any pond the ice has frozen into itself)
+                    if (herds.contains(BlockPos.asLong(x, 0, z))) {
+                        int surface = Math.max(top, pond);
+                        if (mouseIce(level.getBlockState(pos.set(x, surface, z))) && level.getBlockState(pos.set(x, surface + 1, z)).isAir()) {
+                            Terrain.set(level, pos, x, surface + 1, z, ModBlocks.GLACIER_MOUSE.get().defaultBlockState());
+                        }
+                    }
                 }
             }
         }
@@ -814,6 +900,8 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
                 BlockPos side = lip.relative(d);
                 if (!side.equals(shaft) && !level.getBlockState(side).isFaceSturdy(level, side, d.getOpposite())) return;
             }
+            // (a glacier mouse that has rolled into the notch is washed away down the shaft)
+            if (level.getBlockState(lip.above()).is(ModBlocks.GLACIER_MOUSE.get())) level.setBlock(lip.above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             level.setBlock(lip, Blocks.WATER.defaultBlockState(), Block.UPDATE_ALL);
         } else if (!summer && state.is(Blocks.WATER) && level.getFluidState(lip).isSource()) {
             level.setBlock(lip, Blocks.ICE.defaultBlockState(), Block.UPDATE_ALL);
@@ -880,23 +968,39 @@ public record Glacier(int cx, int cz, float angle, int length, int width, int th
             BlockPos column = new BlockPos(x, 0, z);
             // (the ice holding in a meltwater lake or channel is left be: melting it would let the water out)
             if (!level.isLoaded(column) || meltAt(x, z)[0] > 0) continue;
-            BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column).below();
-            BlockState state = level.getBlockState(top);
-            // (an ogive's dark band melts down with the ice round it, and shows on in the ice under it; the snow bridges, far
-            // up in the snow, are never reached, and melt through on their own in a thaw)
-            float[] l = local(x + 0.5, z + 0.5);
-            float ogive = ogive(l[0], l[1], x, z);
-            boolean ice = state.is(Blocks.PACKED_ICE) || state.is(Blocks.ICE) || state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.SNOW)
-                    || state.is(Blocks.BLUE_ICE) && ogive > 0.35F;
-            // never melt right down to the rock: keep two blocks of ice
-            if (ice && isIce(level.getBlockState(top.below())) && isIce(level.getBlockState(top.below(2)))) {
-                boolean snout = u > half - length * 0.08F;
-                level.setBlock(top, snout && random.nextInt(4) == 0 ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                BlockState band = ogive > 0.35F ? band(ogive, x, top.getY() - 1, z) : null;
-                if (band != null && level.getBlockState(top.below()).is(Blocks.PACKED_ICE)) level.setBlock(top.below(), band, Block.UPDATE_ALL);
-            }
+            meltDown(level, column, random, u > half - length * 0.08F);
         }
         if (tables) settleTable(level);
+    }
+
+    /**
+     * Summer melt in a column of the lower glacier: the top block of its ice melts away (near the snout, now and then to a
+     * puddle of meltwater), though never down to its last two blocks of ice. A glacier mouse sitting on it comes down with
+     * the ice, or is washed away where the ice melts to water.
+     */
+    void meltDown(LevelAccessor level, BlockPos column, RandomSource random, boolean snout) {
+        int x = column.getX(), z = column.getZ();
+        // (the heightmap passes over a glacier mouse, to the ice under it)
+        BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, column).below();
+        BlockState state = level.getBlockState(top);
+        // (an ogive's dark band melts down with the ice round it, and shows on in the ice under it; the snow bridges, far
+        // up in the snow, are never reached, and melt through on their own in a thaw)
+        float[] l = local(x + 0.5, z + 0.5);
+        float ogive = ogive(l[0], l[1], x, z);
+        boolean ice = state.is(Blocks.PACKED_ICE) || state.is(Blocks.ICE) || state.is(Blocks.SNOW_BLOCK) || state.is(Blocks.SNOW)
+                || state.is(Blocks.BLUE_ICE) && ogive > 0.35F;
+        // never melt right down to the rock: keep two blocks of ice
+        if (ice && isIce(level.getBlockState(top.below())) && isIce(level.getBlockState(top.below(2)))) {
+            // (a mouse is lifted off first, so that it isn't knocked off the ice and dropped as it melts away under it)
+            BlockState mouse = level.getBlockState(top.above());
+            boolean riding = mouse.is(ModBlocks.GLACIER_MOUSE.get());
+            if (riding) level.setBlock(top.above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            BlockState melt = snout && random.nextInt(4) == 0 ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
+            level.setBlock(top, melt, Block.UPDATE_ALL);
+            BlockState band = ogive > 0.35F ? band(ogive, x, top.getY() - 1, z) : null;
+            if (band != null && level.getBlockState(top.below()).is(Blocks.PACKED_ICE)) level.setBlock(top.below(), band, Block.UPDATE_ALL);
+            if (riding && melt.isAir() && mouseIce(level.getBlockState(top.below()))) level.setBlock(top, mouse, Block.UPDATE_ALL);
+        }
     }
 
     /** A glacier that ends in the sea (or a lake) breaks off icebergs at its front now and then. */

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Server to client: the volcanoes near the player and what each is doing. */
-public record VolcanoPayload(List<Entry> volcanoes) implements CustomPacketPayload {
+public record VolcanoPayload(List<Entry> volcanoes, long lastEruption) implements CustomPacketPayload {
     public static final Type<VolcanoPayload> TYPE = new Type<>(ReikosWeather.id("volcanoes"));
     public static final StreamCodec<FriendlyByteBuf, VolcanoPayload> STREAM_CODEC = StreamCodec.of(VolcanoPayload::write, VolcanoPayload::read);
 
@@ -24,8 +24,11 @@ public record VolcanoPayload(List<Entry> volcanoes) implements CustomPacketPaylo
     public static volatile List<Entry> client = List.of();
     /** Client game time when {@link #client} arrived. */
     public static volatile long receivedAt;
+    /** Day time a volcano last began erupting anywhere (for the twilight glow of its haze round the world). */
+    public static volatile long clientLastEruption = Long.MIN_VALUE / 2;
 
     private static void write(FriendlyByteBuf buf, VolcanoPayload payload) {
+        buf.writeLong(payload.lastEruption);
         buf.writeVarInt(payload.volcanoes.size());
         for (Entry e : payload.volcanoes) {
             buf.writeInt(e.x);
@@ -41,23 +44,26 @@ public record VolcanoPayload(List<Entry> volcanoes) implements CustomPacketPaylo
     }
 
     private static VolcanoPayload read(FriendlyByteBuf buf) {
+        long last = buf.readLong();
         int n = Math.min(buf.readVarInt(), 256);
         List<Entry> list = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             list.add(new Entry(buf.readInt(), buf.readInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                     buf.readVarInt(), buf.readFloat(), buf.readVarInt()));
         }
-        return new VolcanoPayload(list);
+        return new VolcanoPayload(list, last);
     }
 
     public static void accept(VolcanoPayload payload, long gameTime) {
         client = List.copyOf(payload.volcanoes);
         receivedAt = gameTime;
+        clientLastEruption = payload.lastEruption;
     }
 
     public static void reset() {
         client = List.of();
         receivedAt = 0L;
+        clientLastEruption = Long.MIN_VALUE / 2;
     }
 
     @Override

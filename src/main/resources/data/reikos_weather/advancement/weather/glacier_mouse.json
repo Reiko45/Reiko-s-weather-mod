@@ -1,0 +1,30 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:glacier_mouse"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.glacier_mouse"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.glacier_mouse.desc"
+    },
+    "frame": "task",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "pick": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "reikos_weather:glacier_mouse"
+          }
+        ]
+      }
+    }
+  }
+}

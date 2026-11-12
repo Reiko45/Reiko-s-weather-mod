@@ -264,6 +264,11 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue AUFEIS;
     public static final ModConfigSpec.BooleanValue DRIFTWOOD;
     public static final ModConfigSpec.BooleanValue SUPERMOONS;
+    public static final ModConfigSpec.BooleanValue AFTERSHOCKS;
+    public static final ModConfigSpec.BooleanValue STORM_SIGNS;
+    public static final ModConfigSpec.BooleanValue FOXFIRE;
+    public static final ModConfigSpec.BooleanValue SUN_CUPS;
+    public static final ModConfigSpec.BooleanValue COASTAL_LICHEN;
     public static final ModConfigSpec.BooleanValue CALDERAS;
     public static final ModConfigSpec.BooleanValue ACID_LAKES;
     public static final ModConfigSpec.BooleanValue LAVA_FIELDS;
@@ -338,6 +343,8 @@ public final class WeatherConfig {
     public static final ModConfigSpec.BooleanValue STRING_BOGS;
     public static final ModConfigSpec.BooleanValue EARTH_HUMMOCKS;
     public static final ModConfigSpec.BooleanValue QUAKING_BOGS;
+    public static final ModConfigSpec.BooleanValue DESERT_PAVEMENTS;
+    public static final ModConfigSpec.BooleanValue GLACIER_MICE;
 
     public static final ModConfigSpec.BooleanValue VOLCANO_GENERATION;
     public static final ModConfigSpec.BooleanValue ERUPTIONS;
@@ -727,6 +734,16 @@ public final class WeatherConfig {
                 .define("driftwood", true);
         SUPERMOONS = b.comment("A few full moons a year are supermoons, and their spring tides run higher than usual.")
                 .define("supermoons", true);
+        AFTERSHOCKS = b.comment("After a big earthquake, smaller aftershocks follow over the next few days.")
+                .define("aftershocks", true);
+        STORM_SIGNS = b.comment("Livestock bunch together as a storm comes on (and the swallows fly low).")
+                .define("stormSigns", true);
+        FOXFIRE = b.comment("Rotting logs in damp woods glow faintly green at night with foxfire.")
+                .define("foxfire", true);
+        SUN_CUPS = b.comment("In summer sun, high snowfields melt into a pitted surface of cup-shaped hollows.")
+                .define("sunCups", true);
+        COASTAL_LICHEN = b.comment("Rocky shores are banded with black and orange lichen above the waterline (new chunks only).")
+                .define("coastalLichen", true);
         CHARGED_TOOLS = b.comment("Lightning striking a tool lying on an anvil or copper block charges it for a few minutes.")
                 .define("chargedTools", true);
         b.pop();
@@ -1085,6 +1102,10 @@ public final class WeatherConfig {
                 .define("earthHummocks", true);
         QUAKING_BOGS = b.comment("Quaking bogs: floating mats of moss at the edges of bog pools, which wobble and give way underfoot.")
                 .define("quakingBogs", true);
+        DESERT_PAVEMENTS = b.comment("Desert pavements: gibber plains of dark, wind-polished pebbles, with wind-carved rocks.")
+                .define("desertPavements", true);
+        GLACIER_MICE = b.comment("Glacier mice: balls of moss slowly rolling over the lower ice of glaciers.")
+                .define("glacierMice", true);
         CHANGING_LANDFORMS = b.comment("Landforms change with the weather: salt flats flood and dry, glaciers melt back in summer",
                         "and grow in winter, and dunes creep downwind in sandstorms.")
                 .define("changingLandforms", true);

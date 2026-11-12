@@ -49,6 +49,7 @@ public class ReikosWeather {
         ModSounds.REGISTER.register(modBus);
         ModEntities.REGISTER.register(modBus);
         ModItems.REGISTER.register(modBus);
+        com.reiko.weather.registry.ModFeatures.REGISTER.register(modBus);
         com.reiko.weather.registry.ModEffects.REGISTER.register(modBus);
         com.reiko.weather.registry.ModVillagers.POI_TYPES.register(modBus);
         com.reiko.weather.registry.ModVillagers.PROFESSIONS.register(modBus);
@@ -203,6 +204,11 @@ public class ReikosWeather {
             event.accept(ModItems.GLOWWORMS.get());
             event.accept(ModItems.OCHRE.get());
             event.accept(ModItems.TUMBLEWEED.get());
+            event.accept(ModItems.GIBBER.get());
+            event.accept(ModItems.FOXFIRE.get());
+            event.accept(ModItems.ORANGE_LICHEN.get());
+            event.accept(ModItems.BLACK_LICHEN.get());
+            event.accept(ModItems.GLACIER_MOUSE.get());
         } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             event.accept(ModItems.SANDBAG.get());
         } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {

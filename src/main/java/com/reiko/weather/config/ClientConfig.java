@@ -107,6 +107,9 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue SCUD;
     public static final ModConfigSpec.BooleanValue HAIL_FOG;
     public static final ModConfigSpec.BooleanValue SUPERMOON_LOOK;
+    public static final ModConfigSpec.BooleanValue CASTELLANUS;
+    public static final ModConfigSpec.BooleanValue VOLCANIC_TWILIGHT;
+    public static final ModConfigSpec.BooleanValue SWALLOWS;
     public static final ModConfigSpec.BooleanValue REDUCE_FLASHING;
     public static final ModConfigSpec.DoubleValue SCREEN_EFFECTS;
     public static final ModConfigSpec.BooleanValue WEATHER_ALERT_SOUNDS;
@@ -319,6 +322,12 @@ public final class ClientConfig {
                 .define("hailFog", true);
         SUPERMOON_LOOK = b.comment("Supermoons look bigger and brighter than other full moons.")
                 .define("supermoonLook", true);
+        CASTELLANUS = b.comment("Turreted clouds in the morning sky on days that turn thundery by the afternoon.")
+                .define("castellanus", true);
+        VOLCANIC_TWILIGHT = b.comment("After a big eruption, weeks of purple twilights and a pale ring round the sun.")
+                .define("volcanicTwilight", true);
+        SWALLOWS = b.comment("Swallows skim low over the fields before a storm.")
+                .define("swallows", true);
         b.comment("Accessibility").push("accessibility");
         REDUCE_FLASHING = b.comment("Tone down lightning flashes, heat lightning and other bright flashes from this mod.",
                         "(Vanilla's 'Hide Lightning Flashes' accessibility option also turns these off.)")

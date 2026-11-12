@@ -16,6 +16,8 @@ public class VolcanoData extends SavedData {
     public static final Factory<VolcanoData> FACTORY = new Factory<>(VolcanoData::new, VolcanoData::load);
 
     private final Long2ObjectLinkedOpenHashMap<Volcano> volcanoes = new Long2ObjectLinkedOpenHashMap<>();
+    /** When (day time) a volcano last began erupting, anywhere: its haze spreads round the world for a few weeks. */
+    public long lastEruption = Long.MIN_VALUE / 2;
 
     public Collection<Volcano> all() {
         return volcanoes.values();
@@ -42,11 +44,13 @@ public class VolcanoData extends SavedData {
             list.add(v.save());
         }
         tag.put("volcanoes", list);
+        tag.putLong("lastEruption", lastEruption);
         return tag;
     }
 
     public static VolcanoData load(CompoundTag tag, HolderLookup.Provider registries) {
         VolcanoData data = new VolcanoData();
+        if (tag.contains("lastEruption")) data.lastEruption = tag.getLong("lastEruption");
         for (Tag t : tag.getList("volcanoes", Tag.TAG_COMPOUND)) {
             Volcano v = Volcano.load((CompoundTag) t);
             data.volcanoes.put(v.shape.key(), v);

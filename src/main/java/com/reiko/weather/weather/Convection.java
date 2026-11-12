@@ -35,7 +35,7 @@ public final class Convection {
             boolean tropical = Monsoon.isTropical(level.getBiome(player.blockPosition()));
             if (climate == Climate.COLD || climate == Climate.ARID && !tropical) continue;
             if (season != null && season != Season.SUMMER && !tropical) continue;
-            if (random.nextFloat() > (tropical ? 0.75F : 0.5F)) continue;
+            if (!thunderyDay(day, tropical)) continue;
             if (state.cells.stream().anyMatch(c -> c.distanceTo(player.getX(), player.getZ()) < c.radius + 200)) continue;
             double angle = random.nextDouble() * Math.PI * 2.0, distance = 120.0 + random.nextDouble() * 260.0;
             float roll = random.nextFloat();
@@ -48,6 +48,15 @@ public final class Convection {
             WeatherManager.spawnCell(level, state, type, player.getX() + Math.cos(angle) * distance, player.getZ() + Math.sin(angle) * distance,
                     radius, wind.x * speed, wind.z * speed, maxAge, 2400, true);
         }
+    }
+
+    /**
+     * Whether today is one for afternoon storms, worked out from the day count alone, so a client can see it coming
+     * in the morning sky (the turreted castellanus clouds) before the storms build.
+     */
+    public static boolean thunderyDay(long day, boolean tropical) {
+        int h = net.minecraft.util.Mth.murmurHash3Mixer((int) day * 0x2545F491 + 0x7F4A7C15 + (int) (day >>> 32));
+        return (h >>> 8) / (float) (1 << 24) < (tropical ? 0.75F : 0.5F);
     }
 
     private Convection() {}

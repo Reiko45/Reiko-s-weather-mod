@@ -73,6 +73,16 @@ public final class LocalTouches {
             if (WeatherConfig.AUFEIS.get() && air < -8.0F) aufeis(level, column(level, player, random));
         }
         com.reiko.weather.entity.TumbleweedEntity.trySpawn(level, player, local, climate);
+        if (WeatherConfig.FOXFIRE.get() && climate != Climate.ARID && season != Season.WINTER && random.nextInt(4) == 0
+                && (p.rain > 0.1F || p.fog > 0.3F || Temperature.humidity(level, player.blockPosition(), local) > 0.75F)
+                && Temperature.ambient(level, player.blockPosition(), local) > 4.0F) {
+            // honey fungus in the old logs of a wet wood
+            foxfire(level, player, random);
+        }
+        if (WeatherConfig.SUN_CUPS.get() && season == Season.SUMMER && level.isDay() && p.rain < 0.05F && random.nextInt(3) == 0
+                && Temperature.ambient(level, player.blockPosition(), local) > -4.0F) {
+            sunCups(level, column(level, player, random));
+        }
         if (WeatherConfig.DRIFTWOOD.get() && random.nextInt(p.wind > 0.55F || p.rain > 0.6F ? 15 : 300) == 0) {
             // storms wash it up (and it lies about on the beach long after)
             driftwood(level, column(level, player, random), random);
@@ -275,6 +285,53 @@ public final class LocalTouches {
             if (!level.getBlockState(p).isAir() || !level.getBlockState(p.below()).isFaceSturdy(level, p.below(), Direction.UP)) break;
             level.setBlockAndUpdate(p, ModBlocks.DRIFTWOOD.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, axis));
         }
+    }
+
+    /** Foxfire: a log lying on the woodland floor, rotting in the damp, starts to glow. */
+    private static void foxfire(ServerLevel level, ServerPlayer player, RandomSource random) {
+        int x = player.getBlockX() + random.nextInt(AREA * 2 + 1) - AREA, z = player.getBlockZ() + random.nextInt(AREA * 2 + 1) - AREA;
+        BlockPos column = new BlockPos(x, 0, z);
+        if (!level.isLoaded(column)) return;
+        // (under the trees, not on top of them)
+        BlockPos top = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
+        if (!level.getBlockState(top).isAir()) return;
+        BlockState log = level.getBlockState(top.below());
+        if (!log.is(BlockTags.LOGS) || !log.hasProperty(RotatedPillarBlock.AXIS) || log.getValue(RotatedPillarBlock.AXIS) == Direction.Axis.Y) return;
+        if (net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(log.getBlock()).getPath().startsWith("stripped")) return;
+        BlockState under = level.getBlockState(top.below(2));
+        if (!under.is(BlockTags.DIRT) && !under.is(Blocks.MOSS_BLOCK) && !under.is(BlockTags.LOGS)) return;
+        var biome = level.getBiome(top);
+        if (!biome.is(BiomeTags.IS_FOREST) && !biome.is(BiomeTags.IS_TAIGA) && !biome.is(BiomeTags.IS_JUNGLE) && !biome.is(Biomes.SWAMP)
+                && !biome.is(Biomes.MANGROVE_SWAMP)) return;
+        level.setBlockAndUpdate(top, ModBlocks.FOXFIRE.get().defaultBlockState());
+    }
+
+    /**
+     * Sun cups: under a strong summer sun, a high snowfield melts unevenly, each hollow catching a little more sunlight
+     * than the rim round it and so deepening, until the whole surface is pitted with shallow cups.
+     */
+    private static void sunCups(ServerLevel level, @Nullable BlockPos top) {
+        if (top == null || top.getY() < level.getSeaLevel() + 60 || !level.canSeeSky(top)) return;
+        BlockPos at = level.getBlockState(top).is(Blocks.SNOW) ? top : top.below();
+        BlockState s = level.getBlockState(at);
+        int layers = s.is(Blocks.SNOW_BLOCK) ? 8 : s.is(Blocks.SNOW) ? s.getValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS) : 0;
+        if (layers < 6) return;
+        // the cups lie in a loose honeycomb about three blocks across
+        int x = at.getX(), z = at.getZ();
+        double nearest = 9.0;
+        for (int i = Math.floorDiv(x, 3) - 1; i <= Math.floorDiv(x, 3) + 1; i++) {
+            for (int j = Math.floorDiv(z, 3) - 1; j <= Math.floorDiv(z, 3) + 1; j++) {
+                int h = Mth.murmurHash3Mixer(i * 73856093 ^ j * 19349663);
+                double cx = i * 3 + 1.5 + ((h & 255) / 255.0 - 0.5), cz = j * 3 + 1.5 + (((h >>> 8) & 255) / 255.0 - 0.5);
+                nearest = Math.min(nearest, Math.hypot(x + 0.5 - cx, z + 0.5 - cz));
+            }
+        }
+        int depth = nearest < 0.75 ? 3 : nearest < 1.35 ? 2 : nearest < 1.8 ? 1 : 0;
+        int target = 8 - 2 * depth;
+        if (target >= layers) return;
+        BlockPos below = at.below();
+        if (!level.getBlockState(below).isFaceSturdy(level, below, Direction.UP)) return;
+        level.setBlockAndUpdate(at, Blocks.SNOW.defaultBlockState().setValue(net.minecraft.world.level.block.SnowLayerBlock.LAYERS, target));
     }
 
     /** Whether a spot is just inside a cave mouth, where a cool draught blows out on a hot day. */

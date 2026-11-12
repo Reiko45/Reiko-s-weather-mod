@@ -114,6 +114,7 @@ public final class WeatherHazards {
             StormWake.tickPlayer(level, player, local, climate);
             IcyWaters.tickPlayer(level, player, local, climate);
             LocalTouches.tickPlayer(level, player, local, climate);
+            StormSigns.tickPlayer(level, player, state, local);
             if (profile.glazeWater && WeatherConfig.GLAZE_WATER.get() && random.nextFloat() < intensity) {
                 glazeWater(level, randomColumn(level, player, random));
             }

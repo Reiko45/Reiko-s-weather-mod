@@ -377,6 +377,29 @@ public final class ModBlocks {
             () -> new com.reiko.weather.block.TumbleweedBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instabreak()
                     .noCollission().sound(SoundType.GRASS).noOcclusion().ignitedByLava().pushReaction(PushReaction.DESTROY)));
 
+    /** Gibber: desert pavement, a mosaic of dark, wind-polished, sun-varnished pebbles packed together on the ground. */
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> GIBBER = REGISTER.register("gibber",
+            () -> new net.minecraft.world.level.block.Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).strength(0.8F)
+                    .sound(SoundType.GRAVEL)));
+
+    /** Foxfire glowing on a rotting log. */
+    public static final DeferredBlock<com.reiko.weather.block.FoxfireBlock> FOXFIRE = REGISTER.register("foxfire",
+            () -> new com.reiko.weather.block.FoxfireBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GREEN).instabreak()
+                    .noCollission().sound(SoundType.FUNGUS).lightLevel(s -> 3).noOcclusion().randomTicks().replaceable().pushReaction(PushReaction.DESTROY)));
+
+    /** Crust lichens on rocks by the sea: orange above, black tar lichen just over the waterline. */
+    public static final DeferredBlock<com.reiko.weather.block.CrustLichenBlock> ORANGE_LICHEN = REGISTER.register("orange_lichen",
+            () -> new com.reiko.weather.block.CrustLichenBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).replaceable()
+                    .noCollission().strength(0.2F).sound(SoundType.GLOW_LICHEN).noOcclusion().pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<com.reiko.weather.block.CrustLichenBlock> BLACK_LICHEN = REGISTER.register("black_lichen",
+            () -> new com.reiko.weather.block.CrustLichenBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).replaceable()
+                    .noCollission().strength(0.2F).sound(SoundType.GLOW_LICHEN).noOcclusion().pushReaction(PushReaction.DESTROY)));
+
+    /** A glacier mouse: a ball of moss on the ice. */
+    public static final DeferredBlock<com.reiko.weather.block.GlacierMouseBlock> GLACIER_MOUSE = REGISTER.register("glacier_mouse",
+            () -> new com.reiko.weather.block.GlacierMouseBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.1F)
+                    .sound(SoundType.MOSS).noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY)));
+
     private static DeferredBlock<net.minecraft.world.level.block.FlowerPotBlock> potted(String name, DeferredBlock<? extends net.minecraft.world.level.block.Block> flower) {
         return REGISTER.register(name, () -> new net.minecraft.world.level.block.FlowerPotBlock(
                 () -> (net.minecraft.world.level.block.FlowerPotBlock) net.minecraft.world.level.block.Blocks.FLOWER_POT, flower,

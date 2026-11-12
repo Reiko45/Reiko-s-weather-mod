@@ -347,6 +347,12 @@ Ways to stay comfortable:
 - **Tumbleweeds and driftwood:** on windy days in deserts, badlands and dry savanna, **tumbleweeds** come bouncing
   across the open ground and pile up against fences (hit one and it breaks into sticks). Storms wash **driftwood** up
   onto beaches.
+- **Old weather signs:** on summer mornings, turreted **castles in the sky** (altocumulus castellanus) warn that the
+  afternoon will turn thundery; as a storm comes on, **swallows** skim low over the fields and livestock bunch
+  together.
+- **Aftershocks:** a big earthquake is followed by smaller aftershocks over the next few days.
+- **Foxfire and sun cups:** fallen logs in wet woods glow faint green at night with **foxfire**, and in summer sun
+  high snowfields melt into a pitted surface of **sun cups**.
 - **Supermoons:** every fifth full moon is a supermoon, noticeably bigger and brighter, and its king tide washes a
   block further up the beach.
 - **Superblooms:** in a wet year, the desert flowers in spring, with drifts of **desert gold**, **sand verbena** and
@@ -428,6 +434,8 @@ Ways to stay comfortable:
   then the rippled rows of a mackerel sky, then a thin milky veil that puts a halo round the sun.
 - **Scud:** ragged shreds of low cloud race along under a storm's dark base.
 - **Hail fog:** after a hailstorm, a low fog lies over the drifts of hail until they melt.
+- **Moon dogs and volcanic twilight:** bright spots either side of a bright moon on icy nights; and for a couple of
+  weeks after a big eruption, purple twilights and a pale ring round the sun.
 
 ## Volcanoes
 Volcanoes rise out of new land now and then: a cone of basalt, tuff and blackstone up to 70 blocks
@@ -594,6 +602,9 @@ the smaller one doesn't. (A landform placed with `/place structure` goes where i
   northern country; and **earth hummocks**, cold grassland heaved by frost into countless little mounds. Peat bogs now
   have **quaking mats** of floating moss that give way if you run or jump onto them, and glaciers have curved
   **ogive** bands below their icefalls and **hidden crevasses** bridged over with snow.
+- **Stone, ice and shore:** **desert pavements** (gibber plains of dark, wind-polished pebbles, with wind-carved
+  **ventifacts**); **glacier mice**, balls of moss creeping over the lower ice of glaciers; and rocky shores banded
+  with **black and orange lichen** above the waterline.
 
 ## The Nether and the End
 The other dimensions get weather of their own.
@@ -719,7 +730,7 @@ probes, goggles, winter coats, handheld radars and, at master level, lightning b
 radars.
 
 ## Advancements
-A "Reiko's Weather" advancement tab with 99 entries, including Storm Chaser, We're Not in Kansas
+A "Reiko's Weather" advancement tab with 102 entries, including Storm Chaser, We're Not in Kansas
 Anymore, Practically Perfect (an umbrella glide), Northern Lights, Whiteout, Four Seasons, Bottled
 Lightning, Eye of the Storm, Make a Wish, Once in a Blood Moon, Skating on Thin Ice, Riding the
 Thermals, Fishing in Troubled Waters, Supercharged, Straight-Line Winds, Hot Spot (stand on a
@@ -729,7 +740,7 @@ Gap, In the Eye (of a hurricane), Floe Rider, Flash Flood, Parched, Bitter Cold,
 A Sinking Feeling, Thar She Blows, Caught in a Rip, Surf's Up (the River), Into the Maelstrom, Dam
 Busters, Totality, The Great Comet, The Fox's Wedding, A Bolt from the Blue, Timber!, Cryoseism, Ice Shove,
 Back and Forth, Rich Waters, Mud River, Pompeii, Narrowly, Solid Ground?, Off the Ice, Frozen Falls, Hot Water, Black River,
-A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water and Gone With the Wind.
+A Lake in the Desert, Finger of Death, The Desert in Bloom, Hot Foot, Head in the Clouds, True Blue, The Door to Hell, Cave of Crystals, Too Hot to Swim, Sea Mount, Stars Underground, River of Rust, Walking on Water, Gone With the Wind, Gibber Plain, Glacier Mouse and Foxfire.
 
 ## Datapack weather
 Datapacks can add new weather types. Put a JSON file at

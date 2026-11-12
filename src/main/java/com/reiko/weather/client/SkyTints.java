@@ -57,6 +57,18 @@ public final class SkyTints {
         return com.reiko.weather.weather.Supermoons.strength(mc.level);
     }
 
+    /**
+     * The haze of a big eruption, 0 to 1: the fine sulphate droplets it throws into the stratosphere spread round the
+     * world within a day or two and hang there for weeks, lighting the twilight purple and ringing the sun.
+     */
+    public static float volcanicHaze() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || !ClientConfig.SPEC.isLoaded() || !ClientConfig.VOLCANIC_TWILIGHT.get()) return 0.0F;
+        long since = mc.level.getDayTime() - com.reiko.weather.network.VolcanoPayload.clientLastEruption;
+        if (since < 0L) return 0.0F;
+        return Mth.clamp(since / 24000.0F, 0.0F, 1.0F) * Mth.clamp(1.0F - (since - 24000L) / (12.0F * 24000.0F), 0.0F, 1.0F);
+    }
+
     /** How strong the golden Indian-summer haze is, 0 to 1. */
     public static float golden() {
         return golden;

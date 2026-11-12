@@ -36,9 +36,18 @@ public final class Earthquakes {
 
     @Nullable
     private static Tsunami pending;
+    private record Aftershock(double x, double z, long at, float magnitude) {}
+    private static final java.util.List<Aftershock> AFTERSHOCKS = new java.util.ArrayList<>();
 
     static void tick(ServerLevel level, WeatherState state) {
         tickTsunami(level, state);
+        // the aftershocks of an earlier quake, coming due
+        if (!AFTERSHOCKS.isEmpty()) {
+            long now = level.getGameTime();
+            var due = AFTERSHOCKS.stream().filter(a -> a.at() <= now).toList();
+            AFTERSHOCKS.removeAll(due);
+            for (Aftershock a : due) shake(level, a.x(), a.z(), a.magnitude(), false);
+        }
         if (!WeatherConfig.EARTHQUAKES.get() || level.getGameTime() % 20L != 0L || level.players().isEmpty()) {
             return;
         }
@@ -56,7 +65,27 @@ public final class Earthquakes {
 
     /** An earthquake with its epicentre at (x, z); {@code magnitude} 0 to 1. */
     public static void quake(ServerLevel level, double x, double z, float magnitude) {
+        shake(level, x, z, magnitude, true);
+    }
+
+    /** How many aftershocks are still to come (for the gametests). */
+    public static int pendingAftershocks() {
+        return AFTERSHOCKS.size();
+    }
+
+    private static void shake(ServerLevel level, double x, double z, float magnitude, boolean main) {
         RandomSource random = level.random;
+        if (main && magnitude > 0.4F && WeatherConfig.AFTERSHOCKS.get()) {
+            // aftershocks: the fault keeps settling for a few days, the shocks coming less and less often (Omori's law),
+            // the biggest of them a good deal weaker than the main quake (Båth's law)
+            int n = 3 + Math.round(5 * magnitude);
+            long now = level.getGameTime();
+            for (int k = 1; k <= n; k++) {
+                long at = now + (long) (900 * Math.pow(k, 1.8) * (0.6 + random.nextDouble()));
+                float m = magnitude * (0.65F - 0.04F * k) * (0.7F + 0.3F * random.nextFloat());
+                AFTERSHOCKS.add(new Aftershock(x + random.nextGaussian() * 50, z + random.nextGaussian() * 50, at, Math.max(0.1F, m)));
+            }
+        }
         double reach = 200 + 700 * magnitude;
         int ticks = 60 + Math.round(140 * magnitude);
         boolean griefing = level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);

@@ -39,7 +39,8 @@ public class ReikosWeatherJeiPlugin implements IModPlugin {
                 ModItems.ROCK_SALT, ModItems.STEAMING_GROUND, ModItems.BEACH_WRACK, ModItems.FIREWEED, ModItems.CHARRED_SOIL,
                 ModItems.BUBBLE_ICE, ModItems.CLINKER, ModItems.SMOULDERING_GROUND, ModItems.DESERT_GOLD, ModItems.SAND_VERBENA, ModItems.DESERT_POPPY,
                 ModItems.SELENITE, ModItems.GAS_VENT, ModItems.AUFEIS, ModItems.DRIFTWOOD, ModItems.QUAKING_MAT, ModItems.GLOWWORMS,
-                ModItems.OCHRE, ModItems.TUMBLEWEED);
+                ModItems.OCHRE, ModItems.TUMBLEWEED, ModItems.GIBBER, ModItems.FOXFIRE, ModItems.ORANGE_LICHEN, ModItems.BLACK_LICHEN,
+                ModItems.GLACIER_MOUSE);
         for (DeferredItem<? extends Item> item : items) {
             String key = "jei.reikos_weather." + BuiltInRegistries.ITEM.getKey(item.get()).getPath();
             registration.addIngredientInfo(item.get(), Component.translatable(key));

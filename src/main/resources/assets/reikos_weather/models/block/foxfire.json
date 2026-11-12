@@ -1,0 +1,36 @@
+{
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "reikos_weather:block/foxfire",
+    "f": "reikos_weather:block/foxfire"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0.15,
+        0
+      ],
+      "to": [
+        16,
+        0.15,
+        16
+      ],
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15,
+        "ambient_occlusion": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    }
+  ]
+}

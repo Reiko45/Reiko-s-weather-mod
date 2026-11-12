@@ -1886,6 +1886,55 @@
    ]
   },
   {
+   "title": "Old Signs",
+   "icon": "minecraft:compass",
+   "entries": [
+    {
+     "title": "Castles in the Sky",
+     "icon": "minecraft:white_wool",
+     "pages": [
+      "On a summer morning, look for little turrets sprouting from a layer of cloud high up: castles in the sky (altocumulus castellanus). They mean the air is already unstable, and the day will turn thundery by the afternoon.",
+      "As a storm comes on, the swallows skim low over the grass and the water after the insects the heavy air has brought down, and cattle, sheep and horses bunch together."
+     ]
+    },
+    {
+     "title": "Moon Dogs and Purple Twilight",
+     "icon": "minecraft:glowstone_dust",
+     "pages": [
+      "On icy nights, the same bright spots that flank the sun (sun dogs) can show either side of a bright moon. For a couple of weeks after a big eruption, the haze it left high in the sky lights the twilight a vivid purple and puts a pale ring round the sun."
+     ]
+    },
+    {
+     "title": "Aftershocks, Foxfire and Sun Cups",
+     "icon": "minecraft:glow_berries",
+     "pages": [
+      "A big earthquake is followed by smaller aftershocks over the next few days, coming less and less often.",
+      "In wet woods, fallen logs glow a faint green at night where honey fungus is rotting them: foxfire. In summer sun, high snowfields melt into a pitted surface of shallow cups."
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Stone, Ice and Shore",
+   "icon": "reikos_weather:gibber",
+   "entries": [
+    {
+     "title": "Desert Pavements",
+     "icon": "reikos_weather:gibber",
+     "pages": [
+      "Where the wind has blown the sand away from a flat desert for thousands of years, the stones left behind pack together like cobbles, glossy and dark with desert varnish: a gibber plain. Here and there stand ventifacts, rocks carved into facets and flutes by the sand-laden wind."
+     ]
+    },
+    {
+     "title": "Glacier Mice and Lichen",
+     "icon": "reikos_weather:glacier_mouse",
+     "pages": [
+      "On the bare ice of a glacier's lower tongue, herds of glacier mice, balls of moss the size of a fist, creep slowly across the ice. Rocky shores are striped along their foot: black tar lichen just above the water, a band of bright orange lichen above it."
+     ]
+    }
+   ]
+  },
+  {
    "title": "Settings and Commands",
    "icon": "minecraft:comparator",
    "entries": [

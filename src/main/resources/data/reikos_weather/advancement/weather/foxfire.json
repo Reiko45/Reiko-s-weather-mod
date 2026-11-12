@@ -1,0 +1,30 @@
+{
+  "parent": "reikos_weather:weather/root",
+  "display": {
+    "icon": {
+      "id": "reikos_weather:foxfire"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.foxfire"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.foxfire.desc"
+    },
+    "frame": "task",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "pick": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "reikos_weather:foxfire"
+          }
+        ]
+      }
+    }
+  }
+}

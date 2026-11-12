@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "reikos_weather:block/orange_lichen",
+    "l": "reikos_weather:block/orange_lichen"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0.1
+      ],
+      "to": [
+        16,
+        16,
+        0.1
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            0,
+            0,
+            16
+          ],
+          "texture": "#l"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#l"
+        }
+      }
+    }
+  ]
+}

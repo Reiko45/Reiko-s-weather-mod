@@ -145,6 +145,11 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> GLOWWORMS = REGISTER.registerSimpleBlockItem(ModBlocks.GLOWWORMS);
     public static final DeferredItem<BlockItem> OCHRE = REGISTER.registerSimpleBlockItem(ModBlocks.OCHRE);
     public static final DeferredItem<BlockItem> TUMBLEWEED = REGISTER.registerSimpleBlockItem(ModBlocks.TUMBLEWEED);
+    public static final DeferredItem<BlockItem> GIBBER = REGISTER.registerSimpleBlockItem(ModBlocks.GIBBER);
+    public static final DeferredItem<BlockItem> FOXFIRE = REGISTER.registerSimpleBlockItem(ModBlocks.FOXFIRE);
+    public static final DeferredItem<BlockItem> ORANGE_LICHEN = REGISTER.registerSimpleBlockItem(ModBlocks.ORANGE_LICHEN);
+    public static final DeferredItem<BlockItem> BLACK_LICHEN = REGISTER.registerSimpleBlockItem(ModBlocks.BLACK_LICHEN);
+    public static final DeferredItem<BlockItem> GLACIER_MOUSE = REGISTER.registerSimpleBlockItem(ModBlocks.GLACIER_MOUSE);
 
     private ModItems() {}
 }

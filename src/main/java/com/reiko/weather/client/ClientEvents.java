@@ -182,6 +182,8 @@ public final class ClientEvents {
                 (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.InsectParticle(level, x, y, z, sprites, false));
         event.registerSpriteSet(ModParticles.MAYFLY.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.InsectParticle(level, x, y, z, sprites, true));
+        event.registerSpriteSet(ModParticles.SWALLOW.get(), sprites ->
+                (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.SwallowParticle(level, x, y, z, xd, zd, sprites));
         event.registerSpriteSet(ModParticles.FIREFLY.get(), sprites ->
                 (type, level, x, y, z, xd, yd, zd) -> new com.reiko.weather.client.particle.FireflyParticle(level, x, y, z, sprites));
         event.registerSpriteSet(ModParticles.WORM.get(), sprites ->
@@ -258,6 +260,7 @@ public final class ClientEvents {
             Cumulus.collect(event.getCamera(), partialTick);
             CloudWaterfalls.collect(event.getCamera(), partialTick);
             Scud.collect(event.getCamera(), partialTick);
+            Castellanus.collect(event.getCamera(), partialTick);
             StormSkies.collect(event.getCamera(), partialTick);
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
@@ -313,6 +316,8 @@ public final class ClientEvents {
         HighClouds.tick(mc);
         Scud.tick(mc);
         HailFog.tick(mc);
+        Castellanus.tick(mc);
+        Swallows.tick(mc);
         ItemTooltips.tick(mc);
         pushLocalPlayer(mc);
         updateWindSound(mc);
@@ -369,6 +374,7 @@ public final class ClientEvents {
         HighClouds.reset();
         Scud.reset();
         HailFog.reset();
+        Castellanus.reset();
         com.reiko.weather.network.TemperaturePayload.clientBody = Float.NaN;
         com.reiko.weather.network.TemperaturePayload.clientTarget = Float.NaN;
         com.reiko.weather.weather.CustomWeathers.resetClient();

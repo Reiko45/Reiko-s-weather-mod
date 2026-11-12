@@ -38,6 +38,8 @@ public final class DebugInfo {
             event.getLeft().add(String.format(java.util.Locale.ROOT, "[Reiko's Weather] cirrus %.2f mackerel %.2f veil %.2f scud %.2f hail fog %s supermoon %.1f",
                     HighClouds.cirrus(), HighClouds.mackerel(), HighClouds.veil(), Scud.strength(), HailFog.debug(),
                     com.reiko.weather.weather.Supermoons.strength(mc.level)));
+            event.getLeft().add(String.format(java.util.Locale.ROOT, "[Reiko's Weather] castellanus %.2f volcanic haze %.2f storm coming %.2f",
+                    Castellanus.strength(), SkyTints.volcanicHaze(), Swallows.approach()));
         }
     }
 

@@ -228,6 +228,9 @@ public final class VolcanoManager {
         v.enter(phase, length);
         if (phase == Phase.ERUPTING) {
             v.flowsStarted = 0;
+            data.lastEruption = level.getDayTime(); // (by the day clock, so sleeping through nights counts too)
+            data.setDirty();
+            sync(level, data);
             feedAshCloud(level, v, random);
         } else if (phase == Phase.COOLING) {
             v.flows.clear();
@@ -582,7 +585,7 @@ public final class VolcanoManager {
                         v.phase.ordinal(), v.progress(), v.length));
             }
         }
-        PacketDistributor.sendToPlayer(player, new VolcanoPayload(entries));
+        PacketDistributor.sendToPlayer(player, new VolcanoPayload(entries, data.lastEruption));
     }
 
     private VolcanoManager() {}

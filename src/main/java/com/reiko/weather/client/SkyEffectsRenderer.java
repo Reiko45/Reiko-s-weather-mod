@@ -120,11 +120,15 @@ public final class SkyEffectsRenderer {
         float[] highTint = {1.0F, Mth.lerp(lowSun, 0.97F, 0.55F), Mth.lerp(lowSun, 1.0F, 0.47F)};
         // a supermoon: bigger (see LevelRendererMixin) and brighter, with a broader glow round it
         float supermoon = overworld && moonDir.y > -0.05F ? SkyTints.supermoon() * clearSky * (1.0F - overcast) : 0.0F;
+        // after a big eruption, the haze it left high in the sky lights the twilight purple and rings the sun
+        float volcanic = overworld ? SkyTints.volcanicHaze() * clearSky * (1.0F - 0.7F * overcast) : 0.0F;
+        float purple = volcanic * Mth.clamp(1.0F - Math.abs(sun.y + 0.06F) / 0.14F, 0.0F, 1.0F);
+        float bishop = volcanic * Mth.clamp((sun.y - 0.05F) * 4.0F, 0.0F, 1.0F) * (1.0F - overcast);
         float sprayBow = overworld && ClientConfig.SPRAY_BOWS.get() && sun.y > 0.02F && sun.y < 0.65F
                 ? clearSky * (1.0F - overcast) * Mth.clamp((RoughSeas.roughness() - 0.2F) * 2.5F, 0.0F, 1.0F) : 0.0F;
         // the Chinook arch over the mountains upwind, in a föhn
         float chinook = overworld && ClientConfig.CHINOOK_ARCH.get() ? StormSkies.chinook() : 0.0F;
-        if (!eclipsing && cirrus <= 0.005F && mackerel <= 0.005F && veil <= 0.005F && supermoon <= 0.005F && chinook <= 0.005F && planets <= 0.005F && earthshine <= 0.005F && moonTint <= 0.005F && sprayBow <= 0.005F && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
+        if (!eclipsing && purple <= 0.005F && bishop <= 0.005F && cirrus <= 0.005F && mackerel <= 0.005F && veil <= 0.005F && supermoon <= 0.005F && chinook <= 0.005F && planets <= 0.005F && earthshine <= 0.005F && moonTint <= 0.005F && sprayBow <= 0.005F && comet <= 0.005F && airglow <= 0.005F && rainbow <= 0.005F && steve <= 0.005F && gegenschein <= 0.005F && fata <= 0.005F && aurora <= 0.005F && halo <= 0.005F && blood <= 0.005F && smoke <= 0.005F && dust <= 0.005F && !ShootingStars.any()
                 && nlc <= 0.005F && moonbow <= 0.005F && fogbow <= 0.005F && twilight <= 0.005F && iridescent <= 0.005F && flash <= 0.005F
                 && milky <= 0.005F && zodiacal <= 0.005F && cha <= 0.005F && cza <= 0.005F && nacreous <= 0.005F && redSky <= 0.005F) {
             return;
@@ -217,6 +221,16 @@ public final class SkyEffectsRenderer {
         if (cirrus > 0.005F) {
             drawCirrus(pose, level.getGameTime() + partialTick, HighClouds.windAzimuth(), highTint, cirrus);
         }
+        if (purple > 0.005F) {
+            // the "purple light": a broad glow high over where the sun has set, lit through the haze
+            Vector3f[] around = basis(sun);
+            drawGlow(pose, new Vector3f(sun).normalize(), around[0], around[1], 0.0F, 62.0F, new float[]{0.62F, 0.3F, 0.88F}, 0.22F * purple);
+        }
+        if (bishop > 0.005F) {
+            // Bishop's ring: a pale, faintly brown-edged ring round the sun, seen through the haze by day
+            Vector3f[] around = basis(sun);
+            drawGlow(pose, new Vector3f(sun).normalize(), around[0], around[1], 9.0F, 24.0F, new float[]{0.88F, 0.74F, 0.6F}, 0.1F * bishop);
+        }
         if (supermoon > 0.005F && !(eclipsing && eclipse.lunar())) {
             Vector3f[] around = basis(moonDir);
             drawGlow(pose, new Vector3f(moonDir).normalize(), around[0], around[1], 0.0F, 9.0F, new float[]{0.85F, 0.9F, 1.0F}, 0.12F * supermoon);
@@ -271,6 +285,9 @@ public final class SkyEffectsRenderer {
             }
             if (moon.y > -0.05F) {
                 drawHalo(pose, moon, halo * 0.12F * Mth.clamp((moon.y + 0.05F) * 6.0F, 0.0F, 1.0F) * night);
+                // moon dogs: the same bright spots either side of a bright, low moon (paler, the colours barely there)
+                float moonDogs = halo * night * moonlight * Mth.clamp((0.6F - moon.y) * 4.0F, 0.0F, 1.0F) * Mth.clamp((moon.y + 0.05F) * 8.0F, 0.0F, 1.0F);
+                if (moonDogs > 0.01F) drawSunDogs(pose, moon, moonDogs * 0.45F);
             }
         }
         if (blood > 0.005F) {

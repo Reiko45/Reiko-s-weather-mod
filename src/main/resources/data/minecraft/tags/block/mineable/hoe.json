@@ -4,6 +4,8 @@
     "reikos_weather:leaf_pile",
     "reikos_weather:beach_wrack",
     "reikos_weather:quaking_mat",
-    "reikos_weather:tumbleweed"
+    "reikos_weather:tumbleweed",
+    "reikos_weather:glacier_mouse",
+    "reikos_weather:foxfire"
   ]
 }
