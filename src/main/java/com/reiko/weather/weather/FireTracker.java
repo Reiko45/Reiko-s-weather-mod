@@ -20,10 +20,12 @@ public final class FireTracker {
     private static final Long2IntOpenHashMap COUNTS = new Long2IntOpenHashMap();
     /** Somewhere that was burning in each area, for fire whirls to start from. */
     private static final it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap BURNING = new it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap();
-    /** A fire this size spins up fire whirls; bigger still and it builds its own thundercloud. */
-    private static final int HUGE_FIRE = 150, FIRESTORM = 220;
-    /** Fire ticks per area in five seconds that make a "big" fire: about twenty blocks burning at once. */
-    private static final int BIG_FIRE = 60;
+    /** A fire this size (about eighty blocks burning at once) spins up fire whirls; bigger still and it builds its own thundercloud. */
+    private static final int HUGE_FIRE = 240, FIRESTORM = 330;
+    /** Fire ticks per area in five seconds that make a "big" fire: about thirty blocks burning at once. */
+    private static final int BIG_FIRE = 90;
+    /** How far below the surface (the tops of the trees) a fire can be and still count as burning out in the open. */
+    private static final int OPEN_AIR = 14;
 
     /** Called (from a mixin) every time a fire block ticks. */
     public static void onFireTick(Level level, BlockPos pos) {
@@ -38,11 +40,22 @@ public final class FireTracker {
                 level.setBlock(below, com.reiko.weather.registry.ModBlocks.CHARRED_SOIL.get().defaultBlockState(), 2);
             }
         }
-        if (level.dimension() == Level.OVERWORLD) {
+        if (level.dimension() == Level.OVERWORLD && wild(level, pos)) {
             long key = ChunkPos.asLong(pos.getX() >> 5, pos.getZ() >> 5);
             COUNTS.addTo(key, 1);
             BURNING.put(key, pos.asLong());
         }
+    }
+
+    /**
+     * Whether a fire is burning out in the open, where its smoke rises into the sky: not deep in a cave or an old
+     * mineshaft lit by lava (common near spawn in a new world), and not a tame fire that burns for ever on netherrack
+     * or over a gas crater's vents.
+     */
+    private static boolean wild(Level level, BlockPos pos) {
+        if (pos.getY() < level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) - OPEN_AIR) return false;
+        BlockState below = level.getBlockState(pos.below());
+        return !below.is(level.dimensionType().infiniburn()) && !below.is(com.reiko.weather.registry.ModBlocks.GAS_VENT.get());
     }
 
     /** Smouldering peat ticks far less often than fire, so each tick counts for more (a big peat fire smokes too). */
@@ -78,7 +91,7 @@ public final class FireTracker {
                 // the heat sets the air spinning: a fire whirl
                 boolean whirlNear = !level.getEntities(com.reiko.weather.registry.ModEntities.TORNADO.get(),
                         new net.minecraft.world.phys.AABB(fire).inflate(64), t -> t.kind() == com.reiko.weather.entity.TornadoEntity.Kind.FIRE_WHIRL).isEmpty();
-                if (!whirlNear && random.nextInt(3) == 0 && level.isLoaded(fire)) {
+                if (!whirlNear && random.nextInt(5) == 0 && level.isLoaded(fire)) {
                     WeatherHazards.spawnTornado(level, net.minecraft.world.phys.Vec3.atBottomCenterOf(fire), random.nextFloat() * Mth.TWO_PI,
                             com.reiko.weather.entity.TornadoEntity.Kind.FIRE_WHIRL);
                 }

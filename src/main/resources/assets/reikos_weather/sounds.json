@@ -259,20 +259,20 @@
     "subtitle": "subtitles.reikos_weather.weather.snow_squeak",
     "sounds": [
       {
-        "name": "reikos_weather:weather/snow_squeak1",
-        "volume": 0.9
+        "name": "minecraft:step/snow1",
+        "pitch": 1.3
       },
       {
-        "name": "reikos_weather:weather/snow_squeak2",
-        "volume": 0.9
+        "name": "minecraft:step/snow2",
+        "pitch": 1.4
       },
       {
-        "name": "reikos_weather:weather/snow_squeak3",
-        "volume": 0.9
+        "name": "minecraft:step/snow3",
+        "pitch": 1.3
       },
       {
-        "name": "reikos_weather:weather/snow_squeak4",
-        "volume": 0.9
+        "name": "minecraft:step/snow4",
+        "pitch": 1.45
       }
     ]
   }

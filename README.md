@@ -365,7 +365,7 @@ Ways to stay comfortable:
   slopes and in the shadow of trees and cliffs; below the melting snow, **meltwater rills** trickle down the hillsides,
   drying up once the snow above has gone (and freezing to a glaze on frosty nights).
 - **Small signs:** on still autumn mornings, **gossamer** (sheets of spider silk over the grass, silver with dew, and
-  threads drifting on the air); in a hard frost, snow **squeaks** underfoot instead of crunching; on bitter nights,
+  threads drifting on the air); in a hard frost, snow **squeaks** underfoot (a crisper, higher crunch); on bitter nights,
   **frost ferns** grow over windows of plain glass (between open sky and a roof) and clear when it warms up, always
   turning back into the same glass; and the wind combs dry sand into **ripples** running across it, which rain smooths
   away.
