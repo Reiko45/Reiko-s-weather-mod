@@ -105,10 +105,11 @@ some break into thunderstorms (even hailstorms), dying away by dusk.
 - **Mudslides:** after a couple of minutes of pouring rain, soil on steep slopes can slide downhill as
   mud (needs `mobGriefing`).
 - **Tornadoes** (supercells): a 70-block funnel that wanders with the wind. Air rushes in along the ground and
-  spins up toward the funnel: mobs, items and players are dragged in, whirled round and carried up 20 to 30
-  blocks, then flung out of its side (a toss hurts, but a full-strength tornado's fall is capped at about four
-  hearts), and the funnel rips up leaves, plants, crops and snow (tag `reikos_weather:tornado_liftable`;
-  respects `mobGriefing`). Smaller whirls (landspouts, waterspouts, dust devils) lift you less, or not at all.
+  spins up toward the funnel, pulling from 30 to 50 blocks away (you can still sprint clear from the edge): mobs,
+  items and players are dragged in, whirled round and carried up 30 to 40 blocks, then flung out of its side to come
+  down 30 to 40 blocks away (a toss hurts, but the fall is capped at about four hearts however far you're thrown),
+  and the funnel rips up leaves, plants, crops and snow (tag `reikos_weather:tornado_liftable`; respects
+  `mobGriefing`). Smaller whirls (landspouts, waterspouts, dust devils) lift you less, or not at all.
 - **Waterspouts**: form over open water in thunderstorms, supercells and hurricanes, and collapse
   when they reach land.
 - **Dust devils**: small, mostly harmless whirlwinds in arid biomes on hot, clear days.
@@ -762,7 +763,7 @@ Under **Accessibility** in the client settings:
 - **Villagers go indoors** during storms.
 - **Polar bears** sometimes wander in out of blizzards in cold biomes.
 - Sheep grow a thicker coat in winter and in cold biomes: shearing them gives **extra wool**.
-- **Birdsong** on spring and summer days, **crickets** on summer nights, **frogs** after rain, and
+- **Birdsong** on spring and summer days, **frogs** after rain, and
   **geese** honking as they fly over in spring and autumn.
 - Under a **blood moon**, extra monsters spawn in the dark around every player.
 
@@ -879,8 +880,8 @@ effects (Performance, Default, Cinematic) and a button for every setting. Or edi
   on first join, and Tough As Nails.
 - `config/reikos_weather-client.toml`: particle density, fog, sky tinting, storm clouds (and how far
   out they're drawn), wet ground, mist, rainbows, auroras, heat lightning, seasonal colours, falling
-  leaves, sounds (delayed thunder, muffling indoors, roof rain and wind whistle), birdsong and
-  crickets, breath, footprints, screen raindrops, heat shimmer, dripping leaves, shooting stars,
+  leaves, sounds (delayed thunder, muffling indoors, roof rain and wind whistle), birdsong,
+  breath, footprints, screen raindrops, heat shimmer, dripping leaves, shooting stars,
   halos and sunbeams, hoarfrost, fireflies, blossoms, bird flocks, whitecaps, towering storm clouds,
   sea fog banks, smoke columns, diamond dust, St. Elmo's fire sparks, mirages, steam fog, waterfall
   spray, dusty rain, red sprites, noctilucent clouds, shelf clouds and mammatus, moonbows, fogbows,

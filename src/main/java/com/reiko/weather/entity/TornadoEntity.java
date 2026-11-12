@@ -155,7 +155,8 @@ public class TornadoEntity extends Entity {
 
     /** Radius within which entities are pulled in. */
     public double influenceRadius() {
-        return width() * 3.5 * strength() + (kind().small() ? 1.0 : 2.0);
+        // (a real tornado's inflow reaches well out from the funnel: you feel it pulling long before you're in it)
+        return kind().small() ? width() * 3.5 * strength() + 1.0 : width() * 5.0 * strength() + 6.0;
     }
 
     @Override
@@ -261,7 +262,7 @@ public class TornadoEntity extends Entity {
 
     private void pullEntities(ServerLevel level, float strength) {
         double influence = influenceRadius();
-        AABB box = new AABB(getX() - influence, getY() - 3, getZ() - influence, getX() + influence, getY() + height() * 0.6, getZ() + influence);
+        AABB box = new AABB(getX() - influence, getY() - 3, getZ() - influence, getX() + influence, getY() + height() * 0.8, getZ() + influence);
         DamageSource damage = level.damageSources().source(ModDamageTypes.TORNADO, this);
         for (Entity entity : level.getEntities(this, box, e -> !(e instanceof TornadoEntity) && !(e instanceof Player) && !e.isSpectator())) {
             Vec3 velocity = suction(this, entity, strength);
@@ -269,6 +270,7 @@ public class TornadoEntity extends Entity {
                 entity.setDeltaMovement(velocity);
                 entity.hurtMarked = true;
                 entity.fallDistance = Math.min(entity.fallDistance, fallCap(this));
+                if (entity.getY() > getY() + 3) CARRIED.put(entity, new long[]{level.getGameTime(), (long) (fallCap(this) * 100)});
                 if (kind().hurts && entity instanceof LivingEntity living && tickCount % 20 == 0
                         && horizontalDistance(entity) < radiusAt((float) (entity.getY() - getY())) * 1.5) {
                     living.hurt(damage, 1.0F);
@@ -283,11 +285,40 @@ public class TornadoEntity extends Entity {
      */
     private void excusePlayers(ServerLevel level) {
         double influence = influenceRadius() + 4;
+        long now = level.getGameTime();
         for (ServerPlayer player : level.players()) {
             double dx = player.getX() - getX(), dz = player.getZ() - getZ();
             if (dx * dx + dz * dz < influence * influence && player.getY() > getY() - 4 && player.getY() < getY() + height()) {
                 ((ServerGamePacketListenerImplAccessor) player.connection).reikos_weather$setAboveGroundTickCount(0);
-                if (!player.isCreative()) player.fallDistance = Math.min(player.fallDistance, fallCap(this));
+                if (!player.isCreative()) {
+                    player.fallDistance = Math.min(player.fallDistance, fallCap(this));
+                    // (caught up off the ground: it'll be thrown, and the fall that follows is capped wherever it lands)
+                    if (player.getY() > getY() + 3) CARRIED.put(player, new long[]{now, (long) (fallCap(this) * 100)});
+                }
+            }
+        }
+        landSoftly(level, now);
+    }
+
+    /** What a funnel has carried up lately (on the server): when, and the most its fall can count for (x100). */
+    private static final java.util.Map<Entity, long[]> CARRIED = new java.util.WeakHashMap<>();
+
+    /** Keeps the fall of anything thrown lately capped, however far from the funnel it comes down (and its flight excused). */
+    private static void landSoftly(ServerLevel level, long now) {
+        if (CARRIED.isEmpty()) return;
+        var it = CARRIED.entrySet().iterator();
+        while (it.hasNext()) {
+            var e = it.next();
+            Entity entity = e.getKey();
+            long[] info = e.getValue();
+            if (entity.isRemoved() || now - info[0] > THROW_COOLDOWN + 100 || now < info[0]) {
+                it.remove();
+                continue;
+            }
+            if (entity.level() != level) continue;
+            entity.fallDistance = Math.min(entity.fallDistance, info[1] / 100.0F);
+            if (entity instanceof ServerPlayer player) {
+                ((ServerGamePacketListenerImplAccessor) player.connection).reikos_weather$setAboveGroundTickCount(0);
             }
         }
     }
@@ -303,7 +334,7 @@ public class TornadoEntity extends Entity {
         double influence = tornado.influenceRadius();
         double above = entity.getY() - tornado.getY();
         float height = tornado.height();
-        if (distance > influence || above > height * 0.75 || above < -6) {
+        if (distance > influence || above > height * 0.8 || above < -6) {
             return null;
         }
         // (something just thrown out of the funnel falls clear of it before it can be caught again)
@@ -317,23 +348,26 @@ public class TornadoEntity extends Entity {
         double nx = distance > 0.01 ? dx / distance : 0.0;
         double nz = distance > 0.01 ? dz / distance : 0.0;
         // a Rankine vortex: the wind spins up toward the funnel's wall and is calmer inside it
-        double core = tornado.radiusAt((float) Math.max(0, above)) * 1.2 + 1.5;
+        double core = tornado.radiusAt((float) Math.max(0, above)) * 1.5 + 2.5;
         double ratio = distance / core;
         double swirl = 0.8 * power * (ratio < 1.0 ? ratio : Math.pow(1.0 / ratio, 0.7)) * Math.min(1.0, falloff * 4.0);
         // the funnel carries things up only so far before flinging them out of its side
         double ceiling = ceiling(tornado);
         double rising = Mth.clamp((ceiling - above) / (0.25 * ceiling + 2.0), 0.0, 1.0);
         if (rising < 0.15) {
+            // flung out of the side of the funnel, hard: whatever it carried up lands a good way off
             THROWN.put(entity, now);
+            double out = 1.0 + 2.0 * power;
+            return new Vec3(-nx * out - nz * swirl, 0.35 * power, -nz * out + nx * swirl);
         }
-        // air rushes in along the ground and turns upward at the funnel's wall
-        double inflow = 0.3 * power * Math.sqrt(falloff) * Math.min(1.0, ratio);
+        // air rushes in along the ground and turns upward round the funnel
+        double inflow = 0.42 * power * Math.sqrt(falloff) * Math.min(1.0, ratio);
         inflow = inflow * rising - 0.7 * power * (1.0 - rising);
-        double shape = Mth.clamp(1.6 - 0.6 * ratio, 0.0, 1.0);
-        double updraft = 0.55 * power * shape * rising;
+        double shape = Mth.clamp(1.5 - 0.4 * ratio, 0.0, 1.0);
+        double updraft = 0.6 * power * shape * rising;
         // how much of the weight of whatever is caught the updraft bears
         double carry = Mth.clamp(updraft / 0.12, 0.0, 1.0);
-        double grip = (0.05 + 0.2 * power) * Math.sqrt(falloff);
+        double grip = (0.06 + 0.24 * power) * Math.sqrt(falloff);
         Vec3 v = entity.getDeltaMovement();
         double targetX = nx * inflow - nz * swirl, targetZ = nz * inflow + nx * swirl;
         double vx = v.x + (targetX - v.x) * grip;
@@ -344,7 +378,7 @@ public class TornadoEntity extends Entity {
 
     /** How high above its base the funnel carries what it catches before throwing it out. */
     public static double ceiling(TornadoEntity tornado) {
-        return tornado.height() * (0.12 + 0.3 * tornado.strength() * tornado.kind().suction);
+        return tornado.height() * (0.15 + 0.4 * tornado.strength() * tornado.kind().suction);
     }
 
     /** How long something thrown out of a funnel falls free before a funnel can catch it again, in ticks. */

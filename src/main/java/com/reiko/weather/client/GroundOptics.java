@@ -152,11 +152,12 @@ public final class GroundOptics {
 
     /** How much fog or mist is lying below the camera to cast a shadow on. */
     private static float fogBelow(ClientLevel level, Vec3 cam) {
-        // you have to be up above it: on a peak, or above the lid of a valley inversion
+        // you have to be up above it, in the sunshine: on a peak over misty valleys, or above the lid of an inversion.
+        // (Not in the fog yourself: with fog all round, the sun can't throw your shadow anywhere.)
+        if (ClientWeather.fogDensity() > 0.25F || ClientWeather.overcast() > 0.5F || ClientWeather.sunOcclusion() > 0.4F) return 0.0F;
+        if (SkySights.inversion() > 0.2F && cam.y > SkySights.inversionLid() + 2.0F) return SkySights.inversion();
         var info = com.reiko.weather.weather.Microclimate.at(level, Mth.floor(cam.x), Mth.floor(cam.z), com.reiko.weather.network.SyncedWeather.windAngle());
-        boolean above = info.peak() > 0.15F || SkySights.inversion() > 0.2F && cam.y > SkySights.inversionLid() + 2.0F;
-        if (!above) return 0.0F;
-        return Math.max(Math.max(ClientWeather.mist(), SkySights.inversion()), ClientWeather.fogDensity() > 0.5F ? 0.6F : 0.0F);
+        return info.peak() > 0.3F ? ClientWeather.mist() * 0.8F : 0.0F;
     }
 
     private static void glory(ClientLevel level, Camera camera, float partialTick) {
@@ -181,32 +182,33 @@ public final class GroundOptics {
         Vector3f v = new Vector3f(u).cross(anti).normalize();
         Matrix4f pose = new Matrix4f();
         begin();
-        // the spectre: a dark, foreshortened figure (your own shadow), with normal blending
+        // the spectre: your own shadow, huge and soft-edged on the mist (normal blending)
         RenderSystem.defaultBlendFunc();
         BufferBuilder shade = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        float[] dark = {0.32F, 0.34F, 0.4F};
-        float a = 0.45F * alpha;
-        quad(shade, pose, center, u, v, -0.35F, 0.0F, 0.35F, 1.3F, dark, a);          // body
-        quad(shade, pose, center, u, v, -0.75F, 0.55F, 0.75F, 0.9F, dark, a * 0.7F);  // arms
-        quad(shade, pose, center, u, v, -0.22F, 1.35F, 0.22F, 1.8F, dark, a);         // head
-        quad(shade, pose, center, u, v, -0.3F, -1.6F, -0.05F, 0.0F, dark, a * 0.85F); // legs
-        quad(shade, pose, center, u, v, 0.05F, -1.6F, 0.3F, 0.0F, dark, a * 0.85F);
+        float[] dark = {0.3F, 0.32F, 0.38F};
+        float a = 0.3F * alpha;
+        blob(shade, pose, new Vector3f(center).add(new Vector3f(v).mul(0.2F)), u, v, 0.55F, 1.6F, dark, a);  // body
+        blob(shade, pose, new Vector3f(center).add(new Vector3f(v).mul(1.6F)), u, v, 0.32F, 0.32F, dark, a); // head
         draw(shade);
-        // the glory: rings of colour round the shadow's head
+        // the glory: soft rings of colour round the shadow's head, each fading in and out across its width
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
         BufferBuilder rings = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         Vector3f head = new Vector3f(center).add(new Vector3f(v).mul(1.6F));
-        float[][] colours = {{0.4F, 0.5F, 1.0F}, {0.4F, 1.0F, 0.6F}, {1.0F, 0.9F, 0.4F}, {1.0F, 0.4F, 0.35F}};
+        float[][] colours = {{0.45F, 0.55F, 1.0F}, {0.45F, 1.0F, 0.6F}, {1.0F, 0.9F, 0.45F}, {1.0F, 0.45F, 0.4F}};
         for (int ring = 0; ring < 2; ring++) {
             for (int band = 0; band < colours.length; band++) {
-                float r0 = 1.2F + ring * 1.4F + band * 0.3F, r1 = r0 + 0.3F;
-                float ra = alpha * (ring == 0 ? 0.35F : 0.18F);
-                for (int s = 0; s < 36; s++) {
-                    float p0 = s / 36.0F * Mth.TWO_PI, p1 = (s + 1) / 36.0F * Mth.TWO_PI;
-                    vertex(rings, pose, ring(head, u, v, p0, r0), colours[band], ra);
-                    vertex(rings, pose, ring(head, u, v, p1, r0), colours[band], ra);
-                    vertex(rings, pose, ring(head, u, v, p1, r1), colours[band], ra);
-                    vertex(rings, pose, ring(head, u, v, p0, r1), colours[band], ra);
+                float r0 = 1.2F + ring * 1.4F + band * 0.3F, r1 = r0 + 0.3F, rm = (r0 + r1) * 0.5F;
+                float ra = alpha * (ring == 0 ? 0.16F : 0.07F);
+                for (int seg = 0; seg < 48; seg++) {
+                    float p0 = seg / 48.0F * Mth.TWO_PI, p1 = (seg + 1) / 48.0F * Mth.TWO_PI;
+                    for (int half = 0; half < 2; half++) {
+                        float ra0 = half == 0 ? r0 : rm, ra1 = half == 0 ? rm : r1;
+                        float a0 = half == 0 ? 0.0F : ra, a1 = half == 0 ? ra : 0.0F;
+                        vertex(rings, pose, ring(head, u, v, p0, ra0), colours[band], a0);
+                        vertex(rings, pose, ring(head, u, v, p1, ra0), colours[band], a0);
+                        vertex(rings, pose, ring(head, u, v, p1, ra1), colours[band], a1);
+                        vertex(rings, pose, ring(head, u, v, p0, ra1), colours[band], a1);
+                    }
                 }
             }
         }
@@ -214,15 +216,22 @@ public final class GroundOptics {
         end();
     }
 
-    private static Vector3f ring(Vector3f c, Vector3f u, Vector3f v, float phi, float r) {
-        return new Vector3f(c).add(new Vector3f(u).mul(Mth.cos(phi) * r)).add(new Vector3f(v).mul(Mth.sin(phi) * r));
+    /** A soft oval: solid in the middle, fading out to nothing at its edge. */
+    private static void blob(BufferBuilder b, Matrix4f pose, Vector3f c, Vector3f u, Vector3f v, float rx, float ry, float[] col, float a) {
+        int n = 24;
+        for (int i = 0; i < n; i++) {
+            float p0 = i / (float) n * Mth.TWO_PI, p1 = (i + 1) / (float) n * Mth.TWO_PI;
+            Vector3f e0 = new Vector3f(c).add(new Vector3f(u).mul(Mth.cos(p0) * rx)).add(new Vector3f(v).mul(Mth.sin(p0) * ry));
+            Vector3f e1 = new Vector3f(c).add(new Vector3f(u).mul(Mth.cos(p1) * rx)).add(new Vector3f(v).mul(Mth.sin(p1) * ry));
+            vertex(b, pose, c, col, a);
+            vertex(b, pose, e0, col, 0.0F);
+            vertex(b, pose, e1, col, 0.0F);
+            vertex(b, pose, c, col, a);
+        }
     }
 
-    private static void quad(BufferBuilder b, Matrix4f pose, Vector3f c, Vector3f u, Vector3f v, float x0, float y0, float x1, float y1, float[] col, float a) {
-        vertex(b, pose, new Vector3f(c).add(new Vector3f(u).mul(x0)).add(new Vector3f(v).mul(y0)), col, a);
-        vertex(b, pose, new Vector3f(c).add(new Vector3f(u).mul(x1)).add(new Vector3f(v).mul(y0)), col, a);
-        vertex(b, pose, new Vector3f(c).add(new Vector3f(u).mul(x1)).add(new Vector3f(v).mul(y1)), col, a);
-        vertex(b, pose, new Vector3f(c).add(new Vector3f(u).mul(x0)).add(new Vector3f(v).mul(y1)), col, a);
+    private static Vector3f ring(Vector3f c, Vector3f u, Vector3f v, float phi, float r) {
+        return new Vector3f(c).add(new Vector3f(u).mul(Mth.cos(phi) * r)).add(new Vector3f(v).mul(Mth.sin(phi) * r));
     }
 
     // ------------------------------------------------------------------ light pillars

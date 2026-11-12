@@ -312,7 +312,6 @@
   "message.reikos_weather.meteor": "A meteor streaks across the sky!",
   "commands.reikos_weather.meteor": "A meteor is on its way down",
   "subtitles.reikos_weather.ambient.birdsong": "Bird sings",
-  "subtitles.reikos_weather.ambient.crickets": "Crickets chirp",
   "subtitles.reikos_weather.entity.meteor": "Meteor roars",
   "advancement.reikos_weather.heatstroke": "Hot Under the Collar",
   "advancement.reikos_weather.heatstroke.desc": "Get heatstroke in the blazing heat",

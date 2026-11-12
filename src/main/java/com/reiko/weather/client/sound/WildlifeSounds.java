@@ -20,19 +20,16 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Birds singing in the trees on spring and summer days (loudest at dawn), crickets chirping on warm
- * nights, and frogs croaking from the water after rain. Quiet in bad weather, and silent in winter.
+ * Birds singing in the trees on spring and summer days (loudest at dawn), and frogs croaking from the water after
+ * rain. Quiet in bad weather, and silent in winter.
  */
 public final class WildlifeSounds {
     private static final RandomSource RANDOM = RandomSource.create();
-    private static float crickets;
-    private static AmbientLoop cricketLoop;
 
     public static void tick(Minecraft mc) {
         ClientLevel level = mc.level;
         if (level == null || mc.player == null || !ClientConfig.WILDLIFE_SOUNDS.get() || !ClientConfig.SOUNDS.get()
                 || level.dimension() != Level.OVERWORLD || mc.isPaused()) {
-            crickets = 0.0F;
             return;
         }
         Season season = SyncedWeather.season();
@@ -63,18 +60,6 @@ public final class WildlifeSounds {
         if (frogs > 0.05F && RANDOM.nextFloat() < frogs / 25.0F) {
             croakFromWater(level, mc.gameRenderer.getMainCamera().getPosition());
         }
-
-        // crickets: warm nights in the grass
-        float night = Mth.clamp((-sun - 0.05F) * 4.0F, 0.0F, 1.0F);
-        float warmSeason = season == null ? 1.0F : season == Season.SUMMER ? 1.0F : season == Season.SPRING || season == Season.AUTUMN ? 0.4F : 0.0F;
-        BlockPos below = mc.player.blockPosition().below();
-        boolean grassy = level.getBlockState(below).is(Blocks.GRASS_BLOCK) || level.getBlockState(mc.player.blockPosition()).is(BlockTags.REPLACEABLE);
-        float target = night * warmSeason * (calm ? 1.0F : 0.1F) * outdoors * (temperate ? 1.0F : 0.3F) * (grassy ? 0.35F : 0.15F);
-        crickets = Mth.approach(crickets, target, 0.004F);
-        if (crickets > 0.02F && (cricketLoop == null || cricketLoop.isStopped() || !mc.getSoundManager().isActive(cricketLoop))) {
-            cricketLoop = new AmbientLoop(ModSounds.CRICKETS.get(), () -> crickets, () -> 1.0F);
-            mc.getSoundManager().play(cricketLoop);
-        }
     }
 
     private static void singFromATree(ClientLevel level, Vec3 cam) {
@@ -102,8 +87,6 @@ public final class WildlifeSounds {
     }
 
     public static void reset() {
-        crickets = 0.0F;
-        cricketLoop = null;
     }
 
     private WildlifeSounds() {}

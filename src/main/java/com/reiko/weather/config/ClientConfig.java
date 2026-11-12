@@ -176,7 +176,7 @@ public final class ClientConfig {
                 .define("drippingLeaves", true);
         SHOOTING_STARS = b.comment("Shooting stars on clear nights, and meteor showers on some nights.")
                 .define("shootingStars", true);
-        WILDLIFE_SOUNDS = b.comment("Birdsong on spring and summer days, crickets on summer nights, frogs after rain.")
+        WILDLIFE_SOUNDS = b.comment("Birdsong on spring and summer days, frogs after rain.")
                 .define("wildlifeSounds", true);
         SKY_OPTICS = b.comment("Ice-crystal halos and sun dogs on icy days, and sunbeams through broken cloud.")
                 .define("skyOptics", true);
