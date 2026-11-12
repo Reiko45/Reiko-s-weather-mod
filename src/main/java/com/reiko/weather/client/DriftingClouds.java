@@ -64,16 +64,25 @@ public final class DriftingClouds {
         return level.getSeaLevel() + 124.0F;
     }
 
-    /** One cloud's slot: {along, across, length, width}, or null where the sky is clear. */
+    /** How much of the sky the fair-weather clouds cover just now, 0 to 1 (the volumetric clouds follow it too). */
+    public static float cover() {
+        return cover;
+    }
+
+    /**
+     * One cloud's slot: {along, across, length, width, presence}, or null where the sky is clear. (As the cover
+     * changes, a cloud fades in or out over a range of it, rather than popping in or out all at once.)
+     */
     private static float[] cloud(int i, int j) {
         int seed = i * 92821 + j * 68917;
-        if (PuffRenderer.hash(seed, 21) > cover) return null;
+        float presence = Mth.clamp((cover - PuffRenderer.hash(seed, 21)) / 0.06F, 0.0F, 1.0F);
+        if (presence <= 0.0F) return null;
         float along = (i + 0.5F) * SPACING + (PuffRenderer.hash(seed, 22) - 0.5F) * SPACING * 0.7F;
         float across = (j + 0.5F) * SPACING + (PuffRenderer.hash(seed, 23) - 0.5F) * SPACING * 0.7F;
         // stretched out along the wind, and bigger where the sky is more clouded
         float length = (22.0F + 30.0F * PuffRenderer.hash(seed, 24)) * (0.8F + 0.5F * cover);
         float width = length * (0.45F + 0.3F * PuffRenderer.hash(seed, 25));
-        return new float[]{along, across, length, width};
+        return new float[]{along, across, length, width, presence};
     }
 
     /** How much of the sun's disc a spot on the cloud layer hides, 0 to 1. */
@@ -90,7 +99,7 @@ public final class DriftingClouds {
                 float[] c = cloud(i, j);
                 if (c == null) continue;
                 double du = (pa - c[0]) / (c[2] * 0.6), dv = (pc - c[1]) / (c[3] * 0.6);
-                most = Math.max(most, (float) Mth.clamp((1.0 - Math.sqrt(du * du + dv * dv)) * 2.5, 0.0, 1.0));
+                most = Math.max(most, (float) Mth.clamp((1.0 - Math.sqrt(du * du + dv * dv)) * 2.5, 0.0, 1.0) * c[4]);
             }
         }
         return most;
@@ -100,7 +109,7 @@ public final class DriftingClouds {
     public static void collect(Camera camera, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || cover < 0.02F || !replacing() || !cloudsWanted(mc)) return;
+        if (level == null || cover < 0.02F || !replacing() || !cloudsWanted(mc) || VolumetricClouds.active()) return;
         Vec3 cam = camera.getPosition();
         float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
         float daylight = level.getSkyDarken(partialTick);
@@ -123,7 +132,7 @@ public final class DriftingClouds {
                 // (the storm deck lies below these, so where it covers the sky they're hidden behind it)
                 float deck = ClientConfig.STORM_CLOUDS.get() ? ClientWeather.cloudsAt(x, z) : 0.0F;
                 // (and under a full overcast they merge into the grey sheet above, rather than standing out)
-                float alpha = 0.78F * fade * (1.0F - deck) * (1.0F - 0.45F * ClientWeather.overcast()) * (float) Mth.clamp((REACH - dist) / 140.0, 0.0, 1.0) * Mth.clamp(cover * 4.0F, 0.0F, 1.0F);
+                float alpha = 0.78F * fade * (1.0F - deck) * (1.0F - 0.45F * ClientWeather.overcast()) * (float) Mth.clamp((REACH - dist) / 140.0, 0.0, 1.0) * Mth.clamp(cover * 4.0F, 0.0F, 1.0F) * c[4];
                 if (alpha < 0.01F) continue;
                 patch(i * 92821 + j * 68917, x, base, z, c[2], c[3], tint, alpha, cam, maxDistance);
             }

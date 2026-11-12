@@ -1084,7 +1084,10 @@ public class WeatherGameTests {
         helper.setBlock(3, 1, 1, ModBlocks.ASPHALT.get());
         var pig = helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(1, 2, 1));
         var other = helper.spawn(net.minecraft.world.entity.EntityType.PIG, new BlockPos(3, 2, 1));
-        helper.runAfterDelay(40, () -> {
+        // (looked at soon, before it wanders into the side of the pool: it can heave itself out again; the other one
+        // is kept still so it doesn't walk off the asphalt)
+        other.setNoAi(true);
+        helper.runAfterDelay(15, () -> {
             double sunk = helper.absolutePos(new BlockPos(1, 2, 1)).getY() - pig.getY();
             double stood = other.getY() - helper.absolutePos(new BlockPos(3, 2, 1)).getY();
             helper.assertTrue(sunk > 0.5, "a pig sinks into the tar (sunk " + sunk + ")");

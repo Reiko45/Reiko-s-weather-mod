@@ -103,9 +103,11 @@ some break into thunderstorms (even hailstorms), dying away by dusk.
   greenhouses take a beating. Needs `mobGriefing`.
 - **Mudslides:** after a couple of minutes of pouring rain, soil on steep slopes can slide downhill as
   mud (needs `mobGriefing`).
-- **Tornadoes** (supercells): a 70-block funnel that wanders with the wind. It pulls in mobs,
-  items and players, lifts them 20+ blocks and flings them out, and rips up leaves, plants, crops
-  and snow (tag `reikos_weather:tornado_liftable`; respects `mobGriefing`).
+- **Tornadoes** (supercells): a 70-block funnel that wanders with the wind. Air rushes in along the ground and
+  spins up toward the funnel: mobs, items and players are dragged in, whirled round and carried up 20 to 30
+  blocks, then flung out of its side (a toss hurts, but a full-strength tornado's fall is capped at about four
+  hearts), and the funnel rips up leaves, plants, crops and snow (tag `reikos_weather:tornado_liftable`;
+  respects `mobGriefing`). Smaller whirls (landspouts, waterspouts, dust devils) lift you less, or not at all.
 - **Waterspouts**: form over open water in thunderstorms, supercells and hurricanes, and collapse
   when they reach land.
 - **Dust devils**: small, mostly harmless whirlwinds in arid biomes on hot, clear days.
@@ -350,7 +352,8 @@ Ways to stay comfortable:
 - **Old weather signs:** on summer mornings, turreted **castles in the sky** (altocumulus castellanus) warn that the
   afternoon will turn thundery; as a storm comes on, **swallows** skim low over the fields and livestock bunch
   together.
-- **Aftershocks and fault scarps:** a big earthquake is followed by smaller aftershocks over the next few days, and
+- **Aftershocks and fault scarps:** a big earthquake is followed by a few smaller aftershocks, none in the first
+  few minutes and further apart as time goes on (each with its own "aftershock" message), and
   can tear a fresh crack across the land with the ground heaved up along one side (natural ground only, away from
   anything built; needs `mobGriefing`).
 - **Hard winters:** in winter, on coasts below mountains, a **bora** pours icy gusts down to the sea; on high, cold
@@ -434,9 +437,15 @@ Ways to stay comfortable:
   and on still, cold mornings and evenings, smoke from fires and furnaces spreads out in a flat **woodsmoke** layer.
 - **Wall clouds and funnel clouds:** a dark, turning wall cloud hangs under the back of a supercell, and now
   and then a funnel cloud snakes down from it and draws back up.
-- **Clouds:** soft clouds drifting on the wind replace Minecraft's blocky ones, white by day, gold and pink at
-  sunrise and sunset and grey under the moon, with more or less of the sky covered as the weather changes. (Turn
-  `replaceVanillaClouds` off in the client settings for the blocky ones; Minecraft's "Clouds: Off" hides both.)
+- **Clouds:** real, volumetric clouds drifting on the wind replace Minecraft's blocky ones. Each pixel of sky is
+  traced through a layer of 3D cloud, lit by the sun (and shaded by the cloud between it and the sun), so they
+  have bright, sunlit tops, grey flat bases and glowing silver edges toward the sun; gold and pink at sunrise and
+  sunset and grey under the moon. Thin fair-weather patches, heaped cumulus with cauliflower tops and the thick,
+  ragged decks of storms all come out of the same layer, set by the weather around you (a storm on the horizon
+  shows as a wall of cloud there), and they slowly change shape as they drift. `volumetricClouds` in the client
+  settings picks LOW, MEDIUM (the default; both worked out at half resolution) or HIGH (full resolution, more
+  detail), or OFF for the older, flat clouds. With a shader pack on, the flat clouds come back (most packs draw
+  their own). (Turn `replaceVanillaClouds` off for Minecraft's blocky ones; Minecraft's "Clouds: Off" hides all.)
 - **Cloud streets:** on warm, sunny days, puffy fair-weather clouds build through the morning, and in a steady
   breeze they line up in long rows along the wind. When one drifts over the sun, the light dims for a moment.
 - **Asperitas:** around some thunderstorms the cloud base heaves and rolls overhead like a rough sea seen from below.
@@ -820,8 +829,8 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
   the warm and cold drinks, the sun hat and the tent work on its scale. Can be turned off in the
   server config.
 - **Curios:** the sun hat and storm goggles can be worn in a Curios head slot (and show on your head).
-- **Iris / Oculus:** the heat shimmer steps aside while a shader pack is on (shader packs run their
-  own post-processing).
+- **Iris / Oculus:** the heat shimmer and the volumetric clouds step aside while a shader pack is on (shader
+  packs run their own post-processing, and most draw their own clouds).
 - **Serene Seasons:** its calendar drives the seasons (see above).
 - **Distant Horizons:** the storm cloud deck reaches as far as Distant Horizons draws terrain.
 
@@ -843,7 +852,7 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather volcano create [pos]` | op | Raise a volcano at a position (or where you stand); handy for worlds made before volcanoes |
 | `/rweather volcano wake\|erupt\|calm` | op | Start the nearest volcano rumbling, set it erupting, or cool it down |
 | `/rweather volcano lahar\|pyroclastic` | op | Send a lahar or a pyroclastic flow down the nearest volcano |
-| `/rweather quake [strength]` | op | An earthquake centred where you stand (0 to 1; 0.5 by default) |
+| `/rweather quake [strength] [aftershocks]` | op | An earthquake centred where you stand (0 to 1; 0.5 by default); add `aftershocks` for a natural quake's aftershocks to follow |
 
 ## Configuration
 Open the settings from the **Mods** screen. The first page has one-click **presets** for the visual

@@ -62,8 +62,15 @@ public final class Cumulus {
             double t = (base(level) + 6.0 - cam.y) / Math.max(0.08, sy);
             if (t > 0.0 && strength > 0.02F && ClientConfig.CLOUD_STREETS.get()) covered = coverage(cam.x + sx * t, cam.z + sz * t) * strength;
             if (DriftingClouds.replacing()) covered = Math.max(covered, DriftingClouds.coverage(level, cam.x, cam.y, cam.z, sx, sy, sz));
+            // (the volumetric clouds work out their own shade, from the same clouds they draw)
+            if (VolumetricClouds.active()) covered = VolumetricClouds.shade();
         }
         shade = Mth.lerp(0.06F, shade, covered);
+    }
+
+    /** How strongly the fair-weather cumulus are building, 0 to 1 (the volumetric clouds follow it too). */
+    public static float strength() {
+        return strength;
     }
 
     /** How much the passing cloud shades the sun, 0 to 1. */
@@ -75,15 +82,17 @@ public final class Cumulus {
         return level.getSeaLevel() + 100.0F;
     }
 
-    /** One cloud's slot in the field: {along, across, size}, or null where the slot is empty. */
+    /** One cloud's slot in the field: {along, across, size, presence}, or null where the slot is empty. */
     private static float[] cloud(int row, int slot) {
         int seed = row * 7919 + slot * 104729;
-        if (PuffRenderer.hash(seed, 1) > 0.55F + 0.2F * streets) return null;
+        // (fading in and out as the streets form and break up, rather than popping)
+        float presence = Mth.clamp((0.55F + 0.2F * streets - PuffRenderer.hash(seed, 1)) / 0.05F, 0.0F, 1.0F);
+        if (presence <= 0.0F) return null;
         // in streets they sit close to the line of their row; scattered, they wander right across the gap
         float across = (row + 0.5F) * ROW + (PuffRenderer.hash(seed, 2) - 0.5F) * ROW * Mth.lerp(streets, 0.85F, 0.22F);
         float along = (slot + 0.5F) * SLOT + (PuffRenderer.hash(seed, 3) - 0.5F) * SLOT * 0.6F;
         float size = 15.0F + 17.0F * PuffRenderer.hash(seed, 4);
-        return new float[]{along, across, size};
+        return new float[]{along, across, size, presence};
     }
 
     /** How much cloud there is overhead at a spot, 0 to 1. */
@@ -96,7 +105,7 @@ public final class Cumulus {
                 float[] c = cloud(r, k);
                 if (c == null) continue;
                 double d = Math.sqrt((pa - c[0]) * (pa - c[0]) + (pc - c[1]) * (pc - c[1])) / (c[2] * 1.1);
-                most = Math.max(most, (float) Mth.clamp((1.0 - d) * 2.5, 0.0, 1.0));
+                most = Math.max(most, (float) Mth.clamp((1.0 - d) * 2.5, 0.0, 1.0) * c[3]);
             }
         }
         return most;
@@ -106,7 +115,7 @@ public final class Cumulus {
     public static void collect(Camera camera, float partialTick) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || strength < 0.02F || !ClientConfig.CLOUD_STREETS.get() || !DriftingClouds.cloudsWanted(mc)) return;
+        if (level == null || strength < 0.02F || !ClientConfig.CLOUD_STREETS.get() || !DriftingClouds.cloudsWanted(mc) || VolumetricClouds.active()) return;
         Vec3 cam = camera.getPosition();
         float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
         float daylight = level.getSkyDarken(partialTick);
@@ -126,7 +135,7 @@ public final class Cumulus {
                 double x = along * windX - across * windZ, z = along * windZ + across * windX;
                 double dist = Math.sqrt((x - cam.x) * (x - cam.x) + (z - cam.z) * (z - cam.z));
                 if (dist > reach) continue;
-                float alpha = 0.85F * strength * fade * (float) Mth.clamp((reach - dist) / 120.0, 0.0, 1.0);
+                float alpha = 0.85F * strength * fade * (float) Mth.clamp((reach - dist) / 120.0, 0.0, 1.0) * c[3];
                 puffs(x, base + 4.0F * PuffRenderer.hash(r * 7919 + k, 5), z, c[2], tint, alpha, cam, maxDistance);
             }
         }

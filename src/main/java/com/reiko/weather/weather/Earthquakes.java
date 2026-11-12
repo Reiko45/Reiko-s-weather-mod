@@ -46,7 +46,7 @@ public final class Earthquakes {
             long now = level.getGameTime();
             var due = AFTERSHOCKS.stream().filter(a -> a.at() <= now).toList();
             AFTERSHOCKS.removeAll(due);
-            for (Aftershock a : due) shake(level, a.x(), a.z(), a.magnitude(), false);
+            for (Aftershock a : due) shake(level, a.x(), a.z(), a.magnitude(), false, false);
         }
         if (!WeatherConfig.EARTHQUAKES.get() || level.getGameTime() % 20L != 0L || level.players().isEmpty()) {
             return;
@@ -63,9 +63,14 @@ public final class Earthquakes {
         quake(level, near.getX() + Mth.cos(angle) * distance, near.getZ() + Mth.sin(angle) * distance, magnitude);
     }
 
-    /** An earthquake with its epicentre at (x, z); {@code magnitude} 0 to 1. */
+    /** An earthquake with its epicentre at (x, z); {@code magnitude} 0 to 1. A big one is followed by aftershocks. */
     public static void quake(ServerLevel level, double x, double z, float magnitude) {
-        shake(level, x, z, magnitude, true);
+        quake(level, x, z, magnitude, true);
+    }
+
+    /** An earthquake, with or without the aftershocks a big one would bring (the command's quakes come on their own). */
+    public static void quake(ServerLevel level, double x, double z, float magnitude, boolean aftershocks) {
+        shake(level, x, z, magnitude, true, aftershocks);
     }
 
     /** How many aftershocks are still to come (for the gametests). */
@@ -73,15 +78,15 @@ public final class Earthquakes {
         return AFTERSHOCKS.size();
     }
 
-    private static void shake(ServerLevel level, double x, double z, float magnitude, boolean main) {
+    private static void shake(ServerLevel level, double x, double z, float magnitude, boolean main, boolean aftershocks) {
         RandomSource random = level.random;
-        if (main && magnitude > 0.4F && WeatherConfig.AFTERSHOCKS.get()) {
-            // aftershocks: the fault keeps settling for a few days, the shocks coming less and less often (Omori's law),
-            // the biggest of them a good deal weaker than the main quake (Båth's law)
-            int n = 3 + Math.round(5 * magnitude);
+        if (main && aftershocks && magnitude > 0.4F && WeatherConfig.AFTERSHOCKS.get()) {
+            // aftershocks: the fault keeps settling for a day or two, the shocks coming less and less often (Omori's law),
+            // the biggest of them a good deal weaker than the main quake (Båth's law); a few, and none in the first minutes
+            int n = 1 + Math.round(3 * magnitude);
             long now = level.getGameTime();
             for (int k = 1; k <= n; k++) {
-                long at = now + (long) (900 * Math.pow(k, 1.8) * (0.6 + random.nextDouble()));
+                long at = now + 3600 + (long) (2400 * Math.pow(k, 1.8) * (0.6 + random.nextDouble()));
                 float m = magnitude * (0.65F - 0.04F * k) * (0.7F + 0.3F * random.nextFloat());
                 AFTERSHOCKS.add(new Aftershock(x + random.nextGaussian() * 50, z + random.nextGaussian() * 50, at, Math.max(0.1F, m)));
             }
@@ -96,8 +101,8 @@ public final class Earthquakes {
             float felt = magnitude * (float) (1.0 - d / reach);
             PacketDistributor.sendToPlayer(player, new QuakePayload(Math.min(1.0F, felt * 1.4F), ticks));
             if (felt > 0.15F) {
-                player.displayClientMessage(Component.translatable(felt > 0.45F ? "message.reikos_weather.earthquake_strong"
-                        : "message.reikos_weather.earthquake").withStyle(s -> s.withColor(0xC8A070).withBold(felt > 0.45F)), true);
+                player.displayClientMessage(Component.translatable(!main ? "message.reikos_weather.aftershock"
+                        : felt > 0.45F ? "message.reikos_weather.earthquake_strong" : "message.reikos_weather.earthquake").withStyle(s -> s.withColor(0xC8A070).withBold(felt > 0.45F)), true);
                 WeatherAdvancements.award(player, "shaken");
             }
             if (griefing && felt > 0.3F) shakeLoose(level, player, felt, random);
@@ -271,6 +276,7 @@ public final class Earthquakes {
 
     public static void reset() {
         pending = null;
+        AFTERSHOCKS.clear(); // (so one world's aftershocks don't carry over into the next one loaded)
     }
 
     private Earthquakes() {}

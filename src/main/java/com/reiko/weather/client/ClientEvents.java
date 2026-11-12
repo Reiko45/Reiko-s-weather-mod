@@ -254,6 +254,7 @@ public final class ClientEvents {
             float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
             WetGroundRenderer.render(cam);
             Footprints.render(cam, partialTick);
+            VolumetricClouds.render(event);
             CloudDeckRenderer.render(cam, partialTick);
             Mirage.render(event);
             VolcanoClient.collectPlumes(event.getCamera(), partialTick);
@@ -313,6 +314,7 @@ public final class ClientEvents {
         AirAndWater.tick(mc);
         DriftingClouds.tick(mc);
         Cumulus.tick(mc);
+        VolumetricClouds.tick(mc);
         StormSkies.tick(mc);
         DampAir.tick(mc);
         InsectSwarms.tick(mc);
@@ -374,6 +376,7 @@ public final class ClientEvents {
         Mirage.reset();
         Cumulus.reset();
         DriftingClouds.reset();
+        VolumetricClouds.reset();
         StormSkies.reset();
         DampAir.reset();
         InsectSwarms.reset();

@@ -86,10 +86,12 @@ public class ConfigHomeScreen extends Screen {
             }
             ClientConfig.PARTICLE_DENSITY.set(ClientConfig.PARTICLE_DENSITY.getDefault());
             ClientConfig.STORM_CLOUD_RANGE.set(ClientConfig.STORM_CLOUD_RANGE.getDefault());
+            ClientConfig.VOLUMETRIC_CLOUDS.set(ClientConfig.VOLUMETRIC_CLOUDS.getDefault());
             switch (this) {
                 case PERFORMANCE -> {
                     ClientConfig.PARTICLE_DENSITY.set(0.5);
                     ClientConfig.STORM_CLOUD_RANGE.set(480);
+                    ClientConfig.VOLUMETRIC_CLOUDS.set(VolumetricClouds.Quality.LOW);
                     for (ModConfigSpec.BooleanValue v : new ModConfigSpec.BooleanValue[]{ClientConfig.WET_GROUND, ClientConfig.FOOTPRINTS,
                             ClientConfig.SCREEN_RAINDROPS, ClientConfig.HEAT_SHIMMER, ClientConfig.DRIPPING_LEAVES, ClientConfig.HOARFROST,
                             ClientConfig.BLOSSOMS, ClientConfig.WHITECAPS, ClientConfig.FALLING_LEAVES, ClientConfig.BREATH,
@@ -106,6 +108,7 @@ public class ConfigHomeScreen extends Screen {
                 case CINEMATIC -> {
                     ClientConfig.PARTICLE_DENSITY.set(1.6);
                     ClientConfig.STORM_CLOUD_RANGE.set(2048);
+                    ClientConfig.VOLUMETRIC_CLOUDS.set(VolumetricClouds.Quality.HIGH);
                 }
                 case DEFAULT -> {}
             }

@@ -96,7 +96,8 @@
      "title": "Supercells",
      "icon": "minecraft:ghast_tear",
      "pages": [
-      "A severe storm under a green-tinted sky: hail, constant lightning and tornadoes. Get underground."
+      "A severe storm under a green-tinted sky: hail, constant lightning and tornadoes. Get underground.",
+      "A tornado's winds rush in along the ground and spin up round the funnel. Anything caught, you included, is dragged in, whirled round and carried twenty or thirty blocks up, then flung out of its side. Run across its path, not away down it."
      ]
     },
     {
@@ -1713,6 +1714,7 @@
      "title": "Clouds",
      "icon": "minecraft:white_wool",
      "pages": [
+      "The clouds are real 3D clouds, drifting on the wind aloft: sunlit tops, grey, flat bases and bright silver edges toward the sun, gold at sunrise and sunset and grey under the moon. They change with the weather: a few thin patches on a fine day, heaped cumulus over warm ground, a thick, ragged deck under a storm, and a wall of cloud on the horizon where a storm is coming. (Volumetric Clouds in the settings: Low, Medium, High or Off.)",
       "On warm, sunny days, puffy fair-weather clouds build through the morning. In a steady breeze they line up in long rows along the wind: cloud streets. When one drifts over the sun the light dims for a moment, then brightens again.",
       "Around some thunderstorms the cloud base heaves and rolls overhead like a rough sea seen from below: asperitas. When a foehn wind pours down off the mountains, a band of clear blue sky arches over them under a sharp-edged deck of cloud: the Chinook arch."
      ]
@@ -1908,7 +1910,7 @@
      "title": "Aftershocks, Foxfire and Sun Cups",
      "icon": "minecraft:glow_berries",
      "pages": [
-      "A big earthquake is followed by smaller aftershocks over the next few days, coming less and less often.",
+      "A big earthquake is followed by a few smaller aftershocks: none in the first few minutes, then coming less and less often.",
       "In wet woods, fallen logs glow a faint green at night where honey fungus is rotting them: foxfire. In summer sun, high snowfields melt into a pitted surface of shallow cups."
      ]
     }

@@ -90,6 +90,7 @@ public final class ClientConfig {
     public static final ModConfigSpec.BooleanValue WOODSMOKE;
     public static final ModConfigSpec.BooleanValue ALTITUDE_SEASONS;
     public static final ModConfigSpec.BooleanValue REPLACE_VANILLA_CLOUDS;
+    public static final ModConfigSpec.EnumValue<com.reiko.weather.client.VolumetricClouds.Quality> VOLUMETRIC_CLOUDS;
     public static final ModConfigSpec.BooleanValue CLOUD_STREETS;
     public static final ModConfigSpec.BooleanValue CLOUD_SHADE;
     public static final ModConfigSpec.BooleanValue ASPERITAS_CLOUDS;
@@ -296,6 +297,10 @@ public final class ClientConfig {
         REPLACE_VANILLA_CLOUDS = b.comment("Draw soft, drifting clouds that follow the wind and the weather instead of Minecraft's blocky ones.",
                         "(Minecraft's own \"Clouds: Off\" video setting turns these off too.)")
                 .define("replaceVanillaClouds", true);
+        VOLUMETRIC_CLOUDS = b.comment("Draw the clouds as real 3D volumes, lit and shaded by the sun, instead of flat sprites (with \"replaceVanillaClouds\").",
+                        "LOW and MEDIUM work them out at half the screen's resolution; HIGH at full resolution, with more detail. OFF goes back to the flat clouds.",
+                        "(Turned off while a shader pack is in use: most packs draw their own.)")
+                .defineEnum("volumetricClouds", com.reiko.weather.client.VolumetricClouds.Quality.MEDIUM);
         CLOUD_STREETS = b.comment("On breezy summer days, fair-weather clouds line up in rows along the wind.")
                 .define("cloudStreets", true);
         CLOUD_SHADE = b.comment("On broken-cloud days the light dims and brightens as clouds cross the sun.")

@@ -26,6 +26,7 @@ public class ReikosWeatherClient {
         modBus.addListener(ClientEvents::registerBlockColors);
         modBus.addListener(ClientEvents::registerGuiLayers);
         modBus.addListener(ClientEvents::registerModels);
+        modBus.addListener(com.reiko.weather.client.VolumetricClouds::registerShaders);
 
         NeoForge.EVENT_BUS.addListener(ClientEvents::onClientTick);
         NeoForge.EVENT_BUS.addListener(com.reiko.weather.client.SqueakySnow::onPlaySound);

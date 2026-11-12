@@ -19,6 +19,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL32;
 
 /**
  * A low, dark deck of storm clouds under the vanilla clouds. Its coverage is worked out per position,
@@ -34,7 +36,7 @@ public final class CloudDeckRenderer {
     private static float coverCell;
     private static final float DEFAULT_RANGE = 960.0F;
     private static final float[][] LAYERS = {{0.0F, 256.0F, 1.0F}, {7.0F, 176.0F, 0.75F}};
-    /** Per-frame: deck radius in blocks, grid cell size, and the distance vertices are pulled in to. */
+    /** Per-frame: deck radius in blocks, grid cell size, and the distance the rain shafts are pulled in to. */
     private static float range = DEFAULT_RANGE, cellSize = 40.0F, maxDistance = 1000.0F;
 
     /** How far out the deck reaches: the config value, Distant Horizons' LOD distance, or about 960 blocks. */
@@ -59,12 +61,23 @@ public final class CloudDeckRenderer {
         }
         float baseY = level.getSeaLevel() + 88.0F;
         range = range();
+        maxDistance = mc.gameRenderer.getDepthFar() * 0.92F;
+        if (VolumetricClouds.active()) {
+            // (the volumetric clouds draw the storms' clouds themselves: only the rain shafts under distant storms are left)
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthMask(false);
+            RenderSystem.disableCull();
+            drawRainCurtains(level, cam, baseY, Mth.clamp(0.22F + 0.26F * level.getSkyDarken(partialTick), 0.0F, 1.0F) * 0.85F, fogFade);
+            RenderSystem.enableCull();
+            RenderSystem.depthMask(true);
+            RenderSystem.disableBlend();
+            return;
+        }
         final float CELL = cellSize = Math.max(40.0F, range * 2.0F / GRID);
         final float FADE_END = GRID * CELL / 2.0F - CELL;
         final float FADE_START = FADE_END * 0.6F;
-        // anything past the far clip plane is slid toward the camera along its view ray: it lands on the
-        // same pixel, so storms stay visible over Distant Horizons terrain beyond vanilla's view distance
-        maxDistance = mc.gameRenderer.getDepthFar() * 0.92F;
         double gx0 = Math.floor(cam.x / CELL) * CELL - GRID / 2.0 * CELL;
         double gz0 = Math.floor(cam.z / CELL) * CELL - GRID / 2.0 * CELL;
         // (the storm cells move once a tick, so the cover is only worked out again each tick, or when the grid moves)
@@ -108,6 +121,10 @@ public final class CloudDeckRenderer {
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
+        // the deck reaches past the far clip plane: rather than clip it there, clamp its depth to the far plane (so it
+        // stays behind everything, and visible over Distant Horizons terrain beyond vanilla's view distance). Pulling
+        // each corner in instead bent the quads, and the bend shifted as you walked.
+        GL11.glEnable(GL32.GL_DEPTH_CLAMP);
 
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (float[] layer : LAYERS) {
@@ -134,6 +151,7 @@ public final class CloudDeckRenderer {
         if (mesh != null) {
             BufferUploader.drawWithShader(mesh);
         }
+        GL11.glDisable(GL32.GL_DEPTH_CLAMP);
         drawRainCurtains(level, cam, baseY, shade * 0.85F, fogFade);
 
         RenderSystem.enableCull();
@@ -191,15 +209,8 @@ public final class CloudDeckRenderer {
 
     private static void vertex(BufferBuilder buffer, double wx, float y, double wz, Vec3 cam, double offX, double offZ,
                                float scale, float shade, float alpha) {
-        float rx = (float) (wx - cam.x), rz = (float) (wz - cam.z), ry = y;
-        float distance = Mth.sqrt(rx * rx + ry * ry + rz * rz);
-        if (distance > maxDistance) {
-            float k = maxDistance / distance;
-            rx *= k;
-            ry *= k;
-            rz *= k;
-        }
-        buffer.addVertex(rx, ry, rz)
+        float rx = (float) (wx - cam.x), rz = (float) (wz - cam.z);
+        buffer.addVertex(rx, y, rz)
                 .setUv((float) ((wx - offX) / scale), (float) ((wz - offZ) / scale))
                 .setColor(shade, shade, shade * 1.04F, Math.min(1.0F, alpha * 0.95F));
     }
