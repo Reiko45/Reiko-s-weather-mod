@@ -2,7 +2,8 @@
 
 Built mod files for Minecraft 1.21.1 with NeoForge 21.1 or later. The source code is on the `main` branch.
 
-- `reikos_weather-1.21.0.jar` (latest: tornadoes rated EF0 to EF5): put it in your `mods` folder (on a server, install it on the server and on every player's game).
+- `reikos_weather-1.22.0.jar` (latest: tornadoes touch down weak, strengthen through the EF ratings and rope out): put it in your `mods` folder (on a server, install it on the server and on every player's game).
+- `reikos_weather-1.21.0.jar`: tornadoes rated EF0 to EF5.
 - `reikos_weather-1.20.4.jar`: lighter fog, and a Fog Strength setting.
 - `reikos_weather-1.20.3.jar`: no more night beeping, much stronger tornadoes, the glory fixed.
 - `reikos_weather-1.20.2.jar`: fixes for storm clouds, rain shafts, light pillars, sunbeams and the moon's halo.
