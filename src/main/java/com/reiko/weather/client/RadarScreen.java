@@ -155,6 +155,7 @@ public class RadarScreen extends Screen {
             int px = (int) (cx + (tornado.getX() - center.x) * scale), py = (int) (cy + (tornado.getZ() - center.z) * scale);
             int color = ((int) (time / 6) % 2 == 0) ? 0xFFFF2020 : 0xFFFFA020;
             g.fill(px - 2, py - 2, px + 3, py + 3, color);
+            if (tornado.rating() >= 0) g.drawString(this.font, "EF" + tornado.rating(), px + 5, py - 4, 0xFFFFE0A0, true);
         }
         // volcanoes: a small triangle, red and flashing while one erupts
         if (overworld) {

@@ -762,11 +762,27 @@ public final class WeatherHazards {
     }
 
     public static TornadoEntity spawnTornado(ServerLevel level, Vec3 pos, float heading, TornadoEntity.Kind kind) {
+        return spawnTornado(level, pos, heading, kind, -1);
+    }
+
+    /** The funnel's width at the ground for each rating, EF0 to EF5: {least, most}, in blocks. */
+    private static final float[][] RATED_WIDTH = {{2.5F, 3.5F}, {3.5F, 5.0F}, {5.0F, 7.0F}, {7.0F, 9.5F}, {9.5F, 12.5F}, {12.5F, 16.0F}};
+    /** How long each rating lasts, {least, most}, in ticks: the strong ones stay on the ground longer. */
+    private static final int[][] RATED_LIFE = {{700, 1300}, {900, 1500}, {1200, 2000}, {1500, 2400}, {1800, 2800}, {2200, 3400}};
+
+    /** A tornado (or other whirl) touching down; {@code rating} is its EF rating, or -1 to roll one as real ones turn up. */
+    public static TornadoEntity spawnTornado(ServerLevel level, Vec3 pos, float heading, TornadoEntity.Kind kind, int rating) {
         RandomSource r = level.random;
         TornadoEntity tornado = new TornadoEntity(ModEntities.TORNADO.get(), level);
         tornado.moveTo(pos.x, pos.y, pos.z, 0.0F, 0.0F);
+        if (kind == TornadoEntity.Kind.TORNADO && rating < 0) rating = TornadoEntity.rollRating(r);
         switch (kind) {
-            case TORNADO -> tornado.configure(kind, heading, 1200 + r.nextInt(1200), 5.0F + r.nextFloat() * 4.0F, 70.0F);
+            case TORNADO -> {
+                float[] w = RATED_WIDTH[rating];
+                int[] life = RATED_LIFE[rating];
+                tornado.configure(kind, heading, life[0] + r.nextInt(life[1] - life[0]), w[0] + r.nextFloat() * (w[1] - w[0]), rating >= 4 ? 78.0F : 70.0F);
+                tornado.setRating(rating);
+            }
             case WATERSPOUT -> tornado.configure(kind, heading, 900 + r.nextInt(900), 3.0F + r.nextFloat() * 2.0F, 55.0F);
             case DUST_DEVIL -> tornado.configure(kind, heading, 300 + r.nextInt(400), 1.2F + r.nextFloat() * 0.8F, 12.0F + r.nextFloat() * 10.0F);
             case FIRE_WHIRL -> tornado.configure(kind, heading, 300 + r.nextInt(500), 1.6F + r.nextFloat() * 1.2F, 18.0F + r.nextFloat() * 14.0F);
@@ -777,10 +793,13 @@ public final class WeatherHazards {
         }
         level.addFreshEntity(tornado);
         if (!kind.small() && kind != TornadoEntity.Kind.FIRE_WHIRL && WeatherConfig.TORNADO_WARNINGS.get()) {
+            int rated = tornado.rating();
             for (ServerPlayer player : level.players()) {
                 if (player.distanceToSqr(pos) < 200 * 200) {
-                    player.displayClientMessage(Component.translatable("message.reikos_weather." + kind.id() + "_warning")
-                            .withStyle(s -> s.withColor(0xFF5555).withBold(true)), true);
+                    Component warning = rated >= 0
+                            ? Component.translatable(rated >= 4 ? "message.reikos_weather.tornado_warning_violent" : "message.reikos_weather.tornado_warning_rated", rated)
+                            : Component.translatable("message.reikos_weather." + kind.id() + "_warning");
+                    player.displayClientMessage(warning.copy().withStyle(s -> s.withColor(rated >= 4 ? 0xFF2020 : 0xFF5555).withBold(true)), true);
                 }
             }
         }

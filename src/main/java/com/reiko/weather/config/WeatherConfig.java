@@ -370,6 +370,7 @@ public final class WeatherConfig {
     public static final ModConfigSpec.DoubleValue TORNADO_CHANCE;
     public static final ModConfigSpec.IntValue MAX_TORNADOES;
     public static final ModConfigSpec.BooleanValue TORNADO_LIFTS_BLOCKS;
+    public static final ModConfigSpec.BooleanValue TORNADO_BREAKS_BUILDS;
     public static final ModConfigSpec.BooleanValue TORNADO_WARNINGS;
 
     static {
@@ -1166,6 +1167,10 @@ public final class WeatherConfig {
         TORNADO_LIFTS_BLOCKS = b.comment("Tornadoes rip up plants, leaves, crops and snow (see tag reikos_weather:tornado_liftable).",
                         "Also requires the mobGriefing gamerule.")
                 .define("liftBlocks", true);
+        TORNADO_BREAKS_BUILDS = b.comment("Strong tornadoes tear buildings apart, player-built or not: EF2 glass, fences, doors and wool; EF3 wood;",
+                        "EF4 soil and sand (and scours the grass off); EF5 stone and brick (tags reikos_weather:tornado_ef2 to tornado_ef5).",
+                        "Never chests or anything else holding things. Also needs liftBlocks and the mobGriefing gamerule.")
+                .define("breakBuilds", true);
         TORNADO_WARNINGS = b.comment("Warn nearby players when a tornado touches down.")
                 .define("warnings", true);
         b.pop();

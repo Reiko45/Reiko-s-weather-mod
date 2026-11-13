@@ -39,6 +39,18 @@ public class TornadoEntity extends Entity {
     private static final EntityDataAccessor<Integer> DATA_AGE = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Byte> DATA_KIND = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> DATA_HEIGHT = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
+    /** The tornado's rating on the Enhanced Fujita scale, EF0 to EF5 (-1 for the other kinds of whirl). */
+    private static final EntityDataAccessor<Byte> DATA_RATING = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.BYTE);
+
+    /**
+     * How often each rating turns up, EF0 to EF5, as real tornadoes do: most are weak, a few strong, and a violent
+     * EF4 or EF5 very rare.
+     */
+    private static final float[] RATING_ODDS = {0.45F, 0.30F, 0.15F, 0.07F, 0.025F, 0.005F};
+    /** How hard each rating pulls, lifts and throws, against the old single strength (EF2). */
+    private static final double[] RATING_POWER = {0.45, 0.7, 1.0, 1.2, 1.4, 1.6};
+    /** How much a tornado's core hurts anything caught in it, a second (EF0 and EF1 only throw you about). */
+    private static final float[] CORE_DAMAGE = {0.0F, 0.0F, 1.0F, 2.0F, 3.0F, 5.0F};
 
     private static final int GROW_TICKS = 200;
 
@@ -127,6 +139,32 @@ public class TornadoEntity extends Entity {
         builder.define(DATA_AGE, 0);
         builder.define(DATA_KIND, (byte) 0);
         builder.define(DATA_HEIGHT, 70.0F);
+        builder.define(DATA_RATING, (byte) -1);
+    }
+
+    /** EF0 to EF5, or -1 for a whirl that isn't rated (a waterspout, dust devil and so on). */
+    public int rating() {
+        return this.entityData.get(DATA_RATING);
+    }
+
+    public void setRating(int rating) {
+        this.entityData.set(DATA_RATING, (byte) Mth.clamp(rating, -1, 5));
+    }
+
+    /** A rating for a tornado that's just touched down, as often as real ones turn up. */
+    public static int rollRating(net.minecraft.util.RandomSource random) {
+        float roll = random.nextFloat();
+        for (int r = 0; r < RATING_ODDS.length; r++) {
+            roll -= RATING_ODDS[r];
+            if (roll < 0.0F) return r;
+        }
+        return 0;
+    }
+
+    /** How hard it pulls, lifts and throws, for its kind and rating (1 for an EF2 tornado). */
+    public double power() {
+        int r = rating();
+        return kind().suction * (r >= 0 ? RATING_POWER[r] : 1.0);
     }
 
     public float width() {
@@ -149,14 +187,15 @@ public class TornadoEntity extends Entity {
     /** Funnel radius at a height above the base. */
     public float radiusAt(float height) {
         float t = Mth.clamp(height / height(), 0.0F, 1.0F);
-        float base = width() * 0.25F;
+        // (the violent ones are wedges, broad right down to the ground; the weak ones thin ropes)
+        float base = width() * (0.25F + 0.07F * Math.max(0, rating() - 2));
         return (base + t * t * width() * 2.2F) * (0.35F + 0.65F * strength());
     }
 
     /** Radius within which entities are pulled in. */
     public double influenceRadius() {
         // (a real tornado's inflow reaches well out from the funnel: you feel it pulling long before you're in it)
-        return kind().small() ? width() * 3.5 * strength() + 1.0 : width() * 5.0 * strength() + 6.0;
+        return kind().small() ? width() * 3.5 * strength() + 1.0 : Math.min(64.0, width() * 5.0 * strength() + 6.0);
     }
 
     @Override
@@ -224,6 +263,7 @@ public class TornadoEntity extends Entity {
             excusePlayers(level);
             if (kind.liftsBlocks && WeatherConfig.TORNADO_LIFTS_BLOCKS.get() && level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                 liftBlocks(level, strength);
+                if (rating() >= 2 && WeatherConfig.TORNADO_BREAKS_BUILDS.get()) tear(level, strength);
             }
         }
     }
@@ -270,10 +310,10 @@ public class TornadoEntity extends Entity {
                 entity.setDeltaMovement(velocity);
                 entity.hurtMarked = true;
                 entity.fallDistance = Math.min(entity.fallDistance, fallCap(this));
-                if (entity.getY() > getY() + 3) CARRIED.put(entity, new long[]{level.getGameTime(), (long) (fallCap(this) * 100)});
+                if (entity.getY() > getY() + 3) CARRIED.put(entity, new long[]{level.getGameTime(), (long) (fallCap(this) * 100), rating()});
                 if (kind().hurts && entity instanceof LivingEntity living && tickCount % 20 == 0
                         && horizontalDistance(entity) < radiusAt((float) (entity.getY() - getY())) * 1.5) {
-                    living.hurt(damage, 1.0F);
+                    living.hurt(damage, Math.max(1.0F, coreDamage()));
                 }
             }
         }
@@ -293,14 +333,20 @@ public class TornadoEntity extends Entity {
                 if (!player.isCreative()) {
                     player.fallDistance = Math.min(player.fallDistance, fallCap(this));
                     // (caught up off the ground: it'll be thrown, and the fall that follows is capped wherever it lands)
-                    if (player.getY() > getY() + 3) CARRIED.put(player, new long[]{now, (long) (fallCap(this) * 100)});
+                    if (player.getY() > getY() + 3) CARRIED.put(player, new long[]{now, (long) (fallCap(this) * 100), rating()});
+                    // a strong tornado's core is full of flying debris
+                    float hurt = coreDamage() * strength();
+                    if (hurt >= 0.5F && tickCount % 20 == 0 && !player.isSpectator()
+                            && Math.sqrt(dx * dx + dz * dz) < radiusAt((float) Math.max(0.0, player.getY() - getY())) * 1.5) {
+                        player.hurt(level.damageSources().source(ModDamageTypes.TORNADO, this), hurt);
+                    }
                 }
             }
         }
         landSoftly(level, now);
     }
 
-    /** What a funnel has carried up lately (on the server): when, and the most its fall can count for (x100). */
+    /** What a funnel has carried up lately (on the server): when, the most its fall can count for (x100), and the rating. */
     private static final java.util.Map<Entity, long[]> CARRIED = new java.util.WeakHashMap<>();
 
     /** Keeps the fall of anything thrown lately capped, however far from the funnel it comes down (and its flight excused). */
@@ -319,6 +365,11 @@ public class TornadoEntity extends Entity {
             entity.fallDistance = Math.min(entity.fallDistance, info[1] / 100.0F);
             if (entity instanceof ServerPlayer player) {
                 ((ServerGamePacketListenerImplAccessor) player.connection).reikos_weather$setAboveGroundTickCount(0);
+                // thrown by a violent tornado, and come down alive
+                if (info[2] >= 4 && player.onGround() && now - info[0] > 10 && player.isAlive()) {
+                    com.reiko.weather.weather.WeatherAdvancements.award(player, "wedge");
+                    it.remove();
+                }
             }
         }
     }
@@ -343,7 +394,7 @@ public class TornadoEntity extends Entity {
         if (thrown != null && now - thrown < THROW_COOLDOWN && now >= thrown) {
             return null;
         }
-        double power = strength * tornado.kind().suction;
+        double power = strength * tornado.power();
         double falloff = 1.0 - distance / influence;
         double nx = distance > 0.01 ? dx / distance : 0.0;
         double nz = distance > 0.01 ? dz / distance : 0.0;
@@ -378,7 +429,7 @@ public class TornadoEntity extends Entity {
 
     /** How high above its base the funnel carries what it catches before throwing it out. */
     public static double ceiling(TornadoEntity tornado) {
-        return tornado.height() * (0.15 + 0.4 * tornado.strength() * tornado.kind().suction);
+        return tornado.height() * (0.15 + 0.4 * tornado.strength() * tornado.power());
     }
 
     /** How long something thrown out of a funnel falls free before a funnel can catch it again, in ticks. */
@@ -388,7 +439,9 @@ public class TornadoEntity extends Entity {
 
     /** How far something tossed by the funnel is counted as falling, at most (so a toss hurts, but needn't kill). */
     static float fallCap(TornadoEntity tornado) {
-        return 3.0F + 8.0F * (float) (tornado.strength() * tornado.kind().suction);
+        // (higher for the violent ones: an EF5's toss is a fall of eighteen blocks)
+        double p = tornado.strength() * tornado.power();
+        return 3.0F + 8.0F * (float) Math.min(p, 1.0) + 12.0F * (float) Math.max(0.0, p - 1.0);
     }
 
     private void liftBlocks(ServerLevel level, float strength) {
@@ -419,6 +472,75 @@ public class TornadoEntity extends Entity {
             debris.setDeltaMovement(tx / len * 0.5, 0.6 + random.nextDouble() * 0.4, tz / len * 0.5);
             debris.hurtMarked = true;
         }
+    }
+
+    /** How much the core hurts, a second. */
+    private float coreDamage() {
+        int r = rating();
+        return r >= 0 ? CORE_DAMAGE[r] : 0.0F;
+    }
+
+    /**
+     * Whether a tornado of this rating tears a block apart: an EF2 breaks glass, fences, doors and wool; an EF3 rips
+     * wood (planks, logs, wooden roofs); an EF4 soil and sand; an EF5 stone and brick (see the reikos_weather:tornado_ef2
+     * to tornado_ef5 tags, each adding to the last). Never solid rock, ores, unbreakable blocks, or anything holding
+     * things (chests, furnaces and the like keep their contents).
+     */
+    public static boolean tears(BlockState state, int rating) {
+        if (rating < 2 || state.isAir() || state.hasBlockEntity() || state.getBlock().defaultDestroyTime() < 0.0F) return false;
+        return state.is(ModTags.TORNADO_LIFTABLE) || state.is(ModTags.TORNADO_EF2)
+                || rating >= 3 && state.is(ModTags.TORNADO_EF3) || rating >= 4 && state.is(ModTags.TORNADO_EF4)
+                || rating >= 5 && state.is(ModTags.TORNADO_EF5);
+    }
+
+    /**
+     * A strong tornado's damage path: it peels apart whatever it can, from the outside in, as wide as the funnel,
+     * flinging some of it as debris; and a violent one scours the grass off the ground.
+     */
+    private void tear(ServerLevel level, float strength) {
+        int rating = rating();
+        int attempts = Mth.ceil((3 + 3 * (rating - 1)) * strength);
+        float reach = width() * 0.6F + 2.0F;
+        int debris = level.getEntitiesOfClass(FallingBlockEntity.class, getBoundingBox().inflate(40.0, 40.0, 40.0)).size();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int i = 0; i < attempts; i++) {
+            double angle = random.nextDouble() * Math.PI * 2.0, r = Math.sqrt(random.nextDouble()) * reach;
+            int x = Mth.floor(getX() + Math.cos(angle) * r), z = Mth.floor(getZ() + Math.sin(angle) * r);
+            int y = Mth.floor(getY()) - 1 + random.nextInt(16);
+            pos.set(x, y, z);
+            if (!level.isLoaded(pos)) continue;
+            BlockState state = level.getBlockState(pos);
+            if (rating >= 4 && (state.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || state.is(net.minecraft.world.level.block.Blocks.PODZOL)
+                    || state.is(net.minecraft.world.level.block.Blocks.MYCELIUM)) && level.getBlockState(pos.above()).isAir()) {
+                // the grass scoured off, down to bare earth
+                level.setBlock(pos, net.minecraft.world.level.block.Blocks.COARSE_DIRT.defaultBlockState(), 3);
+                continue;
+            }
+            if (!tears(state, rating) || !level.getFluidState(pos).isEmpty() || !exposed(level, pos)) continue;
+            BlockPos at = pos.immutable();
+            if (debris < 24 && random.nextInt(3) == 0) {
+                // flung out as debris
+                FallingBlockEntity piece = FallingBlockEntity.fall(level, at, state);
+                piece.dropItem = false;
+                double tx = -(z + 0.5 - getZ()), tz = x + 0.5 - getX();
+                double len = Math.max(0.01, Math.sqrt(tx * tx + tz * tz));
+                double out = 0.3 + 0.15 * rating;
+                piece.setDeltaMovement(tx / len * out, 0.5 + random.nextDouble() * 0.3 * rating, tz / len * out);
+                piece.hurtMarked = true;
+                debris++;
+            } else {
+                // blown away
+                level.destroyBlock(at, false);
+            }
+        }
+    }
+
+    /** Whether the wind can get at a block: open to the air on at least one side. */
+    private static boolean exposed(ServerLevel level, BlockPos pos) {
+        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
+            if (level.getBlockState(pos.relative(d)).isAir()) return true;
+        }
+        return false;
     }
 
     private double horizontalDistance(Entity entity) {
@@ -456,6 +578,7 @@ public class TornadoEntity extends Entity {
         Kind kind = Kind.byId(tag.getString("Kind"));
         this.entityData.set(DATA_KIND, (byte) (kind == null ? 0 : kind.ordinal()));
         this.entityData.set(DATA_HEIGHT, tag.contains("Height") ? tag.getFloat("Height") : 70.0F);
+        this.entityData.set(DATA_RATING, tag.contains("Rating") ? tag.getByte("Rating") : (byte) (kind == Kind.TORNADO ? 2 : -1));
     }
 
     @Override
@@ -466,5 +589,6 @@ public class TornadoEntity extends Entity {
         tag.putInt("Age", age());
         tag.putString("Kind", kind().id());
         tag.putFloat("Height", height());
+        tag.putByte("Rating", (byte) rating());
     }
 }

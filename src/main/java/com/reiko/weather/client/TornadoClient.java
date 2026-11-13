@@ -36,7 +36,9 @@ public final class TornadoClient {
                 case TORNADO -> 26; case WATERSPOUT -> 20; case DUST_DEVIL -> 9; case FIRE_WHIRL -> 14;
                 case LANDSPOUT -> 16; case GUSTNADO -> 10; case STEAM_DEVIL -> 7; case SNOW_DEVIL -> 9;
             };
-            int count = Mth.ceil(base * density * (0.3F + 0.7F * strength));
+            // (a wide wedge needs many more to fill it out than a thin rope)
+            float girth = tornado.kind() == TornadoEntity.Kind.TORNADO ? Mth.clamp(tornado.width() / 6.0F, 0.6F, 2.4F) : 1.0F;
+            int count = Mth.ceil(base * density * (0.3F + 0.7F * strength) * girth);
             for (int i = 0; i < count; i++) {
                 float t = level.random.nextFloat();
                 float height = t * t * tornado.height() * 0.9F;
@@ -62,7 +64,9 @@ public final class TornadoClient {
 
     private static void spawnDebris(ClientLevel level, TornadoEntity tornado, float strength) {
         float radius = tornado.radiusAt(0) * 2.0F + 2.0F;
-        for (int i = 0; i < 4 * strength; i++) {
+        // (a strong tornado churns up a big debris cloud round its base)
+        int rating = tornado.rating() >= 0 ? Math.max(tornado.rating(), 1) : 2;
+        for (int i = 0; i < 2 * rating * strength; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
             double r = level.random.nextDouble() * radius;
             double x = tornado.getX() + Math.cos(angle) * r;

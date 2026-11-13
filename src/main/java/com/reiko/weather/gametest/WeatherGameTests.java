@@ -1077,6 +1077,31 @@ public class WeatherGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = PLATFORM)
+    public static void tornadoRatings(GameTestHelper helper) {
+        // the EF scale: weak tornadoes are common, strong ones uncommon, violent ones very rare
+        int[] counts = new int[6];
+        net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(42L);
+        int n = 40000;
+        for (int i = 0; i < n; i++) counts[com.reiko.weather.entity.TornadoEntity.rollRating(random)]++;
+        for (int r = 0; r < 5; r++) helper.assertTrue(counts[r] > counts[r + 1], "EF" + r + " is commoner than EF" + (r + 1) + " " + java.util.Arrays.toString(counts));
+        helper.assertTrue(counts[5] > n * 0.002 && counts[5] < n * 0.01, "EF5 about one in two hundred (" + counts[5] + ")");
+        // what each rating tears apart
+        var tears = (java.util.function.BiPredicate<net.minecraft.world.level.block.state.BlockState, Integer>) com.reiko.weather.entity.TornadoEntity::tears;
+        helper.assertFalse(tears.test(Blocks.GLASS.defaultBlockState(), 1), "an EF1 leaves glass");
+        helper.assertTrue(tears.test(Blocks.GLASS.defaultBlockState(), 2), "an EF2 breaks glass");
+        helper.assertFalse(tears.test(Blocks.OAK_PLANKS.defaultBlockState(), 2), "an EF2 leaves planks");
+        helper.assertTrue(tears.test(Blocks.OAK_PLANKS.defaultBlockState(), 3), "an EF3 rips up planks");
+        helper.assertFalse(tears.test(Blocks.DIRT.defaultBlockState(), 3), "an EF3 leaves the soil");
+        helper.assertTrue(tears.test(Blocks.DIRT.defaultBlockState(), 4), "an EF4 tears up soil");
+        helper.assertFalse(tears.test(Blocks.STONE_BRICKS.defaultBlockState(), 4), "an EF4 leaves stone brick");
+        helper.assertTrue(tears.test(Blocks.STONE_BRICKS.defaultBlockState(), 5), "an EF5 tears down stone brick");
+        helper.assertFalse(tears.test(Blocks.STONE.defaultBlockState(), 5), "not even an EF5 moves bedrock-solid stone");
+        helper.assertFalse(tears.test(Blocks.CHEST.defaultBlockState(), 5), "chests keep their contents");
+        helper.assertFalse(tears.test(Blocks.BEDROCK.defaultBlockState(), 5), "nor bedrock");
+        helper.succeed();
+    }
+
     @GameTest(template = PLATFORM, timeoutTicks = 100)
     public static void tarTraps(GameTestHelper helper) {
         // an animal stepping onto tar sinks in up to its knees; asphalt is solid ground

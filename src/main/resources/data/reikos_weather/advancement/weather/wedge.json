@@ -1,0 +1,23 @@
+{
+  "parent": "reikos_weather:weather/wizard_of_oz",
+  "display": {
+    "icon": {
+      "id": "minecraft:oak_planks"
+    },
+    "title": {
+      "translate": "advancement.reikos_weather.wedge"
+    },
+    "description": {
+      "translate": "advancement.reikos_weather.wedge.desc"
+    },
+    "frame": "challenge",
+    "hidden": true,
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

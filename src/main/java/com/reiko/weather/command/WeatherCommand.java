@@ -74,8 +74,9 @@ public final class WeatherCommand {
                         .then(Commands.argument("pos", Vec3Argument.vec3())
                                 .executes(ctx -> tornado(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos"), "tornado"))
                                 .then(Commands.argument("kind", StringArgumentType.word())
-                                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
-                                                Arrays.stream(TornadoEntity.Kind.values()).map(TornadoEntity.Kind::id), builder))
+                                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(java.util.stream.Stream.concat(
+                                                Arrays.stream(TornadoEntity.Kind.values()).map(TornadoEntity.Kind::id),
+                                                java.util.stream.Stream.of("ef0", "ef1", "ef2", "ef3", "ef4", "ef5")), builder))
                                         .executes(ctx -> tornado(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos"),
                                                 StringArgumentType.getString(ctx, "kind"))))))
                 .then(Commands.literal("storm").requires(s -> s.hasPermission(2))
@@ -256,12 +257,16 @@ public final class WeatherCommand {
         if (source.getLevel().dimension() != Level.OVERWORLD) {
             throw WRONG_DIMENSION.create();
         }
-        TornadoEntity.Kind kind = TornadoEntity.Kind.byId(kindId);
+        // (ef0 to ef5: a tornado of that rating)
+        int rating = kindId.matches("(?i)ef[0-5]") ? kindId.charAt(2) - '0' : -1;
+        TornadoEntity.Kind kind = rating >= 0 ? TornadoEntity.Kind.TORNADO : TornadoEntity.Kind.byId(kindId);
         if (kind == null) {
             throw UNKNOWN_TYPE.create(kindId);
         }
-        WeatherHazards.spawnTornado(source.getLevel(), pos, source.getLevel().random.nextFloat() * (float) (Math.PI * 2), kind);
-        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.tornado." + kind.id()), true);
+        TornadoEntity tornado = WeatherHazards.spawnTornado(source.getLevel(), pos, source.getLevel().random.nextFloat() * (float) (Math.PI * 2), kind, rating);
+        int rated = tornado.rating();
+        source.sendSuccess(() -> rated >= 0 ? Component.translatable("commands.reikos_weather.tornado.rated", rated)
+                : Component.translatable("commands.reikos_weather.tornado." + kind.id()), true);
         return 1;
     }
 
