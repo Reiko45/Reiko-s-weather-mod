@@ -1,4 +1,5 @@
 {
+  "itemGroup.reikos_weather": "Reiko's Weather",
   "item.reikos_weather.barometer": "Barometer",
   "item.reikos_weather.barometer.tooltip": "Use to read the weather, wind and forecast",
   "item.reikos_weather.barometer.no_reading": "The needle drifts aimlessly... it only works in the Overworld.",

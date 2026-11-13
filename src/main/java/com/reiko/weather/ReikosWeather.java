@@ -19,13 +19,11 @@ import com.reiko.weather.registry.ModSounds;
 import com.reiko.weather.weather.WeatherHazards;
 import com.reiko.weather.weather.WeatherManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import org.slf4j.Logger;
 
 /**
@@ -49,6 +47,7 @@ public class ReikosWeather {
         ModSounds.REGISTER.register(modBus);
         ModEntities.REGISTER.register(modBus);
         ModItems.REGISTER.register(modBus);
+        com.reiko.weather.registry.ModCreativeTabs.REGISTER.register(modBus);
         com.reiko.weather.registry.ModFeatures.REGISTER.register(modBus);
         com.reiko.weather.registry.ModEffects.REGISTER.register(modBus);
         com.reiko.weather.registry.ModVillagers.POI_TYPES.register(modBus);
@@ -58,7 +57,6 @@ public class ReikosWeather {
         com.reiko.weather.registry.ModStructures.PIECES.register(modBus);
 
         modBus.addListener(ModNetwork::register);
-        modBus.addListener(ReikosWeather::addCreativeTabContents);
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(com.reiko.weather.compat.Compat::setup));
         // fireweed goes in a flower pot like any other flower
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent e) -> e.enqueueWork(() ->
@@ -128,112 +126,5 @@ public class ReikosWeather {
 
     public static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
-    }
-
-    private static void addCreativeTabContents(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            event.accept(ModItems.BAROMETER.get());
-            event.accept(ModItems.THERMOMETER.get());
-            event.accept(ModItems.HANDHELD_RADAR.get());
-            event.accept(ModItems.UMBRELLA.get());
-            event.accept(ModItems.CLOUD_SEEDING_ROCKET.get());
-            event.accept(ModItems.SALT.get());
-            event.accept(ModItems.STORM_DATA.get());
-            event.accept(ModItems.WEATHER_ALMANAC.get());
-            event.accept(ModItems.WEATHER_RADIO.get());
-            event.accept(ModItems.PARAGLIDER.get());
-            event.accept(ModItems.RAKE.get());
-            event.accept(ModItems.ICE_SAW.get());
-            event.accept(ModItems.EARTHWORM.get());
-        } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
-            event.accept(ModItems.SULFUR.get());
-            event.accept(ModItems.VOLCANIC_ASH.get());
-        } else if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-            event.accept(ModItems.WINTER_COAT.get());
-            event.accept(ModItems.GOGGLES.get());
-            event.accept(ModItems.SUN_HAT.get());
-        } else if (event.getTabKey() == CreativeModeTabs.FOOD_AND_DRINKS) {
-            event.accept(ModItems.HOT_COCOA.get());
-            event.accept(ModItems.MELON_COOLER.get());
-            event.accept(ModItems.KALE.get());
-            event.accept(ModItems.RICE_BOWL.get());
-            event.accept(ModItems.WINTER_STEW.get());
-            event.accept(ModItems.STORMFISH.get());
-            event.accept(ModItems.COOKED_STORMFISH.get());
-            event.accept(ModItems.ICEFISH.get());
-            event.accept(ModItems.COOKED_ICEFISH.get());
-        } else if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
-            event.accept(ModItems.METEORITE.get());
-            event.accept(ModItems.LEAF_PILE.get());
-            event.accept(ModItems.FALLEN_BRANCH.get());
-            event.accept(ModItems.RICE.get());
-            event.accept(ModItems.VOLCANIC_ASH.get());
-            event.accept(ModItems.SULFUR_CRUST.get());
-            event.accept(ModItems.VOLCANIC_VENT.get());
-            event.accept(ModItems.GEYSER.get());
-            event.accept(ModItems.SALT_CRUST.get());
-            event.accept(ModItems.BLACK_SAND.get());
-            event.accept(ModItems.CRACKED_MUD.get());
-            event.accept(ModItems.DESERT_DUST.get());
-            event.accept(ModItems.PEAT.get());
-            event.accept(ModItems.QUICKSAND.get());
-            event.accept(ModItems.BLOWHOLE.get());
-            event.accept(ModItems.LIMESTONE.get());
-            event.accept(ModItems.PETRIFIED_WOOD.get());
-            event.accept(ModItems.PUMICE.get());
-            event.accept(ModItems.GYPSUM_SAND.get());
-            event.accept(ModItems.SHELL_SAND.get());
-            event.accept(ModItems.OLIVINE_SAND.get());
-            event.accept(ModItems.PINK_SAND.get());
-            event.accept(ModItems.ROCK_SALT.get());
-            event.accept(ModItems.STEAMING_GROUND.get());
-            event.accept(ModItems.BEACH_WRACK.get());
-            event.accept(ModItems.FIREWEED.get());
-            event.accept(ModItems.CHARRED_SOIL.get());
-            event.accept(ModItems.BUBBLE_ICE.get());
-            event.accept(ModItems.CLINKER.get());
-            event.accept(ModItems.SMOULDERING_GROUND.get());
-            event.accept(ModItems.DESERT_GOLD.get());
-            event.accept(ModItems.SAND_VERBENA.get());
-            event.accept(ModItems.DESERT_POPPY.get());
-            event.accept(ModItems.SELENITE.get());
-            event.accept(ModItems.GAS_VENT.get());
-            event.accept(ModItems.AUFEIS.get());
-            event.accept(ModItems.DRIFTWOOD.get());
-            event.accept(ModItems.QUAKING_MAT.get());
-            event.accept(ModItems.GLOWWORMS.get());
-            event.accept(ModItems.OCHRE.get());
-            event.accept(ModItems.TUMBLEWEED.get());
-            event.accept(ModItems.GIBBER.get());
-            event.accept(ModItems.FOXFIRE.get());
-            event.accept(ModItems.ORANGE_LICHEN.get());
-            event.accept(ModItems.BLACK_LICHEN.get());
-            event.accept(ModItems.GLACIER_MOUSE.get());
-        } else if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            event.accept(ModItems.SANDBAG.get());
-        } else if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
-            event.accept(ModItems.WEATHER_RADAR.get());
-            event.accept(ModItems.WEATHER_VANE.get());
-            event.accept(ModItems.WINDMILL.get());
-            event.accept(ModItems.WEATHER_STATION.get());
-            event.accept(ModItems.TORNADO_SIREN.get());
-            event.accept(ModItems.LIGHTNING_BATTERY.get());
-            event.accept(ModItems.STORM_PROBE.get());
-            event.accept(ModItems.SEISMOGRAPH.get());
-        } else if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
-            event.accept(ModItems.WEATHER_RADAR.get());
-            event.accept(ModItems.WEATHER_VANE.get());
-            event.accept(ModItems.WINDMILL.get());
-            event.accept(ModItems.WEATHER_ALTAR.get());
-            event.accept(ModItems.WEATHER_STATION.get());
-            event.accept(ModItems.TORNADO_SIREN.get());
-            event.accept(ModItems.RAIN_BARREL.get());
-            event.accept(ModItems.FORECAST_BOARD.get());
-            event.accept(ModItems.TENT.get());
-            event.accept(ModItems.LIGHTNING_BATTERY.get());
-            event.accept(ModItems.STORM_PROBE.get());
-            event.accept(ModItems.ICEBOX.get());
-            event.accept(ModItems.SEISMOGRAPH.get());
-        }
     }
 }
