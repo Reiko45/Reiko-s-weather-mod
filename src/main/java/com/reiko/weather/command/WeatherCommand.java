@@ -264,8 +264,8 @@ public final class WeatherCommand {
             throw UNKNOWN_TYPE.create(kindId);
         }
         TornadoEntity tornado = WeatherHazards.spawnTornado(source.getLevel(), pos, source.getLevel().random.nextFloat() * (float) (Math.PI * 2), kind, rating);
-        int rated = tornado.rating();
-        source.sendSuccess(() -> rated >= 0 ? Component.translatable("commands.reikos_weather.tornado.rated", rated)
+        int peak = rating;
+        source.sendSuccess(() -> peak >= 0 ? Component.translatable("commands.reikos_weather.tornado.rated", peak)
                 : Component.translatable("commands.reikos_weather.tornado." + kind.id()), true);
         return 1;
     }

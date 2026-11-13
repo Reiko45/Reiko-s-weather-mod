@@ -767,8 +767,11 @@ public final class WeatherHazards {
 
     /** The funnel's width at the ground for each rating, EF0 to EF5: {least, most}, in blocks. */
     private static final float[][] RATED_WIDTH = {{2.5F, 3.5F}, {3.5F, 5.0F}, {5.0F, 7.0F}, {7.0F, 9.5F}, {9.5F, 12.5F}, {12.5F, 16.0F}};
-    /** How long each rating lasts, {least, most}, in ticks: the strong ones stay on the ground longer. */
-    private static final int[][] RATED_LIFE = {{700, 1300}, {900, 1500}, {1200, 2000}, {1500, 2400}, {1800, 2800}, {2200, 3400}};
+    /**
+     * How long a tornado of each peak rating lasts, {least, most}, in ticks: the strong ones stay on the ground longer,
+     * long enough to strengthen through the ratings, hold at their peak a while and rope out.
+     */
+    private static final int[][] RATED_LIFE = {{700, 1300}, {900, 1500}, {1400, 2200}, {1800, 2800}, {2400, 3600}, {3000, 4400}};
 
     /** A tornado (or other whirl) touching down; {@code rating} is its EF rating, or -1 to roll one as real ones turn up. */
     public static TornadoEntity spawnTornado(ServerLevel level, Vec3 pos, float heading, TornadoEntity.Kind kind, int rating) {
@@ -793,13 +796,11 @@ public final class WeatherHazards {
         }
         level.addFreshEntity(tornado);
         if (!kind.small() && kind != TornadoEntity.Kind.FIRE_WHIRL && WeatherConfig.TORNADO_WARNINGS.get()) {
-            int rated = tornado.rating();
+            // (every tornado touches down weak: how strong it'll get, nobody can tell yet)
             for (ServerPlayer player : level.players()) {
                 if (player.distanceToSqr(pos) < 200 * 200) {
-                    Component warning = rated >= 0
-                            ? Component.translatable(rated >= 4 ? "message.reikos_weather.tornado_warning_violent" : "message.reikos_weather.tornado_warning_rated", rated)
-                            : Component.translatable("message.reikos_weather." + kind.id() + "_warning");
-                    player.displayClientMessage(warning.copy().withStyle(s -> s.withColor(rated >= 4 ? 0xFF2020 : 0xFF5555).withBold(true)), true);
+                    player.displayClientMessage(Component.translatable("message.reikos_weather." + kind.id() + "_warning")
+                            .withStyle(s -> s.withColor(0xFF5555).withBold(true)), true);
                 }
             }
         }

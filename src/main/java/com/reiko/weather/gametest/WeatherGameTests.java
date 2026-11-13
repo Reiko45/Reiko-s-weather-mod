@@ -1099,6 +1099,19 @@ public class WeatherGameTests {
         helper.assertFalse(tears.test(Blocks.STONE.defaultBlockState(), 5), "not even an EF5 moves bedrock-solid stone");
         helper.assertFalse(tears.test(Blocks.CHEST.defaultBlockState(), 5), "chests keep their contents");
         helper.assertFalse(tears.test(Blocks.BEDROCK.defaultBlockState(), 5), "nor bedrock");
+        // a tornado's life: it touches down weak, strengthens through the ratings to its peak, holds, and ropes out
+        float start = com.reiko.weather.entity.TornadoEntity.intensityAt(0.02F, 4), rising = com.reiko.weather.entity.TornadoEntity.intensityAt(0.2F, 4);
+        float mature = com.reiko.weather.entity.TornadoEntity.intensityAt(0.55F, 4), roping = com.reiko.weather.entity.TornadoEntity.intensityAt(0.9F, 4);
+        helper.assertTrue(start < 0.5F, "it touches down as an EF0 (" + start + ")");
+        helper.assertTrue(rising > 1.0F && rising < 4.0F, "it strengthens on the way up (" + rising + ")");
+        helper.assertTrue(mature >= 4.0F, "it reaches its peak rating (" + mature + ")");
+        helper.assertTrue(roping < 1.5F, "and ropes out at the end (" + roping + ")");
+        float last = -1.0F;
+        for (int i = 0; i <= 40; i++) {
+            float v = com.reiko.weather.entity.TornadoEntity.intensityAt(i / 100.0F, 5);
+            helper.assertTrue(v >= last, "it only strengthens on the way up");
+            last = v;
+        }
         helper.succeed();
     }
 

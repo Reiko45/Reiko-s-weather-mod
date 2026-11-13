@@ -97,7 +97,8 @@ public final class WeatherRadio {
         // tornadoes
         for (TornadoEntity tornado : level.getEntitiesOfClass(TornadoEntity.class, new AABB(pos).inflate(250, 128, 250))) {
             if (tornado.kind().small() || tornado.kind() == TornadoEntity.Kind.FIRE_WHIRL) continue;
-            alert(player, "tornado:" + tornado.getUUID(), now, tornado.rating() >= 0 ? Component.translatable("radio.reikos_weather.tornado_rated",
+            // (and again each time it strengthens)
+            alert(player, "tornado:" + tornado.getUUID() + ":" + tornado.reached(), now, tornado.rating() >= 0 ? Component.translatable("radio.reikos_weather.tornado_rated",
                     tornado.rating(), (int) Math.sqrt(tornado.distanceToSqr(player)),
                     Component.translatable("direction.reikos_weather." + WeatherReport.compass(tornado.getX() - pos.getX(), tornado.getZ() - pos.getZ())))
                     : Component.translatable("radio.reikos_weather.tornado",

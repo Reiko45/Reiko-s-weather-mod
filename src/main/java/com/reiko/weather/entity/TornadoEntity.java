@@ -8,6 +8,7 @@ import com.reiko.weather.weather.WeatherManager;
 import com.reiko.weather.weather.WeatherState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -39,8 +40,10 @@ public class TornadoEntity extends Entity {
     private static final EntityDataAccessor<Integer> DATA_AGE = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Byte> DATA_KIND = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> DATA_HEIGHT = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
-    /** The tornado's rating on the Enhanced Fujita scale, EF0 to EF5 (-1 for the other kinds of whirl). */
+    /** The rating on the Enhanced Fujita scale the tornado will build up to, EF0 to EF5 (-1 for the other kinds of whirl). */
     private static final EntityDataAccessor<Byte> DATA_RATING = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.BYTE);
+    /** How strong it is just now, on the same scale but smoothly (2.6 is an EF2 well on its way to EF3). */
+    private static final EntityDataAccessor<Float> DATA_INTENSITY = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
 
     /**
      * How often each rating turns up, EF0 to EF5, as real tornadoes do: most are weak, a few strong, and a violent
@@ -48,7 +51,9 @@ public class TornadoEntity extends Entity {
      */
     private static final float[] RATING_ODDS = {0.45F, 0.30F, 0.15F, 0.07F, 0.025F, 0.005F};
     /** How hard each rating pulls, lifts and throws, against the old single strength (EF2). */
-    private static final double[] RATING_POWER = {0.45, 0.7, 1.0, 1.2, 1.4, 1.6};
+    private static final float[] RATING_POWER = {0.45F, 0.7F, 1.0F, 1.2F, 1.4F, 1.6F};
+    /** The funnel's typical width at each rating (its own width is scaled from this as it strengthens and weakens). */
+    private static final float[] RATING_WIDTH = {3.0F, 4.25F, 6.0F, 8.25F, 11.0F, 14.25F};
     /** How much a tornado's core hurts anything caught in it, a second (EF0 and EF1 only throw you about). */
     private static final float[] CORE_DAMAGE = {0.0F, 0.0F, 1.0F, 2.0F, 3.0F, 5.0F};
 
@@ -108,6 +113,8 @@ public class TornadoEntity extends Entity {
 
     private float heading;
     private int ticksOnLand;
+    /** The highest rating it's reached so far (on the server). */
+    private int reached = -1;
 
     public TornadoEntity(EntityType<? extends TornadoEntity> type, Level level) {
         super(type, level);
@@ -140,15 +147,59 @@ public class TornadoEntity extends Entity {
         builder.define(DATA_KIND, (byte) 0);
         builder.define(DATA_HEIGHT, 70.0F);
         builder.define(DATA_RATING, (byte) -1);
+        builder.define(DATA_INTENSITY, 0.0F);
     }
 
-    /** EF0 to EF5, or -1 for a whirl that isn't rated (a waterspout, dust devil and so on). */
-    public int rating() {
+    /** The rating it builds up to at its peak, EF0 to EF5, or -1 for a whirl that isn't rated (a waterspout and so on). */
+    public int peakRating() {
         return this.entityData.get(DATA_RATING);
     }
 
-    public void setRating(int rating) {
-        this.entityData.set(DATA_RATING, (byte) Mth.clamp(rating, -1, 5));
+    /** Its strength just now on the EF scale, smoothly from 0 up to its peak rating. */
+    public float intensity() {
+        int peak = peakRating();
+        return peak < 0 ? 0.0F : Mth.clamp(this.entityData.get(DATA_INTENSITY), 0.0F, peak);
+    }
+
+    /** Its rating just now: EF0 as it touches down, climbing to its peak and dropping back as it ropes out (-1 unrated). */
+    public int rating() {
+        int peak = peakRating();
+        return peak < 0 ? -1 : Math.min(peak, Mth.floor(intensity() + 1.0E-3F));
+    }
+
+    /** The highest rating it's reached so far: what it'll be rated once it's over (on the server). */
+    public int reached() {
+        return Math.max(reached, rating());
+    }
+
+    public void setRating(int peak) {
+        this.entityData.set(DATA_RATING, (byte) Mth.clamp(peak, -1, 5));
+        this.entityData.set(DATA_INTENSITY, 0.0F);
+    }
+
+    /**
+     * A tornado's life: it touches down weak, strengthens through the ratings over the first part of its life
+     * (organizing), holds at its peak for a while (mature, when it does most of its damage), then shrinks back
+     * into a thin rope and lifts. {@code f} is how far through its life it is, 0 to 1.
+     */
+    public static float intensityAt(float f, int peak) {
+        if (peak <= 0) return 0.0F;
+        // (a little over the peak at the top, so it holds there rather than flickering just under it)
+        float top = peak + 0.2F;
+        if (f < 0.4F) return top * smooth01((f - 0.03F) / 0.37F);
+        if (f < 0.72F) return top;
+        return top * (1.0F - smooth01((f - 0.72F) / 0.25F));
+    }
+
+    private static float smooth01(float x) {
+        x = Mth.clamp(x, 0.0F, 1.0F);
+        return x * x * (3.0F - 2.0F * x);
+    }
+
+    /** A value from a per-rating table, read off smoothly at a strength between the ratings. */
+    private static float atIntensity(float[] table, float intensity) {
+        int i = Mth.clamp(Mth.floor(intensity), 0, table.length - 2);
+        return Mth.lerp(Mth.clamp(intensity - i, 0.0F, 1.0F), table[i], table[i + 1]);
     }
 
     /** A rating for a tornado that's just touched down, as often as real ones turn up. */
@@ -163,12 +214,14 @@ public class TornadoEntity extends Entity {
 
     /** How hard it pulls, lifts and throws, for its kind and rating (1 for an EF2 tornado). */
     public double power() {
-        int r = rating();
-        return kind().suction * (r >= 0 ? RATING_POWER[r] : 1.0);
+        return kind().suction * (peakRating() >= 0 ? atIntensity(RATING_POWER, intensity()) : 1.0F);
     }
 
+    /** The funnel's width at the ground just now (a rated tornado's grows as it strengthens, and shrinks to a rope). */
     public float width() {
-        return this.entityData.get(DATA_WIDTH);
+        float width = this.entityData.get(DATA_WIDTH);
+        int peak = peakRating();
+        return peak < 0 ? width : width * atIntensity(RATING_WIDTH, intensity()) / RATING_WIDTH[peak];
     }
 
     public int age() {
@@ -188,7 +241,7 @@ public class TornadoEntity extends Entity {
     public float radiusAt(float height) {
         float t = Mth.clamp(height / height(), 0.0F, 1.0F);
         // (the violent ones are wedges, broad right down to the ground; the weak ones thin ropes)
-        float base = width() * (0.25F + 0.07F * Math.max(0, rating() - 2));
+        float base = width() * (0.25F + 0.07F * Math.max(0.0F, intensity() - 2.0F));
         return (base + t * t * width() * 2.2F) * (0.35F + 0.65F * strength());
     }
 
@@ -209,8 +262,21 @@ public class TornadoEntity extends Entity {
         int age = age() + 1;
         this.entityData.set(DATA_AGE, age);
         if (age >= this.entityData.get(DATA_LIFETIME)) {
+            if (peakRating() >= 0 && reached() >= 0) announce(level, Component.translatable("message.reikos_weather.tornado_lifted", reached()), 0xFFAA66);
             discard();
             return;
+        }
+        if (peakRating() >= 0) {
+            // strengthening, holding, roping out
+            this.entityData.set(DATA_INTENSITY, intensityAt(age / (float) this.entityData.get(DATA_LIFETIME), peakRating()));
+            int now = rating();
+            if (now > reached) {
+                if (reached >= 0 && now >= 2) {
+                    announce(level, Component.translatable(now >= 4 ? "message.reikos_weather.tornado_warning_violent"
+                            : "message.reikos_weather.tornado_warning_rated", now), now >= 4 ? 0xFF2020 : 0xFF5555);
+                }
+                reached = now;
+            }
         }
 
         Kind kind = kind();
@@ -474,10 +540,19 @@ public class TornadoEntity extends Entity {
         }
     }
 
+    /** Tells everyone nearby (it touches down, strengthens, lifts). */
+    private void announce(ServerLevel level, Component message, int color) {
+        if (!WeatherConfig.TORNADO_WARNINGS.get()) return;
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(this) < 200 * 200) {
+                player.displayClientMessage(message.copy().withStyle(s -> s.withColor(color).withBold(color != 0xFFAA66)), true);
+            }
+        }
+    }
+
     /** How much the core hurts, a second. */
     private float coreDamage() {
-        int r = rating();
-        return r >= 0 ? CORE_DAMAGE[r] : 0.0F;
+        return peakRating() >= 0 ? atIntensity(CORE_DAMAGE, intensity()) : 0.0F;
     }
 
     /**
@@ -579,6 +654,8 @@ public class TornadoEntity extends Entity {
         this.entityData.set(DATA_KIND, (byte) (kind == null ? 0 : kind.ordinal()));
         this.entityData.set(DATA_HEIGHT, tag.contains("Height") ? tag.getFloat("Height") : 70.0F);
         this.entityData.set(DATA_RATING, tag.contains("Rating") ? tag.getByte("Rating") : (byte) (kind == Kind.TORNADO ? 2 : -1));
+        this.entityData.set(DATA_INTENSITY, tag.contains("Intensity") ? tag.getFloat("Intensity") : Math.max(0, peakRating()));
+        this.reached = tag.contains("Reached") ? tag.getInt("Reached") : -1;
     }
 
     @Override
@@ -589,6 +666,8 @@ public class TornadoEntity extends Entity {
         tag.putInt("Age", age());
         tag.putString("Kind", kind().id());
         tag.putFloat("Height", height());
-        tag.putByte("Rating", (byte) rating());
+        tag.putByte("Rating", (byte) peakRating());
+        tag.putFloat("Intensity", this.entityData.get(DATA_INTENSITY));
+        tag.putInt("Reached", reached);
     }
 }

@@ -104,16 +104,20 @@ some break into thunderstorms (even hailstorms), dying away by dusk.
   greenhouses take a beating. Needs `mobGriefing`.
 - **Mudslides:** after a couple of minutes of pouring rain, soil on steep slopes can slide downhill as
   mud (needs `mobGriefing`).
-- **Tornadoes** (supercells), rated on the **Enhanced Fujita scale** as they touch down, about as often as real ones:
+- **Tornadoes** (supercells), rated on the **Enhanced Fujita scale**. Each one lives through a real tornado's life:
+  it touches down weak, as an EF0, and strengthens through the ratings over its first minute or so (widening and doing
+  more damage at each step, with a warning each time it climbs past EF1), holds at its peak for a while, then shrinks
+  back into a thin rope and lifts ("It reached EF3"). How strong each one gets is rolled as it touches down, about as
+  often as real ones:
 
-  | Rating | How often | Funnel | What it does |
-  |---|---|---|---|
-  | EF0 | 45% | a thin rope | knocks you about, strips leaves and crops |
-  | EF1 | 30% | narrow | lifts mobs and players a little, throws loose things |
-  | EF2 | 15% | medium | full lift and toss; breaks glass, fences, doors and wool |
-  | EF3 | 7% | wide | higher and further; tears wooden buildings apart |
-  | EF4 | 2.5% | a dark wedge | rips up soil and sand, scours the grass off; a dangerous core |
-  | EF5 | 0.5% | a huge wedge | tears down stone and brick; deadly |
+  | Peak | How often | Lasts | Funnel | What it does |
+  |---|---|---|---|---|
+  | EF0 | 45% | ½–1 minute | a thin rope | knocks you about, strips leaves and crops |
+  | EF1 | 30% | ¾–1¼ minutes | narrow | lifts mobs and players a little, throws loose things |
+  | EF2 | 15% | 1–2 minutes | medium | full lift and toss; breaks glass, fences, doors and wool |
+  | EF3 | 7% | 1½–2⅓ minutes | wide | higher and further; tears wooden buildings apart |
+  | EF4 | 2.5% | 2–3 minutes | a dark wedge | rips up soil and sand, scours the grass off; a dangerous core |
+  | EF5 | 0.5% | 2½–3⅔ minutes | a huge wedge | tears down stone and brick; deadly |
 
   Air rushes in along the ground and spins up toward the funnel, pulling from up to 64 blocks away (you can
   sprint clear from the edge): mobs, items and players are dragged in, whirled round, carried up and flung out of its
@@ -121,8 +125,8 @@ some break into thunderstorms (even hailstorms), dying away by dusk.
   core is full of flying debris. Strong tornadoes peel buildings apart from the outside in, player-built or not
   (tags `reikos_weather:tornado_ef2` to `tornado_ef5`; never chests or anything else holding things; turn off with
   `breakBuilds`, and it needs `mobGriefing`), flinging some of it as debris. Every tornado rips up leaves, plants,
-  crops and snow (tag `reikos_weather:tornado_liftable`). The warning, the weather radio and the radar give the
-  rating. Smaller whirls (landspouts, waterspouts, dust devils) aren't rated, and lift you less, or not at all.
+  crops and snow (tag `reikos_weather:tornado_liftable`). The weather radio and the radar give its rating as it
+  strengthens. Smaller whirls (landspouts, waterspouts, dust devils) aren't rated, and lift you less, or not at all.
 - **Waterspouts**: form over open water in thunderstorms, supercells and hurricanes, and collapse
   when they reach land.
 - **Dust devils**: small, mostly harmless whirlwinds in arid biomes on hot, clear days.
@@ -861,7 +865,7 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather storm <type> [here]` | op | Start a storm cell upwind (or right overhead). Also takes `sea_fog`, `wildfire_smoke`, `volcanic_smog`, `volcanic_ash` and `dust_haze` |
 | `/rweather drought` | everyone | Whether there's a drought, and how far into it we are (`/rweather drought start [days]` or `end`, op) |
 | `/rweather next` | op | Skip to the next forecast weather |
-| `/rweather tornado [pos] [kind]` | op | Spawn a whirlwind. `kind`: `ef0` to `ef5` (a tornado of that rating), `tornado` (one rated as often as real ones), `waterspout`, `dust_devil`, `landspout` and the other whirls |
+| `/rweather tornado [pos] [kind]` | op | Spawn a whirlwind. `kind`: `ef0` to `ef5` (a tornado that will strengthen to that rating), `tornado` (one rated as often as real ones), `waterspout`, `dust_devil`, `landspout` and the other whirls |
 | `/rweather meteor [pos]` | op | Bring a meteor down at a position (or near you) |
 | `/rweather wind <from>` | op | Set where the wind blows from (`n`, `ne`, `e`, ... `nw`) |
 | `/rweather volcano` | everyone | Known volcanoes within 2 km and what each is doing |
