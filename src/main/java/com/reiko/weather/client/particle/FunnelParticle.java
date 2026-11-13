@@ -18,10 +18,17 @@ public class FunnelParticle extends TextureSheetParticle {
     private final float radiusScale;
     private final float riseSpeed;
     private final float maxAlpha;
+    /** Which suction vortex this puff whirls in (-1: the main funnel). */
+    private final int vortex;
 
     public FunnelParticle(ClientLevel level, TornadoEntity tornado, float angle, float height, SpriteSet sprites) {
+        this(level, tornado, angle, height, sprites, -1);
+    }
+
+    public FunnelParticle(ClientLevel level, TornadoEntity tornado, float angle, float height, SpriteSet sprites, int vortex) {
         super(level, tornado.getX(), tornado.getY() + height, tornado.getZ());
         this.tornado = tornado;
+        this.vortex = vortex;
         this.angle = angle;
         this.height = height;
         this.radiusScale = 0.75F + this.random.nextFloat() * 0.45F;
@@ -31,7 +38,10 @@ public class FunnelParticle extends TextureSheetParticle {
         this.gravity = 0.0F;
         this.lifetime = 50 + this.random.nextInt(40);
         float scale = Math.max(0.3F, tornado.height() / 70.0F);
-        this.quadSize = (1.8F + this.random.nextFloat() * 1.8F + height / tornado.height() * 4.0F) * scale;
+        // (the puffs swell toward the cloud base, less so in a straight-sided stovepipe or a narrow trunk)
+        float swell = tornado.kind() == TornadoEntity.Kind.TORNADO && (tornado.shape() == TornadoEntity.Shape.STOVEPIPE
+                || tornado.shape() == TornadoEntity.Shape.TRUNK) ? 1.2F : 4.0F;
+        this.quadSize = (1.8F + this.random.nextFloat() * 1.8F + height / tornado.height() * swell) * scale * (vortex >= 0 ? 0.55F : 1.0F);
         this.roll = this.random.nextFloat() * Mth.TWO_PI;
         this.oRoll = this.roll;
         float shade;
@@ -61,6 +71,15 @@ public class FunnelParticle extends TextureSheetParticle {
             case STEAM_DEVIL, SNOW_DEVIL -> 0.4F;
             default -> 1.0F;
         };
+        if (vortex >= 0) {
+            // the little vortices are full of dust and debris churned up off the ground
+            shade = 0.55F + this.random.nextFloat() * 0.2F;
+            this.setColor(0.72F * shade, 0.64F * shade, 0.54F * shade);
+        } else if (tornado.rainWrapped()) {
+            // seen through the rain, a dark grey ghost
+            shade = 0.42F + this.random.nextFloat() * 0.12F;
+            this.setColor(shade, shade * 1.02F, shade * 1.08F);
+        }
         this.alpha = 0.0F;
         updatePosition();
         this.xo = this.x;
@@ -69,8 +88,24 @@ public class FunnelParticle extends TextureSheetParticle {
     }
 
     private void updatePosition() {
+        if (vortex >= 0) {
+            // whirling tight round its vortex, which races round the funnel's foot
+            double[] centre = tornado.vortexAt(vortex, 0.0F);
+            float radius = (0.8F + height * 0.08F) * radiusScale;
+            this.setPos(centre[0] + Mth.cos(angle) * radius, tornado.getY() + height, centre[1] + Mth.sin(angle) * radius);
+            return;
+        }
         float radius = tornado.radiusAt(height) * radiusScale;
-        this.setPos(tornado.getX() + Mth.cos(angle) * radius, tornado.getY() + height, tornado.getZ() + Mth.sin(angle) * radius);
+        float[] bend = tornado.axisOffset(height, 0.0F);
+        this.setPos(tornado.getX() + bend[0] + Mth.cos(angle) * radius, tornado.getY() + height, tornado.getZ() + bend[1] + Mth.sin(angle) * radius);
+    }
+
+    /** How much of a rain-wrapped tornado shows through the rain at this distance (all of it, close up). */
+    private float throughRain() {
+        if (!tornado.rainWrapped()) return 1.0F;
+        net.minecraft.world.phys.Vec3 cam = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        double dx = cam.x - tornado.getX(), dz = cam.z - tornado.getZ();
+        return Mth.clamp(1.5F - (float) Math.sqrt(dx * dx + dz * dz) / 40.0F, 0.12F, 1.0F);
     }
 
     @Override
@@ -85,7 +120,16 @@ public class FunnelParticle extends TextureSheetParticle {
         }
         float life = this.age / (float) this.lifetime;
         float fade = life < 0.2F ? life / 0.2F : life > 0.7F ? (1.0F - life) / 0.3F : 1.0F;
-        this.alpha = this.maxAlpha * Mth.clamp(fade, 0.0F, 1.0F) * (0.3F + 0.7F * tornado.strength());
+        this.alpha = this.maxAlpha * Mth.clamp(fade, 0.0F, 1.0F) * (0.3F + 0.7F * tornado.strength()) * throughRain();
+        if (vortex >= 0) {
+            // a vortex dies away if the tornado weakens
+            if (tornado.activeVortices() <= vortex) this.alpha *= 0.3F;
+            this.angle += 0.45F;
+            this.height += riseSpeed * 0.6F;
+            if (this.height > tornado.height() * 0.3F) this.remove();
+            updatePosition();
+            return;
+        }
         float radius = Math.max(1.0F, tornado.radiusAt(height));
         this.angle += 0.9F / radius + 0.05F;
         this.height += riseSpeed;

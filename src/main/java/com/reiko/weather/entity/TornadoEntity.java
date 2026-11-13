@@ -44,6 +44,20 @@ public class TornadoEntity extends Entity {
     private static final EntityDataAccessor<Byte> DATA_RATING = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.BYTE);
     /** How strong it is just now, on the same scale but smoothly (2.6 is an EF2 well on its way to EF3). */
     private static final EntityDataAccessor<Float> DATA_INTENSITY = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.FLOAT);
+    /** Its look and habits: bits 0-2 the funnel's shape, 3 rain-wrapped, 4-6 how many suction vortices, 7 a satellite. */
+    private static final EntityDataAccessor<Integer> DATA_STYLE = SynchedEntityData.defineId(TornadoEntity.class, EntityDataSerializers.INT);
+
+    /** The shape of a tornado's funnel (whatever it starts as, a violent one becomes a wedge, and they all rope out). */
+    public enum Shape {
+        /** The classic: narrow at the ground, widening steadily up to the cloud. */
+        CONE,
+        /** A straight-sided column, as wide at the ground as halfway up, flaring only under the cloud. */
+        STOVEPIPE,
+        /** A thin point at the ground under a broad funnel that bulges out halfway up. */
+        DRILLBIT,
+        /** Long and narrow, bending and swaying like an elephant's trunk. */
+        TRUNK
+    }
 
     /**
      * How often each rating turns up, EF0 to EF5, as real tornadoes do: most are weak, a few strong, and a violent
@@ -115,6 +129,23 @@ public class TornadoEntity extends Entity {
     private int ticksOnLand;
     /** The highest rating it's reached so far (on the server). */
     private int reached = -1;
+    /** Which in a family of tornadoes from the same storm this is (0 the first; -1 not one that can start a family). */
+    private int generation = -1;
+    /** For a satellite: the tornado it circles, and where round it it is. */
+    @org.jetbrains.annotations.Nullable private java.util.UUID parentId;
+    private float orbit;
+    /** Whether it's had its chance at a satellite, and at a successor from the same storm (and whether one's certain). */
+    private boolean triedSatellite, triedSuccessor, wantsSatellite;
+
+    /** Lets it start a family: the next tornado from the same storm can touch down as it ropes out. */
+    public void setGeneration(int generation) {
+        this.generation = generation;
+    }
+
+    /** Makes sure it throws off a satellite once it's strong (for the command). */
+    public void wantSatellite() {
+        this.wantsSatellite = true;
+    }
 
     public TornadoEntity(EntityType<? extends TornadoEntity> type, Level level) {
         super(type, level);
@@ -148,6 +179,69 @@ public class TornadoEntity extends Entity {
         builder.define(DATA_HEIGHT, 70.0F);
         builder.define(DATA_RATING, (byte) -1);
         builder.define(DATA_INTENSITY, 0.0F);
+        builder.define(DATA_STYLE, 0);
+    }
+
+    // ------------------------------------------------------------------ the kinds of tornado
+
+    public Shape shape() {
+        return Shape.values()[Math.floorMod(this.entityData.get(DATA_STYLE) & 7, Shape.values().length)];
+    }
+
+    /** Hidden inside a curtain of heavy rain: you barely see it until it's close. */
+    public boolean rainWrapped() {
+        return (this.entityData.get(DATA_STYLE) & 8) != 0;
+    }
+
+    /** How many small suction vortices whirl round inside it once it's strong (0 for a single-vortex tornado). */
+    public int vortices() {
+        return this.entityData.get(DATA_STYLE) >> 4 & 7;
+    }
+
+    /** A smaller tornado circling round a big one. */
+    public boolean satellite() {
+        return (this.entityData.get(DATA_STYLE) & 128) != 0;
+    }
+
+    public void setStyle(Shape shape, boolean rainWrapped, int vortices, boolean satellite) {
+        this.entityData.set(DATA_STYLE, shape.ordinal() | (rainWrapped ? 8 : 0) | Mth.clamp(vortices, 0, 7) << 4 | (satellite ? 128 : 0));
+    }
+
+    /** The suction vortices whirling just now: they only form as it strengthens past EF2. */
+    public int activeVortices() {
+        return intensity() >= 2.5F ? vortices() : 0;
+    }
+
+    /** Where suction vortex {@code i} is just now (x, z): they race round the funnel's foot. */
+    public double[] vortexAt(int i, float partialTick) {
+        int n = Math.max(1, vortices());
+        float angle = (age() + partialTick) * 0.11F + i * Mth.TWO_PI / n + (getId() % 7);
+        float r = radiusAt(0.0F) * 0.8F + 1.0F;
+        return new double[]{getX() + Mth.cos(angle) * r, getZ() + Mth.sin(angle) * r};
+    }
+
+    /** How far through its life it is, 0 to 1. */
+    public float lifeFraction() {
+        return age() / (float) Math.max(1, this.entityData.get(DATA_LIFETIME));
+    }
+
+    /** How far into roping out it is, 0 to 1 (a rated tornado's last quarter or so). */
+    public float roping() {
+        return peakRating() >= 0 ? smooth01((lifeFraction() - 0.72F) / 0.18F) : 0.0F;
+    }
+
+    /**
+     * How far the funnel's axis is bent aside at a height (x, z): an elephant's trunk sways, and every tornado
+     * twists into a sinuous rope as it dies.
+     */
+    public float[] axisOffset(float height, float partialTick) {
+        float t = Mth.clamp(height / height(), 0.0F, 1.0F);
+        float bend = (shape() == Shape.TRUNK && peakRating() >= 0 ? 0.8F * width() + 3.0F : 0.0F) + roping() * 0.5F * width() + roping() * 3.0F;
+        if (bend <= 0.0F) return new float[]{0.0F, 0.0F};
+        float sway = (age() + partialTick) * 0.006F + getId();
+        float k = Mth.sin(t * Mth.PI) * bend;
+        float wiggle = Mth.sin(t * 9.0F + sway * 3.0F) * roping() * 1.2F;
+        return new float[]{Mth.cos(sway) * k + wiggle, Mth.sin(sway) * k};
     }
 
     /** The rating it builds up to at its peak, EF0 to EF5, or -1 for a whirl that isn't rated (a waterspout and so on). */
@@ -240,9 +334,23 @@ public class TornadoEntity extends Entity {
     /** Funnel radius at a height above the base. */
     public float radiusAt(float height) {
         float t = Mth.clamp(height / height(), 0.0F, 1.0F);
+        float w = width();
         // (the violent ones are wedges, broad right down to the ground; the weak ones thin ropes)
-        float base = width() * (0.25F + 0.07F * Math.max(0.0F, intensity() - 2.0F));
-        return (base + t * t * width() * 2.2F) * (0.35F + 0.65F * strength());
+        float cone = w * (0.25F + 0.07F * Math.max(0.0F, intensity() - 2.0F)) + t * t * w * 2.2F;
+        float r = cone;
+        if (kind() == Kind.TORNADO && peakRating() >= 0) {
+            r = switch (shape()) {
+                case CONE -> cone;
+                case STOVEPIPE -> w * 0.5F + (t > 0.8F ? (t - 0.8F) / 0.2F * ((t - 0.8F) / 0.2F) * w * 1.6F : 0.0F);
+                case DRILLBIT -> w * 0.08F + smooth01((t - 0.2F) / 0.35F) * w * 1.3F + t * t * w * 1.0F;
+                case TRUNK -> w * 0.16F + t * w * 0.4F + t * t * t * w * 1.0F;
+            };
+            // whatever it started as, a violent tornado becomes a wedge...
+            r = Mth.lerp(Mth.clamp((intensity() - 3.0F) / 1.5F, 0.0F, 1.0F), r, cone);
+            // ...and every one thins to a rope at the end
+            r = Mth.lerp(roping() * 0.75F, r, w * 0.12F + t * t * w);
+        }
+        return r * (0.35F + 0.65F * strength());
     }
 
     /** Radius within which entities are pulled in. */
@@ -270,6 +378,15 @@ public class TornadoEntity extends Entity {
             // strengthening, holding, roping out
             this.entityData.set(DATA_INTENSITY, intensityAt(age / (float) this.entityData.get(DATA_LIFETIME), peakRating()));
             int now = rating();
+            if (!satellite() && !triedSatellite && now >= peakRating() && peakRating() >= 3) {
+                triedSatellite = true;
+                float chance = wantsSatellite ? 1.0F : peakRating() == 3 ? 0.3F : peakRating() == 4 ? 0.45F : 0.55F;
+                if (random.nextFloat() < chance) spawnSatellite(level);
+            }
+            if (generation >= 0 && !triedSuccessor && lifeFraction() >= 0.72F) {
+                triedSuccessor = true;
+                spawnSuccessor(level);
+            }
             if (now > reached) {
                 if (reached >= 0 && now >= 2) {
                     announce(level, Component.translatable(now >= 4 ? "message.reikos_weather.tornado_warning_violent"
@@ -289,6 +406,20 @@ public class TornadoEntity extends Entity {
         double speed = kind.speed * st * st * st;
         double nx = getX() + Mth.cos(heading) * speed;
         double nz = getZ() + Mth.sin(heading) * speed;
+        if (satellite() && parentId != null) {
+            // a satellite circles its parent, a little way out from it
+            if (level.getEntity(parentId) instanceof TornadoEntity parent && parent.isAlive()) {
+                orbit += 0.012F;
+                double distance = Mth.clamp(parent.width() * 2.2F + 12.0F, 16.0F, 40.0F);
+                nx = Mth.lerp(0.2, getX(), parent.getX() + Mth.cos(orbit) * distance);
+                nz = Mth.lerp(0.2, getZ(), parent.getZ() + Mth.sin(orbit) * distance);
+            } else {
+                // its parent has lifted: it doesn't last long without it
+                parentId = null;
+                int lifetime = this.entityData.get(DATA_LIFETIME);
+                if (lifetime - age > GROW_TICKS) this.entityData.set(DATA_LIFETIME, age + GROW_TICKS);
+            }
+        }
         BlockPos column = BlockPos.containing(nx, 0, nz);
         if (!level.isLoaded(column)) {
             discard();
@@ -540,6 +671,46 @@ public class TornadoEntity extends Entity {
         }
     }
 
+    /** A smaller tornado touching down beside this one and circling round it. */
+    private void spawnSatellite(ServerLevel level) {
+        float angle = random.nextFloat() * Mth.TWO_PI;
+        double distance = Mth.clamp(width() * 2.2F + 12.0F, 16.0F, 40.0F);
+        net.minecraft.world.phys.Vec3 at = new net.minecraft.world.phys.Vec3(getX() + Mth.cos(angle) * distance, getY(), getZ() + Mth.sin(angle) * distance);
+        if (!level.isLoaded(BlockPos.containing(at))) return;
+        TornadoEntity moon = com.reiko.weather.weather.WeatherHazards.spawnTornado(level, at, heading, Kind.TORNADO, random.nextInt(3));
+        moon.setStyle(Shape.values()[random.nextInt(Shape.values().length)], rainWrapped(), 0, true);
+        moon.parentId = getUUID();
+        moon.orbit = angle;
+        // (it doesn't outlast the big one)
+        int left = this.entityData.get(DATA_LIFETIME) - age();
+        moon.entityData.set(DATA_LIFETIME, Math.max(GROW_TICKS * 2, Math.min(moon.entityData.get(DATA_LIFETIME), left - 60)));
+        announce(level, Component.translatable("message.reikos_weather.tornado_satellite"), 0xFF5555);
+    }
+
+    /**
+     * As a tornado ropes out, the storm above it can wrap up a fresh rotation alongside and drop another one: a
+     * family of tornadoes from the same supercell, one after another, more often on an outbreak day.
+     */
+    private void spawnSuccessor(ServerLevel level) {
+        if (generation >= 4) return;
+        com.reiko.weather.weather.LocalWeather local = com.reiko.weather.weather.WeatherManager.local(level, blockPosition());
+        if (local == null || !local.profile().tornadoes || local.intensity() < 0.6F) return;
+        boolean outbreak = com.reiko.weather.weather.TornadoOutbreaks.today(level);
+        if (random.nextFloat() > (outbreak ? 0.7F : 0.4F)) return;
+        if (level.getEntities(com.reiko.weather.registry.ModEntities.TORNADO.get(), e -> e.kind() == Kind.TORNADO).size()
+                >= WeatherConfig.MAX_TORNADOES.get() + 2) return;
+        // a little way off, to the right of the way the storm's going
+        float side = heading + Mth.HALF_PI * 0.6F;
+        double distance = 70.0 + random.nextDouble() * 40.0;
+        net.minecraft.world.phys.Vec3 at = new net.minecraft.world.phys.Vec3(getX() + Mth.cos(side) * distance, getY(), getZ() + Mth.sin(side) * distance);
+        BlockPos column = BlockPos.containing(at);
+        if (!level.isLoaded(column)) return;
+        at = new net.minecraft.world.phys.Vec3(at.x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column.getX(), column.getZ()), at.z);
+        TornadoEntity next = com.reiko.weather.weather.WeatherHazards.spawnTornado(level, at, heading, Kind.TORNADO, -1);
+        next.generation = generation + 1;
+        announce(level, Component.translatable("message.reikos_weather.tornado_family"), 0xFF5555);
+    }
+
     /** Tells everyone nearby (it touches down, strengthens, lifts). */
     private void announce(ServerLevel level, Component message, int color) {
         if (!WeatherConfig.TORNADO_WARNINGS.get()) return;
@@ -578,20 +749,36 @@ public class TornadoEntity extends Entity {
         float reach = width() * 0.6F + 2.0F;
         int debris = level.getEntitiesOfClass(FallingBlockEntity.class, getBoundingBox().inflate(40.0, 40.0, 40.0)).size();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int vortices = activeVortices();
         for (int i = 0; i < attempts; i++) {
-            double angle = random.nextDouble() * Math.PI * 2.0, r = Math.sqrt(random.nextDouble()) * reach;
-            int x = Mth.floor(getX() + Math.cos(angle) * r), z = Mth.floor(getZ() + Math.sin(angle) * r);
+            // in a multiple-vortex tornado the worst of it is in the little vortices whirling round inside: narrow
+            // streaks of heavy damage, with lighter damage between them
+            double cx = getX(), cz = getZ(), spread = reach;
+            int power = rating;
+            if (vortices > 0) {
+                if (random.nextBoolean()) {
+                    double[] v = vortexAt(random.nextInt(vortices), 0.0F);
+                    cx = v[0];
+                    cz = v[1];
+                    spread = 2.5;
+                    power = Math.min(5, rating + 1);
+                } else {
+                    power = rating - 1;
+                }
+            }
+            double angle = random.nextDouble() * Math.PI * 2.0, r = Math.sqrt(random.nextDouble()) * spread;
+            int x = Mth.floor(cx + Math.cos(angle) * r), z = Mth.floor(cz + Math.sin(angle) * r);
             int y = Mth.floor(getY()) - 1 + random.nextInt(16);
             pos.set(x, y, z);
             if (!level.isLoaded(pos)) continue;
             BlockState state = level.getBlockState(pos);
-            if (rating >= 4 && (state.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || state.is(net.minecraft.world.level.block.Blocks.PODZOL)
+            if (power >= 4 && (state.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) || state.is(net.minecraft.world.level.block.Blocks.PODZOL)
                     || state.is(net.minecraft.world.level.block.Blocks.MYCELIUM)) && level.getBlockState(pos.above()).isAir()) {
                 // the grass scoured off, down to bare earth
                 level.setBlock(pos, net.minecraft.world.level.block.Blocks.COARSE_DIRT.defaultBlockState(), 3);
                 continue;
             }
-            if (!tears(state, rating) || !level.getFluidState(pos).isEmpty() || !exposed(level, pos)) continue;
+            if (!tears(state, power) || !level.getFluidState(pos).isEmpty() || !exposed(level, pos)) continue;
             BlockPos at = pos.immutable();
             if (debris < 24 && random.nextInt(3) == 0) {
                 // flung out as debris
@@ -599,8 +786,8 @@ public class TornadoEntity extends Entity {
                 piece.dropItem = false;
                 double tx = -(z + 0.5 - getZ()), tz = x + 0.5 - getX();
                 double len = Math.max(0.01, Math.sqrt(tx * tx + tz * tz));
-                double out = 0.3 + 0.15 * rating;
-                piece.setDeltaMovement(tx / len * out, 0.5 + random.nextDouble() * 0.3 * rating, tz / len * out);
+                double out = 0.3 + 0.15 * power;
+                piece.setDeltaMovement(tx / len * out, 0.5 + random.nextDouble() * 0.3 * power, tz / len * out);
                 piece.hurtMarked = true;
                 debris++;
             } else {
@@ -656,6 +843,13 @@ public class TornadoEntity extends Entity {
         this.entityData.set(DATA_RATING, tag.contains("Rating") ? tag.getByte("Rating") : (byte) (kind == Kind.TORNADO ? 2 : -1));
         this.entityData.set(DATA_INTENSITY, tag.contains("Intensity") ? tag.getFloat("Intensity") : Math.max(0, peakRating()));
         this.reached = tag.contains("Reached") ? tag.getInt("Reached") : -1;
+        this.entityData.set(DATA_STYLE, tag.getInt("Style"));
+        this.generation = tag.contains("Generation") ? tag.getInt("Generation") : -1;
+        this.parentId = tag.hasUUID("Parent") ? tag.getUUID("Parent") : null;
+        this.orbit = tag.getFloat("Orbit");
+        this.triedSatellite = tag.getBoolean("TriedSatellite");
+        this.triedSuccessor = tag.getBoolean("TriedSuccessor");
+        this.wantsSatellite = tag.getBoolean("WantsSatellite");
     }
 
     @Override
@@ -669,5 +863,12 @@ public class TornadoEntity extends Entity {
         tag.putByte("Rating", (byte) peakRating());
         tag.putFloat("Intensity", this.entityData.get(DATA_INTENSITY));
         tag.putInt("Reached", reached);
+        tag.putInt("Style", this.entityData.get(DATA_STYLE));
+        tag.putInt("Generation", generation);
+        if (parentId != null) tag.putUUID("Parent", parentId);
+        tag.putFloat("Orbit", orbit);
+        tag.putBoolean("TriedSatellite", triedSatellite);
+        tag.putBoolean("TriedSuccessor", triedSuccessor);
+        tag.putBoolean("WantsSatellite", wantsSatellite);
     }
 }

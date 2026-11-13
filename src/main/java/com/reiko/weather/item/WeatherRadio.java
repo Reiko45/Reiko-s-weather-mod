@@ -94,6 +94,11 @@ public final class WeatherRadio {
                 }
             }
         }
+        // a tornado outbreak expected this afternoon
+        long timeOfDay = level.getDayTime() % 24000L;
+        if (com.reiko.weather.weather.TornadoOutbreaks.today(level) && timeOfDay > 500L && timeOfDay < 9000L) {
+            alert(player, "outbreak:" + level.getDayTime() / 24000L, now, Component.translatable("radio.reikos_weather.outbreak"), true);
+        }
         // tornadoes
         for (TornadoEntity tornado : level.getEntitiesOfClass(TornadoEntity.class, new AABB(pos).inflate(250, 128, 250))) {
             if (tornado.kind().small() || tornado.kind() == TornadoEntity.Kind.FIRE_WHIRL) continue;

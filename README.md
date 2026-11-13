@@ -126,7 +126,22 @@ some break into thunderstorms (even hailstorms), dying away by dusk.
   (tags `reikos_weather:tornado_ef2` to `tornado_ef5`; never chests or anything else holding things; turn off with
   `breakBuilds`, and it needs `mobGriefing`), flinging some of it as debris. Every tornado rips up leaves, plants,
   crops and snow (tag `reikos_weather:tornado_liftable`). The weather radio and the radar give its rating as it
-  strengthens. Smaller whirls (landspouts, waterspouts, dust devils) aren't rated, and lift you less, or not at all.
+  strengthens.
+
+  No two tornadoes are quite alike:
+  - **Funnel shapes:** a classic **cone**, a straight-sided **stovepipe**, a **drillbit** (a thin point under a broad
+    funnel) or a long, swaying **elephant trunk**. Whatever it starts as, a violent one becomes a wedge, and every one
+    twists into a thin rope as it dies.
+  - **Multiple-vortex tornadoes:** many strong ones (from 15% of EF2s to 70% of EF5s) have two to five small suction
+    vortices racing round inside once they pass EF2, whirls of dust you can see at the funnel's foot. The damage comes
+    in narrow streaks, much worse right under a vortex and lighter between them.
+  - **Satellite tornadoes:** a big one (EF3 and up) can throw off a smaller tornado that circles round it for a while.
+  - **Rain-wrapped tornadoes:** about one in four hides inside a dark curtain of heavy rain, only a ghost of the funnel
+    showing until it's close. Keep a weather radio on you: it still hears them.
+  - **Families and outbreaks:** as a tornado ropes out, the storm above it can drop another one nearby, and another
+    after that. And on a few spring and summer days (about one in twelve) the conditions line up for a **tornado
+    outbreak**: the forecast and the weather radio warn of it that morning, several supercells build through the
+    afternoon, and tornadoes come twice as often. Smaller whirls (landspouts, waterspouts, dust devils) aren't rated, and lift you less, or not at all.
 - **Waterspouts**: form over open water in thunderstorms, supercells and hurricanes, and collapse
   when they reach land.
 - **Dust devils**: small, mostly harmless whirlwinds in arid biomes on hot, clear days.
@@ -865,7 +880,7 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather storm <type> [here]` | op | Start a storm cell upwind (or right overhead). Also takes `sea_fog`, `wildfire_smoke`, `volcanic_smog`, `volcanic_ash` and `dust_haze` |
 | `/rweather drought` | everyone | Whether there's a drought, and how far into it we are (`/rweather drought start [days]` or `end`, op) |
 | `/rweather next` | op | Skip to the next forecast weather |
-| `/rweather tornado [pos] [kind]` | op | Spawn a whirlwind. `kind`: `ef0` to `ef5` (a tornado that will strengthen to that rating), `tornado` (one rated as often as real ones), `waterspout`, `dust_devil`, `landspout` and the other whirls |
+| `/rweather tornado [pos] [kind]` | op | Spawn a whirlwind. `kind`: `ef0` to `ef5` (a tornado that will strengthen to that rating), `tornado` (one rated as often as real ones), `waterspout`, `dust_devil`, `landspout` and the other whirls. After it, any of `wrapped`, `multivortex`, `satellite`, `family` and a shape (`cone`, `stovepipe`, `drillbit`, `trunk`), e.g. `/rweather tornado ~ ~ ~ ef4 wrapped multivortex` |
 | `/rweather meteor [pos]` | op | Bring a meteor down at a position (or near you) |
 | `/rweather wind <from>` | op | Set where the wind blows from (`n`, `ne`, `e`, ... `nw`) |
 | `/rweather volcano` | everyone | Known volcanoes within 2 km and what each is doing |

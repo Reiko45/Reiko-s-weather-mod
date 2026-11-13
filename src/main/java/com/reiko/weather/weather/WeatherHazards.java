@@ -665,7 +665,7 @@ public final class WeatherHazards {
         WeatherProfile profile = local.profile();
         RandomSource random = level.random;
         if (profile.tornadoes && local.intensity() >= 0.8F && WeatherConfig.TORNADOES.get()
-                && random.nextDouble() < WeatherConfig.TORNADO_CHANCE.get()) {
+                && random.nextDouble() < WeatherConfig.TORNADO_CHANCE.get() * (TornadoOutbreaks.today(level) ? 2.0 : 1.0)) {
             BlockPos ground = randomGroundNear(level, player, 48, 96, false);
             if (ground != null) spawnHeadingTo(level, player, ground, TornadoEntity.Kind.TORNADO);
         } else if (profile.waterspouts && local.intensity() >= 0.8F && WeatherConfig.WATERSPOUTS.get()
@@ -758,7 +758,9 @@ public final class WeatherHazards {
         }
         // head roughly toward the player so it is actually witnessed
         float heading = (float) Mth.atan2(player.getZ() - at.getZ(), player.getX() - at.getX()) + (level.random.nextFloat() - 0.5F) * 1.2F;
-        spawnTornado(level, Vec3.atBottomCenterOf(at), heading, kind);
+        TornadoEntity tornado = spawnTornado(level, Vec3.atBottomCenterOf(at), heading, kind);
+        // (a storm's tornado can be the first of a family)
+        if (kind == TornadoEntity.Kind.TORNADO) tornado.setGeneration(0);
     }
 
     public static TornadoEntity spawnTornado(ServerLevel level, Vec3 pos, float heading, TornadoEntity.Kind kind) {
@@ -785,6 +787,13 @@ public final class WeatherHazards {
                 int[] life = RATED_LIFE[rating];
                 tornado.configure(kind, heading, life[0] + r.nextInt(life[1] - life[0]), w[0] + r.nextFloat() * (w[1] - w[0]), rating >= 4 ? 78.0F : 70.0F);
                 tornado.setRating(rating);
+                // its look: the funnel's shape; hidden in rain or not; and, the strong ones, how many suction vortices
+                float shapeRoll = r.nextFloat();
+                TornadoEntity.Shape shape = shapeRoll < 0.4F ? TornadoEntity.Shape.CONE : shapeRoll < 0.65F ? TornadoEntity.Shape.STOVEPIPE
+                        : shapeRoll < 0.8F ? TornadoEntity.Shape.DRILLBIT : TornadoEntity.Shape.TRUNK;
+                float[] multi = {0.0F, 0.0F, 0.15F, 0.35F, 0.55F, 0.7F};
+                int vortices = r.nextFloat() < multi[rating] ? 2 + r.nextInt(rating >= 4 ? 4 : 2) : 0;
+                tornado.setStyle(shape, r.nextFloat() < 0.25F, vortices, false);
             }
             case WATERSPOUT -> tornado.configure(kind, heading, 900 + r.nextInt(900), 3.0F + r.nextFloat() * 2.0F, 55.0F);
             case DUST_DEVIL -> tornado.configure(kind, heading, 300 + r.nextInt(400), 1.2F + r.nextFloat() * 0.8F, 12.0F + r.nextFloat() * 10.0F);
@@ -797,10 +806,10 @@ public final class WeatherHazards {
         level.addFreshEntity(tornado);
         if (!kind.small() && kind != TornadoEntity.Kind.FIRE_WHIRL && WeatherConfig.TORNADO_WARNINGS.get()) {
             // (every tornado touches down weak: how strong it'll get, nobody can tell yet)
+            String key = tornado.rainWrapped() ? "message.reikos_weather.tornado_warning_wrapped" : "message.reikos_weather." + kind.id() + "_warning";
             for (ServerPlayer player : level.players()) {
                 if (player.distanceToSqr(pos) < 200 * 200) {
-                    player.displayClientMessage(Component.translatable("message.reikos_weather." + kind.id() + "_warning")
-                            .withStyle(s -> s.withColor(0xFF5555).withBold(true)), true);
+                    player.displayClientMessage(Component.translatable(key).withStyle(s -> s.withColor(0xFF5555).withBold(true)), true);
                 }
             }
         }

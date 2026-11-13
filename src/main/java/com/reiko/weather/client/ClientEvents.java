@@ -272,6 +272,7 @@ public final class ClientEvents {
             CloudForms.collect(event.getCamera(), partialTick);
             SkySights.collectSprites(event.getCamera(), partialTick);
             SkySights.collectUpper(event.getCamera(), partialTick);
+            TornadoClient.collectShrouds(event.getCamera(), partialTick);
             PuffRenderer.render(event.getCamera());
             WaterMist.renderRainbows(event);
             GroundOptics.render(event);

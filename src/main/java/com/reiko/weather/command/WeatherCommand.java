@@ -78,7 +78,12 @@ public final class WeatherCommand {
                                                 Arrays.stream(TornadoEntity.Kind.values()).map(TornadoEntity.Kind::id),
                                                 java.util.stream.Stream.of("ef0", "ef1", "ef2", "ef3", "ef4", "ef5")), builder))
                                         .executes(ctx -> tornado(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos"),
-                                                StringArgumentType.getString(ctx, "kind"))))))
+                                                StringArgumentType.getString(ctx, "kind"), ""))
+                                        .then(Commands.argument("features", StringArgumentType.greedyString())
+                                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(new String[]{"wrapped", "multivortex",
+                                                        "satellite", "family", "cone", "stovepipe", "drillbit", "trunk", "wrapped multivortex satellite"}, builder))
+                                                .executes(ctx -> tornado(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos"),
+                                                        StringArgumentType.getString(ctx, "kind"), StringArgumentType.getString(ctx, "features")))))))
                 .then(Commands.literal("storm").requires(s -> s.hasPermission(2))
                         .then(Commands.argument("type", StringArgumentType.word())
                                 .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
@@ -254,6 +259,11 @@ public final class WeatherCommand {
     }
 
     private static int tornado(CommandSourceStack source, Vec3 pos, String kindId) throws CommandSyntaxException {
+        return tornado(source, pos, kindId, "");
+    }
+
+    /** {@code features}: any of wrapped, multivortex, satellite, family and a funnel shape (cone, stovepipe, drillbit, trunk). */
+    private static int tornado(CommandSourceStack source, Vec3 pos, String kindId, String features) throws CommandSyntaxException {
         if (source.getLevel().dimension() != Level.OVERWORLD) {
             throw WRONG_DIMENSION.create();
         }
@@ -264,6 +274,17 @@ public final class WeatherCommand {
             throw UNKNOWN_TYPE.create(kindId);
         }
         TornadoEntity tornado = WeatherHazards.spawnTornado(source.getLevel(), pos, source.getLevel().random.nextFloat() * (float) (Math.PI * 2), kind, rating);
+        if (kind == TornadoEntity.Kind.TORNADO && !features.isBlank()) {
+            java.util.Set<String> words = new java.util.HashSet<>(java.util.Arrays.asList(features.toLowerCase(java.util.Locale.ROOT).trim().split("\\s+")));
+            TornadoEntity.Shape shape = tornado.shape();
+            for (TornadoEntity.Shape s : TornadoEntity.Shape.values()) {
+                if (words.contains(s.name().toLowerCase(java.util.Locale.ROOT))) shape = s;
+            }
+            int vortices = words.contains("multivortex") ? Math.max(3, tornado.vortices()) : tornado.vortices();
+            tornado.setStyle(shape, words.contains("wrapped") || tornado.rainWrapped(), vortices, false);
+            if (words.contains("satellite")) tornado.wantSatellite();
+            if (words.contains("family")) tornado.setGeneration(0);
+        }
         int peak = rating;
         source.sendSuccess(() -> peak >= 0 ? Component.translatable("commands.reikos_weather.tornado.rated", peak)
                 : Component.translatable("commands.reikos_weather.tornado." + kind.id()), true);

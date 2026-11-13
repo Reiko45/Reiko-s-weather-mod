@@ -107,6 +107,9 @@ public final class WeatherReport {
         java.util.List<Component> lines = new java.util.ArrayList<>();
         Component drought = Drought.describe(state);
         if (drought != null) lines.add(drought.copy().withStyle(ChatFormatting.GOLD));
+        if (TornadoOutbreaks.today(level) && level.getDayTime() % 24000L < 13000L) {
+            lines.add(Component.translatable("report.reikos_weather.outbreak").withStyle(ChatFormatting.RED));
+        }
         ClimateYears.Phase year = ClimateYears.phase(level);
         if (year != ClimateYears.Phase.NEUTRAL) {
             lines.add(Component.translatable("report.reikos_weather.year." + year.name().toLowerCase(java.util.Locale.ROOT))

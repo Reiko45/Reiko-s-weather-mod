@@ -46,6 +46,17 @@ public final class TornadoClient {
                 mc.particleEngine.add(new FunnelParticle(level, tornado, angle, height, FunnelParticle.sprites));
             }
         }
+        // the suction vortices whirling round inside a multiple-vortex tornado
+        int vortices = tornado.activeVortices();
+        if (vortices > 0 && FunnelParticle.sprites != null) {
+            float density = (float) Math.max(0.35, ClientConfig.PARTICLE_DENSITY.get());
+            for (int v = 0; v < vortices; v++) {
+                for (int i = 0; i < Mth.ceil(5 * density * strength); i++) {
+                    float height = level.random.nextFloat() * level.random.nextFloat() * tornado.height() * 0.25F;
+                    mc.particleEngine.add(new FunnelParticle(level, tornado, level.random.nextFloat() * Mth.TWO_PI, height, FunnelParticle.sprites, v));
+                }
+            }
+        }
         spawnDebris(level, tornado, strength);
 
         if (ClientConfig.SOUNDS.get() && !SOUNDING.contains(tornado)) {
@@ -58,6 +69,38 @@ public final class TornadoClient {
             Vec3 velocity = TornadoEntity.suction(tornado, player, strength);
             if (velocity != null) {
                 player.setDeltaMovement(velocity);
+            }
+        }
+    }
+
+    /**
+     * The curtain of heavy rain a rain-wrapped tornado hides in: a ring of dark grey cloud and rain round it, through
+     * which only a ghost of the funnel shows until it's close.
+     */
+    public static void collectShrouds(net.minecraft.client.Camera camera, float partialTick) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+        Vec3 cam = camera.getPosition();
+        float maxDistance = mc.gameRenderer.getDepthFar() * 0.9F;
+        float light = 0.25F + 0.55F * mc.level.getSkyDarken(partialTick);
+        for (TornadoEntity tornado : mc.level.getEntities(com.reiko.weather.registry.ModEntities.TORNADO.get(),
+                new net.minecraft.world.phys.AABB(cam, cam).inflate(400.0), TornadoEntity::rainWrapped)) {
+            float strength = tornado.strength();
+            if (strength < 0.05F) continue;
+            float ring = tornado.width() * 1.6F + 10.0F;
+            int seed = tornado.getId() * 7919;
+            float spin = (tornado.age() + partialTick) * 0.004F;
+            // a tall, dark curtain of rain from the ground right up into the cloud, thickest low down
+            float top = Math.max(60.0F, tornado.height() * 0.95F);
+            for (int i = 0; i < 48; i++) {
+                float a = com.reiko.weather.client.PuffRenderer.hash(i, seed) * Mth.TWO_PI + spin;
+                float r = ring * (0.6F + 0.6F * com.reiko.weather.client.PuffRenderer.hash(i, seed + 1));
+                float h = com.reiko.weather.client.PuffRenderer.hash(i, seed + 2);
+                float y = h * h * top;
+                float size = 12.0F + 8.0F * com.reiko.weather.client.PuffRenderer.hash(i, seed + 3);
+                float shade = light * (0.5F + 0.12F * com.reiko.weather.client.PuffRenderer.hash(i, seed + 4));
+                com.reiko.weather.client.PuffRenderer.add(tornado.getX() + Mth.cos(a) * r, tornado.getY() + y, tornado.getZ() + Mth.sin(a) * r, size,
+                        shade, shade * 1.02F, shade * 1.07F, 0.6F * strength, false, cam, maxDistance);
             }
         }
     }
