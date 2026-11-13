@@ -8,6 +8,7 @@ public final class ClientConfig {
 
     public static final ModConfigSpec.DoubleValue PARTICLE_DENSITY;
     public static final ModConfigSpec.BooleanValue FOG;
+    public static final ModConfigSpec.DoubleValue FOG_STRENGTH;
     public static final ModConfigSpec.BooleanValue SKY_EFFECTS;
     public static final ModConfigSpec.BooleanValue RAINBOWS;
     public static final ModConfigSpec.BooleanValue AURORAS;
@@ -131,6 +132,8 @@ public final class ClientConfig {
                 .defineInRange("particleDensity", 1.0, 0.0, 3.0);
         FOG = b.comment("Render weather fog (fog banks, blizzard whiteouts, sandstorm haze).")
                 .define("fog", true);
+        FOG_STRENGTH = b.comment("How thick the weather fog is: 1 is the default, lower sees further (0.5 about twice as far in fog), higher closes in.")
+                .defineInRange("fogStrength", 1.0, 0.0, 2.0);
         SKY_EFFECTS = b.comment("Tint and darken the sky for overcast, supercell, sandstorm and heatwave weather.")
                 .define("skyEffects", true);
         RAINBOWS = b.comment("Show rainbows when rain clears up during the day.")

@@ -399,18 +399,20 @@ public final class ClientEvents {
         if (event.getType() == FogType.NONE && !blinded(event.getCamera().getEntity()) && OtherworldClient.applyFog(event)) {
             return;
         }
-        float density = ClientWeather.fogDensity();
+        float density = ClientWeather.fogDensity() * (float) (double) com.reiko.weather.config.ClientConfig.FOG_STRENGTH.get();
         if (density <= 0.01F || event.getType() != FogType.NONE || blinded(event.getCamera().getEntity())) {
             return;
         }
+        density = Math.min(density, 1.2F);
         float far = event.getFarPlaneDistance();
-        // visibility in blocks: ~160 in rain, ~55 in a downpour, ~24 in fog, ~14 in a whiteout
-        float visibility = Math.max(MIN_FOG_DISTANCE, 400.0F * (float) Math.exp(-3.6F * density));
-        float newFar = Math.min(far * (1.0F - 0.5F * density), visibility);
+        // visibility in blocks: ~170 in rain, ~70 in a downpour, ~35 in fog, ~25 in a whiteout
+        float visibility = Math.max(MIN_FOG_DISTANCE, 450.0F * (float) Math.exp(-3.3F * density));
+        float newFar = Math.min(far * (1.0F - 0.4F * Math.min(density, 1.0F)), visibility);
         if (newFar >= far) {
             return;
         }
-        float newNear = event.getMode() == FogRenderer.FogMode.FOG_SKY ? 0.0F : newFar * (0.12F + 0.7F * (1.0F - density));
+        // (the haze only starts a little way off, so what's near stays clear)
+        float newNear = event.getMode() == FogRenderer.FogMode.FOG_SKY ? 0.0F : newFar * (0.18F + 0.7F * Math.max(0.0F, 1.0F - density));
         event.setFarPlaneDistance(newFar);
         event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), newNear));
         if (density > 0.4F) {

@@ -87,6 +87,7 @@ public class ConfigHomeScreen extends Screen {
             ClientConfig.PARTICLE_DENSITY.set(ClientConfig.PARTICLE_DENSITY.getDefault());
             ClientConfig.STORM_CLOUD_RANGE.set(ClientConfig.STORM_CLOUD_RANGE.getDefault());
             ClientConfig.VOLUMETRIC_CLOUDS.set(ClientConfig.VOLUMETRIC_CLOUDS.getDefault());
+            ClientConfig.FOG_STRENGTH.set(ClientConfig.FOG_STRENGTH.getDefault());
             switch (this) {
                 case PERFORMANCE -> {
                     ClientConfig.PARTICLE_DENSITY.set(0.5);

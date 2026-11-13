@@ -61,6 +61,7 @@
   "reikos_weather.configuration.warnings": "Tornado Warnings",
   "reikos_weather.configuration.particleDensity": "Particle Density",
   "reikos_weather.configuration.fog": "Fog",
+  "reikos_weather.configuration.fogStrength": "Fog Strength",
   "reikos_weather.configuration.skyEffects": "Sky Effects",
   "reikos_weather.configuration.rainbows": "Rainbows",
   "reikos_weather.configuration.auroras": "Auroras",

@@ -18,7 +18,7 @@ New players get a **Weather Almanac**, the in-game guide to everything below (wi
 |---|---|
 | **Clear** | Blue skies. After rain, a **rainbow** appears opposite the sun. On some clear nights in cold biomes, **auroras** shimmer over the northern sky. |
 | **Overcast** | Gray skies hide the sun and stars, and the world gets a little darker. |
-| **Fog** | Thick fog, about 24 blocks of visibility. A dusty haze in arid biomes. |
+| **Fog** | Thick fog, about 35 blocks of visibility (`fogStrength` in the client settings thins or thickens all the weather's fog). A dusty haze in arid biomes. |
 | **Drizzle** | Light, gentle rain. |
 | **Rain** | Normal rain. Crops open to the sky grow faster, and puddles form on flat ground. |
 | **Heavy Rain** | A downpour with extra rain streaks and splashes, misty visibility and wind. Heavy snow in cold biomes. |
