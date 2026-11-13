@@ -47,6 +47,8 @@ import java.util.List;
 public final class WeatherCommand {
     private static final DynamicCommandExceptionType UNKNOWN_TYPE =
             new DynamicCommandExceptionType(id -> Component.translatable("commands.reikos_weather.unknown", id));
+    private static final DynamicCommandExceptionType UNKNOWN_METEOR_SIZE =
+            new DynamicCommandExceptionType(id -> Component.translatable("commands.reikos_weather.meteor.unknown", id));
     private static final SimpleCommandExceptionType DISABLED =
             new SimpleCommandExceptionType(Component.translatable("commands.reikos_weather.disabled"));
     private static final SimpleCommandExceptionType SERENE =
@@ -91,9 +93,13 @@ public final class WeatherCommand {
                                 .executes(ctx -> storm(ctx, false))
                                 .then(Commands.literal("here").executes(ctx -> storm(ctx, true)))))
                 .then(Commands.literal("meteor").requires(s -> s.hasPermission(2))
-                        .executes(ctx -> meteor(ctx.getSource(), ctx.getSource().getPosition()))
+                        .executes(ctx -> meteor(ctx.getSource(), ctx.getSource().getPosition(), "random"))
                         .then(Commands.argument("pos", Vec3Argument.vec3())
-                                .executes(ctx -> meteor(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos")))))
+                                .executes(ctx -> meteor(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos"), "random"))
+                                .then(Commands.argument("size", StringArgumentType.word())
+                                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(METEOR_SIZES, builder))
+                                        .executes(ctx -> meteor(ctx.getSource(), Vec3Argument.getVec3(ctx, "pos"),
+                                                StringArgumentType.getString(ctx, "size"))))))
                 .then(Commands.literal("wind").requires(s -> s.hasPermission(2))
                         .then(Commands.argument("from", StringArgumentType.word())
                                 .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(WIND_FROM, builder))
@@ -314,12 +320,19 @@ public final class WeatherCommand {
         return cell.id;
     }
 
-    private static int meteor(CommandSourceStack source, Vec3 pos) throws CommandSyntaxException {
+    private static final List<String> METEOR_SIZES = List.of("random", "small", "medium", "large", "huge");
+
+    private static int meteor(CommandSourceStack source, Vec3 pos, String sizeName) throws CommandSyntaxException {
         if (source.getLevel().dimension() != Level.OVERWORLD) {
             throw WRONG_DIMENSION.create();
         }
-        com.reiko.weather.sky.Meteors.spawn(source.getLevel(), pos);
-        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.meteor"), true);
+        com.reiko.weather.sky.Meteors.Size size = sizeName.equals("random")
+                ? com.reiko.weather.sky.Meteors.Size.roll(source.getLevel().random) : com.reiko.weather.sky.Meteors.Size.byId(sizeName);
+        if (size == null) {
+            throw UNKNOWN_METEOR_SIZE.create(sizeName);
+        }
+        com.reiko.weather.sky.Meteors.spawn(source.getLevel(), pos, size);
+        source.sendSuccess(() -> Component.translatable("commands.reikos_weather.meteor." + size.id), true);
         return 1;
     }
 

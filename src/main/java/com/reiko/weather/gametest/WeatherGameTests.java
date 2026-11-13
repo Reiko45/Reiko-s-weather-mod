@@ -1382,4 +1382,44 @@ public class WeatherGameTests {
         helper.assertFalse(com.reiko.weather.temperature.Temperature.inVillage(level, helper.absolutePos(new BlockPos(1, 2, 1))), "no village on the test platform");
         helper.succeed();
     }
+
+    @GameTest(template = PLATFORM)
+    public static void meteorSizesFollowTheirOdds(GameTestHelper helper) {
+        // the smaller the commoner: about 55 / 30 / 12 / 3 in a hundred
+        var random = net.minecraft.util.RandomSource.create(7);
+        int[] n = new int[4];
+        int rolls = 20000;
+        for (int i = 0; i < rolls; i++) n[com.reiko.weather.sky.Meteors.Size.roll(random).ordinal()]++;
+        helper.assertTrue(n[0] > n[1] && n[1] > n[2] && n[2] > n[3] && n[3] > 0, "smaller meteors are commoner " + java.util.Arrays.toString(n));
+        helper.assertTrue(Math.abs(n[3] / (double) rolls - 0.03) < 0.01, "huge meteors are rare " + java.util.Arrays.toString(n));
+        for (var size : com.reiko.weather.sky.Meteors.Size.values()) {
+            helper.assertTrue(com.reiko.weather.sky.Meteors.Size.of(size.min) == size && com.reiko.weather.sky.Meteors.Size.of(size.max) == size,
+                    size + "'s sizes fall in its own class");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = PLATFORM, timeoutTicks = 100, skyAccess = true)
+    public static void smallMeteorLeavesARock(GameTestHelper helper) {
+        // a pebble-sized meteor leaves a lump of meteorite without blasting a crater
+        var meteor = new com.reiko.weather.entity.MeteorEntity(com.reiko.weather.registry.ModEntities.METEOR.get(), helper.getLevel());
+        meteor.setSize(0.5F);
+        var start = helper.absoluteVec(new net.minecraft.world.phys.Vec3(2.5, 7, 2.5));
+        meteor.moveTo(start.x, start.y, start.z, 0.0F, 0.0F);
+        meteor.setDeltaMovement(0, -1.0, 0);
+        helper.getLevel().addFreshEntity(meteor);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(meteor.isRemoved(), "the meteor has landed");
+            boolean rock = false;
+            StringBuilder column = new StringBuilder();
+            for (int y = -2; y <= 6; y++) {
+                var st = helper.getBlockState(new BlockPos(2, y, 2));
+                rock |= st.is(ModBlocks.METEORITE.get());
+                column.append(y).append('=').append(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(st.getBlock()).getPath()).append(' ');
+            }
+            helper.assertTrue(rock, "it leaves a meteorite where it lands: " + column + " meteor at " + helper.relativeVec(meteor.position()));
+            helper.assertFalse(helper.getBlockState(new BlockPos(1, 1, 2)).isAir() && helper.getBlockState(new BlockPos(3, 1, 2)).isAir(),
+                    "a small one doesn't blast a crater");
+        });
+    }
 }

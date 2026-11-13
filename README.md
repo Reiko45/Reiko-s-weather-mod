@@ -419,8 +419,16 @@ Ways to stay comfortable:
 ## Sky events
 - **Shooting stars** streak across clear night skies.
 - On **meteor shower** nights there are dozens of them, and now and then a **meteor** comes down.
-  It glows, roars, leaves a small crater (only if `mobGriefing` is on) and a **meteorite** block,
-  which drops raw iron, gold nuggets and sometimes a diamond. Silk touch keeps the block.
+  It glows, roars, and leaves a **meteorite** block, which drops raw iron, gold nuggets and sometimes
+  a diamond (silk touch keeps the block). Meteors come in **four sizes**, the smaller the commoner:
+  | Size | How often | What it does when it lands |
+  |---|---|---|
+  | Small | 55% | A small, quick streak. One lump of meteorite in a scorch mark, no crater |
+  | Medium | 30% | A small crater and one lump of meteorite |
+  | Large | 12% | A bright fireball. A bigger crater with a handful of lumps, magma and fires; the ground shakes nearby |
+  | Huge | 3% | Lights up the whole sky and leaves a thick smoke trail. A great crater with a glowing core of about a dozen lumps, fires all around, a shock wave that throws things back, and a boom and tremor felt 160 blocks away |
+
+  Craters, magma and fires only happen with `mobGriefing` on.
 - On some aurora nights a **geomagnetic storm** brings auroras to temperate skies, makes compasses
   spin and fills radar screens with static.
 - Some full moons rise as a **blood moon**: the moon and the night sky turn red, monsters swarm, and
@@ -884,7 +892,7 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 | `/rweather drought` | everyone | Whether there's a drought, and how far into it we are (`/rweather drought start [days]` or `end`, op) |
 | `/rweather next` | op | Skip to the next forecast weather |
 | `/rweather tornado [pos] [kind]` | op | Spawn a whirlwind. `kind`: `ef0` to `ef5` (a tornado that will strengthen to that rating), `tornado` (one rated as often as real ones), `waterspout`, `dust_devil`, `landspout` and the other whirls. After it, any of `wrapped`, `multivortex`, `satellite`, `family` and a shape (`cone`, `stovepipe`, `drillbit`, `trunk`), e.g. `/rweather tornado ~ ~ ~ ef4 wrapped multivortex` |
-| `/rweather meteor [pos]` | op | Bring a meteor down at a position (or near you) |
+| `/rweather meteor [pos] [size]` | op | Bring a meteor down at a position (or near you); size is `small`, `medium`, `large`, `huge` or `random` (the default) |
 | `/rweather wind <from>` | op | Set where the wind blows from (`n`, `ne`, `e`, ... `nw`) |
 | `/rweather volcano` | everyone | Known volcanoes within 2 km and what each is doing |
 | `/rweather volcano create [pos]` | op | Raise a volcano at a position (or where you stand); handy for worlds made before volcanoes |

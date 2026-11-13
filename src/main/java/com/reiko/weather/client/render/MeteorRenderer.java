@@ -13,7 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
-/** A blazing fireball: two bright, camera-facing glows. */
+/** A blazing fireball: bright, camera-facing glows, bigger and brighter the bigger the meteor. */
 public class MeteorRenderer extends EntityRenderer<MeteorEntity> {
     private static final ResourceLocation TEXTURE = ReikosWeather.id("textures/entity/ball_lightning.png");
 
@@ -28,8 +28,13 @@ public class MeteorRenderer extends EntityRenderer<MeteorEntity> {
         poseStack.pushPose();
         poseStack.translate(0.0, 0.5, 0.0);
         poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        quad(poseStack, consumer, 3.2F, 255, 110, 20);
-        quad(poseStack, consumer, 1.4F, 255, 230, 160);
+        float size = meteor.size();
+        if (size > 1.4F) {
+            // the big ones wear a wide, dim halo of glowing air
+            quad(poseStack, consumer, 5.5F * size, 110, 40, 10);
+        }
+        quad(poseStack, consumer, 3.2F * size, 255, 110, 20);
+        quad(poseStack, consumer, 1.4F * size, 255, 230, 160);
         poseStack.popPose();
         super.render(meteor, yaw, partialTick, poseStack, buffers, light);
     }
