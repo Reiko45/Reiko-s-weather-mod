@@ -66,7 +66,7 @@ public final class WeatherHazards {
             }
             Climate climate = Climate.at(level, player.blockPosition());
             LocalWeather local = Microclimate.apply(level, climate, player.getBlockX(), player.getBlockZ(), state.windAngle,
-                    LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, player.getX(), player.getZ()));
+                    LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.pulse(), state.cells, climate, player.getX(), player.getZ()));
             WeatherProfile profile = local.profile();
             float intensity = local.intensity();
 
@@ -835,7 +835,7 @@ public final class WeatherHazards {
         }
         Climate entityClimate = Climate.at(level, eyes);
         LocalWeather local = Microclimate.apply(level, entityClimate, eyes.getX(), eyes.getZ(), state.windAngle,
-                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, entityClimate, entity.getX(), entity.getZ()));
+                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.pulse(), state.cells, entityClimate, entity.getX(), entity.getZ()));
         WeatherProfile profile = local.profile();
         float intensity = local.intensity();
 

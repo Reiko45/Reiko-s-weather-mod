@@ -17,6 +17,12 @@ public record LocalWeather(WeatherType type, WeatherProfile profile, float inten
 
     public static LocalWeather resolve(WeatherType background, @Nullable CustomWeather custom, float backgroundIntensity,
                                        List<StormCell> cells, Climate climate, double x, double z) {
+        return resolve(background, custom, backgroundIntensity, 1.0F, cells, climate, x, z);
+    }
+
+    /** As above, with the background storm eased off by {@code pulse} (its lulls; see {@link StormLength#pulse}). */
+    public static LocalWeather resolve(WeatherType background, @Nullable CustomWeather custom, float backgroundIntensity, float pulse,
+                                       List<StormCell> cells, Climate climate, double x, double z) {
         StormCell best = null;
         float bestWeight = 0.0F, bestRank = 0.0F;
         for (StormCell cell : cells) {
@@ -29,7 +35,7 @@ public record LocalWeather(WeatherType type, WeatherProfile profile, float inten
                 bestRank = rank;
             }
         }
-        WeatherProfile backgroundProfile = CustomWeathers.backgroundProfile(background, custom, climate);
+        WeatherProfile backgroundProfile = StormLength.lulled(CustomWeathers.backgroundProfile(background, custom, climate), pulse);
         if (best == null) {
             return new LocalWeather(background, backgroundProfile, backgroundIntensity, null, 0.0F);
         }

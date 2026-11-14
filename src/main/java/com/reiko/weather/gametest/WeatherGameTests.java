@@ -1422,4 +1422,34 @@ public class WeatherGameTests {
                     "a small one doesn't blast a crater");
         });
     }
+
+    @GameTest(template = PLATFORM)
+    public static void stormsVaryInLength(GameTestHelper helper) {
+        // a steady rain can be anything from a passing shower to an all-day soaking; hail is always over quickly
+        var random = net.minecraft.util.RandomSource.create(11);
+        int brief = 0, allDay = 0, n = 6000;
+        for (int i = 0; i < n; i++) {
+            int d = com.reiko.weather.weather.StormLength.duration(WeatherType.RAIN, random);
+            var kind = com.reiko.weather.weather.StormLength.classify(WeatherType.RAIN, d);
+            if (kind == com.reiko.weather.weather.StormLength.Kind.BRIEF) brief++;
+            if (kind == com.reiko.weather.weather.StormLength.Kind.ALL_DAY) {
+                allDay++;
+                helper.assertTrue(d >= 18000, "an all-day rain lasts most of a day (" + d + ")");
+            }
+            int h = com.reiko.weather.weather.StormLength.duration(WeatherType.HAIL, random);
+            helper.assertTrue(h <= WeatherType.HAIL.maxDuration, "hail never drags on (" + h + ")");
+        }
+        helper.assertTrue(brief > n * 0.2 && brief < n * 0.45, "plenty of brief showers (" + brief + ")");
+        helper.assertTrue(allDay > n * 0.03 && allDay < n * 0.12, "now and then one lasts all day (" + allDay + ")");
+        // a long storm eases off and comes back; an ordinary one stays steady
+        float lo = 1, hi = 0;
+        for (int t = 0; t < 22000; t += 50) {
+            float p = com.reiko.weather.weather.StormLength.pulse(WeatherType.RAIN, t, 22000 - t);
+            lo = Math.min(lo, p);
+            hi = Math.max(hi, p);
+        }
+        helper.assertTrue(lo < 0.7F && lo >= 0.44F && hi > 0.95F, "lulls and full strength in an all-day rain (" + lo + ".." + hi + ")");
+        helper.assertTrue(com.reiko.weather.weather.StormLength.pulse(WeatherType.RAIN, 3000, 4000) == 1.0F, "an ordinary rain is steady");
+        helper.succeed();
+    }
 }

@@ -14,7 +14,7 @@ public final class WeatherReport {
     public static Component current(ServerLevel level, WeatherState state, BlockPos pos) {
         Climate climate = Climate.at(level, pos);
         LocalWeather local = Microclimate.apply(level, climate, pos.getX(), pos.getZ(), state.windAngle,
-                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5));
+                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.pulse(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5));
         Component climateName = Component.translatable("climate.reikos_weather." + climate.name().toLowerCase(Locale.ROOT));
         if (local.cell() != null && local.cellWeight() >= 0.5F) {
             return Component.translatable("report.reikos_weather.current_cell",
@@ -33,7 +33,7 @@ public final class WeatherReport {
 
     public static Component wind(ServerLevel level, WeatherState state, BlockPos pos) {
         LocalWeather local = WeatherManager.local(level, pos);
-        if (local == null) local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
+        if (local == null) local = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.pulse(), state.cells, Climate.at(level, pos), pos.getX() + 0.5, pos.getZ() + 0.5);
         float[] breeze = Breezes.adjust(level, pos.getX(), pos.getZ(), state.windAngle, local.profile().wind * local.intensity());
         return Component.translatable("report.reikos_weather.wind",
                 Component.literal(String.valueOf(Wind.kmh(breeze[1]))).withStyle(ChatFormatting.WHITE),
@@ -47,6 +47,11 @@ public final class WeatherReport {
             line.append(first ? Component.literal(" ") : Component.literal(" → ").withStyle(ChatFormatting.DARK_GRAY));
             CustomWeather custom = CustomWeathers.get(f.custom());
             line.append((custom != null ? custom.displayName() : f.type().displayName()).withStyle(ChatFormatting.YELLOW));
+            StormLength.Kind kind = StormLength.classify(f.type(), f.duration());
+            if (custom == null && kind != StormLength.Kind.NORMAL) {
+                line.append(Component.literal(" (").append(Component.translatable("report.reikos_weather.length." + kind.id())).append(")")
+                        .withStyle(ChatFormatting.GRAY));
+            }
             first = false;
         }
         return line;
@@ -127,7 +132,7 @@ public final class WeatherReport {
             lines.add(Component.translatable(key, cell.category()).withStyle(ChatFormatting.RED));
         }
         Climate climate = Climate.at(level, pos);
-        LocalWeather raw = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5);
+        LocalWeather raw = LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.pulse(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5);
         Microclimate.Info info = Microclimate.at(level, pos.getX(), pos.getZ(), state.windAngle);
         float bora = Microclimate.bora(level, info, raw.profile(), state.windAngle);
         if (bora > 0.3F) {

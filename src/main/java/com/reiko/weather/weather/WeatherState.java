@@ -78,6 +78,11 @@ public class WeatherState extends SavedData {
         return Mth.clamp(elapsed / (float) RAMP_TICKS, 0.0F, 1.0F);
     }
 
+    /** How hard a long storm is coming down right now (1 = full strength; lower in a lull). */
+    public float pulse() {
+        return StormLength.pulse(type, elapsed, remaining);
+    }
+
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         tag.putBoolean("initialized", initialized);

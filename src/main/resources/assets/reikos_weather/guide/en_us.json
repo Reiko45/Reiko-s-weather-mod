@@ -156,7 +156,8 @@
      "title": "Storm Cells",
      "icon": "minecraft:gray_dye",
      "pages": [
-      "Besides the world-wide weather, storm cells form on the horizon and drift across the map with the wind, so players far apart can have different weather. Watch for the low, dark cloud deck with shafts of rain hanging under it."
+      "Besides the world-wide weather, storm cells form on the horizon and drift across the map with the wind, so players far apart can have different weather. Watch for the low, dark cloud deck with shafts of rain hanging under it.",
+      "Storms vary in length. Many are brief showers, most last a while, some drag on through the evening, and now and then a steady rain or snow sets in all day, easing off into lulls and coming back harder. The forecast marks them brief, long or all day. Some storm cells race through; once in a while one stalls over the same ground for most of a day."
      ]
     },
     {

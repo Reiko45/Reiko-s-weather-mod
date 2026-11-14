@@ -72,7 +72,13 @@ public final class WeatherRadio {
             // the weather turning nasty
             if (!state.forecast.isEmpty() && state.remaining < 1200) {
                 WeatherType next = state.forecast.get(0).type();
-                if (next.isSevere() || next == WeatherType.HEATWAVE || next == WeatherType.COLD_SNAP || next.vanillaThunder) {
+                boolean allDay = com.reiko.weather.weather.StormLength.classify(next, state.forecast.get(0).duration())
+                        == com.reiko.weather.weather.StormLength.Kind.ALL_DAY;
+                if (allDay) {
+                    // a storm that's going to set in for the day is worth knowing about, whatever it is
+                    alert(player, "forecast:" + next.id() + ":" + now / 24000L, now,
+                            Component.translatable("radio.reikos_weather.forecast_all_day", next.displayName()), next.isSevere());
+                } else if (next.isSevere() || next == WeatherType.HEATWAVE || next == WeatherType.COLD_SNAP || next.vanillaThunder) {
                     alert(player, "forecast:" + next.id() + ":" + now / 24000L, now,
                             Component.translatable("radio.reikos_weather.forecast", next.displayName()), next.isSevere());
                 }

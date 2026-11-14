@@ -232,7 +232,7 @@ public final class WeatherCommand {
         }
         WeatherState state = requireState(source);
         ServerLevel overworld = source.getServer().overworld();
-        int duration = seconds > 0 ? seconds * 20 : custom != null ? custom.randomDuration(overworld.random) : type.randomDuration(overworld.random);
+        int duration = seconds > 0 ? seconds * 20 : custom != null ? custom.randomDuration(overworld.random) : com.reiko.weather.weather.StormLength.duration(type, overworld.random);
         WeatherManager.setWeather(overworld, state, type, duration, custom != null ? custom.id().toString() : null);
         Component name = custom != null ? custom.displayName() : type.displayName();
         source.sendSuccess(() -> Component.translatable("commands.reikos_weather.set", name, WeatherReport.duration(duration)), true);

@@ -78,7 +78,7 @@ public final class WeatherManager {
         }
         Climate climate = Climate.at(level, pos);
         return Microclimate.apply(level, climate, pos.getX(), pos.getZ(), state.windAngle,
-                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5));
+                LocalWeather.resolve(state.type, CustomWeathers.of(state), state.intensity(), state.pulse(), state.cells, climate, pos.getX() + 0.5, pos.getZ() + 0.5));
     }
 
     public static Seasons.Info seasonInfo() {
@@ -427,7 +427,7 @@ public final class WeatherManager {
     }
 
     private static int scaledDuration(WeatherType type, RandomSource random) {
-        return Math.max(200, (int) (type.randomDuration(random) * WeatherConfig.DURATION_MULTIPLIER.get()));
+        return Math.max(200, (int) (StormLength.duration(type, random) * WeatherConfig.DURATION_MULTIPLIER.get()));
     }
 
     private static void driftWind(RandomSource random, WeatherState state) {
@@ -533,9 +533,30 @@ public final class WeatherManager {
         boolean derecho = type == WeatherType.DERECHO || type == WeatherType.COLD_FRONT;
         // derechos and cold fronts race across the map several times faster than other storms
         double speed = derecho ? (type == WeatherType.COLD_FRONT ? 0.25 : 0.35) + random.nextDouble() * 0.15 : 0.1 + random.nextDouble() * 0.1;
+        boolean stalled = false;
+        if (!derecho && type != WeatherType.HURRICANE && StormLength.varied()) {
+            float r = random.nextFloat();
+            if (r < 0.22F) {
+                // a fast mover: through and gone in a few minutes
+                speed = 0.2 + random.nextDouble() * 0.12;
+            } else if (r > 0.88F && stalls(type)) {
+                // a stalled storm: it creeps along and sits over the same ground for most of a day
+                speed = 0.035 + random.nextDouble() * 0.03;
+                stalled = true;
+            }
+        }
         // long enough to cross ~2 km of map (a derecho keeps going for ~3.5 km, a hurricane ~3 km)
         int maxAge = (int) (((derecho ? 3500 : type == WeatherType.HURRICANE ? 3000 : 1800) + radius * 2) / speed);
+        if (stalled) maxAge = Math.min(maxAge, 30000 + random.nextInt(6000));
         return spawnCell(level, state, type, x, z, radius, speed, maxAge);
+    }
+
+    /** Storms that can stall: slow, soaking rain and snow systems (not squall lines, hurricanes or hail). */
+    private static boolean stalls(WeatherType type) {
+        return switch (type) {
+            case RAIN, HEAVY_RAIN, THUNDERSTORM, SNOW, SLEET, ICE_STORM, BLIZZARD, WARM_FRONT, THUNDERSNOW -> true;
+            default -> false;
+        };
     }
 
     /** Spawns a storm cell drifting downwind at {@code speed} blocks a tick, lasting {@code maxAge} ticks. */

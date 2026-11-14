@@ -12,6 +12,7 @@ public final class WeatherConfig {
 
     public static final ModConfigSpec.BooleanValue ENABLED;
     public static final ModConfigSpec.DoubleValue DURATION_MULTIPLIER;
+    public static final ModConfigSpec.BooleanValue VARIED_STORM_LENGTHS;
     public static final ModConfigSpec.BooleanValue SLEEP_CLEARS_WEATHER;
     public static final Map<WeatherType, ModConfigSpec.IntValue> WEIGHTS = new EnumMap<>(WeatherType.class);
 
@@ -381,6 +382,10 @@ public final class WeatherConfig {
                 .define("enabled", true);
         DURATION_MULTIPLIER = b.comment("Multiplier applied to how long each weather lasts.")
                 .defineInRange("durationMultiplier", 1.0, 0.05, 20.0);
+        VARIED_STORM_LENGTHS = b.comment("Storms vary in length: brief showers, ordinary storms, long ones that ease off and come back,",
+                        "and now and then one that lasts all day; some storm cells race through and a few stall overhead.",
+                        "Off: every storm lasts its usual time.")
+                .define("variedStormLengths", true);
         SLEEP_CLEARS_WEATHER = b.comment("Sleeping through the night clears any weather, not just rain.")
                 .define("sleepClearsWeather", true);
         b.pop();

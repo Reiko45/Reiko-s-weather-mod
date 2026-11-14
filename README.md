@@ -94,6 +94,15 @@ the wind. Players far apart can have different weather. You can watch a storm ap
 low, dark cloud deck with shafts of rain hanging beneath it. Inside a cell, everything works the
 way rain normally does: riptide, cauldrons filling, fires going out, snow piling up and lightning.
 
+**Storms vary in length**, like real ones. Many are brief showers that pass in a minute or two, most
+last a while, some drag on through a long evening, and now and then a steady rain or snow **sets in all
+day**. A thunderstorm only rarely rumbles on that long; hail and sun showers are always quick. Long
+storms don't stay the same all the way through: they **ease off into lulls** (lighter rain, a brighter
+sky) and come back harder. The forecast marks unusual ones as *brief*, *long* or *all day*, and the
+weather radio warns you when a storm is about to set in for the day. Storm cells move at different
+speeds too: some race through in a few minutes, and once in a while one **stalls**, creeping along and
+sitting over the same ground for most of a day. (Turn it all off with `variedStormLengths`.)
+
 Thunderstorms tower up into tall clouds you can watch from far away (with the volumetric clouds, the storm deck itself
 builds a rounded tower over each storm's heart; with them off, anvil-topped towers of cloud). On **summer
 afternoons** (any day in the tropics) the sun heats the ground, the clouds build through the day and
@@ -904,7 +913,7 @@ The mod ships two examples: **Pollen Haze**, a spring haze in temperate places, 
 Open the settings from the **Mods** screen. The first page has one-click **presets** for the visual
 effects (Performance, Default, Cinematic) and a button for every setting. Or edit the files directly:
 - `config/reikos_weather-server.toml` (on the server; synced to players when they join): weather
-  chances, durations, seasons (length, temperature shift, crop slowdown), storm cells (how often,
+  chances, durations (and whether storms vary in length), seasons (length, temperature shift, crop slowdown), storm cells (how often,
   how many), every hazard, flash floods, puddles, ice glaze, tornadoes, waterspouts, dust devils,
   weather mobs, animal sheltering, temperature, wildfires, crop wilting, drying cauldrons, freezing
   rivers, icicles, avalanches, fulgurite, ball lightning, the altar's cooldown, Nether and End

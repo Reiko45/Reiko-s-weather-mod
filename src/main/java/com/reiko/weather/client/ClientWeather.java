@@ -73,7 +73,9 @@ public final class ClientWeather {
         climate = Climate.at(level, camPos);
         local = managed
                 ? Microclimate.apply(level, climate, camPos.getX(), camPos.getZ(), SyncedWeather.windAngle(),
-                    LocalWeather.resolve(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), 1.0F, SyncedWeather.cells(), climate, cam.x, cam.z))
+                    LocalWeather.resolve(SyncedWeather.type(), CustomWeathers.client(SyncedWeather.custom()), 1.0F,
+                            com.reiko.weather.weather.StormLength.pulse(SyncedWeather.type(), SyncedWeather.elapsed(), SyncedWeather.remaining()),
+                            SyncedWeather.cells(), climate, cam.x, cam.z))
                 : null;
         previousType = type;
         type = local != null ? local.type() : WeatherType.CLEAR;
