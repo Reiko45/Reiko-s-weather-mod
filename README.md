@@ -2,7 +2,8 @@
 
 Built mod files for Minecraft 1.21.1 with NeoForge 21.1 or later. The source code is on the `main` branch.
 
-- `reikos_weather-1.25.0.jar` (latest: meteors in four sizes, from small pebbles to rare huge fireballs): put it in your `mods` folder (on a server, install it on the server and on every player's game).
+- `reikos_weather-1.26.0.jar` (latest: place the windmill facing any way, and new textures for the weather station, weather radar, lightning battery and seismograph): put it in your `mods` folder (on a server, install it on the server and on every player's game).
+- `reikos_weather-1.25.0.jar`: meteors in four sizes, from small pebbles to rare huge fireballs.
 - `reikos_weather-1.24.0.jar`: everything in its own Reiko's Weather creative tab, and 3D models for every item.
 - `reikos_weather-1.23.0.jar`: tornado shapes, multiple-vortex, satellite and rain-wrapped tornadoes, tornado families and outbreak days.
 - `reikos_weather-1.22.0.jar`: tornadoes touch down weak, strengthen through the EF ratings and rope out.
