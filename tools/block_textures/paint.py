@@ -532,6 +532,402 @@ def seismograph():
     save('seismograph_top', f)
 
 
+# ---------------------------------------------------------------- tornado siren
+
+def hazard(f, mask, width=4.0):
+    X, Y = f.xy()
+    stripe = (np.floor((X + Y) / width) % 2) == 0
+    f.colour(mask * stripe, '#e3b12a', 0.25, 20)
+    f.colour(mask * (~stripe), '#1d1d1f', 0.25, 20)
+
+
+def siren():
+    for on in (False, True):
+        f = Face(seed=500)
+        f.fill('paint_grey')
+        f.level(f.rect(0, 0, 64, 64), 3, 1.2)
+        f.level(f.rect(3, 3, 61, 61, 1.5), 2.2, 0.8)
+        band = f.rect(3, 4, 61, 10.5)
+        f.level(band, 2.7, 0.5)
+        hazard(f, band, 4)
+        cx, cy = 32, 37
+        f.level(f.circle(cx, cy, 21), 3.8, 1.2, 'steel')
+        X, Y = f.xy()
+        d = np.hypot(X - cx, Y - cy)
+        horn = d < 18.5
+        f.H = np.where(horn, 3.0 - 4.5 * (1 - d / 18.5) + 1.0 * np.abs(np.sin(d * math.pi / 3.1)), f.H)
+        f.paint(horn.astype(float), 'iron')
+        throat = d < 4.6
+        f.H = np.where(throat, -3.0, f.H)
+        f.paint(throat.astype(float), 'iron_dark')
+        f.level(f.rect(cx - 0.9, cy - 19, cx + 0.9, cy + 19) * horn, 4.4, 0.4, 'steel')
+        f.level(f.rect(cx - 19, cy - 0.9, cx + 19, cy + 0.9) * horn, 4.4, 0.4, 'steel')
+        f.dome(cx, cy, 2.4, 2.0, 'steel')
+        for k in range(8):
+            a = math.radians(k * 45 + 22.5)
+            f.screw(cx + math.cos(a) * 19.8, cy + math.sin(a) * 19.8, 1.0)
+        for x in (8.5, 55.5):
+            f.level(f.circle(x, 15.5, 4.4), 3.6, 0.6, 'steel')
+            lens = f.dome(x, 15.5, 3.5, 3.2, 'red')
+            if on:
+                f.emit(lens, '#ff4030')
+                f.emit(f.circle(x - 1.0, 14.4, 1.0), '#ffd0c0')
+                f.emit_glow(lens, '#ff3020', 2.0, 0.6)
+            else:
+                f.A = f.A * (1 - 0.35 * lens[..., None])
+        for x, w in ((24, 4), (29, 3), (33, 4), (38, 3)):
+            f.colour(f.rect(x, 58.6, x + w, 59.6), '#3b3f44', 0.2)
+        f.weather(patina=0, grime=0.5, wear=0)
+        save('tornado_siren_side_on' if on else 'tornado_siren_side', f, 'tornado_siren_glow' if on else None)
+
+    f = Face(seed=501)
+    f.fill('paint_grey')
+    f.level(f.rect(0, 0, 64, 64), 3, 1.2)
+    X, Y = f.xy()
+    d = np.hypot(X - 32, Y - 32)
+    ang = np.arctan2(Y - 32, X - 32)
+    f.level(f.circle(32, 32, 26), 4.0, 1.2, 'steel')
+    fan = d < 23
+    f.H = np.where(fan, 0.5, f.H)
+    f.paint(fan.astype(float), 'iron_dark')
+    blades = fan * (d > 4) * (np.sin(6 * (ang + d * 0.05)) > 0.25)
+    f.H = f.H + blades * 1.4
+    f.paint(blades.astype(float), 'iron')
+    for r in (6, 11, 16, 21):
+        f.level(f.circle(32, 32, r + 0.5, r - 0.5) * fan, 3.2, 0.3, 'steel')
+    for a in range(0, 360, 45):
+        t = math.radians(a)
+        f.level(f.line([(32 + math.cos(t) * 4, 32 + math.sin(t) * 4), (32 + math.cos(t) * 23, 32 + math.sin(t) * 23)], 0.9), 3.2, 0.3, 'steel')
+    f.dome(32, 32, 4.5, 3.0, 'steel')
+    for x, y in ((5, 5), (59, 5), (5, 59), (59, 59)):
+        f.screw(x, y, 1.6)
+    f.weather(patina=0, grime=0.55, wear=0)
+    save('tornado_siren_top', f)
+
+    f = Face(seed=502)
+    f.fill('steel')
+    f.level(f.rect(0, 0, 64, 64), 3, 1.2)
+    f.level(f.rect(4, 4, 60, 60, 1.5), 2.0, 1.0)
+    for x, y in ((9, 9), (55, 9), (9, 55), (55, 55)):
+        f.dome(x, y, 5, 2.6, 'rubber')
+    f.level(f.circle(32, 32, 6), 3.2, 0.8, 'iron')
+    f.level(f.circle(32, 32, 3), 1.0, 0.5, 'rubber')
+    f.weather(patina=0, grime=0.7, wear=0)
+    save('tornado_siren_bottom', f)
+
+
+# ---------------------------------------------------------------- storm probe (one texture holding every part)
+
+def tube(f, x0, y0, x1, y1, across_x):
+    """A strip of galvanised tube, shaded round across its width."""
+    X, Y = f.xy()
+    m = f.rect(x0, y0, x1, y1)
+    t = ((X - x0) / (x1 - x0)) if across_x else ((Y - y0) / (y1 - y0))
+    prof = np.sqrt(np.clip(1 - (2 * t - 1) ** 2, 0, 1))
+    f.paint(m, 'galvanized')
+    f.H = np.where(m > 0, 1.0 + 3.0 * prof, f.H)
+
+
+def probe():
+    f = Face(seed=600)
+    f.fill('galvanized')
+    # A (0,0)-(24,16): the sensor housing's sides: white louvres and a label
+    f.paint(f.rect(0, 0, 24, 16), 'paint_white')
+    f.level(f.rect(0, 0, 24, 16), 2.0, 0.6)
+    X, Y = f.xy()
+    for i in range(4):
+        a, b = 1.5 + i * 2.6, 1.5 + i * 2.6 + 2.0
+        m = (X >= 1.5) & (X < 22.5) & (Y >= a) & (Y < b)
+        f.H = np.where(m, 1.0 + 1.8 * (1 - (Y - a) / (b - a)), f.H)
+    f.level(f.rect(4, 12.2, 20, 14.8, 0.4), 2.4, 0.3, 'brass')
+    f.colour(f.rect(5.5, 13.2, 16, 13.8), '#6e5222', 0.2)
+    # B (24,0)-(48,24): its top and bottom
+    f.paint(f.rect(24, 0, 48, 24), 'paint_white')
+    f.level(f.rect(24, 0, 48, 24), 2.0, 0.8)
+    f.level(f.rect(25.5, 1.5, 46.5, 22.5, 1), 1.6, 0.6)
+    for x, y in ((27.5, 3.5), (44.5, 3.5), (27.5, 20.5), (44.5, 20.5)):
+        f.screw(x, y, 0.9)
+    f.level(f.circle(36, 12, 3), 0.6, 0.5, 'iron_dark')
+    # C (48,0)-(52,32): vertical tube; D (0,32)-(32,34): horizontal tube
+    tube(f, 48, 0, 52, 32, True)
+    tube(f, 0, 32, 32, 34, False)
+    for y in (6, 26):
+        f.lift(f.rect(48, y, 52, y + 0.6), -0.6, 0)
+    # E (52,0)-(58,6): the anemometer cups, cupped and dark
+    X, Y = f.xy()
+    dc = np.hypot(X - 55, Y - 3)
+    cup = (X >= 52) & (X < 58) & (Y >= 0) & (Y < 6)
+    f.paint(cup.astype(float), 'iron')
+    f.H = np.where(cup, 3.0 - 2.0 * np.sqrt(np.clip(1 - (dc / 3) ** 2, 0, 1)), f.H)
+    # F (56,8)-(60,12): tube ends
+    f.paint(f.rect(56, 8, 60, 12), 'steel')
+    f.dome(58, 10, 2, 1.2, 'steel')
+    f.weather(patina=0, grime=0.4, wear=0)
+    save('storm_probe', f)
+
+    for k, (c1, c2) in enumerate((('#2a2622', '#1a1715'), ('#ffc23a', '#d9821a'), ('#5aff7a', '#1fae4a'))):
+        f = Face(seed=610 + k)
+        X, Y = f.xy()
+        d = np.hypot(X - 32, Y - 32)
+        t = np.clip(d / 45, 0, 1)
+        col = hexc(c1)[None, None, :] * (1 - t[..., None]) + hexc(c2)[None, None, :] * t[..., None]
+        rings = (np.sin(d * 0.9) > 0.6)
+        col = col * (1 - 0.12 * rings[..., None])
+        if k:
+            f.E = col
+            f.Ea = np.ones((f.N, f.N))
+            f.emit(f.circle(24, 22, 7), '#ffffff', 0.5)
+        else:
+            f.A = col
+            f.S[:] = 0.9
+            f.G[:] = 60
+            f.H = 6 * np.sqrt(np.clip(1 - (d / 46) ** 2, 0, 1))
+        save(f'storm_probe_lamp_{k}', f)
+
+
+# ---------------------------------------------------------------- weather altar
+
+def runes(f, cx, cy, r, n, size, colour, rng_seed):
+    """A ring of small glyphs around (cx, cy), each a few strokes, glowing."""
+    rng = np.random.default_rng(rng_seed)
+    out = np.zeros((f.N, f.N))
+    strokes = [((0, 0), (1, 0)), ((0, 0), (0, 1)), ((1, 0), (1, 1)), ((0, 1), (1, 1)), ((0, 0), (1, 1)),
+               ((1, 0), (0, 1)), ((0.5, 0), (0.5, 1)), ((0, 0.5), (1, 0.5))]
+    for k in range(n):
+        a = 2 * math.pi * k / n - math.pi / 2
+        gx, gy = cx + math.cos(a) * r - size / 2, cy + math.sin(a) * r - size / 2
+        for i in rng.choice(len(strokes), 3, replace=False):
+            (ax, ay), (bx, by) = strokes[i]
+            out += f.line([(gx + ax * size, gy + ay * size * 1.3), (gx + bx * size, gy + by * size * 1.3)], 0.55)
+    out = np.clip(out, 0, 1)
+    f.emit(out, colour)
+    f.emit_glow(out, colour, 1.5, 0.4)
+    return out
+
+
+def altar():
+    f = Face(seed=700)
+    f.fill('obsidian')
+    f.level(f.rect(0, 0, 64, 64), 4, 1.2, 'gold')
+    f.level(f.rect(4, 4, 60, 60, 1), 2.6, 1.0, 'obsidian')
+    X, Y = f.xy()
+    # engraved border pattern on the gold frame
+    for i in range(8):
+        for (x, y) in ((4 + i * 8 - 2, 2), (4 + i * 8 - 2, 62)):
+            f.lift(f.poly([(x, y - 1), (x + 1, y), (x, y + 1), (x - 1, y)]), -0.5, 0)
+    for (x, y) in ((4, 4), (60, 4), (4, 60), (60, 60)):
+        f.dome(x, y, 2.4, 2.2, 'diamond')
+    # crying obsidian tears running down from the top
+    rng = np.random.default_rng(71)
+    tears = np.zeros((f.N, f.N))
+    for _ in range(7):
+        x = 7 + rng.random() * 50
+        y0, y1 = 5 + rng.random() * 10, 14 + rng.random() * 40
+        tears += f.line([(x, y0), (x + rng.normal() * 0.6, y1)], 0.6 + rng.random() * 0.5)
+    tears = np.clip(tears, 0, 1) * f.rect(5, 5, 59, 59)
+    f.emit(tears, '#7a3ad0', 0.75)
+    # the emblem: a gold ring with a storm cloud and lightning inlaid in diamond, and runes around it
+    f.level(f.circle(32, 32, 19, 16.5), 3.6, 0.6, 'gold')
+    cl = np.clip(f.circle(26, 30, 4.5) + f.circle(31.5, 27, 6) + f.circle(37.5, 30, 4.8) + f.rect(22, 30, 42, 34.5, 2), 0, 1)
+    f.level(cl, 3.4, 0.6, 'diamond')
+    bolt = f.poly([(32.5, 33), (27.5, 41), (31.5, 41), (29, 47), (37, 38), (33, 38), (35.5, 33)])
+    f.level(bolt, 3.4, 0.4, 'gold')
+    runes(f, 32, 32, 13.5, 0, 2.2, '#7fe8ff', 1)
+    runes(f, 32, 32, 23.5, 12, 2.6, '#7fe8ff', 2)
+    f.weather(patina=0, grime=0.35, wear=0)
+    save('weather_altar_side', f, 'weather_altar_glow_side')
+
+    f = Face(seed=701)
+    f.fill('obsidian')
+    f.level(f.rect(0, 0, 64, 64), 4, 1.2, 'gold')
+    f.level(f.rect(4, 4, 60, 60, 1), 2.6, 1.0, 'obsidian')
+    f.level(f.circle(32, 32, 27, 23.5), 4.0, 0.8, 'gold')
+    runes(f, 32, 32, 25.2, 16, 2.0, '#7fe8ff', 3)
+    f.level(f.circle(32, 32, 21, 19.5), 3.3, 0.4, 'gold')
+    for a in range(4):
+        t = math.radians(a * 90 - 90)
+        tip = (32 + math.cos(t) * 18, 32 + math.sin(t) * 18)
+        l = (32 + math.cos(t + 0.35) * 6, 32 + math.sin(t + 0.35) * 6)
+        r = (32 + math.cos(t - 0.35) * 6, 32 + math.sin(t - 0.35) * 6)
+        f.level(f.poly([tip, l, (32, 32), r]), 3.6, 0.5, 'diamond' if a % 2 == 0 else 'gold')
+    for a in range(4):
+        t = math.radians(a * 90 - 45)
+        tip = (32 + math.cos(t) * 11, 32 + math.sin(t) * 11)
+        l = (32 + math.cos(t + 0.5) * 4, 32 + math.sin(t + 0.5) * 4)
+        r = (32 + math.cos(t - 0.5) * 4, 32 + math.sin(t - 0.5) * 4)
+        f.level(f.poly([tip, l, (32, 32), r]), 3.5, 0.4, 'gold')
+    orb = f.dome(32, 32, 5.5, 5.0, 'diamond')
+    X, Y = f.xy()
+    d = np.hypot(X - 31, Y - 31)
+    col = np.clip(1 - d / 5.5, 0, 1)
+    f.E = f.E * (1 - orb[..., None]) + (hexc('#7fe0ff')[None, None, :] * (1 - col[..., None]) + 255 * col[..., None]) * orb[..., None]
+    f.Ea = np.maximum(f.Ea, orb)
+    f.emit_glow(orb, '#8fe8ff', 3.0, 0.55)
+    for (x, y) in ((4, 4), (60, 4), (4, 60), (60, 60)):
+        f.dome(x, y, 2.4, 2.2, 'diamond')
+    f.weather(patina=0, grime=0.3, wear=0)
+    save('weather_altar_top', f, 'weather_altar_glow_top')
+
+    f = Face(seed=702)
+    f.fill('obsidian')
+    f.level(f.rect(0, 0, 64, 64), 3, 1.2)
+    for (x, y) in ((0, 0), (52, 0), (0, 52), (52, 52)):
+        f.level(f.rect(x, y, x + 12, y + 12, 1), 4.0, 0.8, 'gold')
+    f.weather(patina=0, grime=0.4, wear=0)
+    save('weather_altar_bottom', f)
+
+
+# ---------------------------------------------------------------- icebox
+
+def frost(f, mask, amount=0.8, seed=0):
+    """Rime: white-blue crystals collecting where the cold leaks out."""
+    n = fbm(f.N, np.random.default_rng(seed), base=24, octaves=3)
+    m = np.clip((mask * amount * 0.8 + n * 0.55 - 0.55) * 2.0, 0, 0.8)
+    sparkle = (fbm(f.N, np.random.default_rng(seed + 1), base=48, octaves=1) > 0.55) * m
+    col = hexc('#dcecf7')
+    f.A = f.A * (1 - m[..., None]) + col[None, None, :] * m[..., None]
+    f.A = f.A * (1 - sparkle[..., None] * 0.5) + 255 * sparkle[..., None] * 0.5
+    f.S = f.S * (1 - m) + 0.6 * m
+    f.H = f.H + m * 0.5
+
+
+def icebox():
+    f = Face(seed=800)
+    f.fill('oak_v')
+    f.level(f.rect(0, 0, 64, 64), 3, 1.0)
+    # stiles and rails round a raised panel door
+    f.level(f.rect(5, 5, 59, 59, 1), 2.4, 0.8, 'oak_v')
+    f.level(f.rect(11, 11, 53, 53, 1), 3.2, 1.6, 'oak')
+    f.level(f.rect(15, 15, 49, 49, 1), 3.9, 1.0, 'oak')
+    for y in (12, 44):
+        f.level(f.rect(1.5, y, 13, y + 6, 1), 4.0, 0.5, 'brass')
+        for x in (4, 10):
+            f.screw(x, y + 3, 0.9, 'brass')
+    f.level(f.rect(51, 26, 59, 38, 1.2), 4.0, 0.5, 'brass')
+    f.level(f.rect(53, 22, 56, 42, 1.5), 5.4, 0.6, 'brass')
+    f.dome(54.5, 32, 2.0, 1.5, 'brass')
+    f.level(f.circle(32, 9, 3.4), 3.8, 0.4, 'brass')
+    f.level(f.circle(32, 9, 2.6), 3.0, 0.3, 'cream')
+    f.colour(f.line([(32, 9), (30.4, 7.6)], 0.5), '#3a62b0', 0.2)
+    X, Y = f.xy()
+    seam = np.clip(1 - np.minimum.reduce([np.abs(X - 5), np.abs(X - 59), np.abs(Y - 5), np.abs(Y - 59)]) / 3, 0, 1)
+    frost(f, np.clip(seam + np.clip((Y - 50) / 14, 0, 1), 0, 1), 0.9, 11)
+    f.weather(patina=0, grime=0.35, wear=0)
+    save('icebox_front', f)
+
+    f = Face(seed=801)
+    f.fill('oak')
+    f.level(f.rect(0, 0, 64, 64), 3, 1.0)
+    for i in range(4):
+        f.level(f.rect(4, 4 + i * 14, 60, 4 + i * 14 + 13, 0.8), 2.4, 0.8, 'oak')
+    for (x, y) in ((0, 0), (52, 0), (0, 52), (52, 52)):
+        f.level(f.poly([(x, y), (x + 12, y), (x, y + 12)] if (x, y) == (0, 0) else
+                       [(x + 12, y), (x + 12, y + 12), (x, y)] if (x, y) == (52, 0) else
+                       [(x, y + 12), (x, y), (x + 12, y + 12)] if (x, y) == (0, 52) else
+                       [(x + 12, y + 12), (x, y + 12), (x + 12, y)]), 3.8, 0.6, 'brass')
+    for (x, y) in ((3, 3), (61, 3), (3, 61), (61, 61)):
+        f.screw(x, y, 0.9, 'brass')
+    X, Y = f.xy()
+    frost(f, np.clip((Y - 48) / 16, 0, 1), 0.9, 12)
+    f.weather(patina=0, grime=0.35, wear=0)
+    save('icebox_side', f)
+
+    f = Face(seed=802)
+    f.fill('oak')
+    f.level(f.rect(0, 0, 64, 64), 3, 1.0, 'brass')
+    f.level(f.rect(3, 3, 61, 61, 1), 3.4, 0.8, 'oak')
+    for i in range(1, 4):
+        f.lift(f.rect(3, 3 + i * 14.5 - 0.4, 61, 3 + i * 14.5 + 0.4), -0.8, 0)
+    f.level(f.rect(22, 28, 42, 36, 3), 2.0, 1.0, 'iron_dark')
+    f.level(f.rect(24, 30.5, 40, 33.5, 1.5), 4.6, 0.6, 'brass')
+    X, Y = f.xy()
+    edge = np.clip(1 - np.minimum.reduce([X - 3, 61 - X, Y - 3, 61 - Y]) / 5, 0, 1)
+    frost(f, edge, 0.8, 13)
+    f.weather(patina=0, grime=0.3, wear=0)
+    save('icebox_top', f)
+
+
+# ---------------------------------------------------------------- rain barrel (laid out for the cauldron model)
+
+def staves(f, wet=False, seed=0):
+    rng = np.random.default_rng(seed)
+    f.fill('oak_dark_v' if wet else 'oak_v')
+    X, Y = f.xy()
+    for i in range(8):
+        x0 = i * 8
+        m = f.rect(x0, 0, x0 + 8, 64)
+        f.A = f.A * (1 + (rng.random() - 0.5) * 0.18 * m[..., None])
+        t = (X - x0) / 8
+        f.H = f.H + m * 1.2 * np.sqrt(np.clip(1 - (2 * t - 1) ** 2, 0, 1))
+        f.lift(f.rect(x0 - 0.35, 0, x0 + 0.35, 64), -0.9, 0)
+
+
+def barrel():
+    f = Face(seed=900)
+    staves(f, seed=901)
+    for y in (10, 42):
+        f.level(f.rect(0, y, 64, y + 6), 3.4, 0.6, 'iron')
+        for x in range(4, 64, 16):
+            f.dome(x, y + 3, 1.3, 1.0, 'steel')
+    X, Y = f.xy()
+    dirt = np.clip((Y - 50) / 14, 0, 1)
+    f.A = f.A * (1 - 0.35 * dirt[..., None])
+    f.weather(patina=0, grime=0.45, wear=0)
+    save('rain_barrel_side', f)
+
+    f = Face(seed=902)
+    f.fill('oak_dark')
+    X, Y = f.xy()
+    ring = f.rect(0, 0, 64, 64) - f.rect(8, 8, 56, 56)
+    f.paint(ring, 'oak')
+    f.level(ring, 2.4, 0.6)
+    ang = np.arctan2(Y - 32, X - 32)
+    seams = ring * (np.abs(np.sin(ang * 16)) < 0.08)
+    f.lift(seams, -0.7, 0)
+    end = fbm(f.N, np.random.default_rng(3), base=16, octaves=2)
+    f.A = f.A * (1 + 0.08 * end * ring)[..., None]
+    f.paint(f.rect(8, 8, 56, 56), 'oak_dark_v')
+    f.weather(patina=0, grime=0.4, wear=0)
+    save('rain_barrel_top', f)
+
+    f = Face(seed=903)
+    staves(f, wet=True, seed=904)
+    X, Y = f.xy()
+    moss = np.clip((Y - 40) / 24 + fbm(f.N, f.rng, base=10, octaves=3) * 0.4, 0, 1) ** 1.5
+    f.A = f.A * (1 - moss[..., None] * 0.6) + hexc('#3f5a2a')[None, None, :] * moss[..., None] * 0.6
+    f.colour(f.rect(0, 14, 64, 15) * 0.35, '#2a2018', 0.1)
+    f.weather(patina=0, grime=0.5, wear=0)
+    save('rain_barrel_inner', f)
+
+    f = Face(seed=905)
+    f.fill('oak_dark')
+    for i in range(5):
+        f.level(f.rect(0, i * 12.8 + 0.4, 64, (i + 1) * 12.8 - 0.4), 2.0, 0.6, 'oak_dark')
+    f.level(f.rect(28, 0, 36, 64), 3.0, 0.5, 'iron')
+    for y in range(6, 64, 13):
+        f.dome(32, y, 1.3, 1.0, 'steel')
+    f.weather(patina=0, grime=0.5, wear=0)
+    save('rain_barrel_bottom', f)
+
+
+# ---------------------------------------------------------------- forecast board (a clean surface: the forecast is drawn on it)
+
+def board():
+    f = Face(seed=1000)
+    f.fill('walnut')
+    f.level(f.rect(0, 0, 64, 64), 3.2, 0.8)
+    panel = f.rect(4, 16, 60, 48)
+    f.level(panel, 2.2, 0.7, 'enamel')
+    stain = fbm(f.N, f.rng, base=6, octaves=4)
+    f.A = f.A * (1 - 0.05 * np.clip(stain, 0, 1) * panel)[..., None]
+    for y in (23.3, 35.5):
+        f.colour(f.rect(6, y - 0.2, 58, y + 0.2), '#b49a76', 0.2)
+    for x, y in ((2, 14), (62, 14), (2, 50), (62, 50)):
+        f.screw(x, y, 1.1, 'brass')
+    f.weather(patina=0, grime=0.25, wear=0)
+    save('forecast_board', f)
+
+
 # ---------------------------------------------------------------- models
 
 GLOW = {'shade': False, 'neoforge_data': {'block_light': 15, 'sky_light': 15, 'ambient_occlusion': False}}
@@ -587,7 +983,70 @@ def models():
             glow = {'north': 'glow'}
         out['seismograph_active' if active else 'seismograph'] = model(
             tex, {'north': 'front', 'south': 'side', 'east': 'side', 'west': 'side', 'up': 'top', 'down': 'top'}, glow)
+    out['tornado_siren'] = model(
+        {'particle': t('tornado_siren_side'), 'side': t('tornado_siren_side'), 'top': t('tornado_siren_top'), 'bottom': t('tornado_siren_bottom')},
+        {'north': 'side', 'south': 'side', 'east': 'side', 'west': 'side', 'up': 'top', 'down': 'bottom'})
+    out['tornado_siren_on'] = model(
+        {'particle': t('tornado_siren_side_on'), 'side': t('tornado_siren_side_on'), 'top': t('tornado_siren_top'),
+         'bottom': t('tornado_siren_bottom'), 'glow': t('tornado_siren_glow')},
+        {'north': 'side', 'south': 'side', 'east': 'side', 'west': 'side', 'up': 'top', 'down': 'bottom'},
+        {f: 'glow' for f in ('north', 'south', 'east', 'west')})
+    out['weather_altar'] = model(
+        {'particle': t('weather_altar_side'), 'side': t('weather_altar_side'), 'top': t('weather_altar_top'),
+         'bottom': t('weather_altar_bottom'), 'glow': t('weather_altar_glow_side'), 'glow_top': t('weather_altar_glow_top')},
+        {'north': 'side', 'south': 'side', 'east': 'side', 'west': 'side', 'up': 'top', 'down': 'bottom'},
+        dict({f: 'glow' for f in ('north', 'south', 'east', 'west')}, up='glow_top'))
+    for k in range(3):
+        out[f'storm_probe_{k}'] = probe_model(k)
+    with open(os.path.join(MODELS, 'forecast_board.json')) as fh:
+        fb = json.load(fh)
+    for el in fb['elements']:
+        if el['faces'].get('north', {}).get('texture') == '#board':
+            el['faces']['north']['uv'] = [0, 3, 16, 13]
+    out['forecast_board'] = fb
     return out
+
+
+# storm probe parts -> regions of its texture (in 0-16 units)
+PROBE_UV = {'housing': [0, 0, 6, 4], 'housing_top': [6, 0, 12, 6], 'tube_v': [12, 0, 13, 8], 'tube_h': [0, 8, 8, 8.5],
+            'cup': [13, 0, 14.5, 1.5], 'end': [14, 2, 15, 3]}
+
+
+def probe_model(k):
+    with open(os.path.join(MODELS, 'storm_probe_0.json')) as fh:
+        base = json.load(fh)
+    els = []
+    for e in base['elements']:
+        (x1, y1, z1), (x2, y2, z2) = e['from'], e['to']
+        dx, dy, dz = x2 - x1, y2 - y1, z2 - z1
+        faces = {}
+        lamp = any(v.get('texture') == '#lamp' for v in e['faces'].values())
+        for f in e['faces']:
+            if lamp:
+                faces[f] = {'texture': '#lamp', 'uv': [0, 0, 16, 16]}
+                continue
+            if dx >= 5 and dy >= 3:                       # the sensor housing
+                part = 'housing_top' if f in ('up', 'down') else 'housing'
+            elif dx <= 1.5 and dz <= 1.5 and dy >= 1.4 and dy <= 2 and min(dx, dz) >= 1:  # cups
+                part = 'cup'
+            elif dx >= 1 and dz >= 1 and dy <= 2 and dx <= 1.6 and dz <= 1.6:
+                part = 'cup'
+            elif dy >= 2:                                 # legs and the mast
+                part = 'tube_v' if f not in ('up', 'down') else 'end'
+            elif dx >= 4:                                 # arm along x
+                part = 'tube_h' if f in ('north', 'south', 'up', 'down') else 'end'
+            elif dz >= 4:                                 # arm along z
+                part = 'tube_h' if f in ('east', 'west') else ('tube_v' if f in ('up', 'down') else 'end')
+            else:
+                part = 'cup'
+            faces[f] = {'texture': '#metal', 'uv': PROBE_UV[part]}
+        el = dict(e)
+        el['faces'] = faces
+        if lamp and k:
+            el.update(GLOW)
+        els.append(el)
+    return {'textures': {'particle': t('storm_probe'), 'metal': t('storm_probe'), 'lamp': t(f'storm_probe_lamp_{k}')},
+            'elements': els}
 
 
 def main(argv):
@@ -595,6 +1054,12 @@ def main(argv):
     radar()
     battery()
     seismograph()
+    siren()
+    probe()
+    altar()
+    icebox()
+    barrel()
+    board()
     for name, img in OUT.items():
         Image.fromarray(img, 'RGBA').save(os.path.join(TEX, name + '.png'))
     for name, m in models().items():

@@ -81,6 +81,17 @@ MATERIALS = {
     'cream': ('#efe6c8', 0.03, 0.0, 0.2, 12),
     'solar': ('#1b2a52', 0.06, 0.0, 0.8, 50),
     'amethyst': ('#8e62c9', 0.08, 0.0, 0.7, 40),
+    'gold': ('#e2b23a', 0.06, 0.06, 0.7, 30),
+    'obsidian': ('#1d1229', 0.16, 0.0, 0.5, 40),
+    'diamond': ('#8de9e2', 0.05, 0.0, 0.9, 60),
+    'paint_yellow': ('#d9ac26', 0.04, 0.0, 0.25, 26),
+    'enamel': ('#ece4cc', 0.025, 0.0, 0.28, 24),
+    'oak': ('#a37a4b', 0.06, 0.0, 0.12, 10),
+    'oak_v': ('#a37a4b', 0.06, 0.0, 0.12, 10),
+    'oak_dark': ('#6f4e2f', 0.07, 0.0, 0.12, 10),
+    'oak_dark_v': ('#6f4e2f', 0.07, 0.0, 0.12, 10),
+    'walnut': ('#4b3122', 0.07, 0.0, 0.18, 12),
+    'galvanized': ('#a9b0b5', 0.07, 0.04, 0.45, 20),
 }
 
 
@@ -152,6 +163,19 @@ class Face:
                 # oxidised blotches
                 ox = fbm(n, self.rng, base=5, octaves=3)
                 A = A * (1 - 0.12 * np.clip(ox, 0, 1)[..., None])
+            if name.startswith(('oak', 'walnut')):
+                # wood: long grain, with the darker late-wood lines of the rings
+                vertical = name.endswith('_v')
+                st = (1, 14) if vertical else (14, 1)
+                g = fbm(n, self.rng, base=20, octaves=3, stretch=st)
+                X, Y = np.meshgrid(np.arange(n), np.arange(n))
+                across = (X if vertical else Y) / self.ss
+                warp = fbm(n, self.rng, base=3, octaves=2, stretch=st) * 6
+                rings = np.sin((across + warp) * 1.9) > 0.75
+                A = col[None, None, :] * (1 + 0.10 * g)[..., None] * (1 - 0.16 * rings)[..., None]
+            if name == 'obsidian':
+                sp = fbm(n, self.rng, base=30, octaves=2)
+                A = A + (np.clip(sp - 0.45, 0, 1) * 2.0)[..., None] * hexc('#6a3aa0')[None, None, :]
             if name == 'paper':
                 fib = fbm(n, self.rng, base=40, octaves=2, stretch=(3, 1))
                 A = A * (1 + 0.02 * fib)[..., None]
