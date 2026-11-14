@@ -2,7 +2,8 @@
 
 Built mod files for Minecraft 1.21.1 with NeoForge 21.1 or later. The source code is on the `main` branch.
 
-- `reikos_weather-1.27.0.jar` (latest: detailed, realistic 64x textures for the weather station, weather radar, lightning battery and seismograph): put it in your `mods` folder (on a server, install it on the server and on every player's game).
+- `reikos_weather-1.28.0.jar` (latest: detailed 64x textures for the tornado siren, storm probe, weather altar, icebox, rain barrel and forecast board too): put it in your `mods` folder (on a server, install it on the server and on every player's game).
+- `reikos_weather-1.27.0.jar`: detailed, realistic 64x textures for the weather station, weather radar, lightning battery and seismograph.
 - `reikos_weather-1.26.0.jar`: place the windmill facing any way, and new textures for the weather station, weather radar, lightning battery and seismograph.
 - `reikos_weather-1.25.0.jar`: meteors in four sizes, from small pebbles to rare huge fireballs.
 - `reikos_weather-1.24.0.jar`: everything in its own Reiko's Weather creative tab, and 3D models for every item.
