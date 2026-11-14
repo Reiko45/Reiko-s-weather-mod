@@ -5,8 +5,6 @@ import com.mojang.math.Axis;
 import com.reiko.weather.ReikosWeather;
 import com.reiko.weather.block.WindmillBlock;
 import com.reiko.weather.block.WindmillBlockEntity;
-import com.reiko.weather.client.ClientWeather;
-import com.reiko.weather.network.SyncedWeather;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
@@ -19,7 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
-/** Turns the windmill's head into the wind and spins its sails as fast as the wind blows. */
+/** Points the windmill's head the way it was placed and spins its sails as fast as the wind blows. */
 public class WindmillRenderer implements BlockEntityRenderer<WindmillBlockEntity> {
     public static final ModelResourceLocation HEAD = ModelResourceLocation.standalone(ReikosWeather.id("block/windmill_head"));
     public static final ModelResourceLocation BLADES = ModelResourceLocation.standalone(ReikosWeather.id("block/windmill_blades"));
@@ -39,12 +37,12 @@ public class WindmillRenderer implements BlockEntityRenderer<WindmillBlockEntity
             return;
         }
         float dt = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
-        boolean weather = level.dimension() == Level.OVERWORLD && SyncedWeather.managed();
-        float targetYaw = weather ? WeatherVaneRenderer.upwindYaw(ClientWeather.windAngle()) : (Float.isNaN(mill.yaw) ? 0.0F : mill.yaw);
+        float targetYaw = WindmillBlock.rotorYaw(mill.getBlockState());
         if (Float.isNaN(mill.yaw)) {
             mill.yaw = targetYaw;
         } else {
-            float k = 1.0F - (float) Math.pow(0.97, dt);
+            // (eases round if the block is turned, e.g. as part of a rotated structure)
+            float k = 1.0F - (float) Math.pow(0.9, dt);
             mill.yaw += Mth.wrapDegrees((targetYaw - mill.yaw) * Mth.RAD_TO_DEG) * Mth.DEG_TO_RAD * k;
         }
         int power = mill.getBlockState().getValue(WindmillBlock.POWER);

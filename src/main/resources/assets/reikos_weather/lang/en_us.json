@@ -274,7 +274,7 @@
   "jei.reikos_weather.rain_barrel": "Fills up with rainwater when it rains on it. Take the water out with a bucket when it's full, or with glass bottles.",
   "jei.reikos_weather.weather_radar": "Right-click to open the radar scope. Comparators read a signal that rises as the nearest storm gets closer (15 = overhead).",
   "jei.reikos_weather.weather_vane": "Turns to point into the wind. A comparator reads the wind direction: 1 = north, 2 = north-east... 8 = north-west (0 = no reading).",
-  "jei.reikos_weather.windmill": "Turns into the wind and gives off a redstone signal as strong as the wind. It works best high up and out in the open, and turns slowly even on calm days.",
+  "jei.reikos_weather.windmill": "Faces whichever way you were looking when you placed it, with its sails toward you. It gives off a redstone signal as strong as the wind, works best high up and out in the open, and turns slowly even on calm days.",
   "jei.reikos_weather.weather_altar": "End-game weather control. Right-click it with an offering to change the weather: sunflower (clear), water bucket (rain), lightning rod (thunderstorm), snow block (snow), packed ice (blizzard), ice (ice storm), blaze powder (heatwave), feather (gale), sand (sandstorm), cobweb (fog), ghast tear (supercell) or heart of the sea (hurricane). It needs time to recover between uses.",
   "reikos_weather.configuration.temperature": "Temperature",
   "reikos_weather.configuration.extremes": "Extreme Weather",

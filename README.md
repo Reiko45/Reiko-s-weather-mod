@@ -757,14 +757,14 @@ Under **Accessibility** in the client settings:
 | **Umbrella** | 3 wool + 2 sticks | Blocks hail. Hold it while falling to drift down slowly with no fall damage. |
 | **Winter Coat** | wool + leather | Immune to freezing. Too warm for a heatwave. |
 | **Storm Goggles** | leather, glass panes, iron nugget | See much further in sandstorms and blizzards. |
-| **Weather Station** | copper, glass pane, redstone, barometer | Outputs redstone. Right-click to switch between precipitation, storm danger, wind, a 0–15 weather code and the season. |
+| **Weather Station** | copper, glass pane, redstone, barometer | Outputs redstone. Right-click to switch between precipitation, storm danger, wind, a 0–15 weather code and the season; the screen on its sides shows which, and glows in the dark. |
 | **Tornado Siren** | iron, note blocks, redstone | Wails and powers redstone while a tornado or waterspout is within 160 blocks. |
 | **Rain Barrel** | planks + iron ingot | Fills with rainwater. Take it out with a bucket when full, or with bottles. |
 | **Thermometer** | iron nugget, glass pane, redstone | Hold it to see the temperature. Right-click for a reading. |
 | **Handheld Radar** | iron, glass pane, compass, redstone | Opens the radar scope, centred on you. |
 | **Weather Radar** | iron, lightning rod, glass panes, handheld radar, redstone block | Radar scope as a block. Comparators read storm distance (15 = overhead). |
 | **Weather Vane** | copper, lightning rod, smooth stone slab | Points into the wind. Comparators read the wind direction (1 = north ... 8 = north-west). |
-| **Windmill** | wool, sticks, redstone, planks | Turns into the wind and gives off redstone as strong as the wind. Works best high up and in the open. |
+| **Windmill** | wool, sticks, redstone, planks | Faces whichever way you were looking when you placed it (its sails toward you), spins with the wind and gives off redstone as strong as the wind. Works best high up and in the open. |
 | **Cloud Seeding Rocket** | paper, gunpowder, snowball (makes 2) | Fire it straight up to seed a rain cloud. |
 | **Weather Altar** | diamonds, nether star, gold blocks, barometer, crying obsidian | End-game weather control (see above). |
 | **Hot Cocoa** | 2 cocoa beans, sugar, milk bucket, bowl | A warm drink: *Warmth* for 3 minutes. Always drinkable. |
@@ -773,7 +773,7 @@ Under **Accessibility** in the client settings:
 | **Tent** | 3 wool over 2 sticks (sticks in the corners) | Shelter from the cold and the weather. Sleep in it to skip the night (doesn't set your spawn). |
 | **Sandbag** | 3 sand + string (makes 2) | Keeps storm surges and flash floods away within 2 blocks. |
 | **Salt** | smelt a water bottle | Use on a block to melt ice and snow around it. |
-| **Lightning Battery** | copper, lightning rod, redstone block | Put it under a lightning rod (up to 4 blocks below the strike) to store up to 4 strikes. A redstone pulse from the side, back or bottom lets one out as a strong 2-second pulse from the front. Comparators read the charge, and it glows brighter as it fills. |
+| **Lightning Battery** | copper, lightning rod, redstone block | Put it under a lightning rod (up to 4 blocks below the strike) to store up to 4 strikes. A redstone pulse from the side, back or bottom lets one out as a strong 2-second pulse from the front. Comparators read the charge, and it glows brighter as it fills, its glass cells lighting up one by one. |
 | **Forecast Board** | 5 planks + barometer | A wall board that shows the current weather, the season and the next three weathers. |
 | **Storm Probe** | barometer, iron, redstone | Leave it in a tornado's path. Probes near a tornado record readings and drop **storm data** when broken (more from close to the funnel). Meteorologists buy storm data. |
 | **Weather Almanac** | book + feather | The guidebook. New players get one when they first join. |
@@ -786,7 +786,7 @@ Under **Accessibility** in the client settings:
 | **Bowl of Rice** | bowl + 3 rice | A filling meal. |
 | **Winter Stew** | bowl, 2 kale, carrot, baked potato | Warmth for a minute and a half. |
 | **Cooked Stormfish / Icefish** | cook the raw fish | Haste / Refreshed. |
-| **Seismograph** | copper, paper, redstone, amethyst shard, smooth stone slabs | Redstone signal from volcanic tremors: weak while a volcano within 1,024 blocks rumbles (rising as the eruption nears, and the closer you are), up to 15 during an eruption. An early warning. |
+| **Seismograph** | copper, paper, redstone, amethyst shard, smooth stone slabs | Redstone signal from volcanic tremors: weak while a volcano within 1,024 blocks rumbles (rising as the eruption nears, and the closer you are), up to 15 during an eruption. An early warning. While it picks up tremors, its pen scratches spikes on the paper drum and the amethyst lamp lights up. |
 | **Volcanic Ash** | falls from ash clouds | Fertilizes crops like bone meal, or place it in layers. 2 ash make a bone meal. |
 | **Sulfur** | mine sulfur crust | Sulfur + charcoal + bone meal make 2 gunpowder. |
 | **Geyser** | Silk Touch one from hot springs | Erupts every few minutes; comparators read 15 while it erupts. |
@@ -956,6 +956,8 @@ tools/item_models/  The 3D item models are generated by code: items.py builds ea
                     textures, writes the JSON and renders an inventory-style preview). The old flat
                     sprites in sprites/ are art sources for some of them.
                     python3 tools/item_models/items.py [names] [--sheet preview.png]
+tools/block_textures/ The weather station, weather radar, lightning battery and seismograph textures and models
+                    (with their full-bright screen layers) are painted by paint.py.
 src/main/java/com/reiko/weather/
   weather/    WeatherType, Climate, WeatherProfiles (per-climate table), WeatherManager (cycle and storm cells),
               LocalWeather (what you get at one spot), Seasons, WeatherHazards (gameplay), WeatherAdvancements

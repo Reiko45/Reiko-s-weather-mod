@@ -560,7 +560,7 @@
        "recipe": "reikos_weather:weather_vane"
       },
       {
-       "text": "The windmill turns into the wind and gives off redstone as strong as the wind. It works best high up in the open.",
+       "text": "The windmill faces whichever way you were looking when you placed it, with its sails toward you. It spins with the wind and gives off redstone as strong as the wind. It works best high up in the open.",
        "recipe": "reikos_weather:windmill"
       }
      ]
